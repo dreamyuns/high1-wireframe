@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S02-5 — 숙소 등록·수정 Step 5 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">숙소 등록·수정 — Step 5: 숙소 시설</span>
+  <span class="page-nav-route">#/places/new · #/places/edit/:id</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s02-4-wizard-step4.html">← 이전</a>
+    <a class="page-nav-pager" href="s03-room-list.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">S02-5</span>
+    숙소 등록·수정 — Step 5 숙소 시설
+    <span style="font-size:12px;font-weight:400;color:#888">— #/places/new · #/places/edit/:id</span>
+  </div>
+
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item on">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">숙소관리</div>
+          <div class="wf-lnb-item on">숙소목록</div>
+          <div class="wf-lnb-item">객실목록</div>
+          <div class="wf-lnb-item">상품목록</div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="wf-main">
+          <div class="wf-page-title">숙소 등록 <span style="font-weight:400;color:#888;font-size:11px">/ 수정 시: PL-H001 그랜드 호텔 메인타워</span></div>
+
+          <!-- 5단계 탭바 -->
+          <div class="wf-step-bar">
+            <div class="wf-step done"><span>1</span>분류·기본·운영</div>
+            <div class="wf-step done"><span>2</span>위치</div>
+            <div class="wf-step done"><span>3</span>이미지</div>
+            <div class="wf-step done"><span>4</span>안내·정책</div>
+            <div class="wf-step on"><span>5</span>숙소시설</div>
+          </div>
+
+          <!-- 숙소 시설 선택 -->
+          <div class="wf-section-head">숙소 시설 선택 (PLACE 도메인)</div>
+
+          <!-- 대표 시설 노출 현황 배너 -->
+          <div style="display:flex;align-items:center;justify-content:space-between;background:#f0f4ff;border:1px solid #b8c8f0;border-radius:4px;padding:7px 12px;font-size:12px;color:#334;margin-bottom:10px">
+            <span>대표 시설 노출 <span class="wf-cn">4</span></span>
+            <span style="font-weight:600">2 / 10</span>
+          </div>
+
+          <!-- 피커: 좌측 카테고리 목록 + 우측 시설 선택 그리드 -->
+          <div style="display:flex;border:1px solid #d4d4cc;border-radius:4px;overflow:hidden;margin-bottom:8px">
+            <!-- 좌측 카테고리 목록 -->
+            <div style="width:88px;border-right:1px solid #d4d4cc;flex-shrink:0">
+              <div style="padding:5px 8px;font-size:10px;color:#888;background:#f5f5f0;border-bottom:1px solid #d4d4cc">카테고리 <span class="wf-cn">1</span></div>
+              <div style="padding:6px 8px;font-size:11px;font-weight:600;color:#3a5f9e;background:#fff;border-bottom:1px solid #ebebeb">편의시설</div>
+              <div style="padding:6px 8px;font-size:11px;color:#666;background:#fafaf7;border-bottom:1px solid #ebebeb">식음료</div>
+              <div style="padding:6px 8px;font-size:11px;color:#666;background:#fafaf7">레저·스포츠</div>
+            </div>
+            <!-- 우측 시설 선택 그리드 -->
+            <div style="flex:1">
+              <div style="display:grid;grid-template-columns:1fr 62px 40px;align-items:center;padding:5px 8px;background:#f5f5f0;border-bottom:1px solid #d4d4cc;font-size:10px;color:#888">
+                <span>시설명</span>
+                <span style="text-align:center">숙소에 적용 <span class="wf-cn">2</span></span>
+                <span style="text-align:center">대표 <span class="wf-cn">3</span></span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 62px 40px;align-items:center;padding:5px 8px;border-bottom:1px solid #ebebeb;font-size:11px">
+                <span>주차장</span>
+                <span style="text-align:center"><span class="wf-cb wf-cb-on"></span></span>
+                <span style="text-align:center"><span class="wf-cb wf-cb-on"></span></span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 62px 40px;align-items:center;padding:5px 8px;border-bottom:1px solid #ebebeb;font-size:11px">
+                <span>컨시어지</span>
+                <span style="text-align:center"><span class="wf-cb wf-cb-on"></span></span>
+                <span style="text-align:center"><span class="wf-cb"></span></span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 62px 40px;align-items:center;padding:5px 8px;border-bottom:1px solid #ebebeb;font-size:11px">
+                <span>수하물 보관</span>
+                <span style="text-align:center"><span class="wf-cb wf-cb-on"></span></span>
+                <span style="text-align:center"><span class="wf-cb"></span></span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 62px 40px;align-items:center;padding:5px 8px;font-size:11px">
+                <span>세탁 서비스</span>
+                <span style="text-align:center"><span class="wf-cb"></span></span>
+                <span style="text-align:center"><span class="wf-cb"></span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 적용된 시설 칩 영역 -->
+          <div style="border:1px solid #d4d4cc;border-radius:4px;padding:8px;min-height:44px;margin-bottom:8px">
+            <div style="font-size:10px;color:#888;margin-bottom:5px">적용된 시설 <span class="wf-cn">5</span></div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              <span class="wf-chip wf-chip-on" style="font-size:11px">편의시설: 주차장 <span style="background:#3a5f9e;color:#fff;font-size:9px;padding:1px 4px;border-radius:2px;margin-left:2px">대표</span></span>
+              <span class="wf-chip wf-chip-on" style="font-size:11px">편의시설: 컨시어지</span>
+              <span class="wf-chip wf-chip-on" style="font-size:11px">편의시설: 수하물 보관</span>
+            </div>
+          </div>
+
+          <!-- 카테고리 전환 병합 힌트 -->
+          <div class="wf-hint">카테고리 전환 시 현재 체크 상태가 state에 자동 병합됩니다. 전환해도 선택값이 초기화되지 않습니다.</div>
+
+          <!-- 하단 버튼 -->
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #e0e0da">
+            <span class="wf-btn">취소</span>
+            <span class="wf-btn wf-btn-primary">저장</span>
+          </div>
+
+        </div>
+        <!-- /wf-main -->
+
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 주석 패널 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">카테고리 목록 (좌측 패널)</div>
+          <div class="ann-desc">
+            PLACE 도메인 카테고리 목록(v0.4 시드: 편의시설·식음료·레저·스포츠). 선택된 카테고리는 파란 텍스트로 표시되며 우측에 해당 카테고리 시설 목록이 로드된다.<br />
+            카테고리 전환 시 현재 체크 상태가 state에 자동 병합되어 다른 카테고리 선택값이 유실되지 않는다.<br />
+            카테고리 추가·수정은 공통관리 &gt; 카테고리관리에서 가능하다.
+          </div>
+          <div class="ann-rule">PL-WIZ-04: 카테고리 전환 시 현재 체크 상태 state 병합 선행 실행.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">숙소에 적용 (facility_ids)</div>
+          <div class="ann-desc">
+            체크 시 해당 시설이 facility_ids 배열에 포함되어 숙소 보유 시설 전체 목록이 된다. 체크 해제 시 대표 체크도 자동 해제된다.
+          </div>
+          <div class="ann-front">→ 프런트: 숙소 레이어 &gt; 안내정보 탭 카테고리별 시설 목록</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">대표 (featured_facility_ids)</div>
+          <div class="ann-desc">
+            "숙소에 적용" 체크 상태에서만 활성화된다. 적용 해제 시 대표도 자동 해제. 최대 10개 제한이며 이미 10개 선택된 경우 추가 대표 체크박스가 비활성화된다.
+          </div>
+          <div class="ann-front">→ 프런트: 브릿지 페이지 Overview '대표 시설' 칩 나열 (최대 10개)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">대표 시설 노출 현황 배너</div>
+          <div class="ann-desc">
+            전체 카테고리에 걸쳐 현재 선택된 대표 시설 수를 실시간으로 표시한다 (N / 10). 체크박스 변경 시 즉시 갱신된다.
+          </div>
+          <div class="ann-rule">PR-FORM-04: 대표 시설 최대 10개 초과 시 추가 체크 비활성.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">적용된 시설 칩 영역</div>
+          <div class="ann-desc">
+            체크박스 변경 시 실시간으로 갱신된다. 형식: "카테고리: 시설명". 대표 시설에는 파란 '대표' 뱃지가 부착된다.<br />
+            전체 카테고리에 걸친 최종 적용 시설 목록이며, 저장 시 이 목록 기준으로 facility_ids · featured_facility_ids가 기록된다.
+          </div>
+          <div class="ann-front">→ facility_ids: 숙소 레이어 안내정보 탭 시설 목록 / → featured_facility_ids: Overview 대표 시설 칩</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

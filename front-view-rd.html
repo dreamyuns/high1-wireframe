@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>REF-4 — Room Detail 모달 데이터 매핑</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+.page { max-width: 1800px; }
+.fv-two-col { display: grid; grid-template-columns: 58% 40%; gap: 28px; align-items: start; }
+
+/* ── Room Detail 모달 시뮬레이션 ── */
+.front-sim { border: 1px solid #d0d0c8; border-radius: 8px; overflow: visible; background: #fafaf8; font-family: "Segoe UI", Arial, sans-serif; }
+
+/* Modal header */
+.ft-rd-head { background: #1a1f2e; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; border-radius: 8px 8px 0 0; }
+.ft-rd-head-text { display: flex; flex-direction: column; gap: 1px; }
+.ft-rd-room-name { color: #fff; font-size: 13px; font-weight: 700; }
+.ft-rd-product-name { color: rgba(255,255,255,.6); font-size: 10px; }
+.ft-rd-close { color: rgba(255,255,255,.6); font-size: 16px; }
+
+/* Body: gallery + aside */
+.ft-rd-body { display: grid; grid-template-columns: 52% 48%; }
+
+.ft-rd-gallery { background: #d8e0e8; padding: 8px; display: flex; flex-direction: column; gap: 4px; min-height: 160px; }
+.ft-rd-main-img { background: linear-gradient(135deg, #c0cad4, #a0aab4); flex: 2; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666; }
+.ft-rd-thumbs { display: flex; gap: 3px; flex: 1; }
+.ft-rd-thumb { flex: 1; background: linear-gradient(135deg, #d0d8e0, #b8c0cc); border-radius: 3px; }
+
+.ft-rd-aside { padding: 12px 14px; border-left: 1px solid #e8e8e2; display: flex; flex-direction: column; gap: 0; background: #fff; }
+.ft-rd-info-title { font-size: 9px; font-weight: 700; color: #1a1f2e; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+.ft-rd-info-list { list-style: none; font-size: 9px; color: #555; margin-bottom: 10px; }
+.ft-rd-info-list li { display: flex; gap: 6px; margin-bottom: 4px; line-height: 1.4; align-items: flex-start; }
+.ft-rd-info-list li .lb { color: #888; width: 60px; flex-shrink: 0; }
+.ft-rd-info-list li .val { flex: 1; }
+
+/* Section nav */
+.ft-rd-section-nav { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
+.ft-rd-section-btn { font-size: 8px; padding: 3px 8px; background: #f0f0ea; border-radius: 3px; color: #444; cursor: pointer; border: none; }
+.ft-rd-section-btn.on { background: #1a1f2e; color: #fff; }
+
+/* Section contents */
+.ft-rd-content-block { background: #fafaf8; border: 1px solid #e8e8e2; border-radius: 3px; padding: 7px 9px; font-size: 9px; color: #555; line-height: 1.6; margin-bottom: 6px; }
+.ft-rd-extra-block { background: #fefce8; border: 1px solid #fde68a; border-radius: 3px; padding: 7px 9px; font-size: 9px; color: #92400e; line-height: 1.6; margin-bottom: 6px; }
+.ft-rd-extrabed-block { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 3px; padding: 7px 9px; font-size: 9px; color: #0c4a6e; line-height: 1.6; margin-bottom: 6px; }
+
+/* Room facilities */
+.ft-rd-fac-group { margin-bottom: 8px; }
+.ft-rd-fac-group-title { font-size: 9px; font-weight: 700; color: #555; margin-bottom: 3px; }
+.ft-rd-fac-chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.ft-rd-fac-chip { background: #f0f0ea; border-radius: 3px; font-size: 8px; color: #444; padding: 2px 6px; }
+
+/* Modal footer */
+.ft-rd-foot { background: #f8f8f5; padding: 8px 14px; border-top: 1px solid #e8e8e2; display: flex; justify-content: flex-end; border-radius: 0 0 8px 8px; }
+.ft-rd-cta { background: #1a1f2e; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+
+/* ── 주석 패널 ── */
+.fv-ann { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.fv-ann h3 { font-size: 14px; font-weight: 700; color: #1a1f2e; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e8e8e2; }
+.fv-ann-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f0eb; display: flex; gap: 10px; align-items: flex-start; }
+.fv-ann-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.fv-ann-body { flex: 1; }
+.fv-ann-title { font-size: 13px; font-weight: 700; color: #1a1f2e; margin-bottom: 3px; }
+.fv-ann-desc { font-size: 11px; color: #555; line-height: 1.6; margin-bottom: 2px; }
+.fv-ann-admin { font-size: 10px; color: #444; background: #f0f0ea; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #999; line-height: 1.55; margin-top: 3px; }
+.fv-ann-ls { font-size: 10px; color: #1a1f2e; background: #f0f4ff; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #6366f1; line-height: 1.55; margin-top: 3px; font-family: monospace; }
+.fv-ann-front { font-size: 10px; color: #0e7490; background: #ecfeff; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #0e7490; line-height: 1.55; margin-top: 3px; }
+.fv-ann-rule { font-size: 10px; color: #92400e; background: #fefce8; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #fde68a; line-height: 1.55; margin-top: 3px; }
+
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; align-items: center; font-size: 11px; color: #666; padding: 8px 14px; background: #fff; border-radius: 6px; border: 1px solid #e8e8e2; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">REF-4 — Room Detail 모달 데이터 매핑</span>
+  <span class="page-nav-route">#roomDetailModal · 상품 카드 "Room Detail →" 클릭 시 오픈</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="front-view-layer.html">← 이전</a>
+    <span class="page-nav-pager-disabled">다음 →</span>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">REF-4</span>
+    Room Detail 모달 데이터 매핑
+    <span style="font-size:12px;font-weight:400;color:#888">— 객실·상품 상세 모달 UI 각 요소의 데이터 출처</span>
+  </div>
+
+  <div class="legend">
+    <span style="font-weight:700;color:#1a1f2e;font-size:11px">범례</span>
+    <div class="legend-item"><div class="legend-dot" style="background:#f0f0ea;border:1px solid #bbb"></div> 어드민 화면 참조</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e8edff;border:1px solid #99a"></div> localStorage 키</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ecfeff;border:1px solid #a5f3fc"></div> 프런트 노출 위치</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fefce8;border:1px solid #fde68a"></div> 비즈니스 규칙</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f0f9ff;border:1px solid #bae6fd"></div> 엑스트라베드 관련</div>
+  </div>
+
+  <div class="fv-two-col">
+
+    <!-- ── Room Detail 모달 시뮬레이션 ── -->
+    <div>
+      <div class="front-sim">
+
+        <!-- Modal Header ①② -->
+        <div class="ft-rd-head" style="position:relative;padding-right:36px">
+          <div class="ft-rd-head-text">
+            <div style="display:flex;align-items:center;gap:4px">
+              <div class="ft-rd-room-name">베스트슬립 슈페리어 더블베드</div>
+              <span class="wf-cn">1</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px">
+              <div class="ft-rd-product-name">시그니처 위스키 메인 패키지</div>
+              <span class="wf-cn">2</span>
+            </div>
+          </div>
+          <span class="ft-rd-close">✕</span>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="ft-rd-body">
+
+          <!-- 갤러리 ③ -->
+          <div class="ft-rd-gallery" style="position:relative">
+            <div class="ft-rd-main-img">메인 이미지 (images[0])</div>
+            <div class="ft-rd-thumbs">
+              <div class="ft-rd-thumb"></div>
+              <div class="ft-rd-thumb"></div>
+              <div class="ft-rd-thumb"></div>
+            </div>
+            <span class="wf-cn" style="position:absolute;top:6px;right:6px">3</span>
+          </div>
+
+          <!-- Information aside ④⑤⑥ + Section nav ⑦ + Contents ⑧⑨⑩⑪ -->
+          <div class="ft-rd-aside">
+            <div class="ft-rd-info-title">Information</div>
+            <ul class="ft-rd-info-list">
+              <li>
+                <span class="lb">객실유형</span>
+                <span class="val">슈페리어</span>
+                <span class="wf-cn">4</span>
+              </li>
+              <li>
+                <span class="lb">침대유형</span>
+                <span class="val">더블베드 1개, 트윈베드 1개</span>
+              </li>
+              <li>
+                <span class="lb">객실특징</span>
+                <span class="val">커플룸 · 뷰룸</span>
+              </li>
+              <li>
+                <span class="lb">인원</span>
+                <span class="val">기준 2명 / 최대 4명</span>
+                <span class="wf-cn">5</span>
+              </li>
+              <li>
+                <span class="lb">면적</span>
+                <span class="val">38 ㎡</span>
+              </li>
+              <li style="background:#f0f9ff;border-radius:3px;padding:3px 4px;margin-top:4px">
+                <span class="lb" style="color:#0c4a6e">엑스트라베드</span>
+                <span class="val" style="color:#0c4a6e">추가 가능 (최대 1개)</span>
+                <span class="wf-cn">6</span>
+              </li>
+            </ul>
+
+            <!-- Section Nav ⑦ -->
+            <div style="display:flex;align-items:center;gap:4px;margin-bottom:8px">
+              <div class="ft-rd-section-nav" style="margin-bottom:0;flex:1">
+                <button class="ft-rd-section-btn on">상품 안내</button>
+                <button class="ft-rd-section-btn">정책</button>
+                <button class="ft-rd-section-btn">객실 시설</button>
+              </div>
+              <span class="wf-cn">7</span>
+            </div>
+
+            <!-- 상품 안내 HTML ⑧ -->
+            <div style="position:relative;padding-right:24px">
+              <div class="ft-rd-content-block">
+                체크인 당일 시그니처 위스키 1병이 제공됩니다.<br>
+                · 컨벤션타워 10F 라운지에서 수령<br>
+                · 17시 ~ 20시 수령 가능
+              </div>
+              <span class="wf-cn" style="position:absolute;top:4px;right:0">8</span>
+            </div>
+
+            <!-- 추가 요금 (extra_charges) ⑨ + 엑스트라베드 요금 ⑩ -->
+            <div style="position:relative;padding-right:24px">
+              <div class="ft-rd-extra-block">
+                <strong>추가 요금</strong><br>
+                추가 인원 1인 · ₩20,000/박
+              </div>
+              <span class="wf-cn" style="position:absolute;top:4px;right:0">9</span>
+            </div>
+
+            <div style="position:relative;padding-right:24px">
+              <div class="ft-rd-extrabed-block">
+                <strong>엑스트라베드</strong><br>
+                1개 추가 가능 · ₩50,000/박 (최대 인원 초과 불가)
+              </div>
+              <span class="wf-cn" style="position:absolute;top:4px;right:0">10</span>
+            </div>
+
+            <!-- 객실 시설 ⑪⑫ -->
+            <div style="position:relative;padding-right:24px">
+              <div class="ft-rd-fac-group">
+                <div style="display:flex;align-items:center;gap:4px">
+                  <div class="ft-rd-fac-group-title" style="flex:1">욕실</div>
+                  <span class="wf-cn">11</span>
+                </div>
+                <div class="ft-rd-fac-chips">
+                  <span class="ft-rd-fac-chip">욕조</span>
+                  <span class="ft-rd-fac-chip">샤워부스</span>
+                  <span class="ft-rd-fac-chip">비데</span>
+                  <span class="wf-cn">12</span>
+                </div>
+              </div>
+              <div class="ft-rd-fac-group">
+                <div class="ft-rd-fac-group-title">편의</div>
+                <div class="ft-rd-fac-chips">
+                  <span class="ft-rd-fac-chip">미니바</span>
+                  <span class="ft-rd-fac-chip">TV</span>
+                  <span class="ft-rd-fac-chip">에어컨</span>
+                  <span class="ft-rd-fac-chip">금고</span>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /ft-rd-aside -->
+        </div><!-- /ft-rd-body -->
+
+        <!-- Modal Footer -->
+        <div class="ft-rd-foot">
+          <button class="ft-rd-cta">Select Room</button>
+        </div>
+
+      </div><!-- /front-sim -->
+    </div>
+
+    <!-- ── 주석 패널 ── -->
+    <div class="fv-ann">
+      <h3>Room Detail 모달 주석 (callout ①~⑫)</h3>
+
+      <div class="fv-ann-item">
+        <div class="cn">1</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">모달 헤더 — 객실명</div>
+          <div class="fv-ann-desc">모달 상단 헤더 1행에 객실명을 크고 굵게 표시.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실명</div>
+          <div class="fv-ann-ls">h1_rooms[].room_name</div>
+          <div class="fv-ann-front">모달 헤더 1행 (흰색, 굵게)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">2</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">모달 헤더 — 상품명</div>
+          <div class="fv-ann-desc">헤더 2행에 상품명을 보통 굵기로 표시.</div>
+          <div class="fv-ann-admin">어드민 S04 상품 등록 · 상품명</div>
+          <div class="fv-ann-ls">h1_products[].name</div>
+          <div class="fv-ann-front">모달 헤더 2행 (연한 색, 보통 굵기)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">3</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">갤러리 이미지</div>
+          <div class="fv-ann-desc">좌측 갤러리에 객실 이미지를 메인 1장 + 썸네일 행으로 표시. 썸네일 클릭 시 메인 이미지 전환.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 이미지 등록 (images 배열)</div>
+          <div class="fv-ann-ls">h1_rooms[].images[]{data_url}</div>
+          <div class="fv-ann-front">좌측 갤러리 (메인 + 썸네일 행)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">4</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Information — 객실유형 · 침대유형 · 객실특징</div>
+          <div class="fv-ann-desc">공통마스터에서 코드를 이름으로 변환하여 표시. 복수 선택 시 " · "으로 구분.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실유형 / 침대유형 / 객실특징 선택<br>어드민 S09-A/B 객실유형관리 (마스터 등록)</div>
+          <div class="fv-ann-ls">
+            h1_rooms[].room_type_id → h1_room_types[].name<br>
+            h1_rooms[].bed_types[]{type,count} → h1_bed_types[].name<br>
+            h1_rooms[].trait_ids[] → h1_room_traits[].name
+          </div>
+          <div class="fv-ann-front">Information 목록 · 객실유형 / 침대유형 / 객실특징 행</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">5</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Information — 인원 · 면적</div>
+          <div class="fv-ann-desc">기준 인원 / 최대 인원 / 면적(㎡) 표시.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 기준인원 / 최대인원 / 면적(㎡)</div>
+          <div class="fv-ann-ls">h1_rooms[].standard_occupancy · h1_rooms[].max_occupancy · h1_rooms[].area_sqm</div>
+          <div class="fv-ann-front">Information 목록 · 인원 행 (기준 N명 / 최대 N명) / 면적 행</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">6</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Information — 엑스트라베드 가능 여부</div>
+          <div class="fv-ann-desc">객실에 엑스트라베드 추가 가능 여부와 최대 개수를 표시. 불가 시 해당 행 미표시.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 엑스트라베드 허용 여부 / 최대 수량</div>
+          <div class="fv-ann-ls">h1_rooms[].extra_bed_allowed (boolean) · h1_rooms[].extra_bed_max</div>
+          <div class="fv-ann-front">Information 목록 · 엑스트라베드 행 (허용 시만 표시)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">7</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">섹션 네비 — 상품안내 / 정책 / 객실시설</div>
+          <div class="fv-ann-desc">Information 아래 섹션 전환 버튼. 각 탭 클릭 시 해당 데이터를 아래 콘텐츠 영역에 렌더링.</div>
+          <div class="fv-ann-admin">어드민 S04 상품 등록 (상품안내·정책) / S03 객실 등록 (시설)</div>
+          <div class="fv-ann-ls">h1_products[].guide_policy_html · h1_rooms[].facility_ids</div>
+          <div class="fv-ann-front">섹션 탭 버튼 (상품안내 / 정책 / 객실시설)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">8</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">상품 안내 HTML</div>
+          <div class="fv-ann-desc">상품안내 탭에 innerHTML로 렌더링. 포함 항목·이용 조건·주의사항 등 상세 안내.</div>
+          <div class="fv-ann-admin">어드민 S04 상품 등록 · 안내/정책 HTML textarea</div>
+          <div class="fv-ann-ls">h1_products[].guide_policy_html</div>
+          <div class="fv-ann-front">상품안내 섹션 콘텐츠 (innerHTML)</div>
+          <div class="fv-ann-rule">XSS 주의. 실서비스 배포 시 새니타이저 필수 적용.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">9</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">추가 요금 (extra_charges)</div>
+          <div class="fv-ann-desc">정책 섹션에 추가 인원 등 추가 요금 항목을 노란 블록으로 강조 표시. 항목이 없으면 미표시.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 추가 요금 설정 (label / 단가 / 단위)</div>
+          <div class="fv-ann-ls">h1_rooms[].extra_charges[]{label, amount_per_unit, unit}</div>
+          <div class="fv-ann-front">정책 섹션 추가 요금 블록 (노란 배경)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">10</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">엑스트라베드 요금</div>
+          <div class="fv-ann-desc">엑스트라베드 허용 객실에 한해 추가 요금과 제한 조건을 파란 블록으로 표시. 최대 인원(max_occupancy) 초과 불가 조건 명시.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 엑스트라베드 허용 / 요금 / 최대 수량</div>
+          <div class="fv-ann-ls">h1_rooms[].extra_bed_allowed · h1_rooms[].extra_bed_price · h1_rooms[].extra_bed_max</div>
+          <div class="fv-ann-front">정책 섹션 엑스트라베드 요금 블록 (파란 배경, 허용 시만 표시)</div>
+          <div class="fv-ann-rule">엑스트라베드 추가 시에도 max_occupancy를 초과할 수 없음. 예약 시 검증 필요.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">11</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">객실 시설 카테고리 헤더 (ROOM)</div>
+          <div class="fv-ann-desc">객실시설 섹션의 그룹 헤더. ROOM 도메인 카테고리명(plain string) 사용. PLACE 도메인 카테고리와 별개입니다.</div>
+          <div class="fv-ann-admin">어드민 S07-A/B 카테고리 관리 · 카테고리명 (ROOM 도메인, rmc##### 코드)</div>
+          <div class="fv-ann-ls">h1_facility_categories[].name (where domain = "ROOM")</div>
+          <div class="fv-ann-front">객실시설 섹션 그룹 헤더 텍스트</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">12</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">객실 시설 항목명 (ROOM)</div>
+          <div class="fv-ann-desc">카테고리 그룹 내 시설명 칩. 객실에 적용된 ROOM 도메인 시설(facility_ids)만 카테고리별로 그룹화하여 표시.</div>
+          <div class="fv-ann-admin">S08-A 시설 목록 / S08-B 시설 등록 · 시설명 (ROOM) / S03 객실 등록 · 시설 선택</div>
+          <div class="fv-ann-ls">h1_rooms[].facility_ids → h1_facilities[].name (ROOM 도메인)</div>
+          <div class="fv-ann-front">객실시설 섹션 카테고리 그룹 내 시설명 칩</div>
+        </div>
+      </div>
+
+    </div><!-- /fv-ann -->
+  </div><!-- /fv-two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

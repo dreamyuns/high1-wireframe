@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S03 — 객실 목록 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">객실 목록</span>
+  <span class="page-nav-route">#/rooms · #/rooms/place/:placeId</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s02-5-wizard-step5.html">← 이전</a>
+    <a class="page-nav-pager" href="s04-room-form.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">S03</span>
+    객실 목록
+    <span style="font-size:12px;font-weight:400;color:#888">— #/rooms · #/rooms/place/:placeId</span>
+  </div>
+
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item on">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">숙소관리</div>
+          <div class="wf-lnb-item">숙소목록</div>
+          <div class="wf-lnb-item on">객실목록</div>
+          <div class="wf-lnb-item">상품목록</div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="wf-main">
+
+          <!-- 툴바 -->
+          <div class="wf-toolbar">
+            <div class="wf-page-title" style="margin-bottom:0">객실 목록 <span class="wf-cn">2</span></div>
+            <div>
+              <span class="wf-btn wf-btn-primary">+ 객실 등록</span> <span class="wf-cn">3</span>
+            </div>
+          </div>
+
+          <!-- 필터 -->
+          <div class="wf-filter">
+            <select class="wf-select">
+              <option>숙소 전체 ▾</option>
+              <option>그랜드 호텔 메인타워</option>
+              <option>팰리스 호텔</option>
+            </select>
+            <span class="wf-cn">1</span>
+          </div>
+
+          <!-- 테이블 -->
+          <table class="wf-table">
+            <thead>
+              <tr>
+                <th>객실코드</th>
+                <th>숙소</th>
+                <th>객실명</th>
+                <th>기준/최대 인원</th>
+                <th>엑스트라베드 <span class="wf-cn">4</span></th>
+                <th>추가인원비용 <span class="wf-cn">5</span></th>
+                <th>상품연결 <span class="wf-cn">6</span></th>
+                <th>수정일시</th>
+                <th>수정</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>RM-0001</td>
+                <td>그랜드 호텔 메인타워</td>
+                <td>디럭스 킹</td>
+                <td>기준2 / 최대2</td>
+                <td><span class="wf-badge bg-n">N</span></td>
+                <td><span class="wf-badge bg-n">N</span></td>
+                <td><a class="wf-link">3</a></td>
+                <td>2026-05-15</td>
+                <td><span class="wf-btn wf-btn-sm">수정</span></td>
+              </tr>
+              <tr>
+                <td>RM-0002</td>
+                <td>그랜드 호텔 메인타워</td>
+                <td>주니어 스위트</td>
+                <td>기준2 / 최대3</td>
+                <td><span class="wf-badge bg-n">N</span></td>
+                <td><span class="wf-badge bg-y">Y</span></td>
+                <td><a class="wf-link">2</a></td>
+                <td>2026-05-15</td>
+                <td><span class="wf-btn wf-btn-sm">수정</span></td>
+              </tr>
+              <tr>
+                <td>RM-0006</td>
+                <td>팰리스 호텔</td>
+                <td>스위트 킹</td>
+                <td>기준2 / 최대4</td>
+                <td><span class="wf-badge bg-y">Y</span></td>
+                <td><span class="wf-badge bg-y">Y</span></td>
+                <td><a class="wf-link">2</a></td>
+                <td>2026-05-15</td>
+                <td><span class="wf-btn wf-btn-sm">수정</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div><!-- /wf-main -->
+
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 주석 패널 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">숙소 필터 셀렉트</div>
+          <div class="ann-desc">
+            전체 또는 특정 숙소를 선택해 객실 목록을 필터링한다. 선택 변경 시 라우트가 #/rooms/place/:placeId 로 변경된다.
+            숙소 목록 화면의 '객실수' 링크를 클릭해 진입한 경우 해당 숙소가 자동으로 선택된 상태로 진입한다.
+          </div>
+          <div class="ann-rule">RM-LIST-01 요구사항</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">객실 목록 정렬</div>
+          <div class="ann-desc">
+            수정일시(updated_at) 내림차순 고정 정렬로 가장 최근에 수정된 객실이 상단에 위치한다.
+            사용자가 정렬 기준을 변경하는 별도 UI는 제공하지 않는다.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">객실 등록 버튼</div>
+          <div class="ann-desc">
+            클릭 시 #/rooms/new 로 이동한다. 숙소 필터가 특정 숙소로 선택된 상태라면 #/rooms/new/place/:id 로 이동해 해당 숙소가 폼에 미리 선택된 상태로 진입한다.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">엑스트라베드 Y/N</div>
+          <div class="ann-desc">
+            extra_bed_enabled 필드 값을 Y/N 배지로 표시한다. Y이면 프런트 Room Detail 모달 ② 객실정책 섹션에 '엑스트라베드' 요금 카드가 표시된다.
+          </div>
+          <div class="ann-front">→ 프런트: Room Detail 모달 ② 객실정책 > 엑스트라베드 요금 카드 (활성 시만 표시)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">추가인원비용 Y/N</div>
+          <div class="ann-desc">
+            occupant_extra_charge_enabled 필드 값을 Y/N 배지로 표시한다. Y이면 프런트 Room Detail 모달 ② 객실정책 섹션에 '인원추가요금' 카드가 표시된다.
+          </div>
+          <div class="ann-front">→ 프런트: Room Detail 모달 ② 객실정책 > 인원추가요금 카드 (활성 시만 표시)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">6</div>
+        <div class="ann-body">
+          <div class="ann-title">상품연결 수</div>
+          <div class="ann-desc">
+            해당 객실에 연결된 상품 수를 표시한다. 숫자를 클릭하면 상품 목록으로 이동하며 해당 객실 필터가 자동 적용된다.
+            0이면 프런트에서 해당 객실의 상품이 표시되지 않는다.
+          </div>
+        </div>
+      </div>
+
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

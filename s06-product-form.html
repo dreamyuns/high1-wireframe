@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S06 — 상품 등록·수정 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">S06-A — 상품 마스터·취소정책</span>
+  <span class="page-nav-route">#/products/new · #/products/edit/:id</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s05-product-list.html">← 이전</a>
+    <a class="page-nav-pager" href="s06-inventory-list.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">S06-A</span>
+    상품 마스터·취소정책
+    <span style="font-size:12px;font-weight:400;color:#888">— #/products/new · #/products/edit/:id</span>
+  </div>
+
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item on">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">숙소관리</div>
+          <div class="wf-lnb-item">숙소목록</div>
+          <div class="wf-lnb-item">객실목록</div>
+          <div class="wf-lnb-item on">상품목록</div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="wf-main">
+          <div class="wf-page-title" style="display:flex;align-items:center;gap:10px">
+            상품 등록
+            <span style="font-size:11px;color:#888;font-weight:400">상품코드: <span style="font-family:monospace;background:#f0f0ea;padding:1px 6px;border-radius:3px;color:#555">PR-0001 (자동)</span> <span class="wf-cn" style="font-size:9px">13</span></span>
+          </div>
+
+          <!-- 3탭 구조 -->
+          <div class="wf-tab-bar">
+            <div class="wf-tab on">탭1 — 상품 마스터·취소정책 <span class="wf-cn">1</span></div>
+            <div class="wf-tab" style="color:#aaa">탭2 — 재고·요금 &nbsp;→&nbsp; <a href="s06-inventory-list.html" style="color:#1a6fb8;font-size:10px">S06-B 목록형</a> / <a href="s06-inventory-cal.html" style="color:#1a6fb8;font-size:10px">S06-C 달력형</a></div>
+            <div class="wf-tab" style="color:#aaa">탭3 — 변경이력 <span class="wf-cn">12</span></div>
+          </div>
+
+          <!-- ===== 탭1 내용 ===== -->
+
+          <!-- 상품 기본 정보 섹션 -->
+          <div class="wf-section-head">상품 기본 정보</div>
+
+          <!-- 연동 모드 (등록 시 최초 1회 결정, 이후 변경 불가) -->
+          <div class="wf-form-row">
+            <div class="wf-form-label">연동 모드 <span class="wf-form-req">*</span> <span class="wf-cn">9</span></div>
+            <div class="wf-form-field">
+              <div style="display:flex;gap:16px;align-items:center">
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+                  <input type="radio" name="pms_mode" checked /> PMS연동
+                </label>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+                  <input type="radio" name="pms_mode" /> 수기관리
+                </label>
+              </div>
+              <div class="wf-hint">등록 후 변경 불가. 전환 시 현재 상품 OFF 후 신규 생성.</div>
+            </div>
+          </div>
+
+          <!-- PMS연동 선택 시만 표시 -->
+          <div class="wf-form-row" style="background:#eff6ff;border-left:3px solid #93c5fd;padding-left:8px">
+            <div class="wf-form-label" style="color:#1a4fa0">PMS 상품 <span class="wf-cn">9</span></div>
+            <div class="wf-form-field">
+              <div style="font-size:10px;color:#1a4fa0;font-weight:600;margin-bottom:8px">PMS연동 모드 선택 시 표시</div>
+              <!-- 1행: 숙소 선택 -->
+              <div style="margin-bottom:6px">
+                <div style="font-size:10px;color:#888;margin-bottom:3px">숙소(SLST_ID)</div>
+                <select class="wf-select" style="width:240px">
+                  <option>숙소를 선택하세요 ▾</option>
+                  <option>1101 — 그랜드 호텔 메인타워</option>
+                  <option>1301 — 그랜드 호텔 컨벤션타워</option>
+                  <option>1201 — 팰리스 호텔</option>
+                </select>
+              </div>
+              <!-- 2행: 상품 선택 + 버튼 -->
+              <div style="margin-bottom:6px">
+                <div style="font-size:10px;color:#888;margin-bottom:3px">상품 선택</div>
+                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                  <select class="wf-select" style="width:320px">
+                    <option>상품을 선택하세요 ▾</option>
+                    <option>STD(스탠다드 더블) / HB1101STD054(여행사/온라인/1군-STD)</option>
+                    <option>STT(스탠다드 트윈) / HB1101STT054(여행사/온라인/1군-STT)</option>
+                    <option>JSD(주니어스위트 더블) / HB1101JSD054(여행사/온라인/1군-JSD)</option>
+                  </select>
+                  <span class="wf-btn wf-btn-sm wf-btn-primary">PMS 연동하기</span>
+                </div>
+              </div>
+              <div class="wf-hint">숙소 선택 후 상품 목록 로드. 포맷: RM_TYP_CD(RM_TYP_NM) / ITM_ID(ITM_NM).<br>PMS 연동하기 클릭 → API 3 호출 → 상품명·인원·RM_TYP_CD 등 자동 채움. RM_TYP_CD 기준 기존 객실 자동 연결. 연결 객실 없으면 케이스② 처리.</div>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">객실 선택 <span class="wf-form-req">*</span> <span class="wf-cn">2</span></div>
+            <div class="wf-form-field">
+              <!-- ◆ 2패널 객실 선택 UI -->
+              <div style="display:flex;gap:0;border:1px solid #d0d0c8;border-radius:5px;overflow:hidden;background:#fff">
+                <!-- 좌측: 숙소 목록 -->
+                <div style="width:44%;border-right:1px solid #d0d0c8;background:#fafaf8">
+                  <div style="padding:5px 8px;background:#f0f0ea;font-size:10px;font-weight:700;color:#555;border-bottom:1px solid #d0d0c8">숙소</div>
+                  <div style="max-height:100px;overflow-y:auto">
+                    <label style="display:flex;align-items:center;gap:6px;padding:5px 8px;font-size:11px;cursor:pointer;border-bottom:1px solid #f0f0ea;background:#e8f4fd">
+                      <input type="radio" name="wf-hotel" checked style="flex-shrink:0"> 그랜드 — 메인타워
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;padding:5px 8px;font-size:11px;cursor:pointer;border-bottom:1px solid #f0f0ea">
+                      <input type="radio" name="wf-hotel" style="flex-shrink:0"> 그랜드 — 컨벤션타워
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;padding:5px 8px;font-size:11px;cursor:pointer;border-bottom:1px solid #f0f0ea">
+                      <input type="radio" name="wf-hotel" style="flex-shrink:0"> 팰리스 호텔
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;padding:5px 8px;font-size:11px;cursor:pointer">
+                      <input type="radio" name="wf-hotel" style="flex-shrink:0"> 마운틴PLUS콘도
+                    </label>
+                  </div>
+                </div>
+                <!-- 우측: 객실 목록 (선택된 숙소 기준) -->
+                <div style="flex:1;background:#fff">
+                  <div style="padding:5px 8px;background:#f0f0ea;font-size:10px;font-weight:700;color:#555;border-bottom:1px solid #d0d0c8">객실 <span style="font-weight:400;color:#888">(그랜드 — 메인타워)</span></div>
+                  <div style="max-height:100px;overflow-y:auto">
+                    <label style="display:flex;align-items:center;gap:6px;padding:5px 8px;font-size:11px;cursor:pointer;border-bottom:1px solid #f0f0ea;background:#e8f4fd">
+                      <input type="radio" name="wf-room" checked style="flex-shrink:0">
+                      <span>디럭스 킹 <span style="font-size:9px;color:#1a4fa0;background:#e0edff;padding:1px 5px;border-radius:2px;margin-left:2px">STD(스탠다드 더블)</span></span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;padding:5px 8px;font-size:11px;cursor:pointer">
+                      <input type="radio" name="wf-room" style="flex-shrink:0">
+                      <span>디럭스 더블 <span style="font-size:9px;color:#1a4fa0;background:#e0edff;padding:1px 5px;border-radius:2px;margin-left:2px">STD(스탠다드 더블)</span></span>
+                    </label>
+                    <!-- 등록된 객실만 표시 -->
+                  </div>
+                </div>
+              </div>
+              <!-- ◆ 케이스② — PMS 불러오기 후 연결 객실 없음 시 자동 표시 (평소 미표시) -->
+              <div style="margin-top:6px;padding:8px 10px;background:#fff5f5;border:1px solid #fecaca;border-radius:4px;font-size:11px;color:#b91c1c">
+                ⚠️ <strong>연결 객실이 없습니다.</strong> 상품 저장이 불가합니다.<br>
+                <span style="color:#555">PMS 상품의 객실유형 코드(<code style="font-size:11px">DLX084</code>)에 매핑되는 객실이 등록되어 있지 않습니다.<br>
+                S04(객실 등록)에서 해당 객실유형의 객실을 먼저 등록한 후 [PMS 불러오기]를 다시 시도해 주세요.</span>
+                <div style="margin-top:6px;padding:5px 8px;background:#fef2f2;border:1px solid #fecaca;border-radius:3px;font-size:10px;color:#7f1d1d">
+                  PMS 원본 정보 (참고용) &nbsp;—&nbsp;
+                  <strong>RM_TYP_CD:</strong> <code style="font-size:10px">DLX084</code> &nbsp;|&nbsp;
+                  <strong>RM_TYP_NM:</strong> 디럭스룸
+                </div>
+                <div style="margin-top:8px">
+                  <span class="wf-btn wf-btn-sm" style="background:#1d4ed8;color:#fff;border-color:#1d4ed8">↗ S04 객실 등록 (새 탭)</span>
+                </div>
+              </div>
+              <div class="wf-hint">좌측 숙소 클릭 → 우측 객실 목록 갱신 (등록된 객실만 표시). 객실 선택 → room_id 저장. PMS 불러오기 후 RM_TYP_CD 기준 자동 연결. 케이스② 발생 시 경고박스 자동 표시. <span class="wf-cn" style="font-size:9px">2</span></div>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">체크인 시간</div>
+            <div class="wf-form-field">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:13px;font-weight:600;color:#1a1f2e">15:00</span>
+                <span style="font-size:11px;color:#888">~</span>
+                <span style="font-size:13px;font-weight:600;color:#1a1f2e">11:00</span>
+                <span style="background:#e8eaf6;color:#3949ab;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px">B타입 고정</span>
+              </div>
+              <div class="wf-hint">API 5 <code>BLKTIME_TYPE_CLS_NM</code> 값. 수정 불가. 객실 단위 고정 정책. → 프런트: 상품 카드 및 Room Detail 체크인/아웃 시간 표시.</div>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">상품 유형 <span class="wf-form-req">*</span> <span class="wf-cn">3</span></div>
+            <div class="wf-form-field">
+              <select class="wf-select" style="width:100%">
+                <option>ROOM_ONLY ▾</option>
+                <option>PACKAGE</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">상품명 <span class="wf-form-req">*</span> <span class="wf-cn">4</span></div>
+            <div class="wf-form-field">
+              <input class="wf-input" value="디럭스 킹 룸온리" />
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">상품 설명 <span class="wf-cn">5</span></div>
+            <div class="wf-form-field">
+              <textarea class="wf-textarea">킹사이즈 침대와 산악 전망…</textarea>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">상품 안내·정책(HTML) <span class="wf-cn">6</span></div>
+            <div class="wf-form-field">
+              <textarea class="wf-textarea">(HTML 에디터 + 이미지 붙여넣기)</textarea>
+              <div class="wf-hint">비어있으면 Room Detail 모달 ① 섹션 미생성.</div>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">노출 여부 <span class="wf-cn">10</span></div>
+            <div class="wf-form-field">
+              <!-- 항상 SHOW(Y)/HIDE(N) select -->
+              <select class="wf-select" style="width:100%">
+                <option>SHOW(Y) ▾</option>
+                <option>HIDE(N)</option>
+              </select>
+              <!-- ◆ cascade 경고 예시: 객실 HIDE 시 -->
+              <div style="margin-top:6px;padding:7px 10px;background:#f8f8f8;border:1px solid #ddd;border-radius:4px;font-size:11px;color:#555">
+                🔒 <strong>객실 HIDE</strong> — 연결 객실이 HIDE 상태입니다.<br>
+                <span style="font-size:10px">현재 이 상품은 강제 미노출(N) 처리됩니다. S04에서 객실 SHOW 전환 시 자동 해제됩니다.</span>
+              </div>
+              <div class="wf-hint">cascade 미해당 시 경고 박스 미표시. SHOW/HIDE select는 항상 활성 상태.</div>
+            </div>
+          </div>
+
+          <!-- 판매 기간 섹션 -->
+          <div class="wf-section-head">판매 기간 <span class="wf-cn">7</span></div>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+            <input class="wf-input" style="width:110px" value="2026-05-01" />
+            <span style="font-size:11px;color:#888">~</span>
+            <input class="wf-input" style="width:110px" value="2026-12-31" />
+            <span style="font-size:10px;color:#888">(종료일 포함)</span>
+          </div>
+
+          <!-- 마진 설정 섹션 -->
+          <div class="wf-section-head">마진 설정 <span class="wf-cn">11</span></div>
+
+          <div class="wf-toggle-row">
+            <div class="wf-toggle"></div>
+            <span class="wf-toggle-label">개별 마진 설정 (OFF = 시설 마스터 상속)</span>
+          </div>
+
+          <!-- OFF 상태: 마스터 상속 표시 -->
+          <div style="margin-left:36px;padding:8px 12px;background:#f5f5f0;border-radius:4px;font-size:11px;color:#555;margin-bottom:10px;display:flex;align-items:center;gap:12px">
+            <span>시설 마스터 상속 중</span>
+            <span style="font-weight:600;color:#1a1f2e">+10%</span>
+            <a href="s11-margin-list.html" style="font-size:10px;color:#1a6fb8;margin-left:auto">마진 관리 S11 →</a>
+          </div>
+
+          <!-- ON 상태 시 표시 (현재 OFF이므로 비활성 스타일) -->
+          <div style="margin-left:36px;margin-bottom:14px;opacity:0.4;pointer-events:none">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+              <select class="wf-select" style="width:100px">
+                <option>마진율(%) ▾</option>
+                <option>마진금액(원)</option>
+              </select>
+              <input class="wf-input" style="width:64px" placeholder="0" />
+              <span style="font-size:11px;color:#555">%&nbsp;&nbsp; (범위 -49 ~ +100, 정수)</span>
+            </div>
+            <div style="padding:8px 12px;background:#e8f0fe;border-radius:4px;font-size:11px;color:#333">
+              판매가 미리보기: 입금가 <strong>350,000</strong>원 × 1.10 = <strong>385,000</strong>원
+              <span style="font-size:10px;color:#888">(소수점 버림)</span>
+            </div>
+          </div>
+
+          <!-- 취소 정책 섹션 -->
+          <div class="wf-section-head">취소 정책 <span class="wf-cn">8</span></div>
+
+          <!-- 수기 모드: 동적 구간 입력. PMS연동 시 → API 9 데이터 읽기전용 표시 (주석 ⑧ 참조) -->
+          <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:8px">
+            <thead>
+              <tr style="background:#f5f5f0">
+                <th style="border:1px solid #ddd;padding:5px 8px;text-align:left;font-weight:600;width:48%">기준일</th>
+                <th style="border:1px solid #ddd;padding:5px 8px;text-align:center;font-weight:600;width:28%">위약금율 (%)</th>
+                <th style="border:1px solid #ddd;padding:5px 8px;text-align:center;font-weight:600">삭제</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="border:1px solid #ddd;padding:4px 6px">
+                  <select class="wf-select" style="width:100%;font-size:11px">
+                    <option>8일 이상 전 ▾</option>
+                    <option>7일 전</option><option>6일 전</option><option>5일 전</option>
+                    <option>4일 전</option><option>3일 전</option><option>2일 전</option>
+                    <option>1일 전</option><option>당일 24시 이전</option>
+                  </select>
+                </td>
+                <td style="border:1px solid #ddd;padding:4px 6px;text-align:center"><input class="wf-input" style="width:50px" value="0" /></td>
+                <td style="border:1px solid #ddd;padding:4px 6px;text-align:center"><span class="wf-btn wf-btn-sm wf-btn-danger">삭제</span></td>
+              </tr>
+              <tr>
+                <td style="border:1px solid #ddd;padding:4px 6px">
+                  <select class="wf-select" style="width:100%;font-size:11px">
+                    <option>1일 전 ▾</option>
+                    <option>8일 이상 전</option><option>7일 전</option><option>6일 전</option>
+                    <option>5일 전</option><option>4일 전</option><option>3일 전</option>
+                    <option>2일 전</option><option>당일 24시 이전</option>
+                  </select>
+                </td>
+                <td style="border:1px solid #ddd;padding:4px 6px;text-align:center"><input class="wf-input" style="width:50px" value="80" /></td>
+                <td style="border:1px solid #ddd;padding:4px 6px;text-align:center"><span class="wf-btn wf-btn-sm wf-btn-danger">삭제</span></td>
+              </tr>
+              <tr>
+                <td style="border:1px solid #ddd;padding:4px 6px">
+                  <select class="wf-select" style="width:100%;font-size:11px">
+                    <option>당일 24시 이전 ▾</option>
+                    <option>8일 이상 전</option><option>7일 전</option><option>6일 전</option>
+                    <option>5일 전</option><option>4일 전</option><option>3일 전</option>
+                    <option>2일 전</option><option>1일 전</option>
+                  </select>
+                </td>
+                <td style="border:1px solid #ddd;padding:4px 6px;text-align:center"><input class="wf-input" style="width:50px" value="90" /></td>
+                <td style="border:1px solid #ddd;padding:4px 6px;text-align:center"><span class="wf-btn wf-btn-sm wf-btn-danger">삭제</span></td>
+              </tr>
+              <!-- 노쇼 고정 행 (삭제 불가) -->
+              <tr style="background:#fff8f8">
+                <td style="border:1px solid #ddd;padding:5px 8px;color:#e74c3c;font-weight:600">노쇼 (당일 24시 이후) — 고정</td>
+                <td style="border:1px solid #ddd;padding:5px 8px;text-align:center;color:#888">100% (고정)</td>
+                <td style="border:1px solid #ddd;padding:5px 8px;text-align:center;color:#ccc">—</td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="margin-bottom:10px">
+            <span class="wf-btn wf-btn-sm">+ 구간 추가 <span class="wf-cn">8</span></span>
+          </div>
+          <div class="wf-hint" style="margin-bottom:14px">수기 상품 취소정책. 노쇼 행은 고정(삭제 불가). 동일 기준일 중복 방지. PMS연동 상품은 API 9 데이터 읽기 전용 표시 (입력 불가).</div>
+
+          <!-- 하단 버튼 — 정상 상태 -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid #e0e0da">
+            <span class="wf-btn" style="border-color:#10b981;color:#10b981">복사하기 <span class="wf-cn">14</span></span>
+            <div style="display:flex;gap:8px">
+              <span class="wf-btn">취소</span>
+              <span class="wf-btn wf-btn-primary">저장</span>
+            </div>
+          </div>
+          <!-- ◆ 케이스② 상태 — 저장 버튼 비활성 예시 -->
+          <div style="margin-top:8px;padding:8px 10px;background:#f5f5f0;border:1px dashed #bbb;border-radius:4px">
+            <div style="font-size:9px;color:#999;margin-bottom:6px;font-weight:600">케이스② 발생 시 — 연결 객실 없음 (저장 불가)</div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="wf-btn" style="border-color:#10b981;color:#10b981;opacity:0.4">복사하기</span>
+              <div style="display:flex;gap:8px">
+                <span class="wf-btn">취소</span>
+                <span class="wf-btn wf-btn-primary" style="opacity:0.4;cursor:not-allowed" title="연결 객실 등록 후 저장 가능">저장</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 탭3 활성 화면 — 변경이력 ===== -->
+          <div style="margin-top:24px;border-top:3px dashed #ccc;padding-top:14px">
+            <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:10px;letter-spacing:0.3px">↑ 탭1 활성 상태 &nbsp;&nbsp;|&nbsp;&nbsp; 탭3 활성 상태 ↓</div>
+
+            <!-- 탭바 — 탭3 활성 -->
+            <div class="wf-tab-bar">
+              <div class="wf-tab" style="color:#aaa">탭1 — 상품 마스터·취소정책</div>
+              <div class="wf-tab" style="color:#aaa">탭2 — 재고·요금</div>
+              <div class="wf-tab on">탭3 — 변경이력 <span class="wf-cn">12</span></div>
+            </div>
+
+            <!-- 탭3 콘텐츠 -->
+            <table style="width:100%;border-collapse:collapse;font-size:10px;margin-top:12px">
+              <thead>
+                <tr style="background:#f5f5f0">
+                  <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">변경일시</th>
+                  <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">변경자</th>
+                  <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">항목</th>
+                  <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">변경 전</th>
+                  <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">변경 후</th>
+                  <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">사유</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="border:1px solid #ddd;padding:4px 6px;color:#555">2026-05-20 10:15</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px;color:#555">admin01</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px">노출여부</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px">N (비노출)</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px;font-weight:600">Y (노출)</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px;color:#888">—</td>
+                </tr>
+                <tr style="background:#fafaf7">
+                  <td style="border:1px solid #ddd;padding:4px 6px;color:#555">2026-05-10 16:00</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px;color:#555">admin02</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px">마진율</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px">+8%</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px;font-weight:600">+10%</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px;color:#888">시즌 요금 조정</td>
+                </tr>
+                <tr>
+                  <td style="border:1px solid #ddd;padding:4px 6px;color:#555">2026-04-01 09:30</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px;color:#555">admin01</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px">판매기간(종료)</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px">2026-09-30</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px;font-weight:600">2026-12-31</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px;color:#888">연장</td>
+                </tr>
+                <tr style="background:#fafaf7">
+                  <td style="border:1px solid #ddd;padding:4px 6px;color:#555">2026-03-15 14:20</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px;color:#555">admin01</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px">상품명</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px">디럭스 킹 스탠다드</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px;font-weight:600">디럭스 킹 룸온리</td>
+                  <td style="border:1px solid #ddd;padding:4px 6px;color:#888">명칭 통일</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div><!-- /wf-main -->
+
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 주석 패널 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">13</div>
+        <div class="ann-body">
+          <div class="ann-title">상품코드 (자동 채번)</div>
+          <div class="ann-desc">
+            PR-#### 형식으로 자동 생성. 수정 불가. 등록 완료 후 페이지 상단에 표시.<br>
+            코드 형식은 변경 가능성 있음 (운영 정책 확정 후 결정).
+          </div>
+          <div class="ann-front">→ 프런트: 미노출 (내부 식별자)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">14</div>
+        <div class="ann-body">
+          <div class="ann-title">복사하기</div>
+          <div class="ann-desc">
+            <strong>반드시 1회 저장된 데이터만 복사 가능.</strong> 수정 화면에서만 표시 (신규 등록 화면 미노출).<br>
+            클릭 시 <strong>새 탭/창</strong>으로 이동. 아래 항목을 pre-fill한 신규 등록 폼 열림.<br>
+            저장 전까지 새 데이터 생성 안 됨.
+          </div>
+          <div class="ann-rule">
+            복사 포함: 상품명, 상품설명, 상품안내·정책, 판매기간<br>
+            복사 제외: 상품코드(자동채번), 연동모드(관리자 선택), 객실(관리자 선택), 취소정책, 마진, 노출여부(기본 HIDE)<br>
+            상세 정책: policy-decisions.html 복사 기능 섹션 참조.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">S06 화면 3분리 구조</div>
+          <div class="ann-desc">
+            S06-A(이 파일): 탭1 상품 마스터·취소정책. S06-B: 탭2 목록형 인벤토리. S06-C: 탭2 달력형 인벤토리. 탭 전환 전 DOM → state 자동 병합으로 입력값 보존.
+          </div>
+          <div class="ann-rule">PR-FORM-03: 탭 전환 전 DOM→state 병합 필수. 미병합 시 입력값 초기화됨.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">객실 선택 UI (2패널) / PMS 불러오기 케이스</div>
+          <div class="ann-desc">
+            <strong>UI 구조</strong>: 좌측 패널(숙소 목록) 클릭 → 우측 패널(해당 숙소 객실 목록) 갱신. 라디오 버튼으로 단일 선택. room_id 저장.<br>
+            패널에는 <strong>등록된 객실만 표시</strong>. 수기 포함 반드시 객실 등록 → 상품 등록 순서.<br><br>
+            <strong>[PMS연동 모드 — PMS 불러오기 케이스]</strong>: API 3 호출 → RM_TYP_CD 기준 자동 처리.<br>
+            ① 동일 RM_TYP_CD 매핑 객실 존재 → 기존 객실 자동 연결 + 확인 알럿 표시.<br>
+            ② 해당 RM_TYP_CD 매핑 객실 없음 → <strong>케이스② 처리</strong>:<br>
+            &nbsp;&nbsp;• 알럿 노출: "현재 등록된 객실이 없습니다. 객실 등록 후 다시 상품을 등록해 주세요."<br>
+            &nbsp;&nbsp;• 알럿 [확인] → 상품 폼 유지 (기입력값 보존) + 경고 박스 자동 표시<br>
+            &nbsp;&nbsp;• 저장 버튼 비활성 처리 (상품 저장 불가)<br>
+            &nbsp;&nbsp;• 경고 박스 내 [↗ S04 객실 등록 (새 탭)] 버튼 클릭 → S04 새 탭 오픈<br>
+            &nbsp;&nbsp;• S04에서 객실 등록 완료 후 이 폼으로 복귀 → [PMS 불러오기] 재시도 → 케이스① 처리<br>
+            ③ RM_TYP_CD = null: API 3 응답에서 RM_TYP_CD는 항상 값 있음 (null 불가, ITM_ID 구조에 포함). 발생하지 않음.
+          </div>
+          <div class="ann-front">→ 프런트: 선택된 객실의 이미지·침대·인원 등이 상품 카드·모달에 함께 표시됨.</div>
+          <div class="ann-rule">같은 RM_TYP_CD에 N개 상품 연결 가능. 임시저장 기능은 추후 추가 예정. 검색 기능은 추후 추가 예정 (현재 미포함).</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">상품 유형</div>
+          <div class="ann-desc">
+            ROOM_ONLY / PACKAGE. 유형에 따라 판매 구성이 다름. 프런트 현재 미노출이나 향후 카드 라벨 표시 예정.
+          </div>
+          <div class="ann-front">→ 프런트: 현재 미노출. 향후 상품 카드 유형 라벨.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">상품명</div>
+          <div class="ann-desc">
+            필수. 카드와 모달 헤더에 표시됨. 객실명과 별도 필드.
+          </div>
+          <div class="ann-front">→ 프런트: 상품 카드 상품명 텍스트 / Room Detail 모달 헤더 상품명</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">상품 설명 (description)</div>
+          <div class="ann-desc">
+            plain text. 줄바꿈 허용. 상품 카드에 짧은 설명 블록으로 표시됨.
+          </div>
+          <div class="ann-front">→ 프런트: 상품 카드 하단 설명 텍스트 블록 (비어있으면 표시 안 됨)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">6</div>
+        <div class="ann-body">
+          <div class="ann-title">상품 안내·정책 (guide_policy_html)</div>
+          <div class="ann-desc">
+            HTML 에디터. 비어있으면 Room Detail 모달 ① 섹션 자체가 생성되지 않음. 이미지 붙여넣기 지원.
+          </div>
+          <div class="ann-front">→ 프런트: Room Detail 모달 ① 상품안내/정책 섹션 HTML 렌더 (비어있으면 섹션 미생성)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">7</div>
+        <div class="ann-body">
+          <div class="ann-title">판매 기간</div>
+          <div class="ann-desc">
+            sale_start_date ~ sale_end_date (종료일 당일 포함). 오늘이 범위 밖이면 프런트 카드에 'sale_out' 상태("판매 기간 외")가 표시된다.
+          </div>
+          <div class="ann-front">→ 프런트: 오늘이 [시작일, 종료일] 밖이면 상품 카드 '판매 기간 외' 상태</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">8</div>
+        <div class="ann-body">
+          <div class="ann-title">취소 정책 (연동 모드별 분기)</div>
+          <div class="ann-desc">
+            <strong>[수기 모드]</strong>: 동적 구간 입력 UI. [+ 구간 추가]로 행 추가, 각 행에서 기준일(셀렉트) + 위약금율(%) 입력. 노쇼(당일 24시 이후) 행은 100% 고정으로 삭제 불가. 동일 기준일 중복 방지. 위약금액 = 판매가 × 위약금율.<br>
+            기준일 선택지: 8일 이상 전 / 7일 전 / 6일 전 / 5일 전 / 4일 전 / 3일 전 / 2일 전 / 1일 전 / 당일 24시 이전<br>
+            <strong>[PMS연동 모드]</strong>: API 9(otaHbDfltRgltInfo.do) 데이터를 동일 구조로 읽기 전용 표시. 관리자 직접 수정 불가.
+          </div>
+          <div class="ann-front">→ 프런트: 상품 카드 취소 정책 요약 텍스트 (무료 취소 가능일 표시)</div>
+          <div class="ann-rule">부분취소 정의: 위약금 있는 전체 취소. API 10(위약금 확인) → 관리자 확인 → API 7(취소) 흐름.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">9</div>
+        <div class="ann-body">
+          <div class="ann-title">연동 모드 · PMS 상품 불러오기</div>
+          <div class="ann-desc">
+            <strong>연동 모드</strong>: PMS연동 / 수기관리 중 선택. 상품 등록 시 최초 1회 결정, 이후 변경 불가. 전환 필요 시 현재 상품 OFF 후 신규 생성.<br>
+            <strong>PMS연동 선택 시</strong>: 숙소(SLST_ID) 선택 → 상품 목록 로드 → 상품 선택 (포맷: RM_TYP_CD(RM_TYP_NM) / ITM_ID(ITM_NM)) → [PMS 연동하기] 클릭. API 3 호출하여 상품명·인원·최소박수·PKG_YN 등을 폼에 자동 채움. ITM_ID는 product.pms_itm_id로 저장.
+          </div>
+          <div class="ann-rule">수기 모드 선택 시 PMS 상품 선택 UI는 숨김 처리. ITM_ID는 null.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">10</div>
+        <div class="ann-body">
+          <div class="ann-title">노출 여부 (객실 Cascade 연동)</div>
+          <div class="ann-desc">
+            SHOW(Y) / HIDE(N) select는 항상 표시 (disabled 없음). cascade 상태 시 select 아래에 색상 경고 박스 추가.<br>
+            <strong>정상</strong>(객실 등록 + SHOW): select만 표시. 관리자 직접 SHOW/HIDE 선택.<br>
+            <strong>객실 HIDE</strong>: 회색 경고 박스 "🔒 객실 HIDE — 강제 미노출(N)". S04에서 객실 SHOW 전환 시 자동 해제.
+          </div>
+          <div class="ann-rule">노출 조건: 객실SHOW AND 상품SHOW (2단). 상세: policy-decisions.html 섹션 12.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">11</div>
+        <div class="ann-body">
+          <div class="ann-title">마진 설정 (2단계 계층)</div>
+          <div class="ann-desc">
+            <strong>OFF(기본, 마스터 상속)</strong>: 공통관리 > 시설 마진 마스터(S11) 값을 자동 상속. 마스터 변경 시 즉시 반영.<br>
+            <strong>ON(개별 설정)</strong>: 마진율(%) 또는 마진금액(원) 선택 후 입력. 마스터 오버라이드. 마진율 범위 -49%~+100%(정수), 마진금액 하한 없음.<br>
+            판매가 = 입금가 × (1 + 마진율/100) 또는 입금가 + 마진금액. 소수점 버림(floor).<br>
+            SELL_AMT(API 6) = 입금가(PMS 원가)로 전송. 마진 미포함. (판매가는 우리 DB에만 저장)
+          </div>
+          <div class="ann-front">→ 프런트: 상품 카드 노출 가격 = 판매가</div>
+          <div class="ann-rule">이력 관리 필수: 변경일시·변경자·변경 전/후 값. S11 상세 정책: s11-margin-policy.html 참조.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">12</div>
+        <div class="ann-body">
+          <div class="ann-title">탭3 — 변경이력 (C안)</div>
+          <div class="ann-desc">
+            탭1·탭2와 동일한 탭바에 위치한 세 번째 탭. 상품 마스터 필드의 변경 내역을 시계열 테이블로 표시.<br>
+            <strong>이력 기록 조건</strong>: 탭1 [저장] 성공 시 아래 항목 중 변경이 있는 경우에만 새 이력 행 생성.
+          </div>
+          <div class="ann-rule">
+            기록 대상 항목: 상품명, 판매기간(시작·종료), 마진(마진율 또는 마진금액), 취소정책(수기 모드 구간 변경), 노출여부.<br>
+            이력 컬럼: 변경일시 / 변경자 / 항목 / 변경 전 / 변경 후 / 사유(선택입력).<br>
+            PMS연동 모드 취소정책은 API 읽기 전용이므로 이력 미기록. 최신 이력이 상단.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

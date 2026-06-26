@@ -1,0 +1,7 @@
+# 프로토타입 백업(구버전·zip) — 공개 대상 아님
+prototypes/backup/
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+*.swp

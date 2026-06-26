@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S10-A — 예약 목록 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+  /* ── S10 전용 상태 배지 ── */
+  .bg-confirmed   { background:#d1fae5; color:#065f46 }
+  .bg-pending     { background:#fef3c7; color:#92400e }
+  .bg-failed      { background:#fee2e2; color:#991b1b }
+  .bg-cancel-req  { background:#ffedd5; color:#7c2d12 }
+  .bg-cancelled   { background:#f3f4f6; color:#6b7280 }
+  .bg-noshow      { background:#1a1f2e; color:#fff }
+  .bg-pms         { background:#e0edff; color:#1a4fa0 }
+  .bg-manual      { background:#f0f0ea; color:#555 }
+
+  /* ── LNB 알림 배지 ── */
+  .lnb-badge {
+    display:inline-flex; align-items:center; justify-content:center;
+    background:#e74c3c; color:#fff; border-radius:99px;
+    font-size:9px; font-weight:700; min-width:16px; height:16px;
+    padding:0 4px; margin-left:5px; vertical-align:middle;
+  }
+
+  /* ── 문제 행 하이라이트 ── */
+  .row-failed    td { background:#fff5f5 !important }
+  .row-cancelreq td { background:#fffbeb !important }
+
+  /* ── 필터 박스 ── */
+  .filter-box {
+    background:#fff; border:1px solid #e0e0da; border-radius:6px;
+    padding:12px 16px; margin-bottom:12px;
+  }
+  .filter-row {
+    display:flex; gap:8px; align-items:center; margin-bottom:7px; flex-wrap:wrap;
+  }
+  .filter-row:last-child { margin-bottom:0 }
+  .filter-label { font-size:10px; color:#555; font-weight:600; white-space:nowrap; min-width:48px }
+  .date-range   { display:flex; align-items:center; gap:5px }
+  .date-sep     { font-size:10px; color:#888 }
+
+  /* ── 결과 메타 ── */
+  .result-meta { font-size:11px; color:#888; margin-bottom:8px; display:flex; align-items:center; gap:8px }
+  .result-meta strong { color:#1a1f2e }
+  .alert-pill {
+    font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px;
+    display:inline-flex; align-items:center; gap:4px;
+  }
+  .alert-pill-red    { background:#fee2e2; color:#991b1b }
+  .alert-pill-amber  { background:#ffedd5; color:#7c2d12 }
+
+  /* ── 페이지네이션 ── */
+  .pagination { display:flex; justify-content:center; gap:4px; margin-top:12px }
+  .page-btn {
+    display:inline-block; padding:4px 9px; font-size:11px;
+    border:1px solid #ddd; border-radius:3px; background:#fff; color:#444; cursor:pointer;
+  }
+  .page-btn.on { background:#1a1f2e; color:#fff; border-color:#1a1f2e }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">S10-A 예약 목록</span>
+  <span class="page-nav-route">#/reservations</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s10-reservation-policy.html">← 이전</a>
+    <a class="page-nav-pager" href="s10-b-reservation-detail.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge" style="background:#8b5cf6">S10-A</span>
+    예약 목록
+    <span style="font-size:12px;font-weight:400;color:#888">— #/reservations</span>
+  </div>
+  <div class="sec-sub">
+    전체 예약 조회 화면. 검색·필터, 상태 배지, 문제 예약 알림 포함.<br>
+    LNB '취소 목록' 클릭 시 동일 화면에서 상태 필터만 자동 전환됨 (별도 페이지 없음). → 하단 취소 목록 뷰 참고.
+  </div>
+
+  <div class="two-col">
+
+    <!-- ══════════════════════════════════════════
+         와이어프레임
+    ══════════════════════════════════════════ -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item on">예약관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">예약관리</div>
+          <div class="wf-lnb-item on">예약 목록</div>
+          <div class="wf-lnb-item" style="display:flex;align-items:center">
+            취소 목록
+            <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px;margin-left:6px">4</span>
+          </div>
+        </div>
+
+        <!-- 메인 -->
+        <div class="wf-main">
+
+          <!-- 페이지 타이틀 + 액션 -->
+          <div class="wf-toolbar">
+            <div class="wf-page-title" style="margin-bottom:0">예약 목록</div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span class="wf-btn wf-btn-sm" style="color:#aaa;border-color:#ddd;cursor:default"
+                    title="추후 논의">엑셀 다운로드</span>
+              <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">8</span>
+            </div>
+          </div>
+
+          <!-- 필터 박스 -->
+          <div class="filter-box">
+            <!-- 1행: 날짜 필터 -->
+            <div class="filter-row">
+              <span class="filter-label">예약일</span>
+              <div class="date-range">
+                <input class="wf-input" style="width:92px" type="text" value="2026-05-01" />
+                <span class="date-sep">~</span>
+                <input class="wf-input" style="width:92px" type="text" value="2026-05-31" />
+              </div>
+              <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">1</span>
+              &nbsp;
+              <span class="filter-label" style="margin-left:6px">체크인일</span>
+              <div class="date-range">
+                <input class="wf-input" style="width:92px" type="text" placeholder="YYYY-MM-DD" />
+                <span class="date-sep">~</span>
+                <input class="wf-input" style="width:92px" type="text" placeholder="YYYY-MM-DD" />
+              </div>
+            </div>
+            <!-- 2행: 상태·유형·투숙자 필터 + 버튼 -->
+            <div class="filter-row">
+              <span class="filter-label">상태</span>
+              <select class="wf-select" style="min-width:120px">
+                <option>전체 상태 ▾</option>
+                <option>확정대기</option>
+                <option>예약확정</option>
+                <option>예약실패</option>
+                <option>취소요청</option>
+                <option>취소완료</option>
+                <option>노쇼</option>
+              </select>
+              <span class="filter-label" style="margin-left:6px">연동유형</span>
+              <select class="wf-select" style="min-width:90px">
+                <option>전체 ▾</option>
+                <option>PMS연동</option>
+                <option>수기</option>
+              </select>
+              <span class="filter-label" style="margin-left:6px">투숙자명</span>
+              <input class="wf-input" style="width:110px" type="text" placeholder="이름 검색" />
+              <span class="wf-btn wf-btn-primary wf-btn-sm" style="margin-left:6px">검색</span>
+              <span class="wf-btn wf-btn-sm">초기화</span>
+            </div>
+          </div>
+
+          <!-- 결과 수 + 문제 건 알림 요약 -->
+          <div class="result-meta">
+            총 <strong>148</strong>건
+            <span class="alert-pill alert-pill-red">⚠ 예약실패 2건</span>
+            <span class="alert-pill alert-pill-amber">⚠ 취소요청 1건</span>
+            <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">3</span>
+          </div>
+
+          <!-- 예약 목록 테이블 -->
+          <table class="wf-table">
+            <thead>
+              <tr>
+                <th style="width:108px">예약번호 <span class="wf-cn">2</span></th>
+                <th style="width:44px">연동 <span class="wf-cn">5</span></th>
+                <th>상품명</th>
+                <th style="width:116px">체크인 ~ 체크아웃</th>
+                <th style="width:72px">박수 / 객실수</th>
+                <th style="width:72px">투숙자명</th>
+                <th style="width:78px">상태 <span class="wf-cn">6</span></th>
+                <th style="width:84px">예약일시</th>
+                <th style="width:68px">판매가 <span class="wf-cn">7</span></th>
+                <th style="width:44px">상세</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- 예약확정 (PMS) -->
+              <tr>
+                <td style="font-size:10px;color:#555">BK-20260515-00001</td>
+                <td><span class="wf-badge bg-pms" style="font-size:9px">PMS</span></td>
+                <td style="font-size:11px">디럭스 킹 룸온리</td>
+                <td style="font-size:10px">05-20 ~ 05-22</td>
+                <td style="text-align:center;font-size:10px">2박 / 1개</td>
+                <td style="font-size:11px">홍길동</td>
+                <td><span class="wf-badge bg-confirmed">예약확정</span></td>
+                <td style="font-size:10px;color:#888">05-15 14:32</td>
+                <td style="text-align:right;font-size:11px">320,000</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+
+              <!-- 예약실패 (PMS API 6 에러) — 행 강조 -->
+              <tr class="row-failed">
+                <td style="font-size:10px;color:#555">BK-20260516-00003</td>
+                <td><span class="wf-badge bg-pms" style="font-size:9px">PMS</span></td>
+                <td style="font-size:11px">스탠다드 트윈 룸온리</td>
+                <td style="font-size:10px">05-25 ~ 05-26</td>
+                <td style="text-align:center;font-size:10px">1박 / 1개</td>
+                <td style="font-size:11px">김철수</td>
+                <td><span class="wf-badge bg-failed">⚠ 예약실패</span></td>
+                <td style="font-size:10px;color:#888">05-16 09:11</td>
+                <td style="text-align:right;font-size:11px">150,000</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+
+              <!-- 확정대기 (수기 상품) -->
+              <tr>
+                <td style="font-size:10px;color:#555">HM-20260516-00001</td>
+                <td><span class="wf-badge bg-manual" style="font-size:9px">수기</span></td>
+                <td style="font-size:11px">디럭스 킹 특가</td>
+                <td style="font-size:10px">06-01 ~ 06-03</td>
+                <td style="text-align:center;font-size:10px">2박 / 1개</td>
+                <td style="font-size:11px">이영희</td>
+                <td><span class="wf-badge bg-pending">확정대기</span></td>
+                <td style="font-size:10px;color:#888">05-16 10:45</td>
+                <td style="text-align:right;font-size:11px">280,000</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+
+              <!-- 취소요청 — 행 강조 -->
+              <tr class="row-cancelreq">
+                <td style="font-size:10px;color:#555">BK-20260510-00007</td>
+                <td><span class="wf-badge bg-pms" style="font-size:9px">PMS</span></td>
+                <td style="font-size:11px">디럭스 킹 룸온리</td>
+                <td style="font-size:10px">05-30 ~ 06-01</td>
+                <td style="text-align:center;font-size:10px">2박 / 1개</td>
+                <td style="font-size:11px">박민수</td>
+                <td><span class="wf-badge bg-cancel-req">⚠ 취소요청</span></td>
+                <td style="font-size:10px;color:#888">05-10 16:22</td>
+                <td style="text-align:right;font-size:11px">320,000</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+
+              <!-- 취소완료 -->
+              <tr>
+                <td style="font-size:10px;color:#555">BK-20260501-00002</td>
+                <td><span class="wf-badge bg-pms" style="font-size:9px">PMS</span></td>
+                <td style="font-size:11px">스탠다드 트윈 룸온리</td>
+                <td style="font-size:10px">05-10 ~ 05-11</td>
+                <td style="text-align:center;font-size:10px">1박 / 1개</td>
+                <td style="font-size:11px">최수진</td>
+                <td><span class="wf-badge bg-cancelled">취소완료</span></td>
+                <td style="font-size:10px;color:#888">05-01 11:20</td>
+                <td style="text-align:right;font-size:11px;color:#999">150,000</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+
+              <!-- 노쇼 -->
+              <tr>
+                <td style="font-size:10px;color:#555">BK-20260415-00009</td>
+                <td><span class="wf-badge bg-pms" style="font-size:9px">PMS</span></td>
+                <td style="font-size:11px">디럭스 킹 룸온리</td>
+                <td style="font-size:10px">05-01 ~ 05-02</td>
+                <td style="text-align:center;font-size:10px">1박 / 1개</td>
+                <td style="font-size:11px">정태일</td>
+                <td><span class="wf-badge bg-noshow">노쇼</span></td>
+                <td style="font-size:10px;color:#888">04-15 09:00</td>
+                <td style="text-align:right;font-size:11px;color:#999">160,000</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+
+            </tbody>
+          </table>
+
+          <!-- 페이지네이션 -->
+          <div class="pagination">
+            <span class="page-btn">← 이전</span>
+            <span class="page-btn on">1</span>
+            <span class="page-btn">2</span>
+            <span class="page-btn">3</span>
+            <span class="page-btn" style="color:#aaa">…</span>
+            <span class="page-btn">15</span>
+            <span class="page-btn">다음 →</span>
+          </div>
+
+        </div><!-- /wf-main -->
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- ══════════════════════════════════════════
+         주석 패널
+    ══════════════════════════════════════════ -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">날짜 검색 기준</div>
+          <div class="ann-desc">
+            예약일(예약 접수 일시)과 체크인일을 독립적으로 필터링할 수 있다.
+            기본값: 예약일 기준 최근 30일. 날짜 미입력 시 전체 기간 조회.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">예약번호 채번 규칙</div>
+          <div class="ann-desc">
+            PMS 연동 상품: <code>BK-YYYYMMDD-NNNNN</code><br>
+            수기 관리 상품: <code>HM-YYYYMMDD-NNNNN</code><br>
+            NNNNN = 날짜별 5자리 시퀀스. 상세 채번 규칙은 예약관리 기획 시 확정.
+          </div>
+          <div class="ann-rule">※ BOOKING_ID(PMS API 6 전송값): BK-형식을 그대로 사용. 형식(길이·문자셋) 규칙은 PMS 담당자 확인 필요. (pms-vendor-questions.md Q10)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">문제 예약 알림 요약</div>
+          <div class="ann-desc">
+            결과 목록 상단에 <strong>예약실패</strong> / <strong>취소요청</strong> 건수를 집계하여 pill 배지로 표시.
+            해당 행은 배경색으로 시각 구분(예약실패=연분홍, 취소요청=연주황).
+          </div>
+          <div class="ann-rule">※ 기획 결정: 별도 알림 목록 화면 없음 — 배지 표시로 운영.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">LNB — 취소 목록</div>
+          <div class="ann-desc">
+            '취소 목록' 클릭 시 별도 페이지 이동 없이 상태 필터를 "취소요청 + 취소완료"로 자동 적용.
+            LNB 배지(숫자)는 현재 처리 대기 중인 취소요청 건수.
+            '예약 목록' 클릭 시 필터 초기화 후 전체 목록 복귀.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">연동 유형 구분</div>
+          <div class="ann-desc">
+            <strong>PMS</strong>: PMS 연동 상품 예약. 취소 시 API 7 자동 처리.<br>
+            <strong>수기</strong>: 수기 관리 상품 예약. 취소 시 관리자 수동 확정 필요.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">6</div>
+        <div class="ann-body">
+          <div class="ann-title">예약 상태 정의</div>
+          <div class="ann-desc">
+            <table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:4px">
+              <tr>
+                <td style="padding:3px 6px;border:1px solid #eee;width:90px">
+                  <span class="wf-badge bg-pending" style="font-size:9px">확정대기</span>
+                </td>
+                <td style="padding:3px 6px;border:1px solid #eee;color:#555;font-size:10px">
+                  수기 상품 — 관리자가 호텔 직접 확인 후 수동 확정 전
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:3px 6px;border:1px solid #eee">
+                  <span class="wf-badge bg-failed" style="font-size:9px">⚠ 예약실패</span>
+                </td>
+                <td style="padding:3px 6px;border:1px solid #eee;color:#555;font-size:10px">
+                  PMS API 6 실패 — 관리자 수동 처리 필요
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:3px 6px;border:1px solid #eee">
+                  <span class="wf-badge bg-confirmed" style="font-size:9px">예약확정</span>
+                </td>
+                <td style="padding:3px 6px;border:1px solid #eee;color:#555;font-size:10px">
+                  PMS 예약 성공 또는 수기 관리자 확정 완료
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:3px 6px;border:1px solid #eee">
+                  <span class="wf-badge bg-cancel-req" style="font-size:9px">⚠ 취소요청</span>
+                </td>
+                <td style="padding:3px 6px;border:1px solid #eee;color:#555;font-size:10px">
+                  고객 취소 접수 — 위약금 확인 또는 처리 대기 중
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:3px 6px;border:1px solid #eee">
+                  <span class="wf-badge bg-cancelled" style="font-size:9px">취소완료</span>
+                </td>
+                <td style="padding:3px 6px;border:1px solid #eee;color:#555;font-size:10px">
+                  취소 처리 및 환불 완료
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:3px 6px;border:1px solid #eee">
+                  <span class="wf-badge bg-noshow" style="font-size:9px">노쇼</span>
+                </td>
+                <td style="padding:3px 6px;border:1px solid #eee;color:#555;font-size:10px">
+                  체크인일 경과 미투숙 — 위약금 100% 적용
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="ann-rule">※ RSV_STAT_CD(PMS) 코드 매핑 상세는 예약관리 기획 시 확정 예정.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">7</div>
+        <div class="ann-body">
+          <div class="ann-title">판매가 (목록 표시)</div>
+          <div class="ann-desc">
+            우리 DB 기준 판매가(입금가 + 마진) 표시. 입금가(PMS SELL_AMT)는 목록에 미표시.
+            취소완료·노쇼 행의 판매가는 원래 판매가 그대로 표시(환불금액은 상세에서 확인).
+          </div>
+          <div class="ann-front">→ 프런트: 판매가만 노출 (입금가·마진 미노출)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">8</div>
+        <div class="ann-body">
+          <div class="ann-title">엑셀 다운로드</div>
+          <div class="ann-desc">추후 논의. 현 단계에서는 버튼 영역만 예약(비활성 표시).</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+
+  <!-- ════════════════════════════════════════════════
+       취소 목록 뷰 (LNB "취소 목록" 진입 상태)
+  ════════════════════════════════════════════════ -->
+  <div class="sec-title" style="margin-top:48px; border-bottom-color:#8b5cf6">
+    <span class="sec-badge" style="background:#8b5cf6">S10-A</span>
+    취소 목록 뷰
+    <span style="font-size:12px;font-weight:400;color:#888">— LNB "취소 목록" 선택 시 / 동일 URL #/reservations?status=cancelled</span>
+  </div>
+  <div class="sec-sub">
+    LNB '취소 목록' 클릭 시 상태 필터가 "취소요청 + 취소완료"로 자동 적용된 상태로 전환된다.
+    별도 페이지 없음. 날짜 기준이 "예약일" → "취소일"로 변경되고, 환불금액·위약금 컬럼이 추가된다.
+  </div>
+
+  <div class="two-col">
+
+    <!-- 와이어프레임 — 취소 목록 뷰 -->
+    <div class="wf">
+
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item on">예약관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">예약관리</div>
+          <div class="wf-lnb-item">예약 목록</div>
+          <div class="wf-lnb-item on" style="display:flex;align-items:center">
+            취소 목록
+            <span class="lnb-badge">3</span>
+          </div>
+        </div>
+
+        <div class="wf-main">
+
+          <div class="wf-page-title">취소 목록</div>
+
+          <!-- 필터 박스 — 취소 뷰 -->
+          <div class="filter-box">
+            <div class="filter-row">
+              <span class="filter-label">취소일</span>
+              <div class="date-range">
+                <input class="wf-input" style="width:92px" type="text" value="2026-05-01" />
+                <span class="date-sep">~</span>
+                <input class="wf-input" style="width:92px" type="text" value="2026-05-31" />
+              </div>
+              <span class="filter-label" style="margin-left:6px">체크인일</span>
+              <div class="date-range">
+                <input class="wf-input" style="width:92px" type="text" placeholder="YYYY-MM-DD" />
+                <span class="date-sep">~</span>
+                <input class="wf-input" style="width:92px" type="text" placeholder="YYYY-MM-DD" />
+              </div>
+            </div>
+            <div class="filter-row">
+              <span class="filter-label">상태</span>
+              <select class="wf-select" style="min-width:140px">
+                <option selected>취소요청 + 취소완료 ▾</option>
+                <option>취소요청만</option>
+                <option>취소완료만</option>
+              </select>
+              <span class="filter-label" style="margin-left:6px">투숙자명</span>
+              <input class="wf-input" style="width:110px" type="text" placeholder="이름 검색" />
+              <span class="wf-btn wf-btn-primary wf-btn-sm" style="margin-left:6px">검색</span>
+              <span class="wf-btn wf-btn-sm">초기화</span>
+            </div>
+          </div>
+
+          <div class="result-meta">
+            총 <strong>12</strong>건 &nbsp;|&nbsp;
+            <span class="alert-pill alert-pill-amber">⚠ 취소요청 3건</span>
+            &nbsp; 취소완료 9건
+          </div>
+
+          <!-- 취소 목록 테이블 — 환불금액·위약금 컬럼 추가 -->
+          <table class="wf-table">
+            <thead>
+              <tr>
+                <th style="width:108px">예약번호</th>
+                <th style="width:44px">연동</th>
+                <th>상품명</th>
+                <th style="width:100px">체크인 ~ 체크아웃</th>
+                <th style="width:72px">투숙자명</th>
+                <th style="width:78px">상태</th>
+                <th style="width:84px">취소일시</th>
+                <th style="width:64px">판매가</th>
+                <th style="width:64px">위약금</th>
+                <th style="width:64px">환불금액</th>
+                <th style="width:44px">상세</th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- 취소요청 — 아직 처리 전 -->
+              <tr class="row-cancelreq">
+                <td style="font-size:10px;color:#555">BK-20260510-00007</td>
+                <td><span class="wf-badge bg-pms" style="font-size:9px">PMS</span></td>
+                <td style="font-size:11px">디럭스 킹 룸온리</td>
+                <td style="font-size:10px">05-30 ~ 06-01</td>
+                <td style="font-size:11px">박민수</td>
+                <td><span class="wf-badge bg-cancel-req">⚠ 취소요청</span></td>
+                <td style="font-size:10px;color:#888">05-20 11:30</td>
+                <td style="text-align:right;font-size:11px">320,000</td>
+                <td style="text-align:right;color:#aaa;font-size:10px">—</td>
+                <td style="text-align:right;color:#aaa;font-size:10px">—</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+
+              <!-- 취소완료 — 무료 취소 -->
+              <tr>
+                <td style="font-size:10px;color:#555">BK-20260501-00002</td>
+                <td><span class="wf-badge bg-pms" style="font-size:9px">PMS</span></td>
+                <td style="font-size:11px">스탠다드 트윈 룸온리</td>
+                <td style="font-size:10px">05-10 ~ 05-11</td>
+                <td style="font-size:11px">최수진</td>
+                <td><span class="wf-badge bg-cancelled">취소완료</span></td>
+                <td style="font-size:10px;color:#888">05-05 14:22</td>
+                <td style="text-align:right;font-size:11px">150,000</td>
+                <td style="text-align:right;font-size:11px;color:#e74c3c">0</td>
+                <td style="text-align:right;font-size:11px">150,000</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+
+              <!-- 취소완료 — 위약금 발생 -->
+              <tr>
+                <td style="font-size:10px;color:#555">BK-20260420-00005</td>
+                <td><span class="wf-badge bg-pms" style="font-size:9px">PMS</span></td>
+                <td style="font-size:11px">디럭스 킹 룸온리</td>
+                <td style="font-size:10px">04-25 ~ 04-26</td>
+                <td style="font-size:11px">강지훈</td>
+                <td><span class="wf-badge bg-cancelled">취소완료</span></td>
+                <td style="font-size:10px;color:#888">04-22 09:10</td>
+                <td style="text-align:right;font-size:11px">160,000</td>
+                <td style="text-align:right;font-size:11px;color:#e74c3c">36,667</td>
+                <td style="text-align:right;font-size:11px">123,333</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+
+            </tbody>
+          </table>
+
+          <div class="pagination">
+            <span class="page-btn">← 이전</span>
+            <span class="page-btn on">1</span>
+            <span class="page-btn">2</span>
+            <span class="page-btn">다음 →</span>
+          </div>
+
+        </div><!-- /wf-main -->
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- 취소 목록 뷰 주석 -->
+    <div class="ann">
+      <h3>취소 목록 뷰 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn" style="background:#8b5cf6">A</div>
+        <div class="ann-body">
+          <div class="ann-title">뷰 전환 방식</div>
+          <div class="ann-desc">
+            별도 페이지 이동 없이 S10-A 동일 화면에서 상태 필터만 변경된다.<br>
+            날짜 기준 레이블: "예약일" → "취소일" 로 변경.<br>
+            URL 예시: <code>#/reservations?status=cancel-requested,cancelled</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn" style="background:#8b5cf6">B</div>
+        <div class="ann-body">
+          <div class="ann-title">추가 컬럼 — 위약금·환불금액</div>
+          <div class="ann-desc">
+            예약 목록과 달리 <strong>취소일시 · 위약금 · 환불금액</strong> 컬럼이 추가된다.<br>
+            취소요청(미처리) 상태는 위약금·환불금액 = "—"으로 표시.<br>
+            위약금은 고객 청구금액(판매가 기준). 환불금액 = 판매가 − 위약금.
+          </div>
+          <div class="ann-rule">※ 위약금 계산: 위약금율(DLFT_APLY_AMT ÷ 입금가) × 판매가, 소수점 첫째자리 반올림.</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S07-A 시설 카테고리 목록</title>
+  <link rel="stylesheet" href="wf-styles.css" />
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">시설 카테고리 목록</span>
+  <span class="page-nav-route">#/categories/place · #/categories/room</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s06-inventory-cal.html">← 이전</a>
+    <a class="page-nav-pager" href="s07-category-form.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="two-col">
+
+    <!-- 와이어프레임 -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item on">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">공통관리</div>
+          <div class="wf-lnb-item on">카테고리관리</div>
+          <div class="wf-lnb-item">시설관리</div>
+          <div class="wf-lnb-item">객실유형관리</div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="wf-main">
+          <div class="wf-page-title">
+            시설 카테고리 관리
+            <span class="wf-badge" style="font-size:11px;margin-left:8px;">S07-A</span>
+          </div>
+
+          <!-- 탭바 -->
+          <div class="wf-tab-bar">
+            <span class="wf-tab on">숙소 시설 카테고리</span>
+            <span class="wf-tab">객실 시설 카테고리 <span class="wf-cn">1</span></span>
+          </div>
+
+          <!-- 탭 하단 툴바 -->
+          <div class="wf-toolbar" style="margin-bottom:10px;">
+            <span style="font-size:11px;color:#888;">총 3개</span>
+            <button class="wf-btn wf-btn-primary">+ 카테고리 등록</button>
+          </div>
+
+          <!-- 테이블 -->
+          <table class="wf-table">
+            <thead>
+              <tr>
+                <th>카테고리코드 <span class="wf-cn">2</span></th>
+                <th>카테고리명 <span class="wf-cn">3</span></th>
+                <th>도메인</th>
+                <th>시설 수 <span class="wf-cn">4</span></th>
+                <th>노출</th>
+                <th>수정일시</th>
+                <th>수정/삭제 <span class="wf-cn">5</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>plc00001</td>
+                <td>편의시설</td>
+                <td>PLACE</td>
+                <td>4</td>
+                <td><span class="wf-badge bg-y">Y</span></td>
+                <td>2026-05-19</td>
+                <td>
+                  <button class="wf-btn wf-btn-sm">수정</button>
+                  <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+                </td>
+              </tr>
+              <tr>
+                <td>plc00002</td>
+                <td>식음료</td>
+                <td>PLACE</td>
+                <td>4</td>
+                <td><span class="wf-badge bg-y">Y</span></td>
+                <td>2026-05-19</td>
+                <td>
+                  <button class="wf-btn wf-btn-sm">수정</button>
+                  <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+                </td>
+              </tr>
+              <tr>
+                <td>plc00003</td>
+                <td>레저·스포츠</td>
+                <td>PLACE</td>
+                <td>4</td>
+                <td><span class="wf-badge bg-y">Y</span></td>
+                <td>2026-05-19</td>
+                <td>
+                  <button class="wf-btn wf-btn-sm">수정</button>
+                  <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+
+        </div><!-- /wf-main -->
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+    <!-- 주석 -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="ann-title"><span class="cn">1</span> 도메인 탭 (PLACE / ROOM)</div>
+        <div class="ann-body">
+          <div class="ann-desc">숙소 시설 카테고리와 객실 시설 카테고리를 별도 탭으로 분리 관리. 코드 체계가 다름: PLACE → plc##### / ROOM → rmc#####. 경로도 별도: #/categories/place, #/categories/room.</div>
+          <div class="ann-rule">CM-CAT-01: 도메인별 코드 체계 분리 필수.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="ann-title"><span class="cn">2</span> 카테고리 코드</div>
+        <div class="ann-body">
+          <div class="ann-desc">PLACE 도메인: plc00001부터 순번. ROOM 도메인: rmc00001부터 순번. 등록 시 자동 채번 또는 수동 입력 방식 확정 필요. 수정 불가.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="ann-title"><span class="cn">3</span> 카테고리명 (plain string)</div>
+        <div class="ann-body">
+          <div class="ann-desc">한국어 단일 문자열. { ko, en } 다국어 객체 아님. 실서비스에서 다국어 구조로 전환 예정.</div>
+          <div class="ann-front">→ 프런트: 숙소 레이어 > 안내정보 탭 시설 그룹 헤더 / Room Detail ④ 객실시설정보 그룹 헤더</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="ann-title"><span class="cn">4</span> 시설 수</div>
+        <div class="ann-body">
+          <div class="ann-desc">해당 카테고리에 속한 시설 마스터 개수. 카테고리 삭제 시 속한 시설이 있으면 삭제 제한 필요(실서비스 정의 사항).</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="ann-title"><span class="cn">5</span> 수정·삭제</div>
+        <div class="ann-body">
+          <div class="ann-desc">수정: 카테고리 등록·수정 폼(S07-B)으로 이동. 삭제: 확인 다이얼로그 후 삭제.</div>
+          <div class="ann-rule">시설이 존재하는 카테고리 삭제 시 해당 시설의 category_id가 무효화됨. 실서비스에서 삭제 제한 정책 필요.</div>
+        </div>
+      </div>
+
+
+    </div><!-- /ann -->
+  </div><!-- /two-col -->
+</div><!-- /page -->
+
+</body>
+</html>

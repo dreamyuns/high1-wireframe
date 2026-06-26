@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S15 티켓 예약/주문 관리</title>
+  <link rel="stylesheet" href="wf-styles.css" />
+  <style>
+    /* S15 전용 (티켓 = 로즈 테마) */
+    .sec-policy{background:#fdf2f8;border:1px solid #fbcfe8;border-left:3px solid #ec4899;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:11px;line-height:1.7;color:#9d174d}
+    .sec-policy b{color:#831843}
+    .sec-policy .ref{font-size:10px;color:#ec4899;font-weight:700}
+    .filter-box{background:#fff;border:1px solid #e0e0da;border-radius:6px;padding:12px 16px;margin-bottom:12px}
+    .filter-row{display:flex;gap:8px;align-items:center;margin-bottom:7px;flex-wrap:wrap}
+    .filter-row:last-child{margin-bottom:0}
+    .filter-label{font-size:10px;color:#555;font-weight:600;white-space:nowrap;min-width:48px}
+    .date-range{display:flex;align-items:center;gap:5px}
+    .date-sep{font-size:10px;color:#888}
+    .result-meta{font-size:11px;color:#888;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .result-meta strong{color:#1a1f2e}
+    .alert-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;display:inline-flex;align-items:center;gap:4px}
+    .alert-pill-amber{background:#ffedd5;color:#7c2d12}
+    /* 주문 상태 배지 */
+    .bg-paid{background:#d1fae5;color:#065f46}
+    .bg-cancel-req{background:#ffedd5;color:#7c2d12}
+    .bg-refunded{background:#f3f4f6;color:#6b7280}
+    .bg-partial{background:#e0e7ff;color:#3730a3}
+    .row-cancelreq td{background:#fffbeb !important}
+    .pagination{display:flex;justify-content:center;gap:4px;margin-top:12px}
+    .page-btn{display:inline-block;padding:4px 9px;font-size:11px;border:1px solid #ddd;border-radius:3px;background:#fff;color:#444;cursor:pointer}
+    .page-btn.on{background:#ec4899;color:#fff;border-color:#ec4899}
+    /* 모달 */
+    .modal-sim{border:2px solid #ec4899;border-radius:8px;padding:16px;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,0.10)}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f3e0e9}
+    .modal-title{font-size:13px;font-weight:700;color:#9d174d}
+    .od-grid{display:grid;grid-template-columns:90px 1fr;gap:4px 10px;font-size:11px;margin-bottom:12px}
+    .od-grid .k{color:#888}
+    .od-grid .v{color:#333;font-weight:600}
+    .refund-box{background:#fdf2f8;border:1px solid #fbcfe8;border-radius:6px;padding:10px 12px;font-size:11px;margin-bottom:10px}
+    .refund-line{display:flex;justify-content:space-between;padding:3px 0}
+    .refund-line.total{border-top:1px solid #fbcfe8;margin-top:4px;padding-top:6px;font-weight:700;color:#9d174d}
+    .mini-in{border:1px solid #ccc;border-radius:4px;padding:4px 7px;font-size:11px;width:90px;text-align:right}
+  </style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">티켓 예약/주문 관리</span>
+  <span class="page-nav-route">#/ticket-orders</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s14-c-ticket-date-cal.html">← 이전</a>
+    <a class="page-nav-pager" href="s16-coupon-issue-list.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge" style="background:#ec4899;">S15</span>
+    티켓 예약/주문 관리
+    <span style="font-size:12px;font-weight:400;color:#888">— 예약관리 GNB / 티켓 예약·주문</span>
+  </div>
+  <div class="sec-sub">
+    티켓 구매 주문 단위 조회·취소/환불 처리. 1주문 = N장 쿠폰 발급(쿠폰 단위 현황은 S16).<br>
+    기준: 티켓 쿠폰 연동 정책서 v0.2 · 11.4절 / 인수인계 문서 S15
+  </div>
+
+  <div class="two-col">
+
+    <!-- 와이어프레임 -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item on">예약관리</span>
+        <span class="wf-gnb-item">화면관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">예약관리</div>
+          <div class="wf-lnb-item">숙소 예약</div>
+          <div class="wf-lnb-item on">티켓 예약·주문</div>
+          <div class="wf-lnb-item">쿠폰 발급현황</div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="wf-main">
+
+          <!-- 페이지 타이틀 + 액션 -->
+          <div class="wf-toolbar">
+            <div class="wf-page-title" style="margin-bottom:0;">티켓 예약·주문 <span class="wf-badge" style="font-size:11px;margin-left:6px;">S15</span></div>
+            <span class="wf-btn wf-btn-sm" style="color:#aaa;border-color:#ddd;cursor:default;" title="추후 논의">엑셀 다운로드 <span class="wf-cn">9</span></span>
+          </div>
+
+          <!-- 공통정책 블록 -->
+          <div class="sec-policy">
+            <span class="ref">기준: v0.2 11.4절 · 8절</span><br>
+            · 주문 단위 조회. <b>상세·취소/환불은 모달</b>로 처리. 쿠폰 단위 현황·VOID는 S16.<br>
+            · 취소/환불: <b>자동</b>(S14-B 취소정책 기준 환불금액 자동 계산) / <b>수동</b>(관리자 직접 입력) / <b>부분 환불</b>(금액 직접 입력) 가능.<br>
+            · 주문 취소 시 연결 쿠폰 상태 <b>SOLD → CANCELED</b>. 단품 기준 High1 통보 불필요.
+          </div>
+
+          <!-- 필터 박스 -->
+          <div class="filter-box">
+            <div class="filter-row">
+              <span class="filter-label">주문일</span>
+              <div class="date-range">
+                <input class="wf-input" style="width:92px" value="2026-07-01" />
+                <span class="date-sep">~</span>
+                <input class="wf-input" style="width:92px" value="2026-07-31" />
+              </div>
+              <span class="filter-label" style="margin-left:6px">사용날짜</span>
+              <div class="date-range">
+                <input class="wf-input" style="width:92px" placeholder="YYYY-MM-DD" />
+                <span class="date-sep">~</span>
+                <input class="wf-input" style="width:92px" placeholder="YYYY-MM-DD" />
+              </div>
+              <span class="wf-cn">1</span>
+            </div>
+            <div class="filter-row">
+              <span class="filter-label">상태</span>
+              <select class="wf-select" style="min-width:120px">
+                <option>전체 상태 ▾</option>
+                <option>결제완료</option>
+                <option>취소요청</option>
+                <option>취소완료(환불)</option>
+                <option>부분취소</option>
+              </select>
+              <span class="filter-label" style="margin-left:6px">상품</span>
+              <select class="wf-select" style="min-width:130px"><option>전체 상품 ▾</option><option>워터월드 종일권</option><option>하이원 리프트 종일권</option></select>
+              <span class="filter-label" style="margin-left:6px">검색</span>
+              <input class="wf-input" style="width:130px" placeholder="주문번호/고객명/연락처" />
+              <span class="wf-btn wf-btn-primary wf-btn-sm" style="margin-left:6px;background:#ec4899;border-color:#ec4899;">검색</span>
+              <span class="wf-btn wf-btn-sm">초기화</span>
+              <span class="wf-cn">2</span>
+            </div>
+          </div>
+
+          <!-- 결과 메타 -->
+          <div class="result-meta">
+            총 <strong>86</strong>건
+            <span class="alert-pill alert-pill-amber">⚠ 취소요청 2건</span>
+            <span class="wf-cn">3</span>
+          </div>
+
+          <!-- 주문 목록 테이블 -->
+          <table class="wf-table">
+            <thead>
+              <tr>
+                <th style="width:120px">주문번호 <span class="wf-cn">4</span></th>
+                <th style="width:84px">고객 <span class="wf-cn">5</span></th>
+                <th>상품명</th>
+                <th style="width:96px">수량(레벨) <span class="wf-cn">6</span></th>
+                <th style="width:70px">결제금액</th>
+                <th style="width:56px">결제수단</th>
+                <th style="width:88px">주문상태 <span class="wf-cn">7</span></th>
+                <th style="width:78px">사용날짜 <span class="wf-cn">8</span></th>
+                <th style="width:44px">상세</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-size:10px;color:#555">ORD-20260710-00001</td>
+                <td style="font-size:11px">홍길동<br><span style="font-size:9px;color:#888">010-1234-5678</span></td>
+                <td style="font-size:11px">워터월드 종일권</td>
+                <td style="font-size:10px">대인 2 / 소인 1</td>
+                <td style="text-align:right;font-size:11px">126,500</td>
+                <td style="text-align:center;font-size:10px">카드</td>
+                <td><span class="wf-badge bg-paid">결제완료</span></td>
+                <td style="font-size:10px">07-19</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+              <tr class="row-cancelreq">
+                <td style="font-size:10px;color:#555">ORD-20260711-00014</td>
+                <td style="font-size:11px">김철수<br><span style="font-size:9px;color:#888">010-2222-3333</span></td>
+                <td style="font-size:11px">워터월드 종일권</td>
+                <td style="font-size:10px">대인 2</td>
+                <td style="text-align:right;font-size:11px">88,000</td>
+                <td style="text-align:center;font-size:10px">카드</td>
+                <td><span class="wf-badge bg-cancel-req">⚠ 취소요청</span></td>
+                <td style="font-size:10px">07-25</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+              <tr>
+                <td style="font-size:10px;color:#555">ORD-20260712-00022</td>
+                <td style="font-size:11px">이영희<br><span style="font-size:9px;color:#888">010-4444-5555</span></td>
+                <td style="font-size:11px">하이원 리프트 종일권</td>
+                <td style="font-size:10px">대인 1</td>
+                <td style="text-align:right;font-size:11px">60,500</td>
+                <td style="text-align:center;font-size:10px">카드</td>
+                <td><span class="wf-badge bg-partial">부분취소</span></td>
+                <td style="font-size:10px;color:#888">오픈형</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+              <tr>
+                <td style="font-size:10px;color:#555">ORD-20260705-00008</td>
+                <td style="font-size:11px">박민수<br><span style="font-size:9px;color:#888">010-6666-7777</span></td>
+                <td style="font-size:11px">워터월드 종일권</td>
+                <td style="font-size:10px">소인 2</td>
+                <td style="text-align:right;font-size:11px;color:#999">77,000</td>
+                <td style="text-align:center;font-size:10px">카드</td>
+                <td><span class="wf-badge bg-refunded">취소완료</span></td>
+                <td style="font-size:10px">07-15</td>
+                <td style="text-align:center"><span class="wf-link" style="font-size:10px">상세</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="pagination">
+            <span class="page-btn">← 이전</span>
+            <span class="page-btn on">1</span>
+            <span class="page-btn">2</span>
+            <span class="page-btn">3</span>
+            <span class="page-btn">다음 →</span>
+          </div>
+
+          <!-- ════ 주문 상세 + 취소/환불 모달 (상세 클릭 시) ════ -->
+          <div style="margin-top:28px;border-top:3px dashed #ccc;padding-top:14px;">
+            <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:10px;">↑ 기본 목록 &nbsp;|&nbsp; [상세] 클릭 시 모달 ↓</div>
+
+            <div class="modal-sim">
+              <div class="modal-head">
+                <span class="modal-title">주문 상세 · 취소/환불 <span class="wf-cn">10</span></span>
+                <span style="font-size:11px;color:#888;cursor:pointer;">✕ 닫기</span>
+              </div>
+
+              <!-- 주문 정보 -->
+              <div class="od-grid">
+                <span class="k">주문번호</span><span class="v" style="font-family:monospace;">ORD-20260711-00014</span>
+                <span class="k">고객</span><span class="v">김철수 / 010-2222-3333 / kim@example.com</span>
+                <span class="k">국적</span><span class="v">대한민국</span>
+                <span class="k">상품</span><span class="v">워터월드 종일권 (대인 2매)</span>
+                <span class="k">사용날짜</span><span class="v">2026-07-25</span>
+                <span class="k">결제</span><span class="v">88,000원 / 카드 / 2026-07-11 13:20</span>
+                <span class="k">발급 쿠폰</span><span class="v">OAT100001457, OAT100002358 <span style="color:#888;font-size:10px;">(S16 연결)</span></span>
+                <span class="k">상태</span><span class="v"><span class="wf-badge bg-cancel-req">취소요청</span></span>
+              </div>
+
+              <!-- 환불 계산 (자동) -->
+              <div style="font-size:11px;font-weight:700;color:#9d174d;margin-bottom:6px;">환불 계산 <span class="wf-cn">11</span></div>
+              <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;font-size:11px;">
+                <label style="display:flex;align-items:center;gap:5px;"><input type="radio" name="refund" checked /> 자동 (취소정책 기준)</label>
+                <label style="display:flex;align-items:center;gap:5px;"><input type="radio" name="refund" /> 수동 입력 <span class="wf-cn">12</span></label>
+              </div>
+              <div class="refund-box">
+                <div class="refund-line"><span>결제금액 (판매가)</span><span>88,000원</span></div>
+                <div class="refund-line"><span>취소 시점</span><span>사용일 14일 전 → 위약금율 0%</span></div>
+                <div class="refund-line"><span>위약금</span><span style="color:#e74c3c;">− 0원</span></div>
+                <div class="refund-line total"><span>환불 예정액</span><span>88,000원</span></div>
+              </div>
+
+              <!-- 수동/부분 환불 입력 (수동 선택 시) -->
+              <div style="background:#f8f8f5;border:1px dashed #ccc;border-radius:6px;padding:10px 12px;margin-bottom:10px;">
+                <div style="font-size:10px;color:#888;margin-bottom:6px;">수동 입력 선택 시 — 부분 환불 금액 직접 지정 <span class="wf-cn">13</span></div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:11px;">
+                  환불 금액 <input class="mini-in" value="88,000" /> 원
+                  <span style="color:#888;">위약금 <input class="mini-in" value="0" style="width:70px;" /> 원</span>
+                </div>
+              </div>
+
+              <!-- 취소 사유 + 처리 버튼 -->
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:11px;">
+                <span style="color:#555;font-weight:600;">취소 사유</span>
+                <input class="wf-input" style="flex:1;" value="고객 단순 변심" />
+              </div>
+              <div style="display:flex;gap:8px;justify-content:flex-end;">
+                <button class="wf-btn">닫기</button>
+                <button class="wf-btn wf-btn-danger">취소·환불 처리 <span class="wf-cn">14</span></button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /wf-main -->
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+    <!-- 주석 -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">1</span>
+        <div class="ann-body">
+          <div class="ann-title">날짜 필터 (주문일 / 사용날짜)</div>
+          <div class="ann-desc">주문 접수일과 사용(이용)날짜를 독립 필터. 오픈형 상품은 사용날짜가 없으므로 사용날짜 필터에서 제외.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">2</span>
+        <div class="ann-body">
+          <div class="ann-title">필터/검색</div>
+          <div class="ann-desc">상태·상품 드롭다운 + 통합 검색(주문번호/고객명/연락처). 기본: 주문일 최근 30일.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">3</span>
+        <div class="ann-body">
+          <div class="ann-title">취소요청 알림</div>
+          <div class="ann-desc">처리 대기 중인 취소요청 건수를 상단 pill로 집계. 해당 행은 배경색(연주황)으로 구분.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">4</span>
+        <div class="ann-body">
+          <div class="ann-title">주문번호</div>
+          <div class="ann-desc">티켓 주문 코드 <code>ORD-YYYYMMDD-NNNNN</code>(초안). 상세 채번 규칙은 예약관리 기획 시 확정. 1주문 = N장 쿠폰.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">5</span>
+        <div class="ann-body">
+          <div class="ann-title">고객 정보</div>
+          <div class="ann-desc">구매자명 + 연락처. 상세에서 이메일·국적 추가 노출(국적 = 외국인 식별, 여권번호 미수집 — v0.2).</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">6</span>
+        <div class="ann-body">
+          <div class="ann-title">수량 (레벨별)</div>
+          <div class="ann-desc">레벨별 매수 표기(대인 N / 소인 N). 1주문에 여러 레벨 혼합 가능. 각 매수만큼 쿠폰번호 발급.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">7</span>
+        <div class="ann-body">
+          <div class="ann-title">주문 상태</div>
+          <div class="ann-desc"><b>결제완료</b> / <b>취소요청</b>(처리 대기) / <b>취소완료(환불)</b> / <b>부분취소</b>(일부 매수만 취소·환불).</div>
+          <div class="ann-rule">주문 취소 → 연결 쿠폰 SOLD→CANCELED. 부분취소는 취소된 매수의 쿠폰만 CANCELED.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">8</span>
+        <div class="ann-body">
+          <div class="ann-title">사용날짜</div>
+          <div class="ann-desc">날짜지정형 상품의 이용일. 오픈형 상품은 "오픈형"으로 표시(특정일 없음).</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">9</span>
+        <div class="ann-body">
+          <div class="ann-title">엑셀 다운로드</div>
+          <div class="ann-desc">추후 논의. 현 단계 버튼 영역만 예약(비활성).</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">10</span>
+        <div class="ann-body">
+          <div class="ann-title">주문 상세 모달</div>
+          <div class="ann-desc">[상세] 클릭 시 모달. 주문·고객·결제·발급 쿠폰 정보 + 취소/환불 처리 영역. 발급 쿠폰번호는 S16(쿠폰 현황)과 연결.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">11</span>
+        <div class="ann-body">
+          <div class="ann-title">환불 계산 — 자동 (취소정책 기준)</div>
+          <div class="ann-desc">S14-B 취소정책으로 취소 시점의 위약금율을 적용해 환불 예정액 자동 계산. 위약금 = 판매가 × 위약금율.</div>
+          <div class="ann-front">→ 고객 안내: 위약금·환불 예정액 표시</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">12</span>
+        <div class="ann-body">
+          <div class="ann-title">수동 입력</div>
+          <div class="ann-desc">자동 계산을 쓰지 않고 관리자가 환불금액·위약금을 직접 입력(예외 처리·민원 대응). 숙소 예약관리와 동일 운영.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">13</span>
+        <div class="ann-body">
+          <div class="ann-title">부분 환불</div>
+          <div class="ann-desc">프런트는 부분 환불 불가. 어드민에서만 수동으로 일부 매수·일부 금액 환불 처리 가능(부분취소 상태).</div>
+          <div class="ann-rule">부분취소 시 취소된 매수의 쿠폰만 CANCELED, 나머지는 SOLD 유지.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">14</span>
+        <div class="ann-body">
+          <div class="ann-title">취소·환불 처리</div>
+          <div class="ann-desc">확인 후 처리 → 주문 상태 변경 + 연결 쿠폰 CANCELED + 환불(결제 시스템). 처리 결과·이력 기록.</div>
+          <div class="ann-rule">환불 실행 주체(PG 연동)는 결제 시스템 담당. 본 화면은 상태·금액 확정까지.</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+
+</body>
+</html>

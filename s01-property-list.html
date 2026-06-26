@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S01 — 숙소 목록 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">숙소 목록</span>
+  <span class="page-nav-route">#/places</span>
+  <div class="page-nav-nav">
+    <span class="page-nav-pager-disabled">← 이전</span>
+    <a class="page-nav-pager" href="s02-1-wizard-step1.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">S01</span>
+    숙소 목록
+    <span style="font-size:12px;font-weight:400;color:#888">— #/places</span>
+  </div>
+
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item on">숙소관리 <span class="wf-cn">1</span></span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">숙소관리</div>
+          <div class="wf-lnb-item on">숙소목록 <span class="wf-cn">2</span></div>
+          <div class="wf-lnb-item">객실목록</div>
+          <div class="wf-lnb-item">상품목록</div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="wf-main">
+          <div class="wf-toolbar">
+            <div class="wf-page-title" style="margin-bottom:0">숙소 목록</div>
+            <div>
+              <span class="wf-btn wf-btn-primary">+ 숙소 등록</span> <span class="wf-cn">3</span>
+            </div>
+          </div>
+
+          <!-- 테이블 -->
+          <table class="wf-table">
+            <thead>
+              <tr>
+                <th>숙소코드 <span class="wf-cn">4</span></th>
+                <th>숙소명</th>
+                <th>1차분류</th>
+                <th>2차구역</th>
+                <th>운영 <span class="wf-cn">7</span></th>
+                <th>체크인/아웃</th>
+                <th>객실수 <span class="wf-cn">5</span></th>
+                <th>상품연결 <span class="wf-cn">6</span></th>
+                <th>수정일시</th>
+                <th>수정자</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>PL-H001</td>
+                <td>그랜드 호텔 메인타워</td>
+                <td><span class="wf-badge bg-hotel">HOTEL</span></td>
+                <td>grand_main</td>
+                <td><span class="wf-badge bg-show">SHOW</span></td>
+                <td>15:00 / 11:00</td>
+                <td><a class="wf-link">2</a></td>
+                <td><a class="wf-link">5</a></td>
+                <td>2026-05-15</td>
+                <td>admin</td>
+                <td><span class="wf-btn wf-btn-sm">수정</span> <span class="wf-cn">8</span></td>
+              </tr>
+              <tr>
+                <td>PL-C001</td>
+                <td>밸리 콘도</td>
+                <td><span class="wf-badge bg-condo">CONDO</span></td>
+                <td>valley</td>
+                <td><span class="wf-badge bg-show">SHOW</span></td>
+                <td>16:00 / 10:00</td>
+                <td><a class="wf-link">2</a></td>
+                <td><a class="wf-link">4</a></td>
+                <td>2026-05-15</td>
+                <td>admin</td>
+                <td><span class="wf-btn wf-btn-sm">수정</span></td>
+              </tr>
+              <tr>
+                <td>PL-H002</td>
+                <td>그랜드 호텔 컨벤션타워</td>
+                <td><span class="wf-badge bg-hotel">HOTEL</span></td>
+                <td>grand_convention</td>
+                <td><span class="wf-badge bg-hide">HIDE</span></td>
+                <td>15:00 / 11:00</td>
+                <td><a class="wf-link">1</a></td>
+                <td><a class="wf-link">2</a></td>
+                <td>2026-05-14</td>
+                <td>admin</td>
+                <td><span class="wf-btn wf-btn-sm">수정</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- /wf-main -->
+
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 주석 패널 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">GNB 1뎁스 메뉴</div>
+          <div class="ann-desc">
+            최상단 고정 네비게이션으로 로고 + 숙소관리 · 티켓관리 · 투어관리 · 예약관리 · 공통관리 5개 항목으로 구성된다.
+            각 메뉴 클릭 시 해당 도메인의 LNB를 표시하고 첫 번째 서브메뉴로 자동 이동한다.
+            현재 선택된 항목은 반전 배경(밝은 반투명)으로 활성 상태를 나타낸다.
+          </div>
+          <div class="ann-rule">티켓·투어 GNB 추가 시 동일 패턴 확장. LNB도 동일 구조로 추가.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">LNB 2뎁스 서브메뉴</div>
+          <div class="ann-desc">
+            숙소관리 GNB를 클릭하면 LNB 전체 패널이 표시되며, 하위 항목은 숙소목록 · 객실목록 · 상품목록으로 구성된다.
+            현재 활성 항목(숙소목록)은 좌측 골드 바(2px)와 배경 강조로 구분된다.
+            GNB가 다른 도메인으로 변경되면 해당 도메인의 LNB로 교체된다.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">숙소 등록 버튼</div>
+          <div class="ann-desc">
+            클릭 시 숙소 등록·수정 5단계 마법사의 첫 번째 단계(S02-1)로 이동한다. 라우트는 #/places/new.
+            신규 숙소 등록 흐름의 유일한 진입점이며, 목록 우상단에 항상 고정 노출된다.
+            등록 완료 후 저장하면 목록으로 복귀하고, 새 숙소가 최상단에 위치한다.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">목록 정렬 기준</div>
+          <div class="ann-desc">
+            테이블은 updated_at(수정일시) 내림차순 고정 정렬로 가장 최근에 수정된 숙소가 상단에 위치한다.
+            사용자가 정렬 기준을 변경하는 UI는 별도 제공하지 않는다.
+            신규 등록된 숙소도 저장 직후 최상단으로 올라오므로 목록 확인이 용이하다.
+          </div>
+          <div class="ann-rule">PL-LIST-01 요구사항</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">객실 수 링크</div>
+          <div class="ann-desc">
+            해당 숙소에 속한 전체 객실 수를 표시하며, 숫자를 클릭하면 #/rooms/place/:placeId로 이동해 해당 숙소의 객실 목록만 필터링해 보여준다.
+            객실이 없는 경우 0으로 표시하며, 0도 클릭 가능하여 빈 객실 목록 화면으로 이동한다.
+            관리 목적으로만 사용되는 수치이며 고객 화면에는 노출되지 않는다.
+          </div>
+          <div class="ann-front">→ 프런트: 미노출 (관리 전용 정보)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">6</div>
+        <div class="ann-body">
+          <div class="ann-title">상품연결 건수 링크</div>
+          <div class="ann-desc">
+            해당 숙소 소속 객실들에 연결된 상품 수의 합계를 표시한다. 숫자 클릭 시 #/products/place/:placeId로 이동해 해당 숙소의 상품 목록을 필터링해 보여준다.
+            한 숙소에 여러 객실이 있고 각 객실에 복수의 상품이 연결될 수 있으므로 합산 표시한다.
+            관리 목적으로만 사용되며 고객 화면에는 노출되지 않는다.
+          </div>
+          <div class="ann-front">→ 프런트: 미노출 (관리 전용 정보)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">7</div>
+        <div class="ann-body">
+          <div class="ann-title">운영(visibility) 배지</div>
+          <div class="ann-desc">
+            SHOW 상태이면 프런트 브릿지 페이지 숙소 선택 탭 목록과 히어로에 노출된다. HIDE 상태이면 탭 목록 및 히어로에서 완전히 제거되어 고객이 해당 숙소를 전혀 볼 수 없다.
+            운영 중단 또는 임시 비노출이 필요할 때 활용하며, 수정 폼 Step 1에서 변경 가능하다.
+            HIDE로 설정해도 기존 예약 데이터에는 영향을 주지 않는다.
+          </div>
+          <div class="ann-front">→ 프런트: 브릿지 페이지 숙소 선택 탭 목록 노출 여부. HIDE이면 고객이 해당 숙소를 볼 수 없음.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">8</div>
+        <div class="ann-body">
+          <div class="ann-title">수정 버튼</div>
+          <div class="ann-desc">
+            클릭 시 #/places/edit/:id로 이동하며, 5단계 마법사 동일 UI를 사용하되 기존 저장된 데이터가 전 필드에 채워진 상태로 진입한다.
+            Step 1부터 5까지 자유롭게 탭을 이동하며 원하는 단계만 수정하고 저장할 수 있다.
+            저장 완료 시 목록으로 복귀하며, 해당 숙소의 수정일시가 갱신되어 최상단으로 올라온다.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

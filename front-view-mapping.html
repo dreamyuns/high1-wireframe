@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>REF-2 — 브릿지 페이지 데이터 매핑</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+.page { max-width: 1800px; }
+.fv-two-col { display: grid; grid-template-columns: 58% 40%; gap: 28px; align-items: start; }
+
+/* ── 타입 설명 배지 ── */
+.type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.type-card { border-radius: 6px; padding: 14px 16px; border: 1px solid; }
+.type-card-hotel { background: #dbeafe; border-color: #93c5fd; }
+.type-card-condo { background: #ede9fe; border-color: #c4b5fd; }
+.type-card-title { font-size: 13px; font-weight: 700; color: #1a1f2e; margin-bottom: 4px; }
+.type-card-desc { font-size: 11px; color: #444; line-height: 1.6; }
+.type-card-ls { font-family: monospace; font-size: 10px; color: #555; margin-top: 6px; background: rgba(255,255,255,.6); padding: 3px 7px; border-radius: 3px; }
+
+/* ── 프런트 시뮬레이션 ── */
+.front-sim { border: 1px solid #d0d0c8; border-radius: 8px; overflow: visible; background: #fafaf8; font-family: "Segoe UI", Arial, sans-serif; }
+
+/* Topbar */
+.ft-topbar { background: #1a1f2e; display: flex; align-items: center; padding: 9px 16px; gap: 16px; border-radius: 8px 8px 0 0; }
+.ft-logo { color: #c49a6c; font-weight: 700; font-size: 13px; }
+.ft-logo span { color: #fff; }
+.ft-nav { display: flex; gap: 2px; }
+.ft-nav-btn { color: rgba(255,255,255,.5); font-size: 10px; padding: 4px 10px; border-radius: 3px; border: none; background: none; cursor: pointer; }
+.ft-nav-btn.on { background: rgba(255,255,255,.15); color: #fff; font-weight: 600; }
+.ft-lang { margin-left: auto; display: flex; gap: 4px; }
+.ft-lang-btn { background: rgba(255,255,255,.1); color: rgba(255,255,255,.55); font-size: 9px; padding: 2px 7px; border-radius: 3px; border: none; }
+
+/* Place tabs */
+.ft-place-tabs { background: #fff; border-bottom: 2px solid #e8e8e2; display: flex; padding: 0 14px; }
+.ft-place-tab { padding: 8px 13px; font-size: 10px; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; white-space: nowrap; }
+.ft-place-tab.on { color: #1a1f2e; border-bottom-color: #c49a6c; font-weight: 700; }
+
+/* Hero */
+.ft-hero { position: relative; height: 110px; display: flex; align-items: flex-end; overflow: hidden; }
+.ft-hero-bg { position: absolute; inset: 0; background: linear-gradient(135deg, #b0b8c4 0%, #8590a0 100%); display: flex; align-items: center; justify-content: center; font-size: 10px; color: rgba(255,255,255,.6); }
+.ft-hero-overlay { position: relative; z-index: 2; padding: 10px 16px; background: linear-gradient(transparent, rgba(0,0,0,.6)); width: 100%; }
+.ft-hero-name { color: #fff; font-size: 13px; font-weight: 700; line-height: 1.3; }
+.ft-hero-sub { color: rgba(255,255,255,.75); font-size: 9px; margin-bottom: 4px; }
+.ft-hero-open-btn { background: rgba(255,255,255,.2); color: #fff; border: 1px solid rgba(255,255,255,.4); border-radius: 3px; font-size: 9px; padding: 2px 8px; }
+
+/* Sticky Nav */
+.ft-sticky-nav { background: #fff; border-bottom: 1px solid #e8e8e2; display: flex; }
+.ft-sticky-tab { padding: 8px 12px; font-size: 10px; color: #888; border-bottom: 2px solid transparent; cursor: pointer; }
+.ft-sticky-tab.on { color: #1a1f2e; border-bottom-color: #1a1f2e; font-weight: 700; }
+.ft-sticky-tag { font-size: 8px; background: #f0f0ea; color: #888; padding: 1px 4px; border-radius: 2px; margin-left: 2px; vertical-align: middle; }
+
+/* Overview */
+.ft-overview { padding: 12px 16px; background: #fff; border-bottom: 1px solid #e8e8e2; }
+.ft-overview-grid { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; }
+.ft-overview-label { font-size: 8px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+.ft-overview-val { font-size: 11px; color: #1a1f2e; font-weight: 600; }
+.ft-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.ft-chip { display: inline-block; background: #f0f0ea; border: 1px solid #ddd; border-radius: 99px; font-size: 9px; color: #444; padding: 2px 8px; }
+
+/* Rooms header + date picker */
+.ft-rooms-header { background: #fff; padding: 10px 16px; border-bottom: 1px solid #e8e8e2; display: flex; align-items: center; gap: 10px; }
+.ft-rooms-title { font-size: 13px; font-weight: 700; color: #1a1f2e; }
+.ft-date-row { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.ft-date-box { border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 10px; }
+.ft-date-label-sm { font-size: 8px; color: #888; font-weight: 700; margin-bottom: 1px; }
+.ft-search-btn { background: #1a1f2e; color: #fff; border: none; border-radius: 4px; padding: 7px 14px; font-size: 10px; font-weight: 700; }
+
+/* Product card — 3-column grid */
+.ft-room-list { padding: 12px 16px; background: #f5f5f2; display: flex; flex-direction: column; gap: 10px; }
+.ft-pc { display: grid; grid-template-columns: 140px 1fr 120px; background: #fff; border-radius: 6px; border: 1px solid #e0e0da; overflow: hidden; position: relative; }
+.ft-pc-thumb { background: linear-gradient(135deg, #c0cad4 0%, #a0aab4 100%); display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666; flex-direction: column; gap: 4px; position: relative; min-height: 150px; }
+.ft-pc-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; background: rgba(255,255,255,.85); border: 1px solid #ccc; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+.ft-pc-content { padding: 10px 12px; border-right: 1px solid #e8e8e2; display: flex; flex-direction: column; gap: 0; }
+.ft-pc-sub { font-size: 9px; color: #555; border: 1px solid #bbb; border-radius: 3px; display: inline-block; padding: 1px 6px; margin-bottom: 5px; }
+.ft-pc-room-name { font-size: 10px; color: #888; margin-bottom: 1px; }
+.ft-pc-product-name { font-size: 12px; font-weight: 700; color: #1a1f2e; margin-bottom: 6px; }
+.ft-pc-bed { font-size: 9px; color: #555; margin-bottom: 4px; line-height: 1.5; }
+.ft-pc-chips { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 5px; }
+.ft-pc-chip { background: #f0f0ea; border: 1px solid #ddd; border-radius: 99px; font-size: 9px; color: #444; padding: 1px 7px; }
+.ft-pc-cancel { font-size: 9px; color: #1a6fb8; font-weight: 600; margin-bottom: 5px; }
+.ft-pc-cancel-na { font-size: 9px; color: #e74c3c; font-weight: 600; margin-bottom: 5px; }
+.ft-pc-desc { background: #f5f5f2; border-radius: 3px; padding: 6px 8px; font-size: 9px; color: #555; line-height: 1.6; margin-top: auto; }
+.ft-pc-panel { padding: 10px 12px; display: flex; flex-direction: column; }
+.ft-pc-member { font-size: 8px; font-weight: 700; color: #888; margin-bottom: 2px; }
+.ft-pc-price { font-size: 13px; font-weight: 700; color: #1a1f2e; margin-bottom: 2px; }
+.ft-pc-charges { font-size: 8px; color: #888; }
+.ft-pc-rd-btn { background: #f0f0ea; color: #1a1f2e; border: 1px solid #ccc; border-radius: 4px; font-size: 9px; padding: 5px 0; cursor: pointer; width: 100%; margin-top: auto; margin-bottom: 4px; }
+.ft-pc-select-btn { background: #1a1f2e; color: #fff; border: none; border-radius: 4px; font-size: 9px; font-weight: 700; padding: 7px 0; cursor: pointer; width: 100%; }
+.ft-pc-state { font-size: 10px; color: #888; margin-top: auto; }
+
+/* ── 주석 패널 ── */
+.fv-ann { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.fv-ann h3 { font-size: 14px; font-weight: 700; color: #1a1f2e; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e8e8e2; }
+.fv-ann-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f0eb; display: flex; gap: 10px; align-items: flex-start; }
+.fv-ann-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.fv-ann-body { flex: 1; }
+.fv-ann-title { font-size: 13px; font-weight: 700; color: #1a1f2e; margin-bottom: 3px; }
+.fv-ann-desc { font-size: 11px; color: #555; line-height: 1.6; margin-bottom: 2px; }
+.fv-ann-admin { font-size: 10px; color: #444; background: #f0f0ea; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #999; line-height: 1.55; margin-top: 3px; }
+.fv-ann-ls { font-size: 10px; color: #1a1f2e; background: #f0f4ff; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #6366f1; line-height: 1.55; margin-top: 3px; font-family: monospace; }
+.fv-ann-front { font-size: 10px; color: #0e7490; background: #ecfeff; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #0e7490; line-height: 1.55; margin-top: 3px; }
+.fv-ann-rule { font-size: 10px; color: #92400e; background: #fefce8; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #fde68a; line-height: 1.55; margin-top: 3px; }
+
+/* ── 범례 ── */
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; align-items: center; font-size: 11px; color: #666; padding: 8px 14px; background: #fff; border-radius: 6px; border: 1px solid #e8e8e2; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">REF-2 — 브릿지 페이지 데이터 매핑</span>
+  <span class="page-nav-route">front-prototype_v0.4 · #/bridge/:type</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="data-mapping.html">← 이전</a>
+    <a class="page-nav-pager" href="front-view-layer.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">REF-2</span>
+    브릿지 페이지 데이터 매핑
+    <span style="font-size:12px;font-weight:400;color:#888">— 어드민 입력 → localStorage → 프런트 노출</span>
+  </div>
+
+  <!-- HOTEL / CONDO 타입 설명 -->
+  <div class="type-grid">
+    <div class="type-card type-card-hotel">
+      <div class="type-card-title">HOTEL — 호텔 타입</div>
+      <div class="type-card-desc">GNB "Hotel" 탭 클릭 시 이 타입에 해당하는 숙소 목록이 Place 탭으로 표시됩니다.<br>어드민 S02-1 Step1에서 <strong>1차 분류 = Hotel</strong>로 등록한 숙소.</div>
+      <div class="type-card-ls">h1_places[].category = "HOTEL"</div>
+    </div>
+    <div class="type-card type-card-condo">
+      <div class="type-card-title">CONDO — 콘도 타입</div>
+      <div class="type-card-desc">GNB "Condo" 탭 클릭 시 이 타입에 해당하는 숙소 목록이 Place 탭으로 표시됩니다.<br>어드민 S02-1 Step1에서 <strong>1차 분류 = Condo</strong>로 등록한 숙소.</div>
+      <div class="type-card-ls">h1_places[].category = "CONDO"</div>
+    </div>
+  </div>
+
+  <!-- 범례 -->
+  <div class="legend">
+    <span style="font-weight:700;color:#1a1f2e;font-size:11px">범례</span>
+    <div class="legend-item"><div class="legend-dot" style="background:#f0f0ea;border:1px solid #bbb"></div> 어드민 화면 참조</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e8edff;border:1px solid #99a"></div> localStorage 키</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ecfeff;border:1px solid #a5f3fc"></div> 프런트 노출 위치</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fefce8;border:1px solid #fde68a"></div> 비즈니스 규칙</div>
+  </div>
+
+  <div class="fv-two-col">
+
+    <!-- ── 프런트 화면 시뮬레이션 ── -->
+    <div>
+      <div class="front-sim">
+
+        <!-- Topbar -->
+        <div class="ft-topbar">
+          <span class="ft-logo">high<span>1</span></span>
+          <div class="ft-nav">
+            <button class="ft-nav-btn on">Hotel</button>
+            <button class="ft-nav-btn">Condo</button>
+          </div>
+          <div class="ft-lang">
+            <button class="ft-lang-btn">KO</button>
+            <button class="ft-lang-btn">EN</button>
+          </div>
+        </div>
+
+        <!-- 숙소 선택 탭 ① -->
+        <div style="position:relative;padding-right:28px">
+          <div class="ft-place-tabs">
+            <div class="ft-place-tab on">그랜드 호텔 컨벤션타워</div>
+            <div class="ft-place-tab">스키 인 리조트</div>
+            <div class="ft-place-tab">베스트슬립 호텔</div>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:8px;right:4px">1</span>
+        </div>
+
+        <!-- Hero ②③ -->
+        <div class="ft-hero" style="position:relative">
+          <div class="ft-hero-bg">이미지 슬라이더 (← →)</div>
+          <div class="ft-hero-overlay">
+            <div class="ft-hero-name">그랜드 호텔 컨벤션타워</div>
+            <div class="ft-hero-sub">Grand Convention</div>
+            <button class="ft-hero-open-btn">숙소 안내 보기</button>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:8px;right:28px">2</span>
+          <span class="wf-cn" style="position:absolute;top:8px;right:6px">3</span>
+        </div>
+
+        <!-- Sticky Nav ④ -->
+        <div style="position:relative;padding-right:28px">
+          <div class="ft-sticky-nav">
+            <div class="ft-sticky-tab on">Overview</div>
+            <div class="ft-sticky-tab">Rooms</div>
+            <div class="ft-sticky-tab">안내 <span class="ft-sticky-tag">→ 레이어</span></div>
+            <div class="ft-sticky-tab">정책 <span class="ft-sticky-tag">→ 레이어</span></div>
+            <div class="ft-sticky-tab">위치 <span class="ft-sticky-tag">→ 레이어</span></div>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:8px;right:4px">4</span>
+        </div>
+
+        <!-- Overview: 체크인/아웃 ⑤ + 대표시설 ⑥ + 숙소소개 ⑮ -->
+        <div class="ft-overview">
+          <div class="ft-overview-grid">
+            <div style="position:relative;padding-right:24px">
+              <div class="ft-overview-label">Check-in / Check-out</div>
+              <div class="ft-overview-val">오후 03:00 / 오전 11:00</div>
+              <span class="wf-cn" style="position:absolute;top:0;right:0">5</span>
+            </div>
+            <div style="position:relative;padding-right:24px">
+              <div class="ft-overview-label">대표 시설</div>
+              <div class="ft-chips">
+                <span class="ft-chip">실내와이파이</span>
+                <span class="ft-chip">주차장</span>
+                <span class="ft-chip">레스토랑</span>
+                <span class="ft-chip">수영장</span>
+                <span class="ft-chip">피트니스</span>
+              </div>
+              <span class="wf-cn" style="position:absolute;top:0;right:0">6</span>
+            </div>
+          </div>
+          <!-- 숙소 소개 — description 있을 때만 노출 -->
+          <div style="position:relative;margin-top:10px;padding-top:10px;border-top:1px solid #f0f0ea;padding-right:24px">
+            <div style="font-size:10px;color:#888;line-height:1.6">강원랜드 스키장과 인접한 그랜드 호텔 컨벤션타워입니다. 레저·휴식·비즈니스를 한 공간에서 즐기실 수 있습니다.</div>
+            <span class="wf-cn" style="position:absolute;top:10px;right:0">15</span>
+          </div>
+        </div>
+
+        <!-- Rooms 섹션: 날짜 피커 ⑦ -->
+        <div class="ft-rooms-header">
+          <span class="ft-rooms-title">Rooms</span>
+          <div class="ft-date-row">
+            <div class="ft-date-box">
+              <div class="ft-date-label-sm">CHECK-IN</div>
+              <div>2026-06-09</div>
+            </div>
+            <div class="ft-date-box">
+              <div class="ft-date-label-sm">CHECK-OUT</div>
+              <div>2026-06-10</div>
+            </div>
+            <button class="ft-search-btn">Search</button>
+            <span class="wf-cn">7</span>
+          </div>
+        </div>
+
+        <!-- 상품 카드 목록 -->
+        <div class="ft-room-list">
+
+          <!-- 카드 1 — 무료취소 가능, 요금 표시 -->
+          <div class="ft-pc">
+            <!-- 이미지 -->
+            <div class="ft-pc-thumb">
+              <span>이미지</span>
+              <div class="ft-pc-arrow" style="left:4px">‹</div>
+              <div class="ft-pc-arrow" style="right:4px">›</div>
+            </div>
+            <!-- 정보 영역 -->
+            <div class="ft-pc-content">
+              <div>
+                <span class="ft-pc-sub">하이원컨벤션타워</span>
+                <span class="wf-cn" style="margin-left:4px">8</span>
+              </div>
+              <div class="ft-pc-room-name">베스트슬립 슈페리어 더블베드</div>
+              <div style="display:flex;align-items:center;gap:4px">
+                <div class="ft-pc-product-name" style="margin-bottom:0">시그니처 위스키 메인 패키지</div>
+                <span class="wf-cn">9</span>
+              </div>
+              <div style="margin-top:6px"></div>
+              <div style="display:flex;align-items:center;gap:4px">
+                <div class="ft-pc-bed" style="margin-bottom:0">침대: 더블베드 1개, 트윈베드 1개 &nbsp;·&nbsp; 기준 2명 / 최대 4명</div>
+                <span class="wf-cn">10</span>
+              </div>
+              <div style="margin-top:5px"></div>
+              <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+                <div class="ft-pc-chips" style="margin-bottom:0">
+                  <span class="ft-pc-chip">실내와이파이</span>
+                  <span class="ft-pc-chip">금연객실</span>
+                  <span class="ft-pc-chip">애견동반가능</span>
+                  <span class="ft-pc-chip">벽걸이TV</span>
+                </div>
+                <span class="wf-cn">11</span>
+              </div>
+              <div style="margin-top:5px"></div>
+              <div style="display:flex;align-items:center;gap:4px">
+                <div class="ft-pc-cancel" style="margin-bottom:0">2026-05-31까지 무료취소 가능</div>
+                <span class="wf-cn">12</span>
+              </div>
+              <div style="margin-top:6px"></div>
+              <div style="display:flex;align-items:flex-start;gap:4px">
+                <div class="ft-pc-desc" style="flex:1">시그니처 위스키?<br>· 컨벤션타워 10F 라운지에서 사용<br>· 17시 ~ 20시 사용가능</div>
+                <span class="wf-cn" style="margin-top:2px;flex-shrink:0">14</span>
+              </div>
+            </div>
+            <!-- 가격 패널 -->
+            <div class="ft-pc-panel">
+              <div class="ft-pc-member">MEMBER RATE</div>
+              <div style="display:flex;align-items:center;gap:4px">
+                <div class="ft-pc-price">KRW 409,200</div>
+                <span class="wf-cn">13</span>
+              </div>
+              <div class="ft-pc-charges">Additional charges may apply</div>
+              <button class="ft-pc-rd-btn">Room Detail →</button>
+              <button class="ft-pc-select-btn">Select Rooms</button>
+            </div>
+          </div>
+
+          <!-- 카드 2 — 취소/환불불가 상태 -->
+          <div class="ft-pc">
+            <div class="ft-pc-thumb">
+              <span>이미지</span>
+              <div class="ft-pc-arrow" style="left:4px">‹</div>
+              <div class="ft-pc-arrow" style="right:4px">›</div>
+            </div>
+            <div class="ft-pc-content">
+              <div><span class="ft-pc-sub">하이원컨벤션타워</span></div>
+              <div class="ft-pc-room-name">스탠다드 트윈룸</div>
+              <div class="ft-pc-product-name">조식 포함 패키지</div>
+              <div class="ft-pc-bed">침대: 트윈베드 2개 &nbsp;·&nbsp; 기준 2명 / 최대 2명</div>
+              <div class="ft-pc-chips">
+                <span class="ft-pc-chip">암막커튼</span>
+                <span class="ft-pc-chip">킹 베드</span>
+                <span class="ft-pc-chip">비데</span>
+              </div>
+              <div class="ft-pc-cancel-na">취소/환불불가</div>
+              <div class="ft-pc-desc">트윈 침대 2개로 구성된 스탠다드 객실, 2인 여행에 최적.</div>
+            </div>
+            <div class="ft-pc-panel">
+              <div class="ft-pc-member">MEMBER RATE</div>
+              <div class="ft-pc-price">KRW 320,000</div>
+              <div class="ft-pc-charges">Additional charges may apply</div>
+              <button class="ft-pc-rd-btn">Room Detail →</button>
+              <button class="ft-pc-select-btn">Select Rooms</button>
+            </div>
+          </div>
+
+        </div><!-- /ft-room-list -->
+
+      </div><!-- /front-sim -->
+    </div>
+
+    <!-- ── 주석 패널 ── -->
+    <div class="fv-ann">
+      <h3>브릿지 페이지 주석 (callout ①~⑭)</h3>
+
+      <div class="fv-ann-item">
+        <div class="cn">1</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">숙소 선택 탭</div>
+          <div class="fv-ann-desc">GNB 탭에서 선택한 type(HOTEL/CONDO)에 해당하는 숙소 목록을 탭으로 나열. 탭 클릭 시 해당 숙소 데이터로 전환.</div>
+          <div class="fv-ann-admin">어드민 S02-1 Step1 · 숙소명 / 1차 분류</div>
+          <div class="fv-ann-ls">h1_places[].place_name · h1_places[].category</div>
+          <div class="fv-ann-front">탭 텍스트 = place_name, HOTEL/CONDO 기준 필터</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">2</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Hero 이미지 슬라이더</div>
+          <div class="fv-ann-desc">숙소 이미지 배열을 슬라이더로 표시. ← → 버튼으로 순환. 이미지가 없으면 placeholder 표시.</div>
+          <div class="fv-ann-admin">어드민 S02-3 Step3 · 이미지 등록 (images 배열)</div>
+          <div class="fv-ann-ls">h1_places[].images[].data_url</div>
+          <div class="fv-ann-front">Hero 배경 이미지 슬라이더</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">3</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Hero Overlay — 숙소명 · 2차 분류명</div>
+          <div class="fv-ann-desc">Hero 이미지 위 어두운 overlay에 숙소명(상단)과 2차 분류명(하단)을 표시. "숙소 안내 보기" 버튼 클릭 시 장소 레이어 오픈.</div>
+          <div class="fv-ann-admin">어드민 S02-1 Step1 · 숙소명 / 2차(건물·단지)</div>
+          <div class="fv-ann-ls">h1_places[].place_name · h1_places[].sub_place</div>
+          <div class="fv-ann-front">Hero overlay 1행(숙소명) / 2행(2차 분류명 — subLabel 함수로 가공)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">4</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Sticky Nav 탭 동작</div>
+          <div class="fv-ann-desc">탭별 동작이 다르게 작동합니다.</div>
+          <div class="fv-ann-front">
+            Overview / Rooms → 해당 섹션으로 페이지 내 스크롤<br>
+            안내(detail) / 정책(policies) / 위치(location) → 우측에서 장소 레이어 슬라이드인 팝업 (REF-3 참조)
+          </div>
+          <div class="fv-ann-rule">레이어 탭 데이터 출처: 안내→guide_html, 정책→policy_html, 위치→location_detail</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">5</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Overview — 체크인 · 체크아웃 시각</div>
+          <div class="fv-ann-desc">Overview 섹션 좌측에 기본 체크인/아웃 시각 표시. HH:MM 형식.</div>
+          <div class="fv-ann-admin">어드민 S02-1 Step1 · 체크인(기본) / 체크아웃(기본)</div>
+          <div class="fv-ann-ls">h1_places[].check_in · h1_places[].check_out</div>
+          <div class="fv-ann-front">Overview 섹션 좌측 정보 패널</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">6</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Overview — 대표 시설 칩 (PLACE)</div>
+          <div class="fv-ann-desc">Overview 섹션 우측에 대표 시설을 칩(chip) 형태로 나열. ★ 대표로 설정된 시설만 표시. 최대 10개.</div>
+          <div class="fv-ann-admin">어드민 S02-5 Step5 · ★ 대표 시설 선택 (PLACE 도메인)</div>
+          <div class="fv-ann-ls">h1_places[].featured_facility_ids → h1_facilities[].name</div>
+          <div class="fv-ann-front">Overview 대표시설 칩 나열 (최대 10개)</div>
+          <div class="fv-ann-rule">facility_ids의 부분집합. 최대 10개 초과 시 어드민 저장 차단.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">7</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">날짜 피커 — CHECK-IN / CHECK-OUT</div>
+          <div class="fv-ann-desc">체크인·아웃 날짜 입력 후 Search 클릭 시 evaluateProductForStay()가 각 상품의 재고·요금 상태를 계산하여 카드에 반영.</div>
+          <div class="fv-ann-admin">어드민 S05-A/B · 재고·요금 등록 (날짜별 inventory)</div>
+          <div class="fv-ann-ls">h1_products[].inventory[YYYY-MM-DD].{price, stock, sale_closed}</div>
+          <div class="fv-ann-front">날짜 미선택 → "날짜를 선택하세요" / 선택 후 → 요금 or 상태 메시지</div>
+          <div class="fv-ann-rule">evaluateProductForStay 판단 순서: need_dates → sale_out → no_inv → closed → cutoff → soldout → ok</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">8</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">2차 분류 뱃지 (건물·단지명)</div>
+          <div class="fv-ann-desc">상품 카드 최상단에 소속 건물·단지명을 작은 뱃지로 표시. subLabel() 함수를 통해 category + sub_place 조합으로 가공.</div>
+          <div class="fv-ann-admin">어드민 S02-1 Step1 · 2차(건물·단지) 드롭다운</div>
+          <div class="fv-ann-ls">h1_places[].sub_place (예: "Grand Convention")</div>
+          <div class="fv-ann-front">카드 최상단 뱃지 텍스트 (예: 하이원컨벤션타워)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">9</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">객실명 + 상품명</div>
+          <div class="fv-ann-desc">객실명(작게)과 상품명(크고 굵게) 2줄로 표시. 같은 객실에 여러 상품이 있으면 상품마다 별도 카드로 출력.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실명 / S04 상품 등록 · 상품명</div>
+          <div class="fv-ann-ls">h1_rooms[].room_name · h1_products[].name</div>
+          <div class="fv-ann-front">카드 1행(객실명 — 연한 색) / 2행(상품명 — 굵게)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">10</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">침대 정보 + 인원</div>
+          <div class="fv-ann-desc">침대는 "{침대유형} {개수}개" 형식으로 복수 나열. 인원은 기준/최대로 표시.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 침대유형 / 기준인원 / 최대인원</div>
+          <div class="fv-ann-ls">h1_rooms[].bed_types[]{type,count} · h1_rooms[].standard_occupancy · h1_rooms[].max_occupancy</div>
+          <div class="fv-ann-front">카드 침대 행: "침대: {유형} {N}개, …  ·  기준 N명 / 최대 N명"</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">11</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">객실 대표 시설 칩 (ROOM)</div>
+          <div class="fv-ann-desc">객실에 설정된 대표 시설을 칩으로 나열. PLACE 도메인 시설(숙소 전체 시설)과 별개로, ROOM 도메인 시설(객실별 시설)에서 대표로 선택된 항목.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 시설 선택 (ROOM 도메인, 대표 설정)</div>
+          <div class="fv-ann-ls">h1_rooms[].featured_facility_ids → h1_facilities[].name (ROOM 도메인)</div>
+          <div class="fv-ann-front">카드 시설 칩 행</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">12</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">취소정책 표시 (날짜 계산)</div>
+          <div class="fv-ann-desc">상품의 취소 정책에서 무료 취소 가능 일수를 읽어 아래 로직으로 표시합니다.</div>
+          <div class="fv-ann-admin">어드민 S06-A 취소정책 → cancel_policy_type / cancel_free_days_before</div>
+          <div class="fv-ann-ls">h1_products_v1[].cancel_policy_type · h1_products_v1[].cancel_free_days_before</div>
+          <div class="fv-ann-front">
+            blockDate = check_in_date − N일 &nbsp;(이 날부터 취소 차단)<br>
+            lastFreeDate = check_in_date − N − 1일 &nbsp;(무료취소 마지막 날)<br>
+            today &lt; blockDate → "{lastFreeDate} 23:59까지 무료취소 가능" (파란 텍스트)<br>
+            today ≥ blockDate → "취소 및 환불불가" (빨간 텍스트)
+          </div>
+          <div class="fv-ann-rule">cancelSummaryLine() 함수가 판단. 날짜 미선택 시 미표시.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">15</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Overview — 숙소 소개 (description)</div>
+          <div class="fv-ann-desc">Overview 섹션 하단에 숙소 소개 문구를 표시. 비어있으면 해당 영역 미노출.</div>
+          <div class="fv-ann-admin">어드민 S02-1 Step1 · 숙소 소개 textarea</div>
+          <div class="fv-ann-ls">h1_places[].description (plain text)</div>
+          <div class="fv-ann-front">Overview 섹션 하단 — 체크인/시설 아래 구분선 이후 소개 문구 1단락</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">13</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">판매가 (evaluateProductForStay)</div>
+          <div class="fv-ann-desc">체크인·아웃 날짜 기준 전체 박 합산 요금. 상태에 따라 요금 또는 메시지 표시.</div>
+          <div class="fv-ann-admin">어드민 S05-A/B · 날짜별 판매가(price) 등록</div>
+          <div class="fv-ann-ls">h1_products[].inventory[날짜].price (1박 단가 합산)</div>
+          <div class="fv-ann-front">ok → "MEMBER RATE + KRW 금액" / 그 외 → 상태 메시지 (매진/운영중단 등)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">14</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">상품 설명 (description)</div>
+          <div class="fv-ann-desc">상품 카드 하단 회색 박스에 상품 설명 텍스트 표시. 비어있으면 박스 미출력.</div>
+          <div class="fv-ann-admin">어드민 S04 상품 등록 · 상품 설명 textarea</div>
+          <div class="fv-ann-ls">h1_products[].description (plain text)</div>
+          <div class="fv-ann-front">카드 하단 회색 박스 (설명이 없으면 미표시)</div>
+        </div>
+      </div>
+
+    </div><!-- /fv-ann -->
+  </div><!-- /fv-two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

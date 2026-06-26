@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>High1 Front Bridge v0.4</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a href="#/" class="logo">high<span>1</span></a>
+        <nav class="topnav">
+          <a href="#/bridge/HOTEL">Hotel</a>
+          <a href="#/bridge/CONDO">Condo</a>
+        </nav>
+        <div class="topbar-right">
+          <div class="lang-switch">
+            <button type="button" class="lang-btn" id="langKo">KO</button>
+            <button type="button" class="lang-btn" id="langEn">EN</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="app"></main>
+
+    <!-- 숙소 안내/정책/위치 레이어 -->
+    <aside id="placeLayer" class="layer hidden" aria-hidden="true">
+      <div class="layer-head">
+        <h2 id="placeLayerTitle">숙소 정보</h2>
+        <button type="button" id="placeLayerClose" class="icon-btn" aria-label="닫기">✕</button>
+      </div>
+      <div id="placeLayerTabs" class="layer-tabs"></div>
+      <div id="placeLayerBody" class="layer-body"></div>
+    </aside>
+    <div id="placeLayerBackdrop" class="backdrop hidden"></div>
+
+    <!-- 객실·상품 상세 (Room Detail) -->
+    <div id="roomDetailModal" class="rd-modal hidden" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="rd-dialog">
+        <div class="rd-head">
+          <div class="rd-head-text">
+            <div id="rdRoomName" class="rd-room-name"></div>
+            <div id="rdProductName" class="rd-product-name"></div>
+          </div>
+          <button type="button" id="rdClose" class="icon-btn" aria-label="닫기">✕</button>
+        </div>
+        <div class="rd-body">
+          <div id="rdGallery" class="rd-gallery"></div>
+          <div class="rd-aside">
+            <h3 class="rd-section-title">Information</h3>
+            <ul id="rdInfo" class="rd-info"></ul>
+            <nav id="rdSectionsNav" class="rd-sections-nav"></nav>
+            <div id="rdServices" class="rd-services"></div>
+          </div>
+        </div>
+        <div class="rd-foot">
+          <button type="button" class="btn-cta" id="rdSelectRoom">Select Room</button>
+        </div>
+      </div>
+    </div>
+    <div id="roomDetailBackdrop" class="backdrop hidden"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

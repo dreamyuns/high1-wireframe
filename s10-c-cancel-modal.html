@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S10-C — 취소 처리 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+  /* ── S10 상태 배지 ── */
+  .bg-confirmed   { background:#d1fae5; color:#065f46 }
+  .bg-pending     { background:#fef3c7; color:#92400e }
+  .bg-failed      { background:#fee2e2; color:#991b1b }
+  .bg-cancel-req  { background:#ffedd5; color:#7c2d12 }
+  .bg-cancelled   { background:#f3f4f6; color:#6b7280 }
+  .bg-noshow      { background:#1a1f2e; color:#fff }
+  .bg-pms         { background:#e0edff; color:#1a4fa0 }
+  .bg-manual      { background:#f0f0ea; color:#555 }
+
+  /* ── S10-B 공통 컴포넌트 ── */
+  .info-grid { font-size:11px }
+  .info-row  { display:flex; padding:5px 0; border-bottom:1px solid #f0f0ea; align-items:baseline }
+  .info-row:last-child { border-bottom:none }
+  .info-key  { width:96px; flex-shrink:0; color:#888; font-weight:600; line-height:1.5 }
+  .info-val  { flex:1; color:#1a1f2e; line-height:1.5 }
+  .detail-sec { background:#fff; border:1px solid #e0e0da; border-radius:5px; padding:12px 14px; margin-bottom:10px }
+  .detail-sec-title { font-size:10px; font-weight:700; color:#666; text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid #f0f0ea; display:flex; align-items:center; justify-content:space-between }
+  .detail-sec-title-left { display:flex; align-items:center; gap:4px }
+  .detail-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #e0e0da }
+  .detail-no     { font-size:13px; font-weight:700; color:#1a1f2e }
+  .detail-badges { display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-bottom:4px }
+  .detail-meta   { font-size:10px; color:#aaa }
+  .detail-actions { display:flex; gap:6px; align-items:center; flex-shrink:0; margin-left:12px }
+  .detail-status-row { display:flex; align-items:center; gap:6px; margin-top:5px; font-size:10px; color:#888 }
+  .status-select { font-size:10px; padding:2px 6px; border:1px solid #d0d0ca; border-radius:3px; color:#1a1f2e; background:#fff }
+  .status-apply-btn { font-size:9px; padding:2px 8px; border:1px solid #8b5cf6; border-radius:3px; color:#8b5cf6; background:#fff }
+  .breadcrumb { font-size:10px; color:#aaa; margin-bottom:10px }
+  .breadcrumb a { color:#1a6fb8; text-decoration:underline }
+  .omit-placeholder { text-align:center; padding:8px; font-size:10px; color:#bbb; border:1px dashed #e0e0da; border-radius:4px; margin-bottom:10px }
+  .price-row { display:flex; justify-content:space-between; align-items:baseline; padding:3px 0; font-size:11px }
+  .price-label { color:#888 }
+  .price-val   { font-weight:600 }
+  .price-sep   { border-top:1px solid #e0e0da; margin:4px 0 }
+  .price-total .price-label { font-weight:700; color:#1a1f2e }
+  .price-total .price-val   { font-size:13px; color:#1a1f2e }
+  .price-tbd   { font-size:9px; color:#aaa; font-weight:400; margin-left:4px }
+  .price-subtotal { border-top:1px solid #e0e0da; margin:6px 0 4px; padding-top:6px }
+  .price-daily { font-size:10px; margin-bottom:8px }
+  .price-daily-row { display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #f5f5f3 }
+  .price-daily-row:last-child { border-bottom:none }
+  .price-daily-date { color:#888 }
+  .price-daily-amt  { color:#1a1f2e; font-weight:500 }
+  .pay-cancel-block { margin-top:10px; padding-top:8px; border-top:1px dashed #e0e0da }
+  .pay-cancel-label { font-size:9px; font-weight:700; color:#aaa; margin-bottom:4px; letter-spacing:.04em }
+  .pay-cancel-entry { display:flex; justify-content:space-between; font-size:10px; padding:2px 0; color:#777 }
+  .pay-cancel-entry-amt { color:#dc2626; font-weight:600 }
+  .pay-cancel-subtotal { display:flex; justify-content:space-between; font-size:10px; padding:4px 0 2px; border-top:1px solid #e0e0da; margin-top:3px; font-weight:700; color:#dc2626 }
+  .pay-balance-row { display:flex; justify-content:space-between; font-size:11px; font-weight:700; padding:3px 0; color:#1a1f2e; border-top:1px solid #e0e0da; margin-top:2px; padding-top:4px }
+  .hist-table { width:100%; border-collapse:collapse; font-size:10px }
+  .hist-table th { background:#f5f5f3; padding:5px 8px; text-align:left; color:#666; font-weight:600; border:1px solid #e0e0da }
+  .hist-table td { padding:5px 8px; border:1px solid #eee; color:#333; vertical-align:top }
+
+  /* ── 취소 처리 모달 ── */
+  .modal-dim { background:rgba(0,0,0,.35); border-radius:5px; padding:24px 12px; display:flex; justify-content:center }
+  .modal-box { background:#fff; border-radius:6px; width:330px; box-shadow:0 8px 28px rgba(0,0,0,.22); border:1px solid #d0d0ca; overflow:hidden; flex-shrink:0 }
+  .modal-header { background:#1a1f2e; color:#fff; padding:10px 14px; display:flex; justify-content:space-between; align-items:center }
+  .modal-title-txt { font-size:12px; font-weight:700 }
+  .modal-close { color:rgba(255,255,255,.4); font-size:16px; cursor:pointer; line-height:1 }
+  .modal-body { padding:12px 14px }
+  .modal-sec { margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #f0f0ea }
+  .modal-sec:last-child { border-bottom:none; margin-bottom:0 }
+  .modal-sec-title { font-size:9px; font-weight:700; color:#aaa; text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px }
+  .modal-row { display:flex; justify-content:space-between; align-items:baseline; font-size:10px; padding:2px 0 }
+  .modal-label { color:#888 }
+  .modal-val { font-weight:600; color:#1a1f2e }
+  .modal-val-penalty { color:#dc2626 }
+  .modal-sep { border-top:1px solid #e0e0da; margin:6px 0 }
+  .modal-total-row { display:flex; justify-content:space-between; font-size:12px; font-weight:700; padding:3px 0 }
+  .modal-total-label { color:#1a1f2e }
+  .modal-total-val { color:#059669; font-size:14px }
+  .modal-override-wrap { margin-top:8px }
+  .modal-override-check { display:flex; align-items:center; gap:5px; font-size:10px; color:#555; cursor:pointer }
+  .modal-override-input-row { display:flex; align-items:center; gap:6px; margin-top:5px }
+  .modal-override-input { flex:1; font-size:10px; padding:3px 7px; border:1px solid #d0d0ca; border-radius:3px }
+  .modal-override-unit { font-size:10px; color:#888 }
+  .modal-reason-input { width:100%; margin-top:5px; font-size:10px; padding:4px 7px; border:1px solid #fca5a5; border-radius:3px; resize:none; min-height:32px; box-sizing:border-box }
+  .modal-override-note { font-size:9px; color:#dc2626; margin-top:3px }
+  .modal-footer { padding:8px 14px; border-top:1px solid #f0f0ea; display:flex; gap:6px; justify-content:flex-end }
+  .dim-bg-note { font-size:9px; text-align:center; color:#aaa; margin-bottom:8px; font-style:italic }
+
+  /* ── 취소/환불 정보 블록 ── */
+  .cancel-block { margin-top:10px; padding-top:8px; border-top:1px dashed #e0e0da }
+  .cancel-block-label { font-size:9px; font-weight:700; color:#aaa; margin-bottom:5px; letter-spacing:.04em }
+  .cancel-row { display:flex; justify-content:space-between; font-size:11px; padding:2px 0; color:#888 }
+  .cancel-row-penalty { color:#dc2626; font-weight:600 }
+  .cancel-row-hint  { font-size:9px; color:#aaa; font-weight:400; margin-left:4px }
+  .cancel-sep { border-top:1px solid #e0e0da; margin:5px 0 }
+  .cancel-refund-total { display:flex; justify-content:space-between; font-size:13px; font-weight:700; padding:3px 0; color:#059669 }
+  .cancel-meta { font-size:10px; color:#888; padding:2px 0 }
+  .cancel-readonly-badge { font-size:9px; background:#f0f0ea; color:#888; padding:1px 5px; border-radius:3px; margin-left:4px; font-weight:400 }
+
+  /* ── API 조회 결과 블록 ── */
+  .api-result-block { background:#f0fdf4; border:1px solid #86efac; border-radius:4px; padding:8px 10px; margin-top:8px }
+  .api-result-title { font-size:9px; font-weight:700; color:#166534; text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px }
+  .api-result-row { display:flex; justify-content:space-between; font-size:10px; padding:2px 0; color:#444 }
+  .api-result-key { color:#15803d; font-weight:600; width:80px; flex-shrink:0 }
+  .api-result-preview-label { font-size:9px; font-weight:700; color:#166534; margin:5px 0 2px }
+  .api-result-preview { background:#fff; border:1px solid #d1fae5; border-radius:3px; padding:4px 7px }
+  .api-result-preview .price-row { font-size:10px }
+
+  /* ── A안/B안 비교 박스 ── */
+  .compare-wrap { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px }
+  .compare-box { border-radius:5px; padding:9px 10px; font-size:10px }
+  .compare-box-a { background:#f5f3ff; border:1px solid #8b5cf6 }
+  .compare-box-b { background:#f0fdf4; border:1px solid #059669 }
+  .compare-box-title { font-weight:700; font-size:11px; margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid rgba(0,0,0,.08) }
+  .compare-box-a .compare-box-title { color:#4c1d95 }
+  .compare-box-b .compare-box-title { color:#065f46 }
+  .compare-row { display:flex; justify-content:space-between; padding:2px 0; color:#555 }
+  .compare-key { color:#888 }
+  .compare-penalty { color:#dc2626; font-weight:700 }
+  .compare-refund { color:#059669; font-weight:700; font-size:12px }
+  .compare-sep { border-top:1px solid rgba(0,0,0,.1); margin:5px 0 }
+  .compare-basis { font-size:9px; color:#888; margin-top:4px; font-style:italic }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">S10-C 취소 처리</span>
+  <span class="page-nav-route">S10-B 오버레이 / 상태별 요금정보</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s10-b-reservation-detail.html">← 이전</a>
+    <span class="page-nav-pager" style="color:#aaa">다음 →</span>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge" style="background:#8b5cf6">S10-C</span>
+    취소 처리
+    <span style="font-size:12px;font-weight:400;color:#888">— 취소 모달 · 취소요청 뷰 · 취소완료 뷰</span>
+  </div>
+  <div class="sec-sub">
+    [취소하기] 클릭 시 오버레이 모달 (PMS 예약취소 + PG 전액 결제취소 최종 확인).<br>
+    취소요청·취소완료 상태에서 S10-B 요금정보 하단에 표시되는 위약금·환불 정보 정의.<br>
+    와이어프레임 4종: ① 취소 처리 모달 &nbsp;② 취소요청 상태 뷰 &nbsp;③ 취소완료 단순 케이스 &nbsp;④ 취소완료 — 부분취소 선행 케이스 (A/B안)
+  </div>
+
+
+  <!-- ════════════════════════════════════════════
+       ① 취소 처리 모달
+  ════════════════════════════════════════════ -->
+  <div class="two-col">
+    <div class="wf">
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span><span class="wf-gnb-item">티켓관리</span><span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item on">예약관리</span><span class="wf-gnb-item">공통관리</span>
+      </div>
+      <div class="wf-body">
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">예약관리</div>
+          <div class="wf-lnb-item on">예약 목록</div>
+          <div class="wf-lnb-item">취소 목록</div>
+        </div>
+        <div class="wf-main">
+          <div class="dim-bg-note">↓ S10-B 예약 상세 화면 (배경 딤처리) — 모달 오버레이</div>
+
+          <!-- S10-B 배경 (딤) -->
+          <div style="opacity:.22; pointer-events:none; margin-bottom:0">
+            <div class="breadcrumb"><a>예약 목록</a> › BK-20260515-00001</div>
+            <div class="detail-header">
+              <div>
+                <div class="detail-badges">
+                  <span class="detail-no">BK-20260515-00001</span>
+                  <span class="wf-badge bg-pms" style="font-size:9px">PMS</span>
+                  <span class="wf-badge bg-confirmed">예약확정</span>
+                </div>
+                <div class="detail-meta">예약일시: 2026-05-15 14:32</div>
+              </div>
+              <div class="detail-actions">
+                <span class="wf-btn wf-btn-danger wf-btn-sm">취소하기</span>
+              </div>
+            </div>
+            <div class="omit-placeholder">예약 기본 정보 / 예약자 · 투숙자 정보 (생략)</div>
+          </div>
+
+          <!-- 모달 오버레이 -->
+          <div class="modal-dim">
+            <div class="modal-box">
+              <div class="modal-header">
+                <span class="modal-title-txt">취소 처리 확인</span>
+                <span class="modal-close">✕</span>
+              </div>
+              <div class="modal-body">
+
+                <!-- 예약 요약 -->
+                <div class="modal-sec">
+                  <div class="modal-sec-title">예약 정보</div>
+                  <div class="modal-row">
+                    <span class="modal-label">예약번호</span>
+                    <span class="modal-val">BK-20260515-00001</span>
+                  </div>
+                  <div class="modal-row">
+                    <span class="modal-label">상품명</span>
+                    <span class="modal-val">디럭스 킹 룸온리</span>
+                  </div>
+                  <div class="modal-row">
+                    <span class="modal-label">투숙자</span>
+                    <span class="modal-val">홍길동</span>
+                  </div>
+                  <div class="modal-row">
+                    <span class="modal-label">체크인 ~ 아웃</span>
+                    <span class="modal-val">05-20 ~ 05-22 (2박)</span>
+                  </div>
+                </div>
+
+                <!-- 위약금 정보 (API 10) -->
+                <div class="modal-sec">
+                  <div class="modal-sec-title">
+                    위약금 (API 10 조회)
+                    <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px;display:inline-flex;align-items:center;justify-content:center">1</span>
+                  </div>
+                  <div class="modal-row">
+                    <span class="modal-label">취소 구간</span>
+                    <span class="modal-val">취소 3일 전 (DFLT_NM)</span>
+                  </div>
+                  <div class="modal-row">
+                    <span class="modal-label">위약금율</span>
+                    <span class="modal-val">30% &nbsp;<span style="font-size:9px;color:#aaa;font-weight:400">90,000 ÷ 300,000</span></span>
+                  </div>
+                  <div class="modal-row">
+                    <span class="modal-label">위약금</span>
+                    <span class="modal-val modal-val-penalty">-96,000원 &nbsp;<span style="font-size:9px;color:#aaa;font-weight:400">30% × 판매가 320,000</span></span>
+                  </div>
+                </div>
+
+                <!-- 환불금액 -->
+                <div class="modal-sec">
+                  <div class="modal-sec-title">
+                    환불금액
+                    <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px;display:inline-flex;align-items:center;justify-content:center">2</span>
+                  </div>
+                  <div class="modal-row">
+                    <span class="modal-label">판매가</span>
+                    <span class="modal-val">320,000원</span>
+                  </div>
+                  <div class="modal-row">
+                    <span class="modal-label">위약금</span>
+                    <span class="modal-val modal-val-penalty">-96,000원</span>
+                  </div>
+                  <div class="modal-sep"></div>
+                  <div class="modal-total-row">
+                    <span class="modal-total-label">환불 금액</span>
+                    <span class="modal-total-val">224,000원</span>
+                  </div>
+
+                  <!-- 관리자 오버라이드 -->
+                  <div class="modal-override-wrap">
+                    <label class="modal-override-check">
+                      <input type="checkbox" style="width:12px;height:12px" />
+                      환불금액 직접 수정
+                      <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px;display:inline-flex;align-items:center;justify-content:center">3</span>
+                    </label>
+                    <div class="modal-override-input-row" style="opacity:.4">
+                      <input class="modal-override-input" type="text" value="224,000" />
+                      <span class="modal-override-unit">원</span>
+                    </div>
+                    <textarea class="modal-reason-input" placeholder="수정 사유 입력 (필수)" style="opacity:.4"></textarea>
+                    <div class="modal-override-note">※ 변경 시 사유 입력 필수. 변경이력 자동 기록.</div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="modal-footer">
+                <span class="wf-btn wf-btn-sm">닫기</span>
+                <span class="wf-btn wf-btn-danger wf-btn-sm">취소 확정</span>
+              </div>
+            </div>
+          </div><!-- /modal-dim -->
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 주석 패널 -->
+    <div class="ann">
+      <h3>① 취소 처리 모달 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">위약금 조회 (API 10)</div>
+          <div class="ann-desc">
+            모달 오픈 시점에 API 10 자동 호출.<br>
+            <strong>DFLT_NM</strong>: 위약금 구간명 (PMS 설정값)<br>
+            <strong>DLFT_APLY_AMT</strong>: PMS 납부 위약금 원금 (주의: API 10 실제 필드명 오타 — DLFT)<br>
+            위약금율 = DLFT_APLY_AMT ÷ 입금가<br>
+            고객 청구 위약금 = 위약금율 × 판매가 (소수점 첫째자리 반올림)
+          </div>
+          <div class="ann-rule">※ API 10 실패 시 모달 오류 표시 + 수동 입력 모드로 전환.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">환불금액 자동 계산</div>
+          <div class="ann-desc">
+            환불금액 = 판매가 − 위약금 (자동 세팅).<br>
+            부분취소(부분취소) 선행 이력이 있을 경우 계산 기준 정책 적용. (④ 뷰 참고 — A/B안 사업부 결정 후 반영)
+          </div>
+          <div class="ann-rule">※ 무료 취소(위약금 0): 환불금액 = 판매가 전액. 자동 진행.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">환불금액 오버라이드</div>
+          <div class="ann-desc">
+            체크박스 선택 시 입력란 + 사유 textarea 활성화.<br>
+            변경 시 사유 입력 필수. 미입력 시 [취소 확정] 비활성.<br>
+            변경이력 자동 기록: 원래 계산값·수정값·사유·처리자.
+          </div>
+          <div class="ann-front">→ PMS 납부: DLFT_APLY_AMT 원금 그대로. 차액(마진 비례분) 우리 수취.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════
+       ② S10-B 취소요청 상태 뷰
+  ════════════════════════════════════════════ -->
+  <div class="sec-title" style="margin-top:48px;border-bottom-color:#8b5cf6">
+    <span class="sec-badge" style="background:#8b5cf6">S10-C</span>
+    ② S10-B — 취소요청 상태 뷰
+    <span style="font-size:12px;font-weight:400;color:#888">— 고객 취소 요청 접수 후 처리 대기 중</span>
+  </div>
+  <div class="sec-sub">
+    고객이 프런트에서 취소 요청 + 사유 선택 완료. API 10 자동 조회 결과가 요금정보 하단에 표시됨.<br>
+    관리자는 내용 확인 후 [취소하기] 클릭 → ① 모달로 진행.
+  </div>
+
+  <div class="two-col">
+    <div class="wf">
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span><span class="wf-gnb-item">티켓관리</span><span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item on">예약관리</span><span class="wf-gnb-item">공통관리</span>
+      </div>
+      <div class="wf-body">
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">예약관리</div>
+          <div class="wf-lnb-item on">예약 목록</div>
+          <div class="wf-lnb-item">취소 목록</div>
+        </div>
+        <div class="wf-main">
+          <div class="breadcrumb"><a>예약 목록</a> › BK-20260515-00001</div>
+
+          <div class="detail-header">
+            <div>
+              <div class="detail-badges">
+                <span class="detail-no">BK-20260515-00001</span>
+                <span class="wf-badge bg-pms" style="font-size:9px">PMS</span>
+                <span class="wf-badge bg-cancel-req">취소요청</span>
+              </div>
+              <div class="detail-meta">예약일시: 2026-05-15 14:32 &nbsp;|&nbsp; 취소요청일: 2026-05-19 09:45</div>
+              <div class="detail-status-row">
+                예약상태
+                <select class="status-select">
+                  <option>확정대기</option>
+                  <option>예약확정</option>
+                  <option selected>취소요청</option>
+                  <option>취소완료</option>
+                  <option>노쇼</option>
+                  <option>예약실패</option>
+                </select>
+                <span class="status-apply-btn">적용</span>
+              </div>
+            </div>
+            <div class="detail-actions">
+              <span class="wf-btn wf-btn-danger wf-btn-sm">취소하기</span>
+            </div>
+          </div>
+
+          <div class="omit-placeholder">예약 기본 정보 / 예약자 정보 / 투숙자 정보 — S10-B ① 메인과 동일 (생략)</div>
+
+          <!-- 요금 정보 — 취소요청 상태 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title">
+              <span class="detail-sec-title-left">
+                요금 정보
+                <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">A</span>
+              </span>
+              <span class="wf-btn wf-btn-sm" style="font-size:9px;padding:2px 8px;color:#dc2626;border-color:#dc2626">부분취소</span>
+            </div>
+
+            <div style="font-size:9px;font-weight:700;color:#aaa;margin-bottom:4px;letter-spacing:.04em">날짜별 요금 (입금가 기준)</div>
+            <div class="price-daily">
+              <div class="price-daily-row"><span class="price-daily-date">05-20 (수)</span><span class="price-daily-amt">160,000원</span></div>
+              <div class="price-daily-row"><span class="price-daily-date">05-21 (목)</span><span class="price-daily-amt">140,000원</span></div>
+            </div>
+            <div class="price-subtotal">
+              <div class="price-row">
+                <span class="price-label">입금가 합계 <span style="font-size:9px;background:#ede9fe;color:#6d28d9;padding:1px 5px;border-radius:3px;margin-left:4px">관리자 전용</span></span>
+                <span class="price-val" style="color:#6d28d9">300,000원</span>
+              </div>
+              <div class="price-row"><span class="price-label">마진</span><span class="price-val" style="color:#059669">+20,000원 (+6.6%)</span></div>
+              <div class="price-row"><span class="price-label">할인 <span class="price-tbd">추후 반영 예정</span></span><span class="price-val" style="color:#aaa">—</span></div>
+            </div>
+            <div class="price-sep"></div>
+            <div class="price-row price-total">
+              <span class="price-label">판매가</span>
+              <span class="price-val">320,000원</span>
+            </div>
+
+            <!-- API 10 조회 결과 -->
+            <div class="api-result-block">
+              <div class="api-result-title">⚡ API 10 위약금 조회 완료</div>
+              <div class="api-result-row">
+                <span class="api-result-key">취소 구간</span>
+                <span>취소 3일 전 (DFLT_NM)</span>
+              </div>
+              <div class="api-result-row">
+                <span class="api-result-key">위약금율</span>
+                <span>30% &nbsp;<span style="color:#aaa;font-size:9px">90,000 ÷ 300,000</span></span>
+              </div>
+              <div class="api-result-row">
+                <span class="api-result-key">위약금 예상</span>
+                <span style="color:#dc2626;font-weight:700">-96,000원</span>
+              </div>
+              <div class="api-result-preview-label" style="font-size:9px;font-weight:700;color:#166534;margin:5px 0 2px">환불 예정금액 (참고)</div>
+              <div class="api-result-preview" style="background:#fff;border:1px solid #d1fae5;border-radius:3px;padding:4px 7px">
+                <div class="price-row" style="font-size:10px"><span class="price-label">판매가</span><span class="price-val">320,000원</span></div>
+                <div class="price-row" style="font-size:10px"><span class="price-label">위약금</span><span class="price-val" style="color:#dc2626">-96,000원</span></div>
+                <div class="price-sep"></div>
+                <div class="price-row" style="font-size:11px"><span class="price-label" style="font-weight:700;color:#1a1f2e">환불 예정</span><span class="price-val" style="color:#059669">224,000원</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="omit-placeholder">관리자 전용 / 변경 이력 — S10-B ① 메인과 동일 (생략)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ann">
+      <h3>② 취소요청 상태 주석</h3>
+      <div class="ann-item">
+        <div class="cn">A</div>
+        <div class="ann-body">
+          <div class="ann-title">API 10 조회 결과 표시</div>
+          <div class="ann-desc">
+            고객 취소 요청 접수 시 API 10 자동 호출 → 결과를 요금정보 하단에 표시.<br>
+            <strong>조회 성공</strong>: 초록 블록으로 위약금·환불예정금액 표시.<br>
+            <strong>조회 실패</strong>: 빨간 경고 블록 ("API 10 조회 실패 — 관리자 수동 입력 필요") + 관리자 수동 입력란 활성화.<br><br>
+            표시된 금액은 참고값. 확정은 [취소하기] → ① 모달에서 최종 확인.
+          </div>
+          <div class="ann-rule">※ 취소요청 상태에서도 [부분취소] 버튼 노출. 전체 취소 전 PG 부분 환불 처리 가능.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════
+       ③ S10-B 취소완료 뷰 — 단순 케이스 (부분취소 없음)
+  ════════════════════════════════════════════ -->
+  <div class="sec-title" style="margin-top:48px;border-bottom-color:#8b5cf6">
+    <span class="sec-badge" style="background:#8b5cf6">S10-C</span>
+    ③ S10-B — 취소완료 (단순)
+    <span style="font-size:12px;font-weight:400;color:#888">— 부분취소 없이 전체 취소한 케이스</span>
+  </div>
+  <div class="sec-sub">
+    취소 확정 + PG 환불 완료 상태. 버튼 없음 (읽기 전용). 요금정보에 위약금·환불금액·환불 완료 정보 표시.
+  </div>
+
+  <div class="two-col">
+    <div class="wf">
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span><span class="wf-gnb-item">티켓관리</span><span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item on">예약관리</span><span class="wf-gnb-item">공통관리</span>
+      </div>
+      <div class="wf-body">
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">예약관리</div>
+          <div class="wf-lnb-item on">예약 목록</div>
+          <div class="wf-lnb-item">취소 목록</div>
+        </div>
+        <div class="wf-main">
+          <div class="breadcrumb"><a>예약 목록</a> › BK-20260515-00001</div>
+
+          <div class="detail-header">
+            <div>
+              <div class="detail-badges">
+                <span class="detail-no">BK-20260515-00001</span>
+                <span class="wf-badge bg-pms" style="font-size:9px">PMS</span>
+                <span class="wf-badge bg-cancelled">취소완료</span>
+              </div>
+              <div class="detail-meta">예약일시: 2026-05-15 14:32 &nbsp;|&nbsp; 취소일시: 2026-05-19 10:15</div>
+              <div class="detail-status-row" style="color:#bbb">
+                예약상태
+                <select class="status-select" disabled style="opacity:.5">
+                  <option selected>취소완료</option>
+                </select>
+                <span style="font-size:9px;color:#bbb">읽기 전용</span>
+              </div>
+            </div>
+            <div class="detail-actions">
+              <!-- 취소완료 상태 — 버튼 없음 -->
+            </div>
+          </div>
+
+          <div class="omit-placeholder">예약 기본 정보 / 예약자 정보 / 투숙자 정보 — S10-B ① 메인과 동일 (생략)</div>
+
+          <!-- 요금 정보 — 취소완료 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title">
+              <span class="detail-sec-title-left">
+                요금 정보
+                <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">B</span>
+              </span>
+              <span style="font-size:9px;color:#aaa">취소완료 <span class="cancel-readonly-badge">읽기 전용</span></span>
+            </div>
+
+            <div style="font-size:9px;font-weight:700;color:#aaa;margin-bottom:4px;letter-spacing:.04em">날짜별 요금 (입금가 기준)</div>
+            <div class="price-daily">
+              <div class="price-daily-row"><span class="price-daily-date">05-20 (수)</span><span class="price-daily-amt">160,000원</span></div>
+              <div class="price-daily-row"><span class="price-daily-date">05-21 (목)</span><span class="price-daily-amt">140,000원</span></div>
+            </div>
+            <div class="price-subtotal">
+              <div class="price-row">
+                <span class="price-label">입금가 합계 <span style="font-size:9px;background:#ede9fe;color:#6d28d9;padding:1px 5px;border-radius:3px;margin-left:4px">관리자 전용</span></span>
+                <span class="price-val" style="color:#6d28d9">300,000원</span>
+              </div>
+              <div class="price-row"><span class="price-label">마진</span><span class="price-val" style="color:#059669">+20,000원 (+6.6%)</span></div>
+              <div class="price-row"><span class="price-label">할인 <span class="price-tbd">추후 반영 예정</span></span><span class="price-val" style="color:#aaa">—</span></div>
+            </div>
+            <div class="price-sep"></div>
+            <div class="price-row price-total">
+              <span class="price-label">판매가</span>
+              <span class="price-val">320,000원</span>
+            </div>
+
+            <!-- 취소/위약금/환불 블록 -->
+            <div class="cancel-block">
+              <div class="cancel-block-label">취소 · 위약금 · 환불</div>
+              <div class="cancel-row">
+                <span>취소 구간<span class="cancel-row-hint">취소 3일 전 (DFLT_NM)</span></span>
+                <span style="color:#888">—</span>
+              </div>
+              <div class="cancel-row">
+                <span>위약금율<span class="cancel-row-hint">90,000 ÷ 300,000</span></span>
+                <span style="color:#555;font-weight:600">30%</span>
+              </div>
+              <div class="cancel-row cancel-row-penalty">
+                <span>위약금<span class="cancel-row-hint">30% × 320,000 · 반올림</span></span>
+                <span>-96,000원</span>
+              </div>
+              <div class="cancel-sep"></div>
+              <div class="cancel-refund-total">
+                <span>환불금액</span>
+                <span>224,000원</span>
+              </div>
+              <div class="cancel-meta" style="margin-top:6px;padding-top:6px;border-top:1px solid #f0f0ea">
+                <div class="cancel-row cancel-meta" style="color:#888"><span>환불 상태</span><span>● 완료</span></div>
+                <div class="cancel-row cancel-meta" style="color:#888"><span>환불 일시</span><span>2026-05-19 10:20</span></div>
+                <div class="cancel-row cancel-meta" style="color:#888"><span>환불 방법</span><span>PG 카드 환불</span></div>
+                <div class="cancel-row cancel-meta" style="color:#888"><span>PG 거래번호</span><span>PG-20260515-0009123</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 변경 이력 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title"><span class="detail-sec-title-left">변경 이력</span></div>
+            <table class="hist-table">
+              <thead>
+                <tr><th style="width:90px">일시</th><th style="width:72px">구분</th><th>내용</th><th style="width:64px">처리자</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color:#888">05-19 10:20</td>
+                  <td style="color:#059669">환불 완료</td>
+                  <td>PG 카드 환불 완료 — 224,000원 / PG-20260515-0009123</td>
+                  <td>SYSTEM</td>
+                </tr>
+                <tr>
+                  <td style="color:#888">05-19 10:15</td>
+                  <td style="color:#6b7280">취소완료</td>
+                  <td>PMS API 7 취소 성공 — 위약금 96,000원 / 환불 224,000원 확정</td>
+                  <td>SYSTEM</td>
+                </tr>
+                <tr>
+                  <td style="color:#888">05-19 09:45</td>
+                  <td style="color:#7c2d12">취소요청</td>
+                  <td>고객 취소 요청 — 사유: 일정 변경</td>
+                  <td>고객</td>
+                </tr>
+                <tr>
+                  <td style="color:#888">05-15 14:32</td>
+                  <td>예약 생성</td>
+                  <td>PMS API 6 예약 성공 — 예약확정</td>
+                  <td>SYSTEM</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="ann">
+      <h3>③ 취소완료 단순 주석</h3>
+      <div class="ann-item">
+        <div class="cn">B</div>
+        <div class="ann-body">
+          <div class="ann-title">취소 · 위약금 · 환불 블록</div>
+          <div class="ann-desc">
+            취소완료 또는 노쇼 상태일 때 요금정보 하단에 표시. 읽기 전용.<br><br>
+            <strong>취소 구간</strong>: API 10 DFLT_NM 저장값.<br>
+            <strong>위약금율</strong>: DLFT_APLY_AMT ÷ 입금가 (계산 근거 표시).<br>
+            <strong>위약금</strong>: 위약금율 × 판매가, 소수점 첫째자리 반올림.<br>
+            <strong>환불금액</strong>: 판매가 − 위약금 (기본값. 오버라이드 시 수정값 표시 + 사유 병기).<br><br>
+            <strong>환불 메타</strong>: 환불상태 / 환불일시 / 환불방법 / PG 거래번호.
+          </div>
+          <div class="ann-rule">※ 노쇼 시: 위약금 100% / 환불금액 0원 / 환불상태 없음.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════
+       ④ S10-B 취소완료 — 부분취소 선행 케이스 (A/B안)
+  ════════════════════════════════════════════ -->
+  <div class="sec-title" style="margin-top:48px;border-bottom-color:#8b5cf6">
+    <span class="sec-badge" style="background:#8b5cf6">S10-C</span>
+    ④ S10-B — 취소완료 · 부분취소 선행 (A/B안)
+    <span style="font-size:12px;font-weight:400;color:#888">— [부분취소] 선행 후 [취소하기] 실행 케이스</span>
+  </div>
+  <div class="sec-sub">
+    [부분취소] 2건(-80,000원) 실행 후 → [취소하기] 로 전체 취소.<br>
+    위약금 계산 기준을 <strong>A안 (판매가 기준)</strong> vs <strong>B안 (결제잔액 기준)</strong> 중 사업부 결정 후 확정.
+  </div>
+
+  <div class="two-col">
+    <div class="wf">
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span><span class="wf-gnb-item">티켓관리</span><span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item on">예약관리</span><span class="wf-gnb-item">공통관리</span>
+      </div>
+      <div class="wf-body">
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">예약관리</div>
+          <div class="wf-lnb-item on">예약 목록</div>
+          <div class="wf-lnb-item">취소 목록</div>
+        </div>
+        <div class="wf-main">
+          <div class="breadcrumb"><a>예약 목록</a> › BK-20260515-00001</div>
+
+          <div class="detail-header">
+            <div>
+              <div class="detail-badges">
+                <span class="detail-no">BK-20260515-00001</span>
+                <span class="wf-badge bg-pms" style="font-size:9px">PMS</span>
+                <span class="wf-badge bg-cancelled">취소완료</span>
+              </div>
+              <div class="detail-meta">예약일시: 2026-05-15 14:32 &nbsp;|&nbsp; 취소일시: 2026-05-22 11:00</div>
+            </div>
+          </div>
+
+          <div class="omit-placeholder">예약 기본 정보 / 예약자 정보 / 투숙자 정보 (생략)</div>
+
+          <!-- 요금 정보 — 부분취소 선행 + 취소완료 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title">
+              <span class="detail-sec-title-left">
+                요금 정보
+                <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">C</span>
+              </span>
+              <span style="font-size:9px;color:#aaa">취소완료 <span class="cancel-readonly-badge">읽기 전용</span></span>
+            </div>
+
+            <div class="price-row price-total" style="margin-bottom:4px">
+              <span class="price-label">판매가</span>
+              <span class="price-val">320,000원</span>
+            </div>
+
+            <!-- 부분취소 내역 -->
+            <div class="pay-cancel-block">
+              <div class="pay-cancel-label">부분취소 내역 (전체 취소 前 실행)</div>
+              <div class="pay-cancel-entry"><span>05-20 14:32 · 관리자</span><span class="pay-cancel-entry-amt">-50,000원</span></div>
+              <div class="pay-cancel-entry"><span>05-21 09:15 · 관리자</span><span class="pay-cancel-entry-amt">-30,000원</span></div>
+              <div class="pay-cancel-subtotal"><span>총 부분취소액</span><span>-80,000원</span></div>
+              <div class="pay-balance-row"><span>결제 잔액</span><span>240,000원</span></div>
+            </div>
+
+            <!-- A/B안 비교 박스 -->
+            <div style="font-size:9px;font-weight:700;color:#dc2626;margin:10px 0 4px;letter-spacing:.03em">⚠ 위약금 계산 기준 — 사업부 결정 필요 (TBD)</div>
+            <div class="compare-wrap">
+
+              <!-- A안 -->
+              <div class="compare-box compare-box-a">
+                <div class="compare-box-title">A안 — 판매가 기준</div>
+                <div class="compare-row"><span class="compare-key">위약금율</span><span>30%</span></div>
+                <div class="compare-row"><span class="compare-key">기준 금액</span><span>판매가 320,000</span></div>
+                <div class="compare-row"><span class="compare-key">위약금</span><span class="compare-penalty">-96,000원</span></div>
+                <div class="compare-sep"></div>
+                <div class="compare-row"><span class="compare-key">결제 잔액</span><span>240,000원</span></div>
+                <div class="compare-row"><span class="compare-key">위약금 차감</span><span class="compare-penalty">-96,000원</span></div>
+                <div class="compare-sep"></div>
+                <div class="compare-row"><span class="compare-key">환불금액</span><span class="compare-refund">144,000원</span></div>
+                <div class="compare-basis">위약금 = 원래 판매가 기준 그대로</div>
+              </div>
+
+              <!-- B안 -->
+              <div class="compare-box compare-box-b">
+                <div class="compare-box-title">B안 — 결제잔액 기준</div>
+                <div class="compare-row"><span class="compare-key">위약금율</span><span>30%</span></div>
+                <div class="compare-row"><span class="compare-key">기준 금액</span><span>잔액 240,000</span></div>
+                <div class="compare-row"><span class="compare-key">위약금</span><span class="compare-penalty">-72,000원</span></div>
+                <div class="compare-sep"></div>
+                <div class="compare-row"><span class="compare-key">결제 잔액</span><span>240,000원</span></div>
+                <div class="compare-row"><span class="compare-key">위약금 차감</span><span class="compare-penalty">-72,000원</span></div>
+                <div class="compare-sep"></div>
+                <div class="compare-row"><span class="compare-key">환불금액</span><span class="compare-refund">168,000원</span></div>
+                <div class="compare-basis">위약금 = 실제 결제 잔액 기준</div>
+              </div>
+
+            </div>
+
+            <!-- 취소/환불 블록 (A안 기준 샘플) -->
+            <div class="cancel-block" style="margin-top:10px">
+              <div class="cancel-block-label">취소 · 위약금 · 환불 (A안 적용 시 샘플)</div>
+              <div class="cancel-row cancel-row-penalty">
+                <span>위약금<span class="cancel-row-hint">30% × 판매가 320,000</span></span>
+                <span>-96,000원</span>
+              </div>
+              <div class="cancel-sep"></div>
+              <div class="cancel-refund-total">
+                <span>환불금액</span>
+                <span>144,000원</span>
+              </div>
+              <div style="margin-top:6px;padding-top:6px;border-top:1px solid #f0f0ea">
+                <div class="cancel-row cancel-meta" style="color:#888"><span>환불 상태</span><span>● 완료</span></div>
+                <div class="cancel-row cancel-meta" style="color:#888"><span>환불 일시</span><span>2026-05-22 11:08</span></div>
+                <div class="cancel-row cancel-meta" style="color:#888"><span>환불 방법</span><span>PG 카드 환불</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="omit-placeholder">관리자 전용 / 변경 이력 (생략)</div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="ann">
+      <h3>④ 부분취소 선행 주석</h3>
+      <div class="ann-item">
+        <div class="cn">C</div>
+        <div class="ann-body">
+          <div class="ann-title">A안 vs B안 — 사업부 결정 필요</div>
+          <div class="ann-desc">
+            <strong>A안 — 판매가 기준</strong>: 위약금 계산 기준을 원래 판매가로 고정. 부분취소 여부 무관하게 동일한 위약금율 적용. 고객에게 불리. PMS 정책 원칙에 부합.<br>
+            → 위약금 96,000 / 환불 144,000원<br><br>
+            <strong>B안 — 결제잔액 기준</strong>: 이미 부분환불된 잔액에 위약금율 적용. 고객에게 유리. 고객 입장에서 직관적.<br>
+            → 위약금 72,000 / 환불 168,000원<br><br>
+            두 안 모두 위약금율은 API 10 기준으로 동일.
+          </div>
+          <div class="ann-rule">※ 확정 전까지 화면은 A안으로 표시. 결정 후 정책서 섹션 12 + 모달 계산 로직 업데이트 예정.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+</body>
+</html>

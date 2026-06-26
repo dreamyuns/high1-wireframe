@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S07-B 시설 카테고리 등록·수정</title>
+  <link rel="stylesheet" href="wf-styles.css" />
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">시설 카테고리 등록·수정</span>
+  <span class="page-nav-route">#/categories/place · #/categories/room</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s07-category-list.html">← 이전</a>
+    <a class="page-nav-pager" href="s08-facility-list.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="two-col">
+
+    <!-- 와이어프레임 -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item on">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">공통관리</div>
+          <div class="wf-lnb-item on">카테고리관리</div>
+          <div class="wf-lnb-item">시설관리</div>
+          <div class="wf-lnb-item">객실유형관리</div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="wf-main">
+          <div class="wf-page-title">
+            카테고리 등록
+            <span class="wf-badge" style="font-size:11px;margin-left:8px;">S07-B</span>
+          </div>
+
+          <!-- 폼 -->
+          <div class="wf-form-row">
+            <div class="wf-form-label">카테고리 코드</div>
+            <div class="wf-form-field">
+              <input class="wf-input wf-input-ro" type="text" value="plc00004 (자동)" readonly />
+              <span class="wf-cn">1</span>
+              <div class="wf-hint">PLACE: plc##### / ROOM: rmc##### 형식. 자동 채번. 수정 불가.</div>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">도메인 <span class="wf-form-req">*</span></div>
+            <div class="wf-form-field">
+              <select class="wf-select">
+                <option>PLACE ▾</option>
+                <option>ROOM</option>
+              </select>
+              <span class="wf-cn">2</span>
+              <div class="wf-hint">PLACE: 숙소 시설 카테고리 / ROOM: 객실 시설 카테고리. 등록 후 변경 불가.</div>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">카테고리명 <span class="wf-form-req">*</span> <small style="font-weight:normal;color:#888;">(plain string)</small></div>
+            <div class="wf-form-field">
+              <input class="wf-input" type="text" value="신규 카테고리명" />
+              <span class="wf-cn">3</span>
+              <div class="wf-hint">한국어 단일 문자열. { ko, en } 다국어 객체 아님.</div>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">픽토그램 이미지 <span class="opt" style="font-size:9px;color:#aaa;font-weight:400">(선택)</span></div>
+            <div class="wf-form-field">
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <div class="wf-img-placeholder" style="width:64px;height:64px;flex-shrink:0;font-size:9px;">미리보기</div>
+                <div style="flex:1">
+                  <button class="wf-btn wf-btn-sm" style="margin-bottom:6px;">이미지 선택</button>
+                  <div class="wf-hint">PNG · SVG 권장. 1:1 비율. 최대 100KB.<br>미입력 시 기본 아이콘 표시.</div>
+                </div>
+              </div>
+              <span class="wf-cn">4</span>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">노출 여부</div>
+            <div class="wf-form-field">
+              <select class="wf-select">
+                <option>Y (노출) ▾</option>
+                <option>N (비노출)</option>
+              </select>
+              <span class="wf-cn">5</span>
+            </div>
+          </div>
+
+          <!-- 하단 버튼 -->
+          <div class="wf-toolbar" style="margin-top:24px;justify-content:flex-end;gap:8px;">
+            <button class="wf-btn">취소</button>
+            <button class="wf-btn wf-btn-primary">저장</button>
+          </div>
+
+        </div><!-- /wf-main -->
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+    <!-- 주석 -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="ann-title"><span class="cn">1</span> 카테고리 코드</div>
+        <div class="ann-body">
+          <div class="ann-desc">PLACE 도메인은 plc00001~, ROOM 도메인은 rmc00001~ 순번으로 자동 채번. 수정 불가. 등록 후 변경 없음.</div>
+          <div class="ann-rule">코드는 내부 식별자. 시설(facility)의 category_id 참조키로 사용됨.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="ann-title"><span class="cn">2</span> 도메인 선택</div>
+        <div class="ann-body">
+          <div class="ann-desc">PLACE: 숙소 시설 피커(숙소 등록 5단계)에서 사용. ROOM: 객실 시설 피커(객실 등록)에서 사용. 등록 후 도메인 변경 불가(이미 연결된 시설 관계 파괴 위험).</div>
+          <div class="ann-rule">도메인 변경 불가 정책. 잘못 선택 시 삭제 후 재등록 필요.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="ann-title"><span class="cn">3</span> 카테고리명</div>
+        <div class="ann-body">
+          <div class="ann-desc">plain string(한국어). 프런트에서 시설 그룹 헤더 텍스트로 직접 표시됨. 이름 변경 시 프런트 표시명도 즉시 변경됨.</div>
+          <div class="ann-front">→ 프런트: 숙소 레이어 > 안내정보 탭 시설 카테고리 헤더 / Room Detail 시설 그룹 헤더</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="ann-title"><span class="cn">4</span> 픽토그램 이미지</div>
+        <div class="ann-body">
+          <div class="ann-desc">카테고리를 시각적으로 구분하기 위한 아이콘 이미지. 선택 사항이며 미입력 시 기본 아이콘으로 대체. PNG 또는 SVG, 1:1 비율, 100KB 이하 권장.</div>
+          <div class="ann-rule">현재 프런트(v0.4)에서는 픽토그램 미사용. 실서비스 UI에서 카테고리 헤더 아이콘으로 활용 예정.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="ann-title"><span class="cn">5</span> 노출 여부</div>
+        <div class="ann-body">
+          <div class="ann-desc">Y: 숙소·객실 시설 피커에서 표시. N: 피커에서 숨김(이미 연결된 시설은 유지).</div>
+          <div class="ann-rule">노출 N 처리 시 해당 카테고리의 시설이 프런트에서도 미노출될 수 있음. 확인 필요.</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+  </div><!-- /two-col -->
+</div><!-- /page -->
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>High1 Admin Prototype v0.4</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <h1>High1 Admin <span class="ver-badge">v0.4</span></h1>
+        <div class="nav-group">
+          <div class="nav-group-title">숙소/객실관리</div>
+          <button type="button" class="nav-link" data-route="places">숙소관리</button>
+          <button type="button" class="nav-link" data-route="rooms">객실관리</button>
+          <button type="button" class="nav-link" data-route="products">상품관리</button>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">공통관리</div>
+          <div class="nav-group-subtitle">카테고리 관리</div>
+          <button type="button" class="nav-link nav-link-sub" data-route="categories/place">
+            숙소시설관리
+          </button>
+          <button type="button" class="nav-link nav-link-sub" data-route="categories/room">
+            객실시설관리
+          </button>
+          <div class="nav-group-subtitle">시설 관리</div>
+          <button type="button" class="nav-link nav-link-sub" data-route="facilities/place">숙소 시설</button>
+          <button type="button" class="nav-link nav-link-sub" data-route="facilities/room">객실 시설</button>
+          <button type="button" class="nav-link" data-route="room-masters">객실유형관리</button>
+        </div>
+      </aside>
+      <main id="main"></main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

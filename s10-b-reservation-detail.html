@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S10-B — 예약 상세 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+  /* ── S10 상태 배지 ── */
+  .bg-confirmed   { background:#d1fae5; color:#065f46 }
+  .bg-pending     { background:#fef3c7; color:#92400e }
+  .bg-failed      { background:#fee2e2; color:#991b1b }
+  .bg-cancel-req  { background:#ffedd5; color:#7c2d12 }
+  .bg-cancelled   { background:#f3f4f6; color:#6b7280 }
+  .bg-noshow      { background:#1a1f2e; color:#fff }
+  .bg-pms         { background:#e0edff; color:#1a4fa0 }
+  .bg-manual      { background:#f0f0ea; color:#555 }
+
+  /* ── 정보 그리드 ── */
+  .info-grid { font-size:11px }
+  .info-row  { display:flex; padding:5px 0; border-bottom:1px solid #f0f0ea; align-items:baseline }
+  .info-row:last-child { border-bottom:none }
+  .info-key  { width:96px; flex-shrink:0; color:#888; font-weight:600; line-height:1.5 }
+  .info-val  { flex:1; color:#1a1f2e; line-height:1.5 }
+
+  /* ── 상세 섹션 카드 ── */
+  .detail-sec { background:#fff; border:1px solid #e0e0da; border-radius:5px; padding:12px 14px; margin-bottom:10px }
+  .detail-sec-title {
+    font-size:10px; font-weight:700; color:#666; text-transform:uppercase;
+    letter-spacing:.06em; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid #f0f0ea;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .detail-sec-title-left { display:flex; align-items:center; gap:4px }
+
+  /* ── 요금 블록 ── */
+  .price-daily { font-size:10px; margin-bottom:8px }
+  .price-daily-row { display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #f5f5f3 }
+  .price-daily-row:last-child { border-bottom:none }
+  .price-daily-date { color:#888 }
+  .price-daily-amt  { color:#1a1f2e; font-weight:500 }
+  .more-btn { font-size:10px; color:#1a6fb8; cursor:pointer; padding:3px 0; display:inline-block }
+  .price-subtotal { border-top:1px solid #e0e0da; margin:6px 0 4px; padding-top:6px }
+  .price-row { display:flex; justify-content:space-between; align-items:baseline; padding:3px 0; font-size:11px }
+  .price-label { color:#888 }
+  .price-val   { font-weight:600 }
+  .price-sep   { border-top:1px solid #e0e0da; margin:4px 0 }
+  .price-total .price-label { font-weight:700; color:#1a1f2e }
+  .price-total .price-val   { font-size:13px; color:#1a1f2e }
+  .price-tbd   { font-size:9px; color:#aaa; font-weight:400; margin-left:4px }
+
+  /* ── 결제취소 내역 블록 ── */
+  .pay-cancel-block { margin-top:10px; padding-top:8px; border-top:1px dashed #e0e0da }
+  .pay-cancel-label { font-size:9px; font-weight:700; color:#aaa; margin-bottom:4px; letter-spacing:.04em }
+  .pay-cancel-entry { display:flex; justify-content:space-between; font-size:10px; padding:2px 0; color:#777 }
+  .pay-cancel-entry-amt { color:#dc2626; font-weight:600 }
+  .pay-cancel-subtotal { display:flex; justify-content:space-between; font-size:10px; padding:4px 0 2px; border-top:1px solid #e0e0da; margin-top:3px; font-weight:700; color:#dc2626 }
+  .pay-balance-row { display:flex; justify-content:space-between; font-size:11px; font-weight:700; padding:3px 0; color:#1a1f2e; border-top:1px solid #e0e0da; margin-top:2px; padding-top:4px }
+
+  /* ── 예약 헤더 ── */
+  .detail-header {
+    display:flex; justify-content:space-between; align-items:flex-start;
+    margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #e0e0da;
+  }
+  .detail-no     { font-size:13px; font-weight:700; color:#1a1f2e }
+  .detail-badges { display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-bottom:4px }
+  .detail-meta   { font-size:10px; color:#aaa }
+  .detail-actions { display:flex; gap:6px; align-items:center; flex-shrink:0; margin-left:12px }
+
+  /* ── 예약상태 수기 변경 행 ── */
+  .detail-status-row { display:flex; align-items:center; gap:6px; margin-top:5px; font-size:10px; color:#888 }
+  .status-select { font-size:10px; padding:2px 6px; border:1px solid #d0d0ca; border-radius:3px; color:#1a1f2e; background:#fff; cursor:pointer }
+  .status-apply-btn { font-size:9px; padding:2px 8px; border:1px solid #8b5cf6; border-radius:3px; color:#8b5cf6; background:#fff; cursor:pointer; white-space:nowrap }
+
+  /* ── 브레드크럼 ── */
+  .breadcrumb { font-size:10px; color:#aaa; margin-bottom:10px }
+  .breadcrumb a { color:#1a6fb8; text-decoration:underline }
+
+  /* ── 변경 이력 테이블 ── */
+  .hist-table { width:100%; border-collapse:collapse; font-size:10px }
+  .hist-table th { background:#f5f5f3; padding:5px 8px; text-align:left; color:#666; font-weight:600; border:1px solid #e0e0da }
+  .hist-table td { padding:5px 8px; border:1px solid #eee; color:#333; vertical-align:top }
+
+  /* ── 투숙자 변경 요청 박스 ── */
+  .change-req-box { background:#eff6ff; border:1px solid #93c5fd; border-radius:4px; padding:10px 12px; margin-bottom:10px }
+  .change-req-title { font-size:11px; font-weight:700; color:#1e40af; margin-bottom:8px }
+  .change-req-grid { display:grid; grid-template-columns:80px 1fr 1fr; gap:4px 8px; font-size:10px; margin-bottom:8px }
+  .change-req-grid .col-head  { font-size:9px; font-weight:700; color:#888 }
+  .change-req-grid .col-label { color:#888; font-weight:600 }
+  .change-req-grid .col-old   { color:#999; text-decoration:line-through }
+  .change-req-grid .col-new   { color:#15803d; font-weight:600 }
+
+  /* ── 생략 플레이스홀더 ── */
+  .omit-placeholder { text-align:center; padding:8px; font-size:10px; color:#bbb; border:1px dashed #e0e0da; border-radius:4px; margin-bottom:10px }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">S10-B 예약 상세</span>
+  <span class="page-nav-route">#/reservations/:id</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s10-a-reservation-list.html">← 이전</a>
+    <a class="page-nav-pager" href="s10-c-cancel-modal.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge" style="background:#8b5cf6">S10-B</span>
+    예약 상세
+    <span style="font-size:12px;font-weight:400;color:#888">— #/reservations/:id</span>
+  </div>
+  <div class="sec-sub">
+    예약 1건의 전체 정보 화면. 연동 유형(PMS/수기)·상태에 따라 관리자 액션 버튼 구성이 달라진다.<br>
+    <strong>[취소하기]</strong>: 우측 상단 고정. 예약취소(PMS) + 전액 결제취소(PG) 동시 요청. &nbsp;<strong>[부분취소]</strong>: 요금정보 섹션 우측. PG 부분 결제취소만 단독 처리.<br>
+    와이어프레임 4종: ① PMS 예약확정 (메인) &nbsp;② 수기 확정대기 &nbsp;③ 투숙자 변경 요청 &nbsp;④ 예약실패
+  </div>
+
+
+  <!-- ════════════════════════════════════════════
+       ① 메인 와이어프레임 — PMS 예약확정
+  ════════════════════════════════════════════ -->
+  <div class="two-col">
+    <div class="wf">
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item on">예약관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+      <div class="wf-body">
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">예약관리</div>
+          <div class="wf-lnb-item on">예약 목록</div>
+          <div class="wf-lnb-item">취소 목록</div>
+        </div>
+        <div class="wf-main">
+          <div class="breadcrumb"><a>예약 목록</a> › BK-20260515-00001</div>
+
+          <!-- 헤더 -->
+          <div class="detail-header">
+            <div>
+              <div class="detail-badges">
+                <span class="detail-no">BK-20260515-00001</span>
+                <span class="wf-badge bg-pms" style="font-size:9px">PMS</span>
+                <span class="wf-badge bg-confirmed">예약확정</span>
+                <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">1</span>
+              </div>
+              <div class="detail-meta">예약일시: 2026-05-15 14:32</div>
+              <!-- 예약상태 수기 변경 -->
+              <div class="detail-status-row">
+                예약상태
+                <select class="status-select">
+                  <option>확정대기</option>
+                  <option selected>예약확정</option>
+                  <option>취소요청</option>
+                  <option>취소완료</option>
+                  <option>노쇼</option>
+                  <option>예약실패</option>
+                </select>
+                <span class="status-apply-btn">적용</span>
+                <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">7</span>
+              </div>
+            </div>
+            <div class="detail-actions">
+              <span class="wf-btn wf-btn-danger wf-btn-sm">취소하기</span>
+            </div>
+          </div>
+
+          <!-- 예약 기본 정보 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title"><span class="detail-sec-title-left">예약 기본 정보</span></div>
+            <div class="info-grid">
+              <div class="info-row"><span class="info-key">상품명</span><span class="info-val">디럭스 킹 룸온리</span></div>
+              <div class="info-row"><span class="info-key">숙소</span><span class="info-val">그랜드 호텔</span></div>
+              <div class="info-row"><span class="info-key">객실유형</span><span class="info-val">디럭스 킹</span></div>
+              <div class="info-row"><span class="info-key">체크인</span><span class="info-val">2026-05-20 (수)</span></div>
+              <div class="info-row"><span class="info-key">체크아웃</span><span class="info-val">2026-05-22 (금)</span></div>
+              <div class="info-row"><span class="info-key">박수 / 객실수</span><span class="info-val">2박 / 1개</span></div>
+              <div class="info-row"><span class="info-key">성인 / 아동</span><span class="info-val">2명 / 0명</span></div>
+            </div>
+          </div>
+
+          <!-- 예약자 정보 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title">
+              <span class="detail-sec-title-left">
+                예약자 정보
+                <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">2</span>
+              </span>
+            </div>
+            <div class="info-grid">
+              <div class="info-row"><span class="info-key">성명 (KO)</span><span class="info-val">홍길동</span></div>
+              <div class="info-row"><span class="info-key">성명 (EN)</span><span class="info-val">Hong Gil Dong</span></div>
+              <div class="info-row"><span class="info-key">연락처</span><span class="info-val">+82 010-1234-5678</span></div>
+              <div class="info-row"><span class="info-key">이메일</span><span class="info-val">hong@example.com</span></div>
+            </div>
+          </div>
+
+          <!-- 투숙자 정보 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title">
+              <span class="detail-sec-title-left">
+                투숙자 정보
+                <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">3</span>
+              </span>
+            </div>
+            <div class="info-grid">
+              <div class="info-row"><span class="info-key">성명 (KO)</span><span class="info-val">홍길동</span></div>
+              <div class="info-row"><span class="info-key">성명 (EN)</span><span class="info-val">Hong Gil Dong</span></div>
+              <div class="info-row"><span class="info-key">연락처</span><span class="info-val">+82 010-1234-5678</span></div>
+              <div class="info-row"><span class="info-key">이메일</span><span class="info-val">hong@example.com</span></div>
+              <div class="info-row"><span class="info-key">국적</span><span class="info-val">대한민국 (KR)</span></div>
+              <div class="info-row">
+                <span class="info-key">여권번호 <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">3a</span></span>
+                <span class="info-val" style="color:#aaa">—</span>
+              </div>
+              <div class="info-row"><span class="info-key">특이사항</span><span class="info-val" style="color:#aaa">—</span></div>
+            </div>
+          </div>
+
+          <!-- 요금 정보 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title">
+              <span class="detail-sec-title-left">
+                요금 정보
+                <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">4</span>
+              </span>
+              <span class="wf-btn wf-btn-sm" style="font-size:9px;padding:2px 8px;color:#dc2626;border-color:#dc2626">부분취소</span>
+            </div>
+
+            <!-- 날짜별 입금가 내역 (DAILYPRICE) -->
+            <div style="font-size:9px;font-weight:700;color:#aaa;margin-bottom:4px;letter-spacing:.04em">날짜별 요금 (입금가 기준)</div>
+            <div class="price-daily">
+              <div class="price-daily-row">
+                <span class="price-daily-date">05-20 (수)</span>
+                <span class="price-daily-amt">160,000원</span>
+              </div>
+              <div class="price-daily-row">
+                <span class="price-daily-date">05-21 (목)</span>
+                <span class="price-daily-amt">140,000원</span>
+              </div>
+            </div>
+
+            <!-- 합계 구분선 -->
+            <div class="price-subtotal">
+              <div class="price-row">
+                <span class="price-label">
+                  입금가 합계
+                  <span style="font-size:9px;background:#ede9fe;color:#6d28d9;padding:1px 5px;border-radius:3px;margin-left:4px">관리자 전용</span>
+                </span>
+                <span class="price-val" style="color:#6d28d9">300,000원</span>
+              </div>
+              <div class="price-row">
+                <span class="price-label">마진</span>
+                <span class="price-val" style="color:#059669">+20,000원 (+6.6%)</span>
+              </div>
+              <div class="price-row">
+                <span class="price-label">
+                  할인
+                  <span class="price-tbd">추후 반영 예정</span>
+                </span>
+                <span class="price-val" style="color:#aaa">—</span>
+              </div>
+            </div>
+            <div class="price-sep"></div>
+            <div class="price-row price-total">
+              <span class="price-label">판매가 (고객 결제금액)</span>
+              <span class="price-val">320,000원</span>
+            </div>
+
+            <!-- 결제취소 내역 — 2건 샘플 (취소 이력 있는 케이스) -->
+            <div class="pay-cancel-block">
+              <div class="pay-cancel-label">결제취소 내역 (수기)</div>
+              <div class="pay-cancel-entry">
+                <span>05-20 14:32 · 관리자</span>
+                <span class="pay-cancel-entry-amt">-50,000원</span>
+              </div>
+              <div class="pay-cancel-entry">
+                <span>05-21 09:15 · 관리자</span>
+                <span class="pay-cancel-entry-amt">-30,000원</span>
+              </div>
+              <div class="pay-cancel-subtotal">
+                <span>총 취소액</span>
+                <span>-80,000원</span>
+              </div>
+              <div class="pay-balance-row">
+                <span>결제 잔액</span>
+                <span>240,000원</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 관리자 전용 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title">
+              <span class="detail-sec-title-left">
+                관리자 전용
+                <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">5</span>
+              </span>
+            </div>
+            <div class="wf-form-row" style="margin-bottom:0">
+              <div class="wf-form-label">관리자 메모</div>
+              <div class="wf-form-field">
+                <textarea class="wf-textarea" style="min-height:44px" placeholder="내부 메모 (고객 미노출)"></textarea>
+                <div class="wf-hint">저장 시 변경 이력에 자동 기록됨.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 변경 이력 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title">
+              <span class="detail-sec-title-left">
+                변경 이력
+                <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">6</span>
+              </span>
+            </div>
+            <table class="hist-table">
+              <thead>
+                <tr>
+                  <th style="width:90px">일시</th>
+                  <th style="width:72px">구분</th>
+                  <th>내용</th>
+                  <th style="width:64px">처리자</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color:#888">05-21 09:15</td>
+                  <td>결제취소</td>
+                  <td>수기 결제취소 -30,000원 / 잔액 240,000원</td>
+                  <td>admin</td>
+                </tr>
+                <tr>
+                  <td style="color:#888">05-20 14:32</td>
+                  <td>결제취소</td>
+                  <td>수기 결제취소 -50,000원 / 잔액 270,000원</td>
+                  <td>admin</td>
+                </tr>
+                <tr>
+                  <td style="color:#888">05-15 14:32</td>
+                  <td>예약 생성</td>
+                  <td>PMS API 6 예약 성공 — 예약확정</td>
+                  <td>SYSTEM</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div><!-- /wf-main -->
+      </div>
+    </div>
+
+    <!-- 주석 패널 -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">상태별 액션 버튼</div>
+          <div class="ann-desc">
+            <strong>[취소하기]</strong>: 우측 상단 항상 고정. 클릭 시 <strong>예약취소(PMS API 7) + 전액 결제취소(PG) 동시 요청</strong> → S10-C 모달에서 최종 확인 후 처리.<br>
+            <strong>[부분취소]</strong>: 요금정보 섹션 우측. PG 부분 결제취소만 단독 처리 (예약 상태 변경 없음).
+            <table style="width:100%;font-size:10px;border-collapse:collapse;margin-top:6px">
+              <tr style="background:#f5f5f3">
+                <td style="padding:3px 5px;border:1px solid #e8e8e2;font-weight:700">상태</td>
+                <td style="padding:3px 5px;border:1px solid #e8e8e2;font-weight:700">연동</td>
+                <td style="padding:3px 5px;border:1px solid #e8e8e2;font-weight:700">추가 액션 (우측 상단)</td>
+              </tr>
+              <tr><td style="padding:3px 5px;border:1px solid #e8e8e2"><span class="wf-badge bg-pending" style="font-size:9px">확정대기</span></td><td style="padding:3px 5px;border:1px solid #e8e8e2">수기</td><td style="padding:3px 5px;border:1px solid #e8e8e2"><strong>예약 확정</strong> / <strong>예약 거절</strong> + 취소하기</td></tr>
+              <tr><td style="padding:3px 5px;border:1px solid #e8e8e2"><span class="wf-badge bg-confirmed" style="font-size:9px">예약확정</span></td><td style="padding:3px 5px;border:1px solid #e8e8e2">공통</td><td style="padding:3px 5px;border:1px solid #e8e8e2">취소하기만</td></tr>
+              <tr><td style="padding:3px 5px;border:1px solid #e8e8e2"><span class="wf-badge bg-cancel-req" style="font-size:9px">취소요청</span></td><td style="padding:3px 5px;border:1px solid #e8e8e2">공통</td><td style="padding:3px 5px;border:1px solid #e8e8e2">취소하기만</td></tr>
+              <tr><td style="padding:3px 5px;border:1px solid #e8e8e2"><span class="wf-badge bg-failed" style="font-size:9px">예약실패</span></td><td style="padding:3px 5px;border:1px solid #e8e8e2">PMS</td><td style="padding:3px 5px;border:1px solid #e8e8e2">취소하기만</td></tr>
+              <tr><td style="padding:3px 5px;border:1px solid #e8e8e2"><span class="wf-badge bg-cancelled" style="font-size:9px">취소완료</span></td><td style="padding:3px 5px;border:1px solid #e8e8e2">공통</td><td style="padding:3px 5px;border:1px solid #e8e8e2;color:#aaa">없음 (읽기 전용)</td></tr>
+              <tr><td style="padding:3px 5px;border:1px solid #e8e8e2"><span class="wf-badge bg-noshow" style="font-size:9px">노쇼</span></td><td style="padding:3px 5px;border:1px solid #e8e8e2">공통</td><td style="padding:3px 5px;border:1px solid #e8e8e2;color:#aaa">없음 (읽기 전용)</td></tr>
+            </table>
+          </div>
+          <div class="ann-rule">※ 취소완료·노쇼 상태에서는 요금 정보 섹션 하단에 위약금·환불금액·환불일시가 추가 표시됨.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">예약자 정보 (Booker)</div>
+          <div class="ann-desc">
+            결제 및 예약을 진행한 사람. API 6 전송값 / API 8 수신값 기준.<br>
+            예약자 ≠ 투숙자일 수 있음. (예: 자녀가 부모 여행 예약 등)<br>
+            두 섹션은 같을 때도 항상 분리 표시.
+          </div>
+          <div class="ann-front">→ 프런트: 예약자 이메일로 예약 확인 / 취소 알림 발송</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">투숙자 정보 (Guest)</div>
+          <div class="ann-desc">
+            실제 체크인하는 사람. 예약자와 다를 수 있음.<br>
+            변경 요청 처리: B안 확정 — 고객 프런트 요청 → 관리자 승인 → API 12 호출. (③ 투숙자 변경 요청 뷰 참고)
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3a</div>
+        <div class="ann-body">
+          <div class="ann-title">여권번호</div>
+          <div class="ann-desc">
+            외국인 투숙객 체크인 시 필요한 여권번호 필드. 현재는 단순 텍스트 표시.<br>
+            미입력 시 "—" 표시. 향후 프런트 예약 폼에서 입력 → 어드민에 표시되는 흐름 예정.
+          </div>
+          <div class="ann-rule">※ 여권번호는 민감 개인정보. 저장 시 암호화 처리 필요 (개발 시 보안 정책 확인 필요).<br>추후 만료일·국적 등 추가 필드 확장 가능성 있음.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">요금 정보 — DAILYPRICE + 결제취소</div>
+          <div class="ann-desc">
+            날짜별 요금은 API 8 DAILYPRICE 기준 (입금가 단위).<br>
+            최대 3행 표시 → 초과 시 [더 보기 ▼] 버튼으로 펼침.<br>
+            판매가는 합계만 표시 (일별 판매가 미분리).<br><br>
+            <strong>[부분취소]</strong> 버튼: 섹션 우측 상단 항상 노출.<br>
+            클릭 → 취소 금액 입력 → 잔액 자동 계산 → PG 부분 취소 요청.<br>
+            복수 실행 가능. 취소 이력은 결제취소 내역 블록에 누적 표시.<br>
+            결제 잔액 = 판매가 − 총 취소액. 예약 상태는 변경되지 않음.
+          </div>
+          <div class="ann-rule">※ 할인 행은 정책 미확정 — 자리 예약만. 확정 후 계산식 반영 예정.</div>
+          <div class="ann-rule">※ 결제취소 내역이 없으면 해당 블록 미표시.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">관리자 전용</div>
+          <div class="ann-desc">
+            <strong>관리자 메모</strong>: 자유 텍스트. 고객 미노출. 저장 시 변경이력 자동 기록.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">6</div>
+        <div class="ann-body">
+          <div class="ann-title">변경 이력</div>
+          <div class="ann-desc">
+            자동 기록 이벤트: 예약 생성 / 상태 변경 / 투숙자 정보 수정 / 관리자 메모 저장 / 결제취소 / 위약금 계산 / 환불 처리<br>
+            예약실패 시 오류 상세(오류코드·PG 거래번호 등)도 이력에 기록.
+          </div>
+          <div class="ann-rule">※ 처리자: SYSTEM (자동) 또는 관리자 ID (수동)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">7</div>
+        <div class="ann-body">
+          <div class="ann-title">예약상태 수기 변경</div>
+          <div class="ann-desc">
+            예약일시 하단의 셀렉트 드롭다운으로 언제든지 수기 변경 가능.<br>
+            PMS 연동 예약도 오버라이드 허용 (관리자 책임).<br>
+            변경 시 변경이력 자동 기록 (처리자: 관리자 ID).
+          </div>
+          <div class="ann-rule">※ PMS 실제 상태와 불일치 발생 가능 — 운영 정책으로 관리.</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+  </div><!-- /two-col -->
+
+
+  <!-- ════════════════════════════════════════════
+       ② 수기 상품 — 확정대기 뷰
+  ════════════════════════════════════════════ -->
+  <div class="sec-title" style="margin-top:48px;border-bottom-color:#8b5cf6">
+    <span class="sec-badge" style="background:#8b5cf6">S10-B</span>
+    ② 수기 상품 — 확정대기 뷰
+    <span style="font-size:12px;font-weight:400;color:#888">— 연동: 수기 / 상태: 확정대기</span>
+  </div>
+  <div class="sec-sub">
+    수기 관리 상품 예약 접수 직후 상태. 관리자가 호텔 직접 확인 후 예약 확정 또는 거절 처리.<br>
+    나머지 섹션(요금정보·관리자전용·변경이력) 구조는 ① 메인과 동일.
+  </div>
+
+  <div class="two-col">
+    <div class="wf">
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span><span class="wf-gnb-item">티켓관리</span><span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item on">예약관리</span><span class="wf-gnb-item">공통관리</span>
+      </div>
+      <div class="wf-body">
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">예약관리</div>
+          <div class="wf-lnb-item on">예약 목록</div>
+          <div class="wf-lnb-item">취소 목록</div>
+        </div>
+        <div class="wf-main">
+          <div class="breadcrumb"><a>예약 목록</a> › HM-20260516-00001</div>
+
+          <div class="detail-header">
+            <div>
+              <div class="detail-badges">
+                <span class="detail-no">HM-20260516-00001</span>
+                <span class="wf-badge bg-manual" style="font-size:9px">수기</span>
+                <span class="wf-badge bg-pending">확정대기</span>
+                <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">A</span>
+              </div>
+              <div class="detail-meta">예약일시: 2026-05-16 10:45</div>
+              <div class="detail-status-row">
+                예약상태
+                <select class="status-select">
+                  <option selected>확정대기</option>
+                  <option>예약확정</option>
+                  <option>취소요청</option>
+                  <option>취소완료</option>
+                  <option>노쇼</option>
+                  <option>예약실패</option>
+                </select>
+                <span class="status-apply-btn">적용</span>
+              </div>
+            </div>
+            <div class="detail-actions">
+              <span class="wf-btn wf-btn-primary wf-btn-sm">예약 확정</span>
+              <span class="wf-btn wf-btn-sm" style="color:#dc2626;border-color:#dc2626">예약 거절</span>
+              <span class="wf-btn wf-btn-danger wf-btn-sm">취소하기</span>
+            </div>
+          </div>
+
+          <!-- 예약 기본 정보 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title"><span class="detail-sec-title-left">예약 기본 정보</span></div>
+            <div class="info-grid">
+              <div class="info-row"><span class="info-key">상품명</span><span class="info-val">디럭스 킹 특가</span></div>
+              <div class="info-row"><span class="info-key">숙소</span><span class="info-val">그랜드 호텔</span></div>
+              <div class="info-row"><span class="info-key">객실유형</span><span class="info-val">디럭스 킹</span></div>
+              <div class="info-row"><span class="info-key">체크인</span><span class="info-val">2026-06-01 (월)</span></div>
+              <div class="info-row"><span class="info-key">체크아웃</span><span class="info-val">2026-06-03 (수)</span></div>
+              <div class="info-row"><span class="info-key">박수 / 객실수</span><span class="info-val">2박 / 1개</span></div>
+              <div class="info-row"><span class="info-key">성인 / 아동</span><span class="info-val">2명 / 0명</span></div>
+            </div>
+          </div>
+
+          <!-- 예약자 정보 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title"><span class="detail-sec-title-left">예약자 정보</span></div>
+            <div class="info-grid">
+              <div class="info-row"><span class="info-key">성명 (KO)</span><span class="info-val">이영희</span></div>
+              <div class="info-row"><span class="info-key">성명 (EN)</span><span class="info-val">Lee Young Hee</span></div>
+              <div class="info-row"><span class="info-key">연락처</span><span class="info-val">+82 010-9876-5432</span></div>
+              <div class="info-row"><span class="info-key">이메일</span><span class="info-val">lee@example.com</span></div>
+            </div>
+          </div>
+
+          <!-- 투숙자 정보 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title"><span class="detail-sec-title-left">투숙자 정보</span></div>
+            <div class="info-grid">
+              <div class="info-row"><span class="info-key">성명 (KO)</span><span class="info-val">이영희 부 (이철수)</span></div>
+              <div class="info-row"><span class="info-key">성명 (EN)</span><span class="info-val">Lee Cheol Soo</span></div>
+              <div class="info-row"><span class="info-key">연락처</span><span class="info-val">+82 010-1111-2222</span></div>
+              <div class="info-row"><span class="info-key">이메일</span><span class="info-val" style="color:#aaa">—</span></div>
+              <div class="info-row"><span class="info-key">국적</span><span class="info-val">대한민국 (KR)</span></div>
+              <div class="info-row"><span class="info-key">여권번호</span><span class="info-val" style="color:#aaa">—</span></div>
+              <div class="info-row"><span class="info-key">특이사항</span><span class="info-val">금연 객실 요청</span></div>
+            </div>
+          </div>
+
+          <!-- 요금 정보 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title">
+              <span class="detail-sec-title-left">요금 정보</span>
+              <span class="wf-btn wf-btn-sm" style="font-size:9px;padding:2px 8px;color:#dc2626;border-color:#dc2626">부분취소</span>
+            </div>
+            <div style="font-size:9px;font-weight:700;color:#aaa;margin-bottom:4px;letter-spacing:.04em">날짜별 요금 (입금가 기준)</div>
+            <div class="price-daily">
+              <div class="price-daily-row"><span class="price-daily-date">06-01 (월)</span><span class="price-daily-amt">130,000원</span></div>
+              <div class="price-daily-row"><span class="price-daily-date">06-02 (화)</span><span class="price-daily-amt">130,000원</span></div>
+            </div>
+            <div class="price-subtotal">
+              <div class="price-row">
+                <span class="price-label">입금가 합계 <span style="font-size:9px;background:#ede9fe;color:#6d28d9;padding:1px 5px;border-radius:3px;margin-left:4px">관리자 전용</span></span>
+                <span class="price-val" style="color:#6d28d9">260,000원</span>
+              </div>
+              <div class="price-row">
+                <span class="price-label">마진</span>
+                <span class="price-val" style="color:#059669">+20,000원 (+7.6%)</span>
+              </div>
+              <div class="price-row">
+                <span class="price-label">할인 <span class="price-tbd">추후 반영 예정</span></span>
+                <span class="price-val" style="color:#aaa">—</span>
+              </div>
+            </div>
+            <div class="price-sep"></div>
+            <div class="price-row price-total">
+              <span class="price-label">판매가 (고객 결제금액)</span>
+              <span class="price-val">280,000원</span>
+            </div>
+          </div>
+
+          <div class="omit-placeholder">관리자 전용 / 변경 이력 — ① 메인과 동일 (생략)</div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="ann">
+      <h3>② 수기 확정대기 주석</h3>
+      <div class="ann-item">
+        <div class="cn">A</div>
+        <div class="ann-body">
+          <div class="ann-title">확정대기 — 관리자 처리</div>
+          <div class="ann-desc">
+            <strong>예약 확정</strong>: 호텔 직접 확인 후 클릭 → 상태: 예약확정 → 고객 예약 확인 이메일 발송.<br>
+            <strong>예약 거절</strong>: 재고 없음 등 → 상태: 취소완료 → 위약금 없이 전액 환불 → 거절 안내 이메일.<br>
+            <strong>취소하기</strong>: 우측 상단 항상 고정. 확정대기 단계도 취소 가능.
+          </div>
+          <div class="ann-rule">※ 투숙자 ≠ 예약자인 샘플 — 딸이 부모 여행 예약. 두 섹션 항상 표시.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════
+       ③ 투숙자 변경 요청 뷰 (B안)
+  ════════════════════════════════════════════ -->
+  <div class="sec-title" style="margin-top:48px;border-bottom-color:#8b5cf6">
+    <span class="sec-badge" style="background:#8b5cf6">S10-B</span>
+    ③ 투숙자 변경 요청 뷰 (B안)
+    <span style="font-size:12px;font-weight:400;color:#888">— 고객이 프런트에서 변경 요청 접수 시 투숙자 정보 섹션</span>
+  </div>
+  <div class="sec-sub">
+    <strong>B안 확정</strong>: 고객 직접 수정 불가. 고객 → 프런트 변경 요청 → 어드민 S10-B에 요청 박스 표시 → 관리자 승인 → API 12 호출.
+  </div>
+
+  <div class="two-col">
+    <div class="wf">
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span><span class="wf-gnb-item">티켓관리</span><span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item on">예약관리</span><span class="wf-gnb-item">공통관리</span>
+      </div>
+      <div class="wf-body">
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">예약관리</div>
+          <div class="wf-lnb-item on">예약 목록</div>
+          <div class="wf-lnb-item">취소 목록</div>
+        </div>
+        <div class="wf-main">
+          <div class="breadcrumb"><a>예약 목록</a> › BK-20260515-00001</div>
+          <div class="detail-header">
+            <div>
+              <div class="detail-badges">
+                <span class="detail-no">BK-20260515-00001</span>
+                <span class="wf-badge bg-pms" style="font-size:9px">PMS</span>
+                <span class="wf-badge bg-confirmed">예약확정</span>
+              </div>
+              <div class="detail-meta">예약일시: 2026-05-15 14:32</div>
+              <div class="detail-status-row">
+                예약상태
+                <select class="status-select">
+                  <option>확정대기</option>
+                  <option selected>예약확정</option>
+                  <option>취소요청</option>
+                  <option>취소완료</option>
+                  <option>노쇼</option>
+                  <option>예약실패</option>
+                </select>
+                <span class="status-apply-btn">적용</span>
+              </div>
+            </div>
+            <div class="detail-actions">
+              <span class="wf-btn wf-btn-danger wf-btn-sm">취소하기</span>
+            </div>
+          </div>
+
+          <div class="omit-placeholder">예약 기본 정보 / 예약자 정보 / 요금 정보 — ① 메인과 동일 (생략)</div>
+
+          <!-- 투숙자 정보 — 변경 요청 있는 상태 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title">
+              <span class="detail-sec-title-left">
+                투숙자 정보
+                <span style="font-size:9px;font-weight:700;color:#dc2626;margin-left:4px">⚠ 변경 요청</span>
+                <span class="wf-cn" style="font-size:8px;width:14px;height:14px;min-width:14px">B</span>
+              </span>
+            </div>
+            <div class="change-req-box">
+              <div class="change-req-title">⚠ 투숙자 변경 요청 — 2026-05-18 10:30 고객 요청</div>
+              <div class="change-req-grid">
+                <span class="col-head"></span>
+                <span class="col-head">현재</span>
+                <span class="col-head">요청 변경</span>
+                <span class="col-label">성명 (KO)</span>
+                <span class="col-old">홍길동</span>
+                <span class="col-new">홍철수</span>
+                <span class="col-label">연락처</span>
+                <span class="col-old">010-1234-5678</span>
+                <span class="col-new">010-9999-0000</span>
+              </div>
+              <div style="display:flex;gap:6px">
+                <span class="wf-btn wf-btn-primary wf-btn-sm">승인 (API 12)</span>
+                <span class="wf-btn wf-btn-sm">거절</span>
+              </div>
+            </div>
+            <div class="info-grid">
+              <div class="info-row"><span class="info-key">성명 (KO)</span><span class="info-val">홍길동</span></div>
+              <div class="info-row"><span class="info-key">성명 (EN)</span><span class="info-val">Hong Gil Dong</span></div>
+              <div class="info-row"><span class="info-key">연락처</span><span class="info-val">+82 010-1234-5678</span></div>
+              <div class="info-row"><span class="info-key">이메일</span><span class="info-val">hong@example.com</span></div>
+              <div class="info-row"><span class="info-key">국적</span><span class="info-val">대한민국 (KR)</span></div>
+              <div class="info-row"><span class="info-key">특이사항</span><span class="info-val" style="color:#aaa">—</span></div>
+            </div>
+          </div>
+          <div class="omit-placeholder">관리자 전용 / 변경 이력 — ① 메인과 동일 (생략)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ann">
+      <h3>③ 투숙자 변경 요청 주석</h3>
+      <div class="ann-item">
+        <div class="cn">B</div>
+        <div class="ann-body">
+          <div class="ann-title">승인 / 거절 처리</div>
+          <div class="ann-desc">
+            <strong>승인</strong>: API 12 호출 → 투숙자 정보 업데이트 → 요청 박스 사라짐 → 변경이력 기록.<br>
+            <strong>거절</strong>: 요청 박스 닫힘 → 이력에 "투숙자 변경 요청 거절" 기록.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════
+       ④ 예약실패 뷰 — PMS 통신 오류 케이스
+  ════════════════════════════════════════════ -->
+  <div class="sec-title" style="margin-top:48px;border-bottom-color:#8b5cf6">
+    <span class="sec-badge" style="background:#8b5cf6">S10-B</span>
+    ④ 예약실패 뷰
+    <span style="font-size:12px;font-weight:400;color:#888">— PMS API 6 통신 오류 / 결제 완료 후 예약 실패 케이스</span>
+  </div>
+  <div class="sec-sub">
+    고객 결제 완료 → PMS API 6 통신 오류 → 상태: <strong>⚠ 예약실패</strong>.<br>
+    예약번호·PG 거래번호 생성됨. 오류 상세는 변경이력에 기록됨.<br>
+    관리자는 <strong>[결제취소]</strong>로 PG 환불 처리 후, <strong>[취소하기]</strong>로 예약 상태를 취소완료로 전환.
+  </div>
+
+  <div class="two-col">
+    <div class="wf">
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span><span class="wf-gnb-item">티켓관리</span><span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item on">예약관리</span><span class="wf-gnb-item">공통관리</span>
+      </div>
+      <div class="wf-body">
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">예약관리</div>
+          <div class="wf-lnb-item on">예약 목록</div>
+          <div class="wf-lnb-item">취소 목록</div>
+        </div>
+        <div class="wf-main">
+          <div class="breadcrumb"><a>예약 목록</a> › BK-20260516-00003</div>
+
+          <!-- 헤더 — 예약실패 -->
+          <div class="detail-header">
+            <div>
+              <div class="detail-badges">
+                <span class="detail-no">BK-20260516-00003</span>
+                <span class="wf-badge bg-pms" style="font-size:9px">PMS</span>
+                <span class="wf-badge bg-failed">⚠ 예약실패</span>
+              </div>
+              <div class="detail-meta">예약일시: 2026-05-16 09:11 &nbsp;|&nbsp; <strong style="color:#dc2626">결제 완료 (환불 필요)</strong></div>
+              <div class="detail-status-row">
+                예약상태
+                <select class="status-select">
+                  <option>확정대기</option>
+                  <option>예약확정</option>
+                  <option>취소요청</option>
+                  <option>취소완료</option>
+                  <option>노쇼</option>
+                  <option selected>예약실패</option>
+                </select>
+                <span class="status-apply-btn">적용</span>
+              </div>
+            </div>
+            <div class="detail-actions">
+              <span class="wf-btn wf-btn-danger wf-btn-sm">취소하기</span>
+            </div>
+          </div>
+
+          <!-- 예약 기본 정보 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title"><span class="detail-sec-title-left">예약 기본 정보</span></div>
+            <div class="info-grid">
+              <div class="info-row"><span class="info-key">상품명</span><span class="info-val">스탠다드 트윈 룸온리</span></div>
+              <div class="info-row"><span class="info-key">숙소</span><span class="info-val">그랜드 호텔</span></div>
+              <div class="info-row"><span class="info-key">체크인</span><span class="info-val">2026-05-25 (월)</span></div>
+              <div class="info-row"><span class="info-key">체크아웃</span><span class="info-val">2026-05-26 (화)</span></div>
+              <div class="info-row"><span class="info-key">박수 / 객실수</span><span class="info-val">1박 / 1개</span></div>
+              <div class="info-row"><span class="info-key">성인 / 아동</span><span class="info-val">2명 / 0명</span></div>
+            </div>
+          </div>
+
+          <!-- 예약자 정보 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title"><span class="detail-sec-title-left">예약자 정보</span></div>
+            <div class="info-grid">
+              <div class="info-row"><span class="info-key">성명 (KO)</span><span class="info-val">김철수</span></div>
+              <div class="info-row"><span class="info-key">성명 (EN)</span><span class="info-val">Kim Cheol Su</span></div>
+              <div class="info-row"><span class="info-key">연락처</span><span class="info-val">+82 010-5555-6666</span></div>
+              <div class="info-row"><span class="info-key">이메일</span><span class="info-val">kim@example.com</span></div>
+            </div>
+          </div>
+
+          <!-- 투숙자 정보 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title"><span class="detail-sec-title-left">투숙자 정보</span></div>
+            <div class="info-grid">
+              <div class="info-row"><span class="info-key">성명 (KO)</span><span class="info-val">김철수</span></div>
+              <div class="info-row"><span class="info-key">성명 (EN)</span><span class="info-val">Kim Cheol Su</span></div>
+              <div class="info-row"><span class="info-key">국적</span><span class="info-val">대한민국 (KR)</span></div>
+              <div class="info-row"><span class="info-key">여권번호</span><span class="info-val" style="color:#aaa">—</span></div>
+            </div>
+          </div>
+
+          <!-- 요금 정보 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title">
+              <span class="detail-sec-title-left">요금 정보</span>
+              <span class="wf-btn wf-btn-sm" style="font-size:9px;padding:2px 8px;color:#dc2626;border-color:#dc2626">부분취소</span>
+            </div>
+            <div style="font-size:9px;font-weight:700;color:#aaa;margin-bottom:4px;letter-spacing:.04em">날짜별 요금 (입금가 기준)</div>
+            <div class="price-daily">
+              <div class="price-daily-row"><span class="price-daily-date">05-25 (월)</span><span class="price-daily-amt">130,000원</span></div>
+            </div>
+            <div class="price-subtotal">
+              <div class="price-row">
+                <span class="price-label">입금가 합계 <span style="font-size:9px;background:#ede9fe;color:#6d28d9;padding:1px 5px;border-radius:3px;margin-left:4px">관리자 전용</span></span>
+                <span class="price-val" style="color:#6d28d9">130,000원</span>
+              </div>
+              <div class="price-row"><span class="price-label">마진</span><span class="price-val" style="color:#059669">+20,000원 (+15.3%)</span></div>
+              <div class="price-row"><span class="price-label">할인 <span class="price-tbd">추후 반영 예정</span></span><span class="price-val" style="color:#aaa">—</span></div>
+            </div>
+            <div class="price-sep"></div>
+            <div class="price-row price-total">
+              <span class="price-label">판매가 (결제 완료된 금액)</span>
+              <span class="price-val" style="color:#dc2626">150,000원</span>
+            </div>
+            <!-- 결제취소 내역 없음 — 아직 미처리 상태 -->
+          </div>
+
+          <!-- 관리자 전용 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title"><span class="detail-sec-title-left">관리자 전용</span></div>
+            <div class="wf-form-row" style="margin-bottom:0">
+              <div class="wf-form-label">관리자 메모</div>
+              <div class="wf-form-field">
+                <textarea class="wf-textarea" style="min-height:44px" placeholder="예: PG사에 환불 요청 완료, 3~5 영업일 내 환불 예정"></textarea>
+                <div class="wf-hint">저장 시 변경 이력에 자동 기록됨.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 변경 이력 — 오류 상세 포함 -->
+          <div class="detail-sec">
+            <div class="detail-sec-title"><span class="detail-sec-title-left">변경 이력</span></div>
+            <table class="hist-table">
+              <thead>
+                <tr>
+                  <th style="width:90px">일시</th>
+                  <th style="width:72px">구분</th>
+                  <th>내용</th>
+                  <th style="width:64px">처리자</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="background:#fff5f5">
+                  <td style="color:#888">05-16 09:11</td>
+                  <td style="color:#dc2626">예약실패</td>
+                  <td>PMS API 6 오류 — PMS_API6_TIMEOUT / 재시도 3회 실패 / PG 거래번호: PG-20260516-002948371</td>
+                  <td>SYSTEM</td>
+                </tr>
+                <tr>
+                  <td style="color:#888">05-16 09:10</td>
+                  <td>결제 완료</td>
+                  <td>PG 결제 성공 — PG-20260516-002948371 / 150,000원</td>
+                  <td>SYSTEM</td>
+                </tr>
+                <tr>
+                  <td style="color:#888">05-16 09:09</td>
+                  <td>예약 접수</td>
+                  <td>예약 요청 시작</td>
+                  <td>SYSTEM</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="ann">
+      <h3>④ 예약실패 뷰 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">C</div>
+        <div class="ann-body">
+          <div class="ann-title">예약실패 — 관리자 처리 흐름</div>
+          <div class="ann-desc">
+            <strong>Step 1 (선택)</strong> — [부분취소]: 요금정보 섹션 우측 → 금액 입력 → PG 부분 환불 (예약 상태 유지).<br>
+            <strong>Step 2</strong> — [취소하기]: 우측 상단 → PMS 예약취소(API 7) + PG 전액 결제취소 동시 요청 → S10-C 모달 확인 후 처리.<br><br>
+            오류 상세(오류코드·PG 거래번호·재시도 횟수 등)는 변경이력에 기록됨.
+          </div>
+          <div class="ann-rule">※ 결제취소 전까지 결제 잔액 = 판매가 전액. 결제취소 후 잔액 0원 확인 후 상태 전환 권장.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page -->
+</body>
+</html>

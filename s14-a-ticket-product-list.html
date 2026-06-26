@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S14-A 티켓 상품 목록</title>
+  <link rel="stylesheet" href="wf-styles.css" />
+  <style>
+    /* S14-A 전용 (티켓 = 로즈 테마) */
+    .sec-policy{background:#fdf2f8;border:1px solid #fbcfe8;border-left:3px solid #ec4899;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:11px;line-height:1.7;color:#9d174d}
+    .sec-policy b{color:#831843}
+    .sec-policy .ref{font-size:10px;color:#ec4899;font-weight:700}
+    .cat-path{font-size:10px;color:#666}
+    .cat-path b{color:#9d174d}
+    .spec-chip{display:inline-block;font-family:monospace;font-size:10px;background:#fce7f3;color:#9d174d;padding:1px 6px;border-radius:3px}
+    .lock-row td{background:#faf5f7 !important}
+  </style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">티켓 상품 목록</span>
+  <span class="page-nav-route">#/ticket-products</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s13-coupon-spec.html">← 이전</a>
+    <a class="page-nav-pager" href="s14-b-ticket-product-form.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge" style="background:#ec4899;">S14-A</span>
+    티켓 상품 목록
+  </div>
+  <div class="sec-sub">
+    S13 쿠폰 스펙을 기반으로 고객에게 판매할 티켓 상품을 조회·관리한다. 스펙 1개 → 상품 N개(1:N).<br>
+    기준: 티켓 쿠폰 연동 정책서 v0.2 · 11.3절 / 인수인계 문서 S14-A
+  </div>
+
+  <div class="two-col">
+
+    <!-- 와이어프레임 -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item on">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item">화면관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">티켓관리</div>
+          <div class="wf-lnb-item">쿠폰 스펙 관리</div>
+          <div class="wf-lnb-item on">상품 목록</div>
+          <div class="wf-lnb-item">상품 등록/편집</div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="wf-main">
+          <div class="wf-page-title">
+            티켓 상품 목록
+            <span class="wf-badge" style="font-size:11px;margin-left:8px;">S14-A</span>
+          </div>
+
+          <!-- 공통정책 블록 -->
+          <div class="sec-policy">
+            <span class="ref">기준: v0.2 11.3절</span><br>
+            · 상품은 <b>S13 쿠폰 스펙을 연결</b>하여 생성한다(스펙 1:상품 N). 마진·날짜·취소정책은 S14-B에서 설정.<br>
+            · <b>프런트 노출 = 연결 스펙 ON AND 상품 노출 ON</b> (둘 다 충족해야 노출).<br>
+            · 연결 <b>스펙이 OFF면 상품은 강제 미노출</b>(🔒, 개별 토글 잠김). 스펙 ON 시 상품 개별 토글로 복귀.<br>
+            · 판매가 = 입금가 + 마진(고객 노출가). 입금가(원가)는 미노출.
+          </div>
+
+          <!-- 툴바 -->
+          <div class="wf-toolbar" style="margin-bottom:10px;">
+            <div class="wf-filter" style="margin-bottom:0;">
+              <select class="wf-select" style="width:130px;font-size:11px"><option>카테고리 전체</option><option>스키</option><option>워터파크</option></select>
+              <select class="wf-select" style="width:120px;font-size:11px"><option>날짜방식 전체</option><option>오픈형</option><option>날짜지정형</option></select>
+              <select class="wf-select" style="width:120px;font-size:11px"><option>노출 전체</option><option>노출중</option><option>미노출</option><option>강제 미노출(🔒)</option></select>
+              <input class="wf-input" style="width:150px;" placeholder="상품명 검색" />
+            </div>
+            <a href="s14-b-ticket-product-form.html"><button class="wf-btn wf-btn-primary" style="background:#ec4899;border-color:#ec4899;">+ 상품 등록 <span class="wf-cn">1</span></button></a>
+          </div>
+
+          <!-- 상품 목록 테이블 -->
+          <table class="wf-table">
+            <thead>
+              <tr>
+                <th>상품명 <span class="wf-cn">2</span></th>
+                <th>카테고리 <span class="wf-cn">3</span></th>
+                <th>연결 스펙 <span class="wf-cn">4</span></th>
+                <th>레벨</th>
+                <th>날짜 방식 <span class="wf-cn">5</span></th>
+                <th>판매가 <span class="wf-cn">6</span></th>
+                <th>노출 <span class="wf-cn">7</span></th>
+                <th>수정/삭제 <span class="wf-cn">8</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  워터월드 종일권<br>
+                  <span style="font-size:10px;color:#888;">Water World Full-Day</span>
+                </td>
+                <td><span class="cat-path">워터파크 &gt; <b>대인</b></span></td>
+                <td><span class="spec-chip">OAT · LV.1</span></td>
+                <td>대인</td>
+                <td><span class="wf-badge" style="background:#dbeafe;color:#1e3a8a;">날짜지정형</span></td>
+                <td>44,000</td>
+                <td>
+                  <div class="wf-toggle-row" style="margin-bottom:0;">
+                    <span class="wf-toggle on"></span><span class="wf-toggle-label">노출</span>
+                  </div>
+                </td>
+                <td>
+                  <button class="wf-btn wf-btn-sm">수정</button>
+                  <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  워터월드 종일권<br>
+                  <span style="font-size:10px;color:#888;">Water World Full-Day</span>
+                </td>
+                <td><span class="cat-path">워터파크 &gt; <b>소인</b></span></td>
+                <td><span class="spec-chip">OAT · LV.2</span></td>
+                <td>소인</td>
+                <td><span class="wf-badge" style="background:#dbeafe;color:#1e3a8a;">날짜지정형</span></td>
+                <td>38,500</td>
+                <td>
+                  <div class="wf-toggle-row" style="margin-bottom:0;">
+                    <span class="wf-toggle on"></span><span class="wf-toggle-label">노출</span>
+                  </div>
+                </td>
+                <td>
+                  <button class="wf-btn wf-btn-sm">수정</button>
+                  <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  하이원 리프트 종일권<br>
+                  <span style="font-size:10px;color:#888;">High1 Lift Full-Day</span>
+                </td>
+                <td><span class="cat-path">스키 &gt; 리프트권 &gt; <b>종일권</b></span></td>
+                <td><span class="spec-chip">SKL · LV.1</span></td>
+                <td>대인</td>
+                <td><span class="wf-badge" style="background:#e0e7ff;color:#3730a3;">오픈형</span></td>
+                <td>60,500</td>
+                <td>
+                  <div class="wf-toggle-row" style="margin-bottom:0;">
+                    <span class="wf-toggle"></span><span class="wf-toggle-label">미노출</span>
+                  </div>
+                </td>
+                <td>
+                  <button class="wf-btn wf-btn-sm">수정</button>
+                  <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+                </td>
+              </tr>
+              <tr class="lock-row" style="opacity:.7;">
+                <td>
+                  하이원 리프트 4시간권<br>
+                  <span style="font-size:10px;color:#888;">High1 Lift 4-Hour</span>
+                </td>
+                <td><span class="cat-path">스키 &gt; 리프트권 &gt; <b>4시간권</b></span></td>
+                <td><span class="spec-chip">SKL · LV.1</span> <span style="font-size:9px;color:#991b1b;">스펙 OFF</span></td>
+                <td>대인</td>
+                <td><span class="wf-badge" style="background:#e0e7ff;color:#3730a3;">오픈형</span></td>
+                <td>41,800</td>
+                <td>
+                  <div class="wf-toggle-row" style="margin-bottom:0;">
+                    <span class="wf-toggle" style="opacity:.4;"></span><span class="wf-toggle-label">강제 미노출</span> <span title="연결 스펙 OFF — 개별 제어 불가">🔒</span>
+                  </div>
+                </td>
+                <td>
+                  <button class="wf-btn wf-btn-sm">수정</button>
+                  <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="wf-hint" style="margin-top:10px;">· 총 4개 · 🔒 강제 미노출 = 연결 스펙(S13)이 OFF여서 상품 노출 토글이 잠긴 상태. S13에서 스펙을 ON하면 해제됨.</div>
+
+        </div><!-- /wf-main -->
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+    <!-- 주석 -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">1</span>
+        <div class="ann-body">
+          <div class="ann-title">+ 상품 등록</div>
+          <div class="ann-desc">S14-B 상품 등록/편집 폼으로 이동. 연결할 스펙(S13)을 선택해 새 상품 생성.</div>
+          <div class="ann-rule">등록 가능한 스펙이 없으면(S13 미등록) 먼저 스펙 등록 안내. 스펙 선행 원칙.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">2</span>
+        <div class="ann-body">
+          <div class="ann-title">상품명 (KO / EN)</div>
+          <div class="ann-desc">고객 노출 상품명. KO·EN 별도 입력(EN 미입력 시 KO 대체). S14-B에서 입력.</div>
+          <div class="ann-front">→ 프런트: 티켓 상품 카드·상세 타이틀</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">3</span>
+        <div class="ann-body">
+          <div class="ann-title">카테고리 (뎁스 경로)</div>
+          <div class="ann-desc">S17 티켓 카테고리 트리에서 선택한 분류 경로(최대 3뎁스). 예: 스키 &gt; 리프트권 &gt; 종일권.</div>
+          <div class="ann-front">→ 프런트: 카테고리 네비게이션·필터 분류</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">4</span>
+        <div class="ann-body">
+          <div class="ann-title">연결 스펙</div>
+          <div class="ann-desc">이 상품이 사용하는 S13 스펙(쿠폰ID·레벨). 입금가·사용기간의 원천. 스펙 OFF면 "스펙 OFF" 표시 + 강제 미노출.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">5</span>
+        <div class="ann-body">
+          <div class="ann-title">날짜 방식</div>
+          <div class="ann-desc"><b>오픈형</b>: 날짜 미지정, 사용기간 내 자유 사용. <b>날짜지정형</b>: 고객이 이용일 선택 구매, 날짜별 한도 설정. S14-B에서 설정.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">6</span>
+        <div class="ann-body">
+          <div class="ann-title">판매가</div>
+          <div class="ann-desc">입금가 + 마진(소수점 버림)으로 산출된 고객 노출가. 레벨별로 다를 수 있음(목록은 대표가 표시).</div>
+          <div class="ann-front">→ 프런트: 상품 카드·상세 가격</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">7</span>
+        <div class="ann-body">
+          <div class="ann-title">노출 — 상품 토글 (2단 노출 조건)</div>
+          <div class="ann-desc">상품 개별 노출 ON/OFF. <b>프런트 노출 = 연결 스펙 ON AND 상품 노출 ON</b>.</div>
+          <div class="ann-rule">연결 스펙 OFF → 상품 토글 <b>잠김(🔒 강제 미노출)</b>, 개별 제어 불가. 스펙 ON 시 상품 토글로 복귀.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">8</span>
+        <div class="ann-body">
+          <div class="ann-title">수정 · 삭제</div>
+          <div class="ann-desc">수정: S14-B 편집 폼으로 이동. 삭제: 상품 삭제(예약/주문 이력 있는 경우 처리 정책은 예약관리 기획 시 확정). 스펙과 달리 상품은 우리 판매 단위라 직접 수정·삭제 가능.</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+
+</body>
+</html>

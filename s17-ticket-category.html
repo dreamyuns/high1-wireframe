@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S17 티켓 카테고리관리</title>
+  <link rel="stylesheet" href="wf-styles.css" />
+  <style>
+    /* S17 전용 — 카테고리 트리 */
+    .cat-tree{border:1px solid #ddd;border-radius:6px;background:#fff;overflow:hidden}
+    .cat-row{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid #f0f0eb;font-size:12px}
+    .cat-row:last-child{border-bottom:none}
+    .cat-row.d1{background:#f0f0ea;font-weight:700;color:#1a1f2e}
+    .cat-row.d2{padding-left:34px;color:#333}
+    .cat-row.d3{padding-left:60px;color:#555;font-size:11px}
+    .cat-row .cat-handle{color:#bbb;cursor:grab;font-size:13px;flex-shrink:0}
+    .cat-row .cat-name{flex:1}
+    .cat-row .cat-name .en{color:#999;font-size:10px;margin-left:6px;font-weight:400}
+    .cat-row .cat-order{font-size:10px;color:#888;background:#f5f5f3;border-radius:3px;padding:1px 6px}
+    .cat-row .cat-link{font-size:10px;color:#0e7490}
+    .cat-add-sub{font-size:10px;color:#1a6fb8;border:1px dashed #b8c8d8;border-radius:3px;padding:2px 7px;cursor:pointer;background:#f5f9fc}
+    .cat-actions{display:flex;gap:4px;flex-shrink:0}
+    .sec-policy{background:#eef2ff;border:1px solid #c7d2fe;border-left:3px solid #6366f1;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:11px;line-height:1.7;color:#3730a3}
+    .sec-policy b{color:#1e1b4b}
+    .sec-policy .ref{font-size:10px;color:#6366f1;font-weight:700}
+  </style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">티켓 카테고리관리</span>
+  <span class="page-nav-route">#/ticket-categories</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s09-roomtype-list.html">← 이전</a>
+    <a class="page-nav-pager" href="s13-coupon-spec.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">S17</span>
+    티켓 카테고리관리
+  </div>
+  <div class="sec-sub">
+    티켓 상품 분류 체계(카테고리 트리)를 관리한다. 공통관리 GNB 하위. 최대 3뎁스 동적 구조.<br>
+    기준: 티켓 쿠폰 연동 정책서 v0.2 · 11.6절 / 인수인계 문서 S17
+  </div>
+
+  <div class="two-col">
+
+    <!-- 와이어프레임 -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item">화면관리</span>
+        <span class="wf-gnb-item on">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">공통관리</div>
+          <div class="wf-lnb-item">카테고리관리</div>
+          <div class="wf-lnb-item">시설관리</div>
+          <div class="wf-lnb-item">객실유형관리</div>
+          <div class="wf-lnb-item on">티켓 카테고리관리</div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="wf-main">
+          <div class="wf-page-title">
+            티켓 카테고리관리
+            <span class="wf-badge" style="font-size:11px;margin-left:8px;">S17</span>
+          </div>
+
+          <!-- 공통정책 블록 -->
+          <div class="sec-policy">
+            <span class="ref">기준: v0.2 11.6절</span><br>
+            · 카테고리는 <b>최대 3뎁스</b> 고정(추후 데이터 수령 후 변경 가능). 동적 추가/수정/삭제 가능.<br>
+            · 모든 카테고리명은 <b>KO/EN 이중 입력</b>(EN 미입력 시 KO 대체 표시).<br>
+            · 카테고리 구조는 S14 티켓 상품 등록 시 카테고리 드롭다운의 소스가 된다.<br>
+            · 삭제 시 <b>연결된 S14 상품이 있으면 삭제 불가</b>(유효성 검사).
+          </div>
+
+          <!-- 툴바 -->
+          <div class="wf-toolbar" style="margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;color:#888;">1뎁스 2개 · 전체 9개 카테고리</span>
+            </div>
+            <button class="wf-btn wf-btn-primary">+ 1뎁스 카테고리 추가 <span class="wf-cn">1</span></button>
+          </div>
+
+          <!-- 카테고리 트리 -->
+          <div class="cat-tree">
+
+            <!-- 스키 (1뎁스) -->
+            <div class="cat-row d1">
+              <span class="cat-handle">⠿</span>
+              <span class="cat-order">1</span>
+              <span class="cat-name">스키 <span class="en">Ski</span> <span class="wf-cn">2</span></span>
+              <span class="cat-link">연결상품 0</span>
+              <span class="cat-add-sub">+ 하위 추가 <span class="wf-cn">3</span></span>
+              <span class="cat-actions">
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제 <span class="wf-cn">4</span></button>
+              </span>
+            </div>
+
+            <!-- 스키 > 리프트권 (2뎁스) -->
+            <div class="cat-row d2">
+              <span class="cat-handle">⠿</span>
+              <span class="cat-order">1</span>
+              <span class="cat-name">리프트권 <span class="en">Lift Pass</span></span>
+              <span class="cat-link">연결상품 0</span>
+              <span class="cat-add-sub">+ 하위 추가</span>
+              <span class="cat-actions">
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+            <div class="cat-row d3">
+              <span class="cat-handle">⠿</span>
+              <span class="cat-order">1</span>
+              <span class="cat-name">4시간권 <span class="en">4-Hour</span></span>
+              <span class="cat-link">연결상품 0</span>
+              <span class="cat-actions">
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+            <div class="cat-row d3">
+              <span class="cat-handle">⠿</span>
+              <span class="cat-order">2</span>
+              <span class="cat-name">7시간권 <span class="en">7-Hour</span></span>
+              <span class="cat-link">연결상품 0</span>
+              <span class="cat-actions">
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+            <div class="cat-row d3">
+              <span class="cat-handle">⠿</span>
+              <span class="cat-order">3</span>
+              <span class="cat-name">종일권 <span class="en">Full-Day</span></span>
+              <span class="cat-link">연결상품 0</span>
+              <span class="cat-actions">
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+
+            <!-- 스키 > 장비렌탈 (2뎁스) -->
+            <div class="cat-row d2">
+              <span class="cat-handle">⠿</span>
+              <span class="cat-order">2</span>
+              <span class="cat-name">장비렌탈 <span class="en">Equipment Rental</span></span>
+              <span class="cat-link">연결상품 0</span>
+              <span class="cat-add-sub">+ 하위 추가</span>
+              <span class="cat-actions">
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+            <div class="cat-row d3">
+              <span class="cat-handle">⠿</span>
+              <span class="cat-order">1</span>
+              <span class="cat-name">4시간 <span class="en">4-Hour</span></span>
+              <span class="cat-link">연결상품 0</span>
+              <span class="cat-actions">
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+            <div class="cat-row d3">
+              <span class="cat-handle">⠿</span>
+              <span class="cat-order">2</span>
+              <span class="cat-name">7시간 <span class="en">7-Hour</span></span>
+              <span class="cat-link">연결상품 0</span>
+              <span class="cat-actions">
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+            <div class="cat-row d3">
+              <span class="cat-handle">⠿</span>
+              <span class="cat-order">3</span>
+              <span class="cat-name">종일 <span class="en">Full-Day</span></span>
+              <span class="cat-link">연결상품 0</span>
+              <span class="cat-actions">
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+
+            <!-- 워터파크 (1뎁스) -->
+            <div class="cat-row d1">
+              <span class="cat-handle">⠿</span>
+              <span class="cat-order">2</span>
+              <span class="cat-name">워터파크 <span class="en">Water Park</span></span>
+              <span class="cat-link">연결상품 2</span>
+              <span class="cat-add-sub">+ 하위 추가</span>
+              <span class="cat-actions">
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+            <div class="cat-row d2">
+              <span class="cat-handle">⠿</span>
+              <span class="cat-order">1</span>
+              <span class="cat-name">대인 <span class="en">Adult</span></span>
+              <span class="cat-link">연결상품 1</span>
+              <span class="cat-add-sub">+ 하위 추가</span>
+              <span class="cat-actions">
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+            <div class="cat-row d2">
+              <span class="cat-handle">⠿</span>
+              <span class="cat-order">2</span>
+              <span class="cat-name">소인 <span class="en">Child</span></span>
+              <span class="cat-link">연결상품 1</span>
+              <span class="cat-add-sub">+ 하위 추가</span>
+              <span class="cat-actions">
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+
+          </div><!-- /cat-tree -->
+
+          <!-- 삭제 불가 안내(예시) -->
+          <div class="wf-alert" style="margin-top:12px;">
+            ⚠ 삭제 불가 예시 — "워터파크" 삭제 시도 시: <b>연결된 상품 2개가 있습니다. 연결 항목을 먼저 미노출 처리하거나 삭제 후 진행하세요.</b> <span class="wf-cn">4</span>
+          </div>
+
+          <!-- 카테고리 추가/수정 모달 (참고용 인라인 표시) -->
+          <div class="sec-title" style="margin-top:28px;font-size:14px;">
+            <span class="sec-badge" style="background:#6366f1;">모달</span>
+            카테고리 추가 / 수정 <span class="wf-cn">5</span>
+          </div>
+          <div class="wf-card" style="max-width:420px;">
+            <div class="wf-form-row">
+              <div class="wf-form-label">상위 카테고리</div>
+              <div class="wf-form-field">
+                <input class="wf-input-ro" value="스키 > 리프트권 (2뎁스)" readonly />
+                <div class="wf-hint">1뎁스 추가 시 "최상위"로 표시. 3뎁스 항목은 하위 추가 불가.</div>
+              </div>
+            </div>
+            <div class="wf-form-row">
+              <div class="wf-form-label">카테고리명 (KO) <span class="wf-form-req">*</span></div>
+              <div class="wf-form-field"><input class="wf-input" value="종일권" /></div>
+            </div>
+            <div class="wf-form-row">
+              <div class="wf-form-label">카테고리명 (EN)</div>
+              <div class="wf-form-field">
+                <input class="wf-input" value="Full-Day" />
+                <div class="wf-hint">미입력 시 KO 텍스트로 대체 노출.</div>
+              </div>
+            </div>
+            <div class="wf-form-row">
+              <div class="wf-form-label">노출 순서</div>
+              <div class="wf-form-field"><input class="wf-input" value="3" style="width:80px;" /></div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
+              <button class="wf-btn">취소</button>
+              <button class="wf-btn wf-btn-primary">저장</button>
+            </div>
+          </div>
+
+        </div><!-- /wf-main -->
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+    <!-- 주석 -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <span class="cn">1</span>
+        <div class="ann-body">
+          <div class="ann-title">1뎁스 카테고리 추가</div>
+          <div class="ann-desc">최상위(1뎁스) 카테고리를 신규 추가. 추가/수정 모달(주석 5) 호출. 상위 카테고리 = "최상위" 고정 표시.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn">2</span>
+        <div class="ann-body">
+          <div class="ann-title">카테고리명 KO / EN</div>
+          <div class="ann-desc">모든 뎁스의 카테고리명은 KO·EN 별도 입력. EN 미입력 시 KO로 대체 노출.</div>
+          <div class="ann-front">→ 프런트: 티켓 카테고리 네비게이션·필터, 상품 카드의 분류 라벨</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn">3</span>
+        <div class="ann-body">
+          <div class="ann-title">하위 뎁스 추가 (+ 하위 추가)</div>
+          <div class="ann-desc">해당 항목의 하위 뎁스를 추가. <b>최대 3뎁스 제한</b> — 3뎁스 항목에는 [+ 하위 추가] 버튼이 노출되지 않음.</div>
+          <div class="ann-rule">뎁스 제한은 정책상 3뎁스 고정. 스펙 파일 수령 후 변경 가능 (미결 M-07).</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn">4</span>
+        <div class="ann-body">
+          <div class="ann-title">수정 · 삭제 / 노출 순서</div>
+          <div class="ann-desc">수정: 추가/수정 모달 호출. 삭제: 연결된 S14 상품이 있으면 삭제 불가. 좌측 핸들(⠿) 드래그 또는 노출 순서 번호로 동일 뎁스 내 정렬 변경.</div>
+          <div class="ann-warn" style="margin-top:5px;background:#fef9c3;border-left:2px solid #f59e0b;padding:5px 9px;border-radius:3px;font-size:12px;color:#92400e;line-height:1.6;">삭제 불가 시 안내: "연결된 상품 N개가 있습니다. 연결 항목을 먼저 미노출 처리하거나 삭제 후 진행하세요."</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn">5</span>
+        <div class="ann-body">
+          <div class="ann-title">카테고리 추가/수정 모달</div>
+          <div class="ann-desc">상위 카테고리(읽기전용 경로 표시) · 카테고리명 KO(필수)/EN · 노출 순서 입력. 1뎁스 추가 시 상위 = "최상위".</div>
+          <div class="ann-rule">카테고리 코드는 시스템 자동 채번(내부 식별자, 화면 미표시). 정책 미확정 시 후속 보완.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#6366f1;">i</span>
+        <div class="ann-body">
+          <div class="ann-title">현재 카테고리 구조 (초안)</div>
+          <div class="ann-desc">
+            스키 &gt; 리프트권 &gt; 4시간권 / 7시간권 / 종일권<br>
+            스키 &gt; 장비렌탈 &gt; 4시간 / 7시간 / 종일<br>
+            워터파크 &gt; 대인 / 소인
+          </div>
+          <div class="ann-rule">스키 정확한 권종 구성은 스펙 파일 수령 후 확정 (미결 M-07). 본 화면은 초안 데이터.</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+
+</body>
+</html>

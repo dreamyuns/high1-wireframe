@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S02-4 — 숙소 등록·수정 Step 4 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">숙소 등록·수정 — Step 4: 안내·정책</span>
+  <span class="page-nav-route">#/places/new · #/places/edit/:id</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s02-3-wizard-step3.html">← 이전</a>
+    <a class="page-nav-pager" href="s02-5-wizard-step5.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">S02-4</span>
+    숙소 등록·수정 — Step 4 안내·정책
+    <span style="font-size:12px;font-weight:400;color:#888">— #/places/new · #/places/edit/:id</span>
+  </div>
+
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item on">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">숙소관리</div>
+          <div class="wf-lnb-item on">숙소목록</div>
+          <div class="wf-lnb-item">객실목록</div>
+          <div class="wf-lnb-item">상품목록</div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="wf-main">
+          <div class="wf-page-title">숙소 등록 <span style="font-weight:400;color:#888;font-size:11px">/ 수정 시: PL-H001 그랜드 호텔 메인타워</span></div>
+
+          <!-- 5단계 탭바 -->
+          <div class="wf-step-bar">
+            <div class="wf-step done"><span>1</span>분류·기본·운영</div>
+            <div class="wf-step done"><span>2</span>위치</div>
+            <div class="wf-step done"><span>3</span>이미지</div>
+            <div class="wf-step on"><span>4</span>안내·정책</div>
+            <div class="wf-step"><span>5</span>숙소시설</div>
+          </div>
+
+          <!-- 숙소 안내 (guide_html) -->
+          <div class="wf-section-head">숙소 안내 (guide_html)</div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-field" style="width:100%">
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <textarea class="wf-textarea" style="min-height:100px;flex:1">(숙소 안내 HTML — 체크인 절차, 시설 이용 안내 등)</textarea>
+                <span class="wf-cn">1</span>
+              </div>
+              <div class="wf-hint">HTML 형식. 이미지 Ctrl+V 붙여넣기 지원 (Data URL 저장). 저장 용량 주의.</div>
+            </div>
+          </div>
+
+          <!-- 정책 안내 (policy_html) -->
+          <div class="wf-section-head">정책 안내 (policy_html)</div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-field" style="width:100%">
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <textarea class="wf-textarea" style="min-height:100px;flex:1">(정책 안내 HTML — 취소·환불 정책, 반려동물, 흡연 등)</textarea>
+                <span class="wf-cn">2</span>
+              </div>
+              <div class="wf-hint">HTML 형식. 이미지 붙여넣기 지원.</div>
+            </div>
+          </div>
+
+          <!-- 이미지 붙여넣기 용량 경고 -->
+          <div style="display:flex;align-items:flex-start;gap:8px;margin-top:14px">
+            <div class="wf-alert" style="flex:1">⚠ HTML 필드에 이미지를 붙여넣으면 Data URL로 저장되어 용량이 급증합니다. 외부 이미지 URL 사용을 권장합니다.</div>
+            <span class="wf-cn">3</span>
+          </div>
+
+          <!-- 하단 버튼 -->
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #e0e0da">
+            <span class="wf-btn">취소</span>
+            <span class="wf-btn wf-btn-primary">저장</span>
+          </div>
+
+        </div>
+        <!-- /wf-main -->
+
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 주석 패널 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">숙소 안내 HTML (guide_html)</div>
+          <div class="ann-desc">
+            숙소의 체크인·체크아웃 절차, 주요 시설 이용 안내, 주의 사항 등을 HTML로 입력한다.
+            이미지 Ctrl+V 붙여넣기 시 Data URL(base64) 형식으로 저장된다.
+            현재 UI는 단순 textarea이나 실서비스에서 WYSIWYG 에디터로 교체 예정이다.
+          </div>
+          <div class="ann-front">→ 프런트: 숙소 레이어 > 안내정보(Guide) 탭 상단 HTML 렌더링</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">정책 안내 HTML (policy_html)</div>
+          <div class="ann-desc">
+            취소·환불 정책, 반려동물·흡연 정책, 체크인 시간 외 조기/지연 입실 정책 등을 입력한다.
+            guide_html과 분리된 별도 탭으로 프런트에 표시되므로 정책과 안내 내용을 명확히 구분하여 입력한다.
+            HTML 형식을 지원하며 이미지 붙여넣기도 가능하다.
+          </div>
+          <div class="ann-front">→ 프런트: 숙소 레이어 > 정책정보(Policy) 탭 HTML 렌더링</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">이미지 붙여넣기 용량 경고</div>
+          <div class="ann-desc">
+            HTML textarea에 이미지를 붙여넣으면 base64 Data URL로 변환되어 원본 이미지보다 약 33% 더 큰 텍스트 데이터로 저장된다.
+            여러 이미지를 붙여넣을 경우 localStorage 용량이 빠르게 소진되므로, 외부 이미지 URL 방식 사용을 권장한다.
+            이 경고는 항상 표시되어 입력 전에 사용자가 인지할 수 있도록 한다.
+          </div>
+          <div class="ann-rule">실서비스에서는 이미지 업로드 파이프라인(CDN) 구축 후 URL만 저장하도록 변경 필요.</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

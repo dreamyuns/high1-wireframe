@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>예약관리 정책서 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+/* 언어 토글 */
+.lang-toggle { display:flex;gap:0;border:1px solid #7c3aed;border-radius:4px;overflow:hidden }
+.lang-btn { padding:6px 20px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:transparent;color:#7c3aed }
+.lang-btn.active { background:#7c3aed;color:#fff }
+.lang-ko, .lang-en { display:none }
+.lang-ko.show, .lang-en.show { display:block }
+.toc-ko-text, .toc-en-text { display:none }
+
+/* 상태 박스 */
+.ok-box  { background:#f0fdf4;border:1px solid #86efac;border-radius:4px;padding:8px 12px;margin:8px 0;font-size:14px }
+.ok-label{ font-weight:700;color:#166534;margin-right:6px }
+.tbd-box { background:#fff9e6;border:1px solid #f5c842;border-radius:4px;padding:8px 12px;margin:8px 0;font-size:14px }
+.tbd-label{ font-weight:700;color:#b45309;margin-right:6px }
+.out-box { background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:8px 12px;margin:8px 0;font-size:14px;color:#6b7280 }
+.out-label{ font-weight:700;color:#4b5563;margin-right:6px }
+.warn-box{ background:#fff7ed;border:1px solid #fed7aa;border-radius:4px;padding:8px 12px;margin:8px 0;font-size:14px }
+.warn-label{ font-weight:700;color:#c2410c;margin-right:6px }
+
+.sec { margin-top:28px;padding-top:18px;border-top:1px solid #e0e0da }
+.subsec { margin-top:16px;margin-bottom:6px;font-size:15px;font-weight:700;color:#1a1f2e }
+code { background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:13px;font-family:monospace }
+table { width:100%;border-collapse:collapse;font-size:14px;margin:8px 0 }
+th { background:#f5f5f0;padding:6px 8px;text-align:left;border:1px solid #d4d4cc;font-weight:600 }
+td { padding:5px 8px;border:1px solid #d4d4cc;vertical-align:top;line-height:1.55 }
+tr:nth-child(even) td { background:#fafaf7 }
+
+.flow-row { display:flex;align-items:flex-start;gap:10px;margin:6px 0;font-size:14px;line-height:1.5 }
+.flow-num { background:#3a5f9e;color:#fff;border-radius:50%;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px }
+.flow-x   { background:#e74c3c;color:#fff;border-radius:50%;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px }
+
+.st { display:inline-block;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700 }
+.st-pending      { background:#fef3c7;color:#92400e }
+.st-pending-fail { background:#fee2e2;color:#991b1b }
+.st-confirmed    { background:#dcfce7;color:#166534 }
+.st-cancel-req   { background:#ffedd5;color:#9a3412 }
+.st-cancelled    { background:#fee2e2;color:#7f1d1d }
+.st-noshow       { background:#f3f4f6;color:#374151 }
+
+.state-tree { font-size:14px;line-height:2.1;padding:12px 16px;background:#f9f9f6;border:1px solid #e0e0da;border-radius:4px;margin:10px 0 }
+.s1d { font-weight:700;color:#1a1f2e }
+.s2d { padding-left:20px;color:#444;display:block }
+.s2d::before { content:"└ ";color:#aaa }
+.screen-plan { display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:10px 0 }
+.screen-box { border:1px solid #d4d4cc;border-radius:4px;padding:10px 12px;font-size:14px }
+.screen-box-title { font-weight:700;color:#3a5f9e;margin-bottom:4px;font-size:15px }
+.screen-box-route { font-size:10px;color:#888;margin-bottom:5px;font-family:monospace }
+
+.doc { max-width:940px;font-size:14px;line-height:1.7 }
+.wf-section-head { font-size:20px;font-weight:700 }
+.draft-badge { display:inline-block;background:#ede9fe;border:1px solid #8b5cf6;border-radius:4px;padding:4px 12px;font-size:13px;font-weight:700;color:#4c1d95;margin-bottom:18px }
+.pd-meta { font-size:13px;color:#888;margin-top:6px }
+
+/* TOC 사이드바 */
+.toc-sidebar { position:fixed;left:0;top:0;width:200px;height:100vh;background:#13171f;border-right:1px solid rgba(255,255,255,.1);padding:52px 0 24px;overflow-y:auto;z-index:200;box-sizing:border-box }
+.toc-header { padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:6px }
+.toc-item { display:flex;align-items:flex-start;gap:8px;padding:6px 14px;text-decoration:none;color:rgba(255,255,255,.4);font-size:13px;line-height:1.45;border-left:2px solid transparent;transition:color .15s,background .15s }
+.toc-item:hover { color:rgba(255,255,255,.75);background:rgba(255,255,255,.04) }
+.toc-item.active { color:#a78bfa;border-left-color:#a78bfa;background:rgba(167,139,250,.07);font-weight:600 }
+.toc-num { font-size:11px;font-weight:700;color:rgba(167,139,250,.5);flex-shrink:0;margin-top:2px;font-family:monospace;min-width:24px }
+.toc-item.active .toc-num { color:#a78bfa }
+body { padding-left:200px;box-sizing:border-box }
+.page-nav { padding-left:200px }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">
+    <span class="toc-ko-text">예약관리 정책서</span>
+    <span class="toc-en-text">Reservation Management Policy</span>
+  </span>
+  <span class="page-nav-route">#/reservations</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="policy-decisions.html">← 이전</a>
+    <a class="page-nav-pager" href="pms-integration-guide.html">다음 →</a>
+  </div>
+</nav>
+
+<nav class="toc-sidebar">
+  <div class="toc-header">
+    <span class="toc-ko-text">목차</span>
+    <span class="toc-en-text">Contents</span>
+  </div>
+  <a class="toc-item" href="#ko-01"><span class="toc-num">01</span><span><span class="toc-ko-text">화면 구성 계획</span><span class="toc-en-text">Screen Plan</span></span></a>
+  <a class="toc-item" href="#ko-02"><span class="toc-num">02</span><span><span class="toc-ko-text">데이터 소스·DB 정책</span><span class="toc-en-text">Data Source & DB</span></span></a>
+  <a class="toc-item" href="#ko-03"><span class="toc-num">03</span><span><span class="toc-ko-text">LNB 구조</span><span class="toc-en-text">LNB Structure</span></span></a>
+  <a class="toc-item" href="#ko-04"><span class="toc-num">04</span><span><span class="toc-ko-text">예약 상태 정의</span><span class="toc-en-text">Status Definitions</span></span></a>
+  <a class="toc-item" href="#ko-05"><span class="toc-num">05</span><span><span class="toc-ko-text">예약 처리 흐름</span><span class="toc-en-text">Processing Flow</span></span></a>
+  <a class="toc-item" href="#ko-06"><span class="toc-num">06</span><span><span class="toc-ko-text">예약 번호 체계</span><span class="toc-en-text">Booking Number</span></span></a>
+  <a class="toc-item" href="#ko-07"><span class="toc-num">07</span><span><span class="toc-ko-text">S10-A 예약 목록</span><span class="toc-en-text">S10-A List</span></span></a>
+  <a class="toc-item" href="#ko-08"><span class="toc-num">08</span><span><span class="toc-ko-text">S10-B 예약 상세</span><span class="toc-en-text">S10-B Detail</span></span></a>
+  <a class="toc-item" href="#ko-09"><span class="toc-num">09</span><span><span class="toc-ko-text">변경 이력 정책</span><span class="toc-en-text">Change History</span></span></a>
+  <a class="toc-item" href="#ko-10"><span class="toc-num">10</span><span><span class="toc-ko-text">취소 사유 수집</span><span class="toc-en-text">Cancellation Reason</span></span></a>
+  <a class="toc-item" href="#ko-11"><span class="toc-num">11</span><span><span class="toc-ko-text">알림 정책</span><span class="toc-en-text">Notification Policy</span></span></a>
+  <a class="toc-item" href="#ko-12"><span class="toc-num">12</span><span><span class="toc-ko-text">위약금 처리</span><span class="toc-en-text">Penalty Policy</span></span></a>
+  <a class="toc-item" href="#ko-13"><span class="toc-num">13</span><span><span class="toc-ko-text">세션 타임아웃</span><span class="toc-en-text">Session Timeout</span></span></a>
+  <a class="toc-item" href="#ko-14"><span class="toc-num">14</span><span><span class="toc-ko-text">어드민 범위 외</span><span class="toc-en-text">Out of Scope</span></span></a>
+  <a class="toc-item" href="#ko-15"><span class="toc-num">15</span><span><span class="toc-ko-text">향후 기획 예정</span><span class="toc-en-text">Future Plans</span></span></a>
+  <a class="toc-item" href="#ko-16"><span class="toc-num">16 ⏳</span><span><span class="toc-ko-text">미결 항목 TBD</span><span class="toc-en-text">Pending TBD</span></span></a>
+</nav>
+
+<div class="page">
+
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
+    <div>
+      <div class="sec-title" style="margin-bottom:4px">
+        <span class="sec-badge" style="background:#7c3aed">S10</span>
+        <span class="toc-ko-text">예약관리 정책서</span>
+        <span class="toc-en-text">Reservation Management Policy</span>
+        <span style="font-size:12px;font-weight:400;color:#888">
+          <span class="toc-ko-text">— 상태 정의 · 처리 흐름 · 화면 기능 정의</span>
+          <span class="toc-en-text">— Status Definitions · Processing Flow · Feature Definitions</span>
+        </span>
+      </div>
+      <div class="pd-meta">High1 OTA Admin System · Reservation Management Policy · 2026-05-22</div>
+    </div>
+    <div class="lang-toggle" style="margin-top:8px">
+      <button class="lang-btn active" onclick="setLang('ko')">KO</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ KO ═══════ -->
+  <div class="lang-ko show">
+  <div class="doc">
+  <div class="draft-badge">POLICY — 예약관리 기능 정책서 (2026-05-22)</div>
+
+  <div class="wf-section-head">1. 화면 구성 계획</div>
+  <div class="screen-plan">
+    <div class="screen-box">
+      <div class="screen-box-title">S10-A 예약 목록</div>
+      <div class="screen-box-route">#/reservations</div>
+      전체 목록 · 검색·필터 · 상태별 조회 · 엑셀 내보내기
+    </div>
+    <div class="screen-box">
+      <div class="screen-box-title">S10-B 예약 상세</div>
+      <div class="screen-box-route">#/reservations/:id</div>
+      예약·투숙자 정보 · 상태 배지 · 관리자 액션 · 변경 이력
+    </div>
+    <div class="screen-box">
+      <div class="screen-box-title">S10-C 취소 확인 모달</div>
+      <div class="screen-box-route">S10-B 진입 (오버레이)</div>
+      위약금 확인(API 10) → 관리자 확인 → 취소 실행(API 7)
+    </div>
+  </div>
+
+  <div class="wf-section-head sec">2. 데이터 소스 및 DB 정책</div>
+  <table>
+    <tr><th style="width:28%">항목</th><th>정책</th></tr>
+    <tr><td>예약 데이터 소스</td><td><strong>우리 DB가 운영 단일 소스(Single Source of Truth).</strong><br>PMS는 예약 실행(API 6)·취소(API 7)·위약금 조회(API 10)의 실행 대상. 예약 조회(API 8)로 데이터 동기화.</td></tr>
+    <tr><td>우리 DB 저장 항목</td><td>예약 기본 정보 · 투숙자 정보 · 예약 상태 이력 · 취소 사유 · 관리자 메모 · PG 거래 정보</td></tr>
+    <tr><td>PMS 연동 API</td><td>API 6(예약 생성) · API 7(취소) · API 8(조회·동기화) · API 10(위약금 조회)</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">3. LNB 구조 (예약관리)</div>
+  <table>
+    <tr><th style="width:20%">GNB</th><th style="width:25%">LNB</th><th>설명</th></tr>
+    <tr><td rowspan="2">예약관리</td><td>예약 목록</td><td>S10-A — 전체 예약 조회. 확정·대기 포함 전 상태.</td></tr>
+    <tr><td>취소 목록</td><td>S10-A 취소 필터 뷰 — 취소요청·취소완료 상태 전용. 취소 사유 수집·통계 활용 목적.</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">4. 예약 상태 정의</div>
+  <div class="state-tree">
+    <span class="s1d">대기</span>
+    <span class="s2d">확정대기 — 수기 상품 예약 완료 후 관리자 승인 대기</span>
+    <span class="s2d">예약실패 ⚠️ — PG 결제 성공 + PMS API 6 실패. 환불 처리 필요. 관리자 긴급 알림.</span>
+    <span class="s1d" style="margin-top:2px">확정</span>
+    <span class="s1d" style="margin-top:2px">취소</span>
+    <span class="s2d">취소요청 — 고객 취소 요청 접수 후 관리자 처리 대기</span>
+    <span class="s2d">취소완료 — 취소 확정 + 환불 완료 처리 완료</span>
+    <span class="s1d" style="margin-top:2px">노쇼 — 체크인일 24시 경과 미투숙. 100% 위약금. 환불 의무 없음. <span class="tbd-box" style="display:inline;padding:1px 5px;font-size:10px;margin:0">TBD-3</span></span>
+  </div>
+  <table>
+    <tr><th style="width:10%">1depth</th><th style="width:15%">2depth</th><th style="width:16%">어드민 배지</th><th style="width:10%">고객 노출</th><th>가능한 액션</th></tr>
+    <tr><td rowspan="2"><span class="st st-pending">대기</span></td><td>확정대기</td><td><span class="st st-pending">대기</span> 노란색</td><td style="text-align:center">O</td><td>관리자: [확정 처리] / [거절·취소완료 전환]</td></tr>
+    <tr><td>예약실패 ⚠️</td><td><span class="st st-pending-fail">예약실패</span> 빨간색·긴급</td><td style="text-align:center">O<br><span style="font-size:10px;color:#888">처리 오류 안내</span></td><td>관리자: [환불 완료 처리] → 취소완료 전환</td></tr>
+    <tr><td><span class="st st-confirmed">확정</span></td><td>—</td><td><span class="st st-confirmed">확정</span> 초록색</td><td style="text-align:center">O</td><td>[취소 처리 진입] / 관리자 메모</td></tr>
+    <tr><td rowspan="2"><span class="st st-cancelled">취소</span></td><td>취소요청</td><td><span class="st st-cancel-req">취소요청</span> 주황색</td><td style="text-align:center">O<br><span style="font-size:10px;color:#888">처리 중 안내</span></td><td>관리자: [취소 완료 처리 진입]</td></tr>
+    <tr><td>취소완료</td><td><span class="st st-cancelled">취소완료</span> 빨간색</td><td style="text-align:center">O</td><td>조회만 가능. 재취소 불가.</td></tr>
+    <tr><td><span class="st st-noshow">노쇼</span></td><td>—</td><td><span class="st st-noshow">노쇼</span> 회색</td><td style="text-align:center">O</td><td>조회만 가능. 환불 없음.</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">5. 예약 처리 흐름</div>
+
+  <div class="subsec">5-1. PMS 연동 상품 — 신규 예약</div>
+  <div class="flow-row"><div class="flow-num">1</div><div>고객이 프런트에서 상품 선택 → 예약·결제 정보 입력</div></div>
+  <div class="flow-row"><div class="flow-num">2</div><div>예약 세션 시작 — <strong>15분 타이머 작동.</strong> 타임아웃 시 결제 페이지 자동 이탈 + 재고 반환. (백엔드 처리, 어드민 관여 없음)</div></div>
+  <div class="flow-row"><div class="flow-num">3</div><div>PG 결제 요청</div></div>
+  <div class="flow-row"><div class="flow-x">✕</div><div style="color:#888"><strong>PG 결제 실패</strong> → 에러 알림 표시 + 결제 페이지 유지. 예약번호 미생성. 기록 없음.</div></div>
+  <div class="flow-row"><div class="flow-num">4</div><div>PG 결제 성공 → API 6(예약 생성) 호출.<br><span style="color:#888">백엔드 자동 재시도: 최대 3회 (1초 → 3초 → 9초 간격)</span></div></div>
+  <div class="flow-row"><div class="flow-x">✕</div><div style="color:#c2410c;font-weight:600">API 6 3회 모두 실패 → <span class="st st-pending-fail">예약실패</span> 상태로 예약번호 생성. 관리자 즉시 알림(긴급). 고객: "처리 오류, 고객센터 문의" 안내 + 결제 금액 환불 예정 문구 표시.</div></div>
+  <div class="flow-row"><div class="flow-num">5</div><div>API 6 성공 → 예약번호 생성 + 상태: <span class="st st-confirmed">확정</span>. 고객 예약 확인 이메일 발송.</div></div>
+  <div class="warn-box" style="margin-top:10px"><span class="warn-label">⚠️ 예약실패 관리자 처리 필수</span>PG 결제는 완료됐으나 PMS 예약 생성 실패. 고객 돈이 빠진 상태이므로 <strong>즉시 확인 및 PG 환불 처리 필요.</strong> 처리 완료 후 어드민 S10-B에서 [환불 완료 처리] → 상태 취소완료 전환. 전 과정 이력 자동 기록.</div>
+
+  <div class="subsec">5-2. 수기 관리 상품 — 신규 예약</div>
+  <div class="flow-row"><div class="flow-num">1</div><div>고객이 프런트에서 수기 상품 예약·결제 완료</div></div>
+  <div class="flow-row"><div class="flow-num">2</div><div>예약번호 생성 + 상태: <span class="st st-pending">확정대기</span>. 관리자 알림 발송.</div></div>
+  <div class="flow-row"><div class="flow-num">3</div><div>관리자가 호텔 직접 확인 후 처리 결정</div></div>
+  <div class="flow-row"><div class="flow-num">4</div><div>[확정 처리] → 상태: <span class="st st-confirmed">확정</span>. 고객 확정 이메일 발송.</div></div>
+  <div class="flow-row"><div class="flow-x">✕</div><div>[거절] → 상태: <span class="st st-cancelled">취소완료</span>. 환불 처리. 고객 거절 안내 이메일.</div></div>
+
+  <div class="subsec">5-3. PMS 연동 상품 — 취소 처리 (자동)</div>
+  <div class="flow-row"><div class="flow-num">1</div><div>고객이 프런트에서 취소 요청 + <strong>취소 사유 선택 (필수)</strong></div></div>
+  <div class="flow-row"><div class="flow-num">2</div><div>API 10 자동 호출 → 위약금(DLFT_APLY_AMT) · 구간명(DFLT_NM) 조회</div></div>
+  <div class="flow-row"><div class="flow-num">3A</div><div><strong>위약금 0원 (무료 취소):</strong> API 7 자동 호출 → 취소 실행 → 환불 처리 → 상태: <span class="st st-cancelled">취소완료</span>. 취소 확인 이메일 발송. <em>관리자 개입 없음.</em></div></div>
+  <div class="flow-row"><div class="flow-num">3B</div><div><strong>위약금 발생:</strong> 고객에게 위약금 금액 + 구간명 안내 화면 표시</div></div>
+  <div class="flow-row"><div class="flow-num">4</div><div>고객 [취소 동의] → API 7 자동 호출 → 취소 실행 → 환불 (위약금 차감) → 상태: <span class="st st-cancelled">취소완료</span>. 취소 확인 이메일 발송.</div></div>
+  <div class="flow-row"><div class="flow-x">✕</div><div>고객 [취소 철회] → 취소 요청 취소. 예약 <span class="st st-confirmed">확정</span> 상태 유지.</div></div>
+  <div class="warn-box"><span class="warn-label">⚠️ API 실패 시 관리자 개입</span>API 10 또는 API 7 처리 실패 시 → <span class="st st-cancel-req">취소요청</span> 상태로 보존 + 관리자 즉시 알림. 관리자가 S10-B에서 수동으로 처리.</div>
+
+  <div class="subsec">5-4. 수기 관리 상품 — 취소 처리 (관리자 처리)</div>
+  <div class="flow-row"><div class="flow-num">1</div><div>고객이 프런트에서 취소 요청 + 취소 사유 선택 (필수) → 상태: <span class="st st-cancel-req">취소요청</span>. 관리자 알림 발송.</div></div>
+  <div class="flow-row"><div class="flow-num">2</div><div>관리자가 S10-B 예약 상세 확인 후 처리 결정</div></div>
+  <div class="flow-row"><div class="flow-num">3</div><div>[취소 확정] → 환불 처리 → 상태: <span class="st st-cancelled">취소완료</span>. 취소 확인 이메일 발송.</div></div>
+  <div class="ok-box"><span class="ok-label">관리자 강제 취소</span>하이원 측과 사전 협의 완료를 전제로 관리자가 직접 취소 실행. 취소요청 단계 없이 S10-B에서 직접 처리. 이력에 "관리자 강제 취소" 처리자·사유 기록 필수.</div>
+
+  <div class="subsec">5-5. 노쇼 처리</div>
+  <div class="tbd-box"><span class="tbd-label">TBD-3 · 처리 방식 확인 필요</span><strong>PMS에서 노쇼 상태코드 수신 가능한 경우:</strong> API 8 동기화 시 자동 상태 전환.<br><strong>수신 불가한 경우:</strong> 우리 시스템에서 체크인일 24시 경과 + 확정 상태인 예약을 자동으로 노쇼 전환하는 배치 또는 스케줄러 구현 필요.</div>
+  <div class="ok-box"><span class="ok-label">노쇼 정책</span>위약금 100%. 환불 의무 없음. 고객 취소 요청 없이 노쇼로 전환된 경우 별도 환불 처리 불필요.</div>
+
+  <div class="wf-section-head sec">6. 예약 번호 체계</div>
+  <table>
+    <tr><th style="width:28%">케이스</th><th>예약번호</th><th>비고</th></tr>
+    <tr><td>PMS 연동 상품 — 정상</td><td>PMS RSV_ID 사용</td><td>별도 업체 예약번호 없음</td></tr>
+    <tr><td>수기 관리 상품</td><td><code>HM-YYYYMMDD-NNNNN</code><br>예: HM-20260601-00001</td><td>상세 채번 규칙은 개발사 협의</td></tr>
+    <tr><td>PMS 연동 — 예약실패</td><td>우리 시스템 임시 번호</td><td>PMS RSV_ID 없음. 관리자 처리 완료 후 취소완료 상태로 이력 보존.</td></tr>
+    <tr><td>결제 실패</td><td>미생성</td><td>PG 거절. 에러 알림 후 결제 페이지 유지. DB 기록 없음.</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">7. S10-A 예약 목록 기능 정의</div>
+  <div class="subsec">검색 필터</div>
+  <table>
+    <tr><th style="width:40%">필터 항목</th><th>비고</th></tr>
+    <tr><td>날짜 범위 — <strong>체크인 기준</strong></td><td>기본 조회 기준</td></tr>
+    <tr><td>날짜 범위 — <strong>예약 생성일 기준</strong></td><td>당일 접수 예약 조회 등 운영 용도</td></tr>
+    <tr><td>예약 상태</td><td>전체 / 대기 / 확정 / 취소요청 / 취소완료 / 노쇼 / 예약실패</td></tr>
+    <tr><td>PMS 예약번호 (RSV_ID)</td><td>선택</td></tr>
+    <tr><td>투숙자명</td><td>Last Name 기준 부분 검색</td></tr>
+    <tr><td>상품명</td><td>선택</td></tr>
+  </table>
+  <div class="subsec">목록 컬럼</div>
+  <table>
+    <tr><th style="width:30%">컬럼명</th><th style="width:35%">소스</th><th>비고</th></tr>
+    <tr><td>예약번호</td><td>PMS RSV_ID / HM-번호</td><td></td></tr>
+    <tr><td>상품명</td><td>우리 DB</td><td></td></tr>
+    <tr><td>숙소 / 객실유형</td><td>우리 DB</td><td></td></tr>
+    <tr><td>체크인 / 체크아웃</td><td>PMS ETRM_DT / LVRM_DT</td><td></td></tr>
+    <tr><td>박수 / 객실수 <span class="tbd-box" style="display:inline;padding:1px 5px;font-size:10px;margin:0 0 0 4px">TBD-4</span></td><td>PMS STAY_DAY / API 6 RM_CNT</td><td>목록 표시 형식: "X박 / X개". RM_CNT 의미 하이원 확인 후 확정.</td></tr>
+    <tr><td>투숙자명</td><td>우리 DB (Last + First)</td><td></td></tr>
+    <tr><td>판매금액</td><td>PMS SELL_AMT</td><td></td></tr>
+    <tr><td>예약 생성일시</td><td>우리 DB</td><td></td></tr>
+    <tr><td>상태</td><td>우리 DB</td><td>배지 표시</td></tr>
+  </table>
+  <div class="ok-box"><span class="ok-label">엑셀 내보내기</span>목록 화면의 현재 필터 조건 기준으로 전체 데이터를 .xlsx 형식으로 다운로드. 운영팀 정산·보고 용도. 페이지네이션: 오프셋(Offset) 방식.</div>
+
+  <div class="wf-section-head sec">8. S10-B 예약 상세 기능 정의</div>
+  <div class="subsec">예약 기본 정보</div>
+  <table>
+    <tr><th style="width:35%">항목</th><th>소스</th><th>비고</th></tr>
+    <tr><td>예약번호</td><td>PMS RSV_ID / HM-번호</td><td></td></tr>
+    <tr><td>상품명 / 숙소명 / 객실유형</td><td>우리 DB</td><td></td></tr>
+    <tr><td>연동 모드 배지</td><td>우리 DB</td><td>PMS연동 / 수기관리</td></tr>
+    <tr><td>체크인 / 체크아웃</td><td>PMS ETRM_DT / LVRM_DT</td><td></td></tr>
+    <tr><td>박수 / 객실수 <span class="tbd-box" style="display:inline;padding:1px 5px;font-size:10px;margin:0 0 0 4px">TBD-4</span></td><td>PMS STAY_DAY / API 6 RM_CNT</td><td>RM_CNT 의미 하이원 확인 후 확정</td></tr>
+    <tr><td>성인 / 아동 인원</td><td>PMS STAY_ADLT_PCNT / STAY_CHLD_PCNT</td><td></td></tr>
+    <tr><td>판매금액</td><td>PMS SELL_AMT</td><td></td></tr>
+    <tr><td>PG 거래번호</td><td>우리 DB</td><td>PG 환불 대조용</td></tr>
+    <tr><td>예약 생성일시</td><td>우리 DB</td><td></td></tr>
+    <tr><td>예약 상태</td><td>우리 DB</td><td>배지 표시</td></tr>
+  </table>
+  <div class="subsec">예약자 · 투숙자 정보 (외국인 기준)</div>
+  <table>
+    <tr><th style="width:35%">항목</th><th>필수 여부</th><th>비고</th></tr>
+    <tr><td>성 (Last Name)</td><td>필수</td><td></td></tr>
+    <tr><td>미들 네임 (Middle Name)</td><td>선택</td><td></td></tr>
+    <tr><td>이름 (First Name)</td><td>필수</td><td></td></tr>
+    <tr><td>이메일</td><td>필수</td><td>예약 확인·취소 알림 발송 기준</td></tr>
+    <tr><td>국적</td><td>필수</td><td>ISO 국가코드 (드롭다운)</td></tr>
+    <tr><td>전화번호</td><td>필수</td><td>국가코드(+82 등) + 번호 구조</td></tr>
+    <tr><td>특이사항 (고객 요청)</td><td>선택</td><td>프런트 입력 → 어드민 표시. 고객 요청사항.</td></tr>
+  </table>
+  <div class="subsec">요금 정보</div>
+  <table>
+    <tr><th style="width:35%">항목</th><th>소스</th><th>비고</th></tr>
+    <tr><td>날짜별 요금 (DAILYPRICE)</td><td>PMS API 8 DAILYPRICE</td><td>입금가 기준. 최대 3행 표시, 초과 시 [더 보기 ▼] 드롭다운. 날짜 + 요금 형식.</td></tr>
+    <tr><td>입금가 합계</td><td>DAILYPRICE 합산</td><td><strong>관리자 전용</strong> 노출. 고객 미표시. 보라색 배지 표기.</td></tr>
+    <tr><td>마진</td><td>우리 DB (S11 마스터 또는 상품 개별)</td><td>마진율 또는 정액. 입금가 대비 퍼센트 병기. 관리자 전용.</td></tr>
+    <tr><td>할인 <span class="tbd-box" style="display:inline;padding:1px 5px;font-size:10px;margin:0 0 0 4px">TBD</span></td><td>—</td><td>정책 미확정. 자리 예약만. 확정 후 계산식 반영 예정.</td></tr>
+    <tr><td>판매가</td><td>우리 DB</td><td>고객 결제금액 = 입금가 합계 + 마진 − 할인.</td></tr>
+  </table>
+
+  <div class="subsec">결제취소 내역 (부분취소 누적)</div>
+  <table>
+    <tr><th style="width:35%">항목</th><th>비고</th></tr>
+    <tr><td>결제취소 내역 블록</td><td>판매가 하단 표시. 취소 이력 없으면 미표시.</td></tr>
+    <tr><td>건별 표시</td><td>취소일시 · 처리자 · 취소금액 행으로 나열.</td></tr>
+    <tr><td>총 취소액</td><td>취소액 누적 합산.</td></tr>
+    <tr><td>결제 잔액</td><td>판매가 − 총 취소액. 실시간 자동 계산.</td></tr>
+  </table>
+
+  <div class="subsec">관리자 액션 버튼</div>
+  <table>
+    <tr><th style="width:22%">버튼</th><th style="width:22%">위치</th><th>동작</th></tr>
+    <tr><td>[취소하기]</td><td>우측 상단 항상 고정</td><td>PMS 예약취소(API 7) + PG 전액 결제취소 동시 요청 → S10-C 모달에서 최종 확인 후 처리. 예약 상태 취소완료로 전환. 취소완료·노쇼 상태에서는 미표시.</td></tr>
+    <tr><td>[부분취소]</td><td>요금정보 섹션 우측</td><td>PG 부분 결제취소만 단독 처리. 관리자가 금액 직접 입력 → 잔액 자동 계산. 복수 실행 가능. 예약 상태 변경 없음. 결제취소 내역 블록에 누적 기록.</td></tr>
+  </table>
+  <div class="ok-box"><span class="ok-label">취소하기 vs 부분취소 구분</span>[취소하기]는 예약과 PG 결제를 동시에 종결하는 전체 취소. [부분취소]는 PG 결제 일부만 환불하는 운영 도구 — 예약 상태와 무관하게 언제든 실행 가능.</div>
+
+  <div class="subsec">예약상태 수기 변경</div>
+  <div class="ok-box"><span class="ok-label">운영 정책</span>예약일시 하단 드롭다운으로 언제든 수기 변경 가능. PMS 연동 예약도 오버라이드 허용 (관리자 책임). [적용] 버튼 클릭 시 반영 (실수 방지). 변경 시 변경이력 자동 기록 (처리자: 관리자 ID).</div>
+  <div class="warn-box"><span class="warn-label">주의</span>수기 상태 변경은 PMS 실제 상태와 불일치를 야기할 수 있음. 운영 정책으로 관리 필요.</div>
+
+  <div class="subsec">관리자 전용 항목</div>
+  <table>
+    <tr><th style="width:35%">항목</th><th>비고</th></tr>
+    <tr><td>관리자 메모</td><td>고객 미노출. 자유 텍스트. 저장 시 이력에 자동 기록.</td></tr>
+    <tr><td>취소 사유</td><td>고객이 취소 요청 시 선택한 사유. 조회 전용.</td></tr>
+    <tr><td>예약실패 오류 내용</td><td>별도 섹션 없음. <strong>변경이력에 기록됨</strong> (오류코드 · PG 거래번호 · 재시도 횟수 포함).</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">9. 변경 이력 정책</div>
+  <p style="margin:0 0 8px">S10-B 예약 상세 하단에 접이식 이력 섹션 표시. 최신 이력이 상단.</p>
+  <table>
+    <tr><th style="width:40%">이력 기록 조건</th><th>예시</th></tr>
+    <tr><td>예약 상태 변경</td><td>확정대기 → 확정, 확정 → 취소요청, 취소요청 → 취소완료 등</td></tr>
+    <tr><td>예약자·투숙자 정보 수정</td><td>이름·전화번호·이메일·특이사항 변경</td></tr>
+    <tr><td>관리자 메모 추가·수정</td><td></td></tr>
+    <tr><td>부분취소 (결제취소) 실행</td><td>취소금액 · 잔액 기록. 예: "수기 결제취소 -50,000원 / 잔액 270,000원"</td></tr>
+    <tr><td>환불 완료 처리</td><td>예약실패 환불 완료, 취소완료 환불 확정 등</td></tr>
+    <tr><td>예약실패 오류 상세</td><td>API 6 오류코드 · PG 거래번호 · 재시도 횟수 포함. 별도 섹션 없이 이력에만 기록.</td></tr>
+    <tr><td>예약상태 수기 변경</td><td>처리자: 관리자 ID. 변경 전/후 상태 기록.</td></tr>
+  </table>
+  <div class="ok-box"><span class="ok-label">이력 컬럼</span>변경일시 / 처리자 (관리자 ID 또는 "고객" 또는 "SYSTEM") / 변경 구분 / 변경 내용 / 비고</div>
+
+  <div class="wf-section-head sec">10. 취소 사유 수집</div>
+  <p style="margin:0 0 8px">고객이 프런트에서 취소 요청 시 사유를 <strong>필수 선택</strong>. 서비스 개선 데이터 활용 목적.</p>
+  <table>
+    <tr><th>사유 선택지 (예시 — 확정 전 조정 가능)</th></tr>
+    <tr><td>일정 변경</td></tr>
+    <tr><td>객실·상품 변경 (다른 상품으로 재예약 예정)</td></tr>
+    <tr><td>개인 사정</td></tr>
+    <tr><td>가격 문제</td></tr>
+    <tr><td>기타 (직접 입력)</td></tr>
+  </table>
+  <div class="ok-box"><span class="ok-label">취소목록 활용</span>LNB 취소목록에서 기간별·사유별 취소 현황 조회 가능. 추후 서비스 개선 기초 데이터.</div>
+
+  <div class="wf-section-head sec">11. 알림 정책</div>
+  <table>
+    <tr><th style="width:35%">발생 이벤트</th><th style="width:20%">알림 대상</th><th>방식</th></tr>
+    <tr><td>수기 상품 신규 예약 접수 (확정대기)</td><td>관리자</td><td>인앱 알림 + 이메일 (상세 방식 개발사 협의)</td></tr>
+    <tr><td>예약실패 발생 ⚠️ 긴급</td><td>관리자</td><td>인앱 알림 + 이메일 즉시 발송. 긴급 표시.</td></tr>
+    <tr><td>취소요청 접수</td><td>관리자</td><td>인앱 알림 + 이메일</td></tr>
+    <tr><td>예약 확정 완료</td><td>고객</td><td>예약 확인 이메일</td></tr>
+    <tr><td>취소 완료</td><td>고객</td><td>취소 확인 이메일 (환불 예정 금액 포함)</td></tr>
+    <tr><td>수기 상품 예약 거절</td><td>고객</td><td>거절 안내 이메일 (환불 처리 안내 포함)</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">12. 위약금 처리 정책</div>
+  <table>
+    <tr><th style="width:30%">항목</th><th>정책</th></tr>
+    <tr><td>부분취소 정의</td><td>위약금이 발생하는 <strong>전체 취소</strong>. 일부 박수만 선택 취소는 해당 없음.</td></tr>
+    <tr><td>PMS 연동 — 위약금 계산</td><td>위약금율 = API 10 <code>DLFT_APLY_AMT</code> ÷ <code>SELL_AMT</code>(입금가)<br>고객 청구 위약금 = 위약금율 × 우리 DB 판매가<br>PMS 납부 = <code>DLFT_APLY_AMT</code> 원금 그대로. 차액(마진 비례분) 우리 수취.<br><em style="font-size:11px;color:#888">※ API 10 필드명 오타 주의: DLFT_APLY_AMT (DFLT 아님)</em></td></tr>
+    <tr><td>위약금 소수점 처리</td><td><strong>소수점 첫째자리 반올림</strong>. 예: 36,666.6원 → 36,667원.<br><span style="color:#888;font-size:12px">※ 마진 계산의 버림(floor)과 별도 규칙</span></td></tr>
+    <tr><td>수기 관리 상품</td><td>S06-A에서 관리자가 직접 설정한 7구간 취소정책 기준 적용. 위약금 계산은 간단 운영.</td></tr>
+    <tr><td>노쇼 위약금</td><td>100%. 환불 의무 없음.</td></tr>
+    <tr><td>취소정책 수기 변경</td><td>PMS 연동 상품의 취소정책(API 9 데이터)은 변경 불가. 수정이 필요한 경우 해당 상품을 수기 관리 모드로 전환하여 S06-A에서 직접 설정. <strong>단, 전환 시 재고·요금도 수기 관리로 전환됨.</strong></td></tr>
+    <tr><td>쿠폰 환불 정책</td><td>쿠폰 기능 미도입. 도입 시 별도 정책 수립.</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">13. 예약 세션 타임아웃 (백엔드)</div>
+  <div class="out-box"><span class="out-label">어드민 관여 없음 — 백엔드 구현 사항</span>고객이 결제 페이지 진입 후 <strong>15분 이내 결제 미완료</strong> 시 세션 자동 만료, 재고 반환, 결제 페이지 이탈. 고객 화면에 카운트다운 타이머 표시. 타임아웃 후 상품 상세 페이지로 이동. 어드민 DB에 별도 기록 없음.</div>
+
+  <div class="wf-section-head sec">14. 어드민 범위 외</div>
+  <div class="out-box"><span class="out-label">범위 외</span>
+    <ul style="margin:6px 0 0 16px;padding:0;line-height:2">
+      <li>PG 결제 승인·처리 — 고객 화면(프런트) 담당</li>
+      <li>환불 실행 — 결제 시스템 담당. 어드민은 "환불 완료" 상태 기록만 수행.</li>
+      <li>API 11(카드 정보 등록) · API 12(투숙객 정보 변경) — 프런트 또는 향후 검토</li>
+      <li>투숙완료 상태 관리 — 해당 상태 없음</li>
+      <li>리뷰 관리 — 향후 별도 기획</li>
+    </ul>
+  </div>
+
+  <div class="wf-section-head sec">15. 향후 기획 예정</div>
+  <table>
+    <tr><th style="width:30%">항목</th><th>내용</th><th style="width:20%">우선순위</th></tr>
+    <tr><td>어드민 수기 예약 생성</td><td>관리자가 어드민에서 직접 예약 입력. VIP·특수 예약 대응.</td><td>하위</td></tr>
+    <tr><td>리뷰 기능</td><td>체크아웃 +1일 이후 고객 리뷰 작성 가능. 노쇼 작성 불가.</td><td>추후 기획</td></tr>
+    <tr><td>쿠폰 도입 시 환불 정책</td><td>쿠폰 기능 도입 결정 시 환불 정책 별도 수립.</td><td>추후 기획</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">16. 미결 항목 (TBD)</div>
+  <div class="tbd-box"><span class="tbd-label">TBD-1 · TIME_CD 반영</span>예약 목록·상세 화면에 TIME_CD(A/B/C 타입) 표시 여부. 사업부 결정 후 반영.</div>
+  <div class="tbd-box"><span class="tbd-label">TBD-3 · 노쇼 상태 처리 방식</span>PMS API 8에서 노쇼 상태코드 수신 가능 여부 하이원 확인 필요.<br><strong>가능 시:</strong> API 8 동기화로 자동 전환.<br><strong>불가 시:</strong> 우리 시스템에서 체크인일 24시 경과 후 배치 자동 전환 구현.</div>
+  <div class="tbd-box"><span class="tbd-label">TBD-4 · API 6 RM_CNT 의미</span>RM_CNT 파라미터의 실제 의미 (객실 수 vs 기타) 하이원 측 확인 필요. 예약 목록·상세 "객실 수" 컬럼 표시 방식에 영향.</div>
+
+  </div><!-- /doc ko -->
+  </div><!-- /lang-ko -->
+
+
+  <!-- ═══════════════════════════════════════════ EN ═══════ -->
+  <div class="lang-en">
+  <div class="doc">
+  <div class="draft-badge">POLICY — Reservation Management Policy Document (2026-05-22)</div>
+
+  <div class="wf-section-head">1. Screen Configuration Plan</div>
+  <div class="screen-plan">
+    <div class="screen-box">
+      <div class="screen-box-title">S10-A Reservation List</div>
+      <div class="screen-box-route">#/reservations</div>
+      Full list · Search &amp; filter · Status-based query · Excel export
+    </div>
+    <div class="screen-box">
+      <div class="screen-box-title">S10-B Reservation Detail</div>
+      <div class="screen-box-route">#/reservations/:id</div>
+      Reservation &amp; guest info · Status badge · Admin actions · Change history
+    </div>
+    <div class="screen-box">
+      <div class="screen-box-title">S10-C Cancellation Modal</div>
+      <div class="screen-box-route">S10-B overlay</div>
+      Penalty check (API 10) → Admin confirm → Cancel execute (API 7)
+    </div>
+  </div>
+
+  <div class="wf-section-head sec">2. Data Source &amp; DB Policy</div>
+  <table>
+    <tr><th style="width:28%">Item</th><th>Policy</th></tr>
+    <tr><td>Reservation data source</td><td><strong>Our DB is the Single Source of Truth.</strong><br>PMS is the execution target for reservation creation (API 6), cancellation (API 7), and penalty query (API 10). API 8 is used for data synchronization.</td></tr>
+    <tr><td>Our DB stores</td><td>Reservation base info · Guest info · Status history · Cancellation reason · Admin memo · PG transaction info</td></tr>
+    <tr><td>PMS APIs used</td><td>API 6 (create) · API 7 (cancel) · API 8 (query/sync) · API 10 (penalty query)</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">3. LNB Structure (Reservation Management)</div>
+  <table>
+    <tr><th style="width:20%">GNB</th><th style="width:25%">LNB</th><th>Description</th></tr>
+    <tr><td rowspan="2">Reservation Mgmt</td><td>Reservation List</td><td>S10-A — Full reservation query. All statuses including Confirmed and Pending.</td></tr>
+    <tr><td>Cancellation List</td><td>S10-A cancellation filter view — Exclusively Cancellation Requested and Cancellation Complete. For reason collection and statistics.</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">4. Reservation Status Definitions</div>
+  <div class="state-tree">
+    <span class="s1d">Pending (대기)</span>
+    <span class="s2d">Confirmation Pending — Awaiting admin approval after manual product reservation</span>
+    <span class="s2d">Booking Failed ⚠️ — PG payment succeeded + PMS API 6 failed. Refund required. Urgent admin alert.</span>
+    <span class="s1d" style="margin-top:2px">Confirmed (확정)</span>
+    <span class="s1d" style="margin-top:2px">Cancelled (취소)</span>
+    <span class="s2d">Cancellation Requested — Customer request received, awaiting admin processing</span>
+    <span class="s2d">Cancellation Complete — Cancellation confirmed + refund processing complete</span>
+    <span class="s1d" style="margin-top:2px">No-show — Check-in date midnight passed without stay. 100% penalty. No refund obligation. <span class="tbd-box" style="display:inline;padding:1px 5px;font-size:10px;margin:0">TBD-3</span></span>
+  </div>
+  <table>
+    <tr><th style="width:10%">1depth</th><th style="width:18%">2depth</th><th style="width:18%">Admin Badge</th><th style="width:10%">Customer View</th><th>Available Actions</th></tr>
+    <tr><td rowspan="2"><span class="st st-pending">Pending</span></td><td>Confirmation Pending</td><td><span class="st st-pending">Pending</span> Yellow</td><td style="text-align:center">O</td><td>Admin: [Confirm] / [Reject → Cancellation Complete]</td></tr>
+    <tr><td>Booking Failed ⚠️</td><td><span class="st st-pending-fail">Booking Failed</span> Red · Urgent</td><td style="text-align:center">O<br><span style="font-size:10px;color:#888">Error notice</span></td><td>Admin: [Refund Complete] → Cancellation Complete</td></tr>
+    <tr><td><span class="st st-confirmed">Confirmed</span></td><td>—</td><td><span class="st st-confirmed">Confirmed</span> Green</td><td style="text-align:center">O</td><td>[Initiate cancellation] / Admin memo</td></tr>
+    <tr><td rowspan="2"><span class="st st-cancelled">Cancelled</span></td><td>Cancellation Requested</td><td><span class="st st-cancel-req">Cancel Req.</span> Orange</td><td style="text-align:center">O<br><span style="font-size:10px;color:#888">Processing notice</span></td><td>Admin: [Process Cancellation Complete]</td></tr>
+    <tr><td>Cancellation Complete</td><td><span class="st st-cancelled">Cancelled</span> Red</td><td style="text-align:center">O</td><td>View only. Cannot re-cancel.</td></tr>
+    <tr><td><span class="st st-noshow">No-show</span></td><td>—</td><td><span class="st st-noshow">No-show</span> Gray</td><td style="text-align:center">O</td><td>View only. No refund.</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">5. Reservation Processing Flow</div>
+
+  <div class="subsec">5-1. PMS-Linked Product — New Reservation</div>
+  <div class="flow-row"><div class="flow-num">1</div><div>Customer selects product on frontend → enters reservation &amp; payment info</div></div>
+  <div class="flow-row"><div class="flow-num">2</div><div>Reservation session starts — <strong>15-min timer activated.</strong> On timeout: auto-exit payment page + inventory returned. (Backend only, no admin involvement)</div></div>
+  <div class="flow-row"><div class="flow-num">3</div><div>PG payment request</div></div>
+  <div class="flow-row"><div class="flow-x">✕</div><div style="color:#888"><strong>PG payment failure</strong> → Error alert displayed + stays on payment page. No booking number created. No record.</div></div>
+  <div class="flow-row"><div class="flow-num">4</div><div>PG payment success → Call API 6 (create reservation).<br><span style="color:#888">Backend auto-retry: max 3 times (1s → 3s → 9s intervals)</span></div></div>
+  <div class="flow-row"><div class="flow-x">✕</div><div style="color:#c2410c;font-weight:600">API 6 fails all 3 times → Create booking number with <span class="st st-pending-fail">Booking Failed</span> status. Immediate urgent admin alert. Customer: "Processing error, please contact support" + "Refund pending" notice.</div></div>
+  <div class="flow-row"><div class="flow-num">5</div><div>API 6 success → Booking number created + status: <span class="st st-confirmed">Confirmed</span>. Confirmation email sent to customer.</div></div>
+  <div class="warn-box" style="margin-top:10px"><span class="warn-label">⚠️ Booking Failed — Admin Action Required</span>PG payment completed but PMS reservation creation failed. Customer's money has been charged — <strong>immediate verification and PG refund required.</strong> After processing, admin clicks [Refund Complete] in S10-B → status changes to Cancellation Complete. Full process automatically logged.</div>
+
+  <div class="subsec">5-2. Manual Product — New Reservation</div>
+  <div class="flow-row"><div class="flow-num">1</div><div>Customer completes reservation &amp; payment for manual product on frontend</div></div>
+  <div class="flow-row"><div class="flow-num">2</div><div>Booking number created + status: <span class="st st-pending">Confirmation Pending</span>. Admin notification sent.</div></div>
+  <div class="flow-row"><div class="flow-num">3</div><div>Admin checks with hotel directly and decides on action</div></div>
+  <div class="flow-row"><div class="flow-num">4</div><div>[Confirm] → status: <span class="st st-confirmed">Confirmed</span>. Confirmation email sent to customer.</div></div>
+  <div class="flow-row"><div class="flow-x">✕</div><div>[Reject] → status: <span class="st st-cancelled">Cancellation Complete</span>. Refund processed. Rejection notice email to customer.</div></div>
+
+  <div class="subsec">5-3. PMS-Linked Product — Cancellation (Automated)</div>
+  <div class="flow-row"><div class="flow-num">1</div><div>Customer requests cancellation on frontend + selects cancellation reason <strong>(required)</strong></div></div>
+  <div class="flow-row"><div class="flow-num">2</div><div>API 10 auto-called → retrieves penalty (DLFT_APLY_AMT) · tier name (DFLT_NM)</div></div>
+  <div class="flow-row"><div class="flow-num">3A</div><div><strong>Penalty = 0 (Free cancellation):</strong> API 7 auto-called → cancellation executed → refund processed → status: <span class="st st-cancelled">Cancellation Complete</span>. Cancellation confirmation email sent. <em>No admin involvement.</em></div></div>
+  <div class="flow-row"><div class="flow-num">3B</div><div><strong>Penalty applies:</strong> Customer shown penalty amount + tier name on notice screen</div></div>
+  <div class="flow-row"><div class="flow-num">4</div><div>Customer clicks [Agree to Cancel] → API 7 auto-called → cancellation executed → refund (minus penalty) → status: <span class="st st-cancelled">Cancellation Complete</span>. Cancellation confirmation email sent.</div></div>
+  <div class="flow-row"><div class="flow-x">✕</div><div>Customer clicks [Withdraw Request] → cancellation request cancelled. Reservation remains <span class="st st-confirmed">Confirmed</span>.</div></div>
+  <div class="warn-box"><span class="warn-label">⚠️ Admin Intervention on API Failure</span>If API 10 or API 7 fails → preserve <span class="st st-cancel-req">Cancellation Requested</span> status + immediate admin alert. Admin manually processes in S10-B.</div>
+
+  <div class="subsec">5-4. Manual Product — Cancellation (Admin-Handled)</div>
+  <div class="flow-row"><div class="flow-num">1</div><div>Customer requests cancellation on frontend + selects reason (required) → status: <span class="st st-cancel-req">Cancellation Requested</span>. Admin notification sent.</div></div>
+  <div class="flow-row"><div class="flow-num">2</div><div>Admin reviews in S10-B reservation detail and decides action</div></div>
+  <div class="flow-row"><div class="flow-num">3</div><div>[Confirm Cancellation] → refund processed → status: <span class="st st-cancelled">Cancellation Complete</span>. Cancellation confirmation email sent.</div></div>
+  <div class="ok-box"><span class="ok-label">Admin Force Cancellation</span>Premised on prior agreement with High1. Admin executes cancellation directly — no customer request step. Processed directly from S10-B. Must log "Admin Force Cancel" with processor and reason in change history.</div>
+
+  <div class="subsec">5-5. No-show Processing</div>
+  <div class="tbd-box"><span class="tbd-label">TBD-3 · Processing method to be confirmed</span><strong>If PMS can send no-show status code:</strong> Auto-transition via API 8 sync.<br><strong>If not available:</strong> Implement batch/scheduler that auto-transitions confirmed reservations past check-in date midnight.</div>
+  <div class="ok-box"><span class="ok-label">No-show Policy</span>100% penalty. No refund obligation. If converted to no-show without customer cancellation request, no separate refund processing required.</div>
+
+  <div class="wf-section-head sec">6. Reservation Number System</div>
+  <table>
+    <tr><th style="width:28%">Case</th><th>Booking Number</th><th>Notes</th></tr>
+    <tr><td>PMS-linked product — Normal</td><td>Use PMS RSV_ID</td><td>No separate company booking number</td></tr>
+    <tr><td>Manual product</td><td><code>HM-YYYYMMDD-NNNNN</code><br>e.g. HM-20260601-00001</td><td>Detailed numbering rules to be agreed with developer</td></tr>
+    <tr><td>PMS-linked — Booking Failed</td><td>Our system temporary number</td><td>No PMS RSV_ID. History preserved as Cancellation Complete after admin processing.</td></tr>
+    <tr><td>Payment Failed</td><td>Not created</td><td>PG rejected. Error alert + stays on payment page. No DB record.</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">7. S10-A Reservation List Feature Definition</div>
+  <div class="subsec">Search Filters</div>
+  <table>
+    <tr><th style="width:40%">Filter</th><th>Notes</th></tr>
+    <tr><td>Date range — <strong>Check-in date basis</strong></td><td>Default query basis</td></tr>
+    <tr><td>Date range — <strong>Reservation creation date basis</strong></td><td>For same-day booking queries and operational use</td></tr>
+    <tr><td>Reservation status</td><td>All / Pending / Confirmed / Cancellation Requested / Cancellation Complete / No-show / Booking Failed</td></tr>
+    <tr><td>PMS booking number (RSV_ID)</td><td>Optional</td></tr>
+    <tr><td>Occupant name</td><td>Last Name partial search</td></tr>
+    <tr><td>Product name</td><td>Optional</td></tr>
+  </table>
+  <div class="subsec">List Columns</div>
+  <table>
+    <tr><th style="width:30%">Column</th><th style="width:35%">Source</th><th>Notes</th></tr>
+    <tr><td>Booking No.</td><td>PMS RSV_ID / HM number</td><td></td></tr>
+    <tr><td>Product Name</td><td>Our DB</td><td></td></tr>
+    <tr><td>Property / Room Type</td><td>Our DB</td><td></td></tr>
+    <tr><td>Check-in / Check-out</td><td>PMS ETRM_DT / LVRM_DT</td><td></td></tr>
+    <tr><td>Nights / Rooms <span class="tbd-box" style="display:inline;padding:1px 5px;font-size:10px;margin:0 0 0 4px">TBD-4</span></td><td>PMS STAY_DAY / API 6 RM_CNT</td><td>Displayed as "Xn / Xr". Confirm RM_CNT meaning with High1.</td></tr>
+    <tr><td>Occupant Name</td><td>Our DB (Last + First)</td><td></td></tr>
+    <tr><td>Sale Amount</td><td>PMS SELL_AMT</td><td></td></tr>
+    <tr><td>Created At</td><td>Our DB</td><td></td></tr>
+    <tr><td>Status</td><td>Our DB</td><td>Badge display</td></tr>
+  </table>
+  <div class="ok-box"><span class="ok-label">Excel Export</span>Download all data matching current filter as .xlsx. For operations billing and reporting. Pagination: Offset-based.</div>
+
+  <div class="wf-section-head sec">8. S10-B Reservation Detail Feature Definition</div>
+  <div class="subsec">Reservation Basic Info</div>
+  <table>
+    <tr><th style="width:35%">Field</th><th>Source</th><th>Notes</th></tr>
+    <tr><td>Booking No.</td><td>PMS RSV_ID / HM number</td><td></td></tr>
+    <tr><td>Product / Property / Room Type</td><td>Our DB</td><td></td></tr>
+    <tr><td>Integration mode badge</td><td>Our DB</td><td>PMS-linked / Manual</td></tr>
+    <tr><td>Check-in / Check-out</td><td>PMS ETRM_DT / LVRM_DT</td><td></td></tr>
+    <tr><td>Nights / Rooms <span class="tbd-box" style="display:inline;padding:1px 5px;font-size:10px;margin:0 0 0 4px">TBD-4</span></td><td>PMS STAY_DAY / API 6 RM_CNT</td><td>Confirm RM_CNT meaning with High1.</td></tr>
+    <tr><td>Adults / Children</td><td>PMS STAY_ADLT_PCNT / STAY_CHLD_PCNT</td><td></td></tr>
+    <tr><td>Sale Amount</td><td>PMS SELL_AMT</td><td></td></tr>
+    <tr><td>PG Transaction No.</td><td>Our DB</td><td>For PG refund reconciliation</td></tr>
+    <tr><td>Created At</td><td>Our DB</td><td></td></tr>
+    <tr><td>Reservation Status</td><td>Our DB</td><td>Badge display</td></tr>
+  </table>
+  <div class="subsec">Reservation &amp; Guest Info (Foreign National Standard)</div>
+  <table>
+    <tr><th style="width:35%">Field</th><th>Required</th><th>Notes</th></tr>
+    <tr><td>Last Name</td><td>Required</td><td></td></tr>
+    <tr><td>Middle Name</td><td>Optional</td><td></td></tr>
+    <tr><td>First Name</td><td>Required</td><td></td></tr>
+    <tr><td>Email</td><td>Required</td><td>Basis for reservation confirmation &amp; cancellation alerts</td></tr>
+    <tr><td>Nationality</td><td>Required</td><td>ISO country code (dropdown)</td></tr>
+    <tr><td>Phone</td><td>Required</td><td>Country code (+82 etc.) + number</td></tr>
+    <tr><td>Special Requests</td><td>Optional</td><td>Frontend input → shown in admin. Customer requests.</td></tr>
+  </table>
+  <div class="subsec">Fee Information</div>
+  <table>
+    <tr><th style="width:35%">Field</th><th>Source</th><th>Notes</th></tr>
+    <tr><td>Daily Rate Breakdown (DAILYPRICE)</td><td>PMS API 8 DAILYPRICE</td><td>Cost price basis. Max 3 rows, overflow via [Show More ▼] dropdown. Date + amount format.</td></tr>
+    <tr><td>Cost Price Total</td><td>DAILYPRICE sum</td><td><strong>Admin only</strong>. Not shown to customers. Purple badge label.</td></tr>
+    <tr><td>Margin</td><td>Our DB (S11 master or per-product)</td><td>Rate or fixed amount. Percentage vs. cost price shown alongside. Admin only.</td></tr>
+    <tr><td>Discount <span class="tbd-box" style="display:inline;padding:1px 5px;font-size:10px;margin:0 0 0 4px">TBD</span></td><td>—</td><td>Policy not yet finalized. Placeholder only. Formula to be added upon confirmation.</td></tr>
+    <tr><td>Selling Price</td><td>Our DB</td><td>Customer charge = Cost Total + Margin − Discount.</td></tr>
+  </table>
+
+  <div class="subsec">Payment Cancellation History (Partial Cancel Accumulation)</div>
+  <table>
+    <tr><th style="width:35%">Field</th><th>Notes</th></tr>
+    <tr><td>Payment cancellation block</td><td>Displayed below selling price. Hidden if no history.</td></tr>
+    <tr><td>Per-entry display</td><td>Cancellation datetime · Processor · Cancelled amount per row.</td></tr>
+    <tr><td>Total cancelled</td><td>Cumulative sum of all cancellations.</td></tr>
+    <tr><td>Remaining balance</td><td>Selling Price − Total Cancelled. Auto-calculated in real time.</td></tr>
+  </table>
+
+  <div class="subsec">Admin Action Buttons</div>
+  <table>
+    <tr><th style="width:22%">Button</th><th style="width:22%">Location</th><th>Action</th></tr>
+    <tr><td>[Cancel]</td><td>Top-right, always fixed</td><td>PMS reservation cancel (API 7) + PG full payment cancel simultaneously → final confirmation in S10-C modal → Cancellation Complete. Not shown in Cancelled / No-show status.</td></tr>
+    <tr><td>[Partial Cancel]</td><td>Fee section top-right</td><td>PG partial payment cancel only. Admin inputs amount → remaining balance auto-calculated. Can be executed multiple times. No reservation status change. Logged cumulatively in payment cancellation block.</td></tr>
+  </table>
+  <div class="ok-box"><span class="ok-label">[Cancel] vs [Partial Cancel]</span>[Cancel] fully terminates both reservation and PG payment. [Partial Cancel] refunds only part of the PG payment — an operational tool usable regardless of reservation status.</div>
+
+  <div class="subsec">Manual Status Override</div>
+  <div class="ok-box"><span class="ok-label">Operational Policy</span>Admin can change reservation status at any time via dropdown below the reservation datetime. PMS-linked reservations can also be overridden (admin's responsibility). Change takes effect only after clicking [Apply] (to prevent accidental changes). Change history auto-logged (processor: Admin ID).</div>
+  <div class="warn-box"><span class="warn-label">Caution</span>Manual status override may cause discrepancy with actual PMS status. Operational policy management required.</div>
+
+  <div class="subsec">Admin-Only Fields</div>
+  <table>
+    <tr><th style="width:35%">Field</th><th>Notes</th></tr>
+    <tr><td>Admin Memo</td><td>Not visible to customers. Free text. Auto-logged on save.</td></tr>
+    <tr><td>Cancellation Reason</td><td>Reason selected by customer at cancellation. View only.</td></tr>
+    <tr><td>Booking Failed Error Detail</td><td>No separate section. <strong>Logged in change history</strong> (error code · PG transaction no. · retry count).</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">9. Change History Policy</div>
+  <p style="margin:0 0 8px">Collapsible history section at bottom of S10-B. Latest entry at top.</p>
+  <table>
+    <tr><th style="width:40%">History Trigger</th><th>Examples</th></tr>
+    <tr><td>Reservation status change</td><td>Confirmation Pending → Confirmed, Confirmed → Cancellation Requested, etc.</td></tr>
+    <tr><td>Guest info modification</td><td>Name, phone, email, special request changes</td></tr>
+    <tr><td>Admin memo add/edit</td><td></td></tr>
+    <tr><td>Partial cancel (payment cancellation)</td><td>Amount and remaining balance logged. e.g. "Manual payment cancel -50,000 KRW / Balance 270,000 KRW"</td></tr>
+    <tr><td>Refund complete processing</td><td>Booking Failed refund complete, Cancellation Complete refund confirmed, etc.</td></tr>
+    <tr><td>Booking Failed error detail</td><td>API 6 error code · PG transaction no. · retry count. Logged here only — no separate section.</td></tr>
+    <tr><td>Manual status override</td><td>Processor: Admin ID. Before/after status logged.</td></tr>
+  </table>
+  <div class="ok-box"><span class="ok-label">History Columns</span>Changed At / Processor (Admin ID, "Customer", or "SYSTEM") / Change Type / Change Details / Notes</div>
+
+  <div class="wf-section-head sec">10. Cancellation Reason Collection</div>
+  <p style="margin:0 0 8px">Customer <strong>must select</strong> a reason when requesting cancellation on frontend. For service improvement data.</p>
+  <table>
+    <tr><th>Reason Options (examples — subject to adjustment before launch)</th></tr>
+    <tr><td>Schedule change</td></tr>
+    <tr><td>Room/product change (planning to re-book another product)</td></tr>
+    <tr><td>Personal reasons</td></tr>
+    <tr><td>Pricing concerns</td></tr>
+    <tr><td>Other (direct input)</td></tr>
+  </table>
+  <div class="ok-box"><span class="ok-label">Cancellation List Use</span>LNB Cancellation List enables period and reason-based cancellation status queries. Foundation data for future service improvements.</div>
+
+  <div class="wf-section-head sec">11. Notification Policy</div>
+  <table>
+    <tr><th style="width:35%">Event</th><th style="width:20%">Recipient</th><th>Method</th></tr>
+    <tr><td>New manual reservation (Confirmation Pending)</td><td>Admin</td><td>In-app alert + email (details to be agreed with developer)</td></tr>
+    <tr><td>Booking Failed ⚠️ Urgent</td><td>Admin</td><td>In-app alert + email sent immediately. Urgent flag.</td></tr>
+    <tr><td>Cancellation request received</td><td>Admin</td><td>In-app alert + email</td></tr>
+    <tr><td>Reservation confirmed</td><td>Customer</td><td>Confirmation email</td></tr>
+    <tr><td>Cancellation complete</td><td>Customer</td><td>Cancellation confirmation email (with refund amount)</td></tr>
+    <tr><td>Manual product reservation rejected</td><td>Customer</td><td>Rejection notice email (with refund processing notice)</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">12. Penalty Processing Policy</div>
+  <table>
+    <tr><th style="width:30%">Item</th><th>Policy</th></tr>
+    <tr><td>Partial cancellation definition</td><td>Full cancellation with penalty applied. Partial-night cancellation is not supported.</td></tr>
+    <tr><td>PMS-linked — Penalty calculation</td><td>Penalty rate = API 10 <code>DLFT_APLY_AMT</code> ÷ <code>SELL_AMT</code> (cost price)<br>Customer penalty = penalty rate × our DB selling price<br>PMS payment = <code>DLFT_APLY_AMT</code> as-is. Difference (margin portion) retained by us.<br><em style="font-size:11px;color:#888">※ Note: API 10 field name typo — DLFT_APLY_AMT (not DFLT)</em></td></tr>
+    <tr><td>Penalty decimal handling</td><td><strong>Round to 1 decimal place</strong>. e.g. 36,666.6 KRW → 36,667 KRW.<br><span style="color:#888;font-size:12px">※ Separate rule from margin calculation (floor)</span></td></tr>
+    <tr><td>Manual products</td><td>Based on 7-tier policy set directly in S06-A. Simple penalty operation.</td></tr>
+    <tr><td>No-show penalty</td><td>100%. No refund obligation.</td></tr>
+    <tr><td>Manual cancellation policy change</td><td>PMS-linked product cancellation policy (API 9 data) cannot be changed. If modification needed, switch product to manual mode and set directly in S06-A. <strong>Note: switching also changes inventory &amp; rates to manual management.</strong></td></tr>
+    <tr><td>Coupon refund policy</td><td>Coupon not yet implemented. Separate policy to be established upon introduction.</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">13. Reservation Session Timeout (Backend)</div>
+  <div class="out-box"><span class="out-label">No Admin Involvement — Backend Implementation</span>If customer fails to complete payment within <strong>15 minutes</strong> of entering the payment page: session expires, inventory returned, exits payment page. Countdown timer shown on customer screen. After timeout, redirected to product detail page. No separate record in admin DB.</div>
+
+  <div class="wf-section-head sec">14. Out of Admin Scope</div>
+  <div class="out-box"><span class="out-label">Out of Scope</span>
+    <ul style="margin:6px 0 0 16px;padding:0;line-height:2">
+      <li>PG payment approval &amp; processing — Frontend responsibility</li>
+      <li>Refund execution — Payment system responsibility. Admin only records "Refund Complete" status.</li>
+      <li>API 11 (card info registration) · API 12 (guest info change) — Frontend or future review</li>
+      <li>Stay complete status management — No such status exists</li>
+      <li>Review management — Separate planning in future</li>
+    </ul>
+  </div>
+
+  <div class="wf-section-head sec">15. Future Planning Items</div>
+  <table>
+    <tr><th style="width:30%">Item</th><th>Description</th><th style="width:20%">Priority</th></tr>
+    <tr><td>Admin manual reservation creation</td><td>Admin directly inputs reservation. For VIP and special reservations.</td><td>Low</td></tr>
+    <tr><td>Review feature</td><td>Guests can write reviews from checkout +1 day. No-show cannot write reviews.</td><td>Future</td></tr>
+    <tr><td>Coupon refund policy</td><td>Establish separate policy upon coupon feature introduction decision.</td><td>Future</td></tr>
+  </table>
+
+  <div class="wf-section-head sec">16. Pending Items (TBD)</div>
+  <div class="tbd-box"><span class="tbd-label">TBD-1 · TIME_CD Handling</span>Whether to display TIME_CD (A/B/C type) in reservation list/detail screens. To be reflected after business unit decision.</div>
+  <div class="tbd-box"><span class="tbd-label">TBD-3 · No-show Processing Method</span>Confirm with High1 whether PMS API 8 can send no-show status codes.<br><strong>If possible:</strong> Auto-transition via API 8 sync.<br><strong>If not:</strong> Implement batch auto-transition after check-in date midnight.</div>
+  <div class="tbd-box"><span class="tbd-label">TBD-4 · API 6 RM_CNT Meaning</span>Confirm actual meaning of RM_CNT parameter (room count vs. other) with High1. Affects "Room Count" column display in reservation list and detail screens.</div>
+
+  </div><!-- /doc en -->
+  </div><!-- /lang-en -->
+
+</div><!-- /page -->
+
+<script>
+function initSectionIds() {
+  document.querySelectorAll('.lang-ko .wf-section-head').forEach((el, i) => {
+    el.id = 'ko-' + String(i + 1).padStart(2, '0');
+  });
+  document.querySelectorAll('.lang-en .wf-section-head').forEach((el, i) => {
+    el.id = 'en-' + String(i + 1).padStart(2, '0');
+  });
+}
+
+function getActiveLang() {
+  return document.querySelector('.lang-ko.show') ? 'ko' : 'en';
+}
+
+function updateActiveToc(lang) {
+  const sections = Array.from(document.querySelectorAll('.lang-' + lang + ' .wf-section-head'));
+  if (!sections.length) return;
+  let active = sections[0];
+  sections.forEach(sec => {
+    if (sec.getBoundingClientRect().top <= 80) active = sec;
+  });
+  const num = active.id.replace(/^(ko|en)-/, '');
+  document.querySelectorAll('.toc-item').forEach(item => {
+    item.classList.remove('active');
+    if (item.getAttribute('href').replace(/^#(ko|en)-/, '') === num) item.classList.add('active');
+  });
+}
+
+function setLangToc(lang) {
+  document.querySelectorAll('.toc-ko-text').forEach(el => el.style.display = lang === 'ko' ? 'inline' : 'none');
+  document.querySelectorAll('.toc-en-text').forEach(el => el.style.display = lang === 'en' ? 'inline' : 'none');
+  document.querySelectorAll('.toc-item').forEach(item => {
+    item.setAttribute('href', item.getAttribute('href').replace(/^#(ko|en)-/, '#' + lang + '-'));
+  });
+  updateActiveToc(lang);
+}
+
+function setLang(lang) {
+  document.querySelectorAll('.lang-ko, .lang-en').forEach(el => el.classList.remove('show'));
+  document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector('.lang-' + lang).classList.add('show');
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    if (btn.textContent.trim().toLowerCase() === lang) btn.classList.add('active');
+  });
+  setLangToc(lang);
+}
+
+window.addEventListener('scroll', () => updateActiveToc(getActiveLang()), { passive: true });
+
+initSectionIds();
+setLangToc('ko');
+</script>
+
+</body>
+</html>

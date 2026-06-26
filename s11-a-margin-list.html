@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S11-A — 마진 목록 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">S11-A — 마진 목록</span>
+  <span class="page-nav-route">#/margin-management</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s09-roomtype-form.html">← 이전</a>
+    <a class="page-nav-pager" href="s11-b-margin-form.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">S11-A</span>
+    마진 목록
+    <span style="font-size:12px;font-weight:400;color:#888">— #/margin-management · 공통관리 &gt; 마진관리</span>
+  </div>
+
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item on">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">공통관리</div>
+          <div class="wf-lnb-item">카테고리관리</div>
+          <div class="wf-lnb-item">시설관리</div>
+          <div class="wf-lnb-item">객실유형관리</div>
+          <div class="wf-lnb-item on">마진관리</div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="wf-main">
+
+          <!-- 툴바 -->
+          <div class="wf-toolbar">
+            <div class="wf-page-title" style="margin-bottom:0">마진 관리</div>
+          </div>
+
+          <!-- 안내 배너 -->
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:8px 12px;font-size:11px;color:#1e40af;margin-bottom:14px">
+            시설별 기본 마진(마스터)을 설정합니다. 상품 개별 마진 미설정 시 여기서 설정한 값이 자동 적용됩니다.
+            <span class="wf-cn">1</span>
+          </div>
+
+          <!-- 분류 탭 (숙소 / 티켓 / 투어) -->
+          <div class="wf-tab-bar" style="margin-bottom:14px">
+            <div class="wf-tab on">숙소 <span class="wf-cn">2</span></div>
+            <div class="wf-tab" style="color:#888">티켓 <span style="font-size:9px;color:#ec4899;">▾ 하단 뷰</span></div>
+            <div class="wf-tab" style="color:#aaa">투어 <span style="font-size:9px">(추후)</span></div>
+          </div>
+
+          <!-- 마진 목록 테이블 -->
+          <table class="wf-table">
+            <thead>
+              <tr>
+                <th>시설명 <span class="wf-cn">3</span></th>
+                <th>마진 유형 <span class="wf-cn">4</span></th>
+                <th>마진값 <span class="wf-cn">5</span></th>
+                <th>판매가 예시 <span class="wf-cn">6</span></th>
+                <th>적용 상품 수 <span class="wf-cn">7</span></th>
+                <th>최종 변경일시</th>
+                <th>수정 <span class="wf-cn">8</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:600">그랜드 호텔 메인타워</td>
+                <td><span class="wf-badge" style="background:#f0fdf4;color:#166534;font-size:9px">마진율</span></td>
+                <td style="color:#1a6fb8;font-weight:600">+10%</td>
+                <td style="font-size:10px;color:#555">100,000 → 110,000</td>
+                <td style="text-align:center">12</td>
+                <td style="font-size:10px">2026-05-20 14:30</td>
+                <td><span class="wf-btn wf-btn-sm">수정</span></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600">그랜드 호텔 컨벤션타워</td>
+                <td><span class="wf-badge" style="background:#f0fdf4;color:#166534;font-size:9px">마진율</span></td>
+                <td style="color:#1a6fb8;font-weight:600">+15%</td>
+                <td style="font-size:10px;color:#555">100,000 → 115,000</td>
+                <td style="text-align:center">8</td>
+                <td style="font-size:10px">2026-05-18 09:00</td>
+                <td><span class="wf-btn wf-btn-sm">수정</span></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600">팰리스 호텔</td>
+                <td><span class="wf-badge" style="background:#faf5ff;color:#6b21a8;font-size:9px">마진금액</span></td>
+                <td style="color:#1a6fb8;font-weight:600">+20,000원</td>
+                <td style="font-size:10px;color:#555">300,000 → 320,000</td>
+                <td style="text-align:center">5</td>
+                <td style="font-size:10px">2026-05-15 11:20</td>
+                <td><span class="wf-btn wf-btn-sm">수정</span></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600">하이원 콘도</td>
+                <td><span class="wf-badge" style="background:#f5f5f0;color:#888;font-size:9px">미설정</span></td>
+                <td style="color:#aaa">—</td>
+                <td style="font-size:10px;color:#aaa">마진 없음 (입금가 = 판매가)</td>
+                <td style="text-align:center;color:#aaa">0</td>
+                <td style="font-size:10px;color:#aaa">—</td>
+                <td><span class="wf-btn wf-btn-sm">수정</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="wf-hint" style="margin-top:8px">적용 상품 수: 해당 시설의 상품 중 개별 마진 미설정(마스터 상속 중)인 상품 수</div>
+
+        </div><!-- /wf-main -->
+
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 주석 패널 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">마진 목록 개요</div>
+          <div class="ann-desc">
+            2단계 마진 계층의 1단계(시설 마스터) 관리 화면.<br>
+            각 시설에 기본 마진을 설정하면 해당 시설의 개별 마진 미설정 상품에 자동 적용된다.<br>
+            상세 정책: s11-margin-policy.html 참조.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">분류 탭 (숙소 / 티켓 / 투어)</div>
+          <div class="ann-desc">
+            <b>숙소 탭</b>: 시설(Place) 단위 마진 마스터. <b>티켓 탭</b>: <b>카테고리(스키/워터파크 등 1뎁스) 단위</b> 마진 마스터(하단 뷰 참고). 투어 탭은 추후 확장.
+          </div>
+          <div class="ann-rule">탭 전환 시 해당 분류의 마진 마스터 목록 로드. 숙소=시설별 / 티켓=카테고리별로 마스터 단위가 다름.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">시설명</div>
+          <div class="ann-desc">
+            S01·S02에서 등록된 숙소(Place) 목록. PMS SLST_NM에 해당하는 단위.
+          </div>
+          <div class="ann-front">→ 프런트: 미노출 (운영 내부)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">마진 유형</div>
+          <div class="ann-desc">
+            마진율(%) — 초록 배지 / 마진금액(원) — 보라 배지 / 미설정 — 회색 배지.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">마진값</div>
+          <div class="ann-desc">
+            마진율: +N% / -N% 표기. 마진금액: +N,000원 / -N,000원 표기. 미설정: 대시(—).
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">6</div>
+        <div class="ann-body">
+          <div class="ann-title">판매가 예시</div>
+          <div class="ann-desc">
+            100,000원(마진율) 또는 해당 시설 최근 등록 상품 입금가(마진금액)에 마진을 적용한 예시 판매가. 참고용 표시이며 실제 상품 가격과 다를 수 있음.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">7</div>
+        <div class="ann-body">
+          <div class="ann-title">적용 상품 수</div>
+          <div class="ann-desc">
+            해당 시설 소속 상품 중 개별 마진 미설정(마스터 상속 중)인 상품 수. 마스터 마진 변경 시 이 수만큼의 상품 판매가가 즉시 변경된다.
+          </div>
+          <div class="ann-rule">마스터 변경 전 이 수치를 확인하여 영향 범위를 파악할 것.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">8</div>
+        <div class="ann-body">
+          <div class="ann-title">[수정] 버튼</div>
+          <div class="ann-desc">
+            S11-B 마진 설정 화면으로 이동. 해당 시설 기본 마진 등록·수정 및 변경 이력 확인.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+
+  <!-- ════════════════════════════════════════════════
+       티켓 탭 뷰 (카테고리 단위 마진 마스터)
+  ════════════════════════════════════════════════ -->
+  <div class="sec-title" style="margin-top:48px;border-bottom-color:#ec4899">
+    <span class="sec-badge" style="background:#ec4899">S11-A</span>
+    마진 목록 — 티켓 탭
+    <span style="font-size:12px;font-weight:400;color:#888">— 티켓 탭 선택 시 / 카테고리(1뎁스) 단위 마진</span>
+  </div>
+  <div class="sec-sub">
+    티켓 마진은 <b>카테고리(스키/워터파크 등 1뎁스) 단위</b> 마스터로 관리한다. 상품 개별 마진(S14-B) 미설정 시 카테고리 마스터를 상속.<br>
+    기준: 티켓 쿠폰 연동 정책서 v0.2 / 마진 관리(CLAUDE.md) · 2단계 계층(티켓=카테고리 단위)
+  </div>
+
+  <div class="two-col">
+
+    <!-- 와이어프레임 — 티켓 탭 -->
+    <div class="wf">
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item">화면관리</span>
+        <span class="wf-gnb-item on">공통관리</span>
+      </div>
+      <div class="wf-body">
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">공통관리</div>
+          <div class="wf-lnb-item">카테고리관리</div>
+          <div class="wf-lnb-item">시설관리</div>
+          <div class="wf-lnb-item">객실유형관리</div>
+          <div class="wf-lnb-item on">마진관리</div>
+        </div>
+        <div class="wf-main">
+          <div class="wf-toolbar">
+            <div class="wf-page-title" style="margin-bottom:0">마진 관리</div>
+          </div>
+
+          <div style="background:#fdf2f8;border:1px solid #fbcfe8;border-radius:4px;padding:8px 12px;font-size:11px;color:#9d174d;margin-bottom:14px">
+            티켓은 <b>카테고리(1뎁스) 단위 기본 마진</b>을 설정합니다. 해당 카테고리 상품 중 개별 마진(S14-B) 미설정 상품에 자동 적용. <span class="wf-cn" style="background:#ec4899">A</span>
+          </div>
+
+          <!-- 분류 탭 — 티켓 활성 -->
+          <div class="wf-tab-bar" style="margin-bottom:14px">
+            <div class="wf-tab" style="color:#888">숙소</div>
+            <div class="wf-tab on" style="border-bottom-color:#ec4899;color:#9d174d">티켓</div>
+            <div class="wf-tab" style="color:#aaa">투어 <span style="font-size:9px">(추후)</span></div>
+          </div>
+
+          <!-- 티켓 카테고리 마진 목록 -->
+          <table class="wf-table">
+            <thead>
+              <tr>
+                <th>카테고리 <span class="wf-cn" style="background:#ec4899">B</span></th>
+                <th>마진 유형</th>
+                <th>마진값</th>
+                <th>판매가 예시</th>
+                <th>적용 상품 수 <span class="wf-cn" style="background:#ec4899">C</span></th>
+                <th>최종 변경일시</th>
+                <th>수정</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:600">스키</td>
+                <td><span class="wf-badge" style="background:#f0fdf4;color:#166534;font-size:9px">마진율</span></td>
+                <td style="color:#1a6fb8;font-weight:600">+10%</td>
+                <td style="font-size:10px;color:#555">55,000 → 60,500</td>
+                <td style="text-align:center">6</td>
+                <td style="font-size:10px">2026-06-20 10:30</td>
+                <td><a href="s11-b-margin-form.html"><span class="wf-btn wf-btn-sm">수정</span></a></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600">워터파크</td>
+                <td><span class="wf-badge" style="background:#f0fdf4;color:#166534;font-size:9px">마진율</span></td>
+                <td style="color:#1a6fb8;font-weight:600">+10%</td>
+                <td style="font-size:10px;color:#555">40,000 → 44,000</td>
+                <td style="text-align:center">2</td>
+                <td style="font-size:10px">2026-06-22 09:15</td>
+                <td><a href="s11-b-margin-form.html"><span class="wf-btn wf-btn-sm">수정</span></a></td>
+              </tr>
+              <tr>
+                <td style="font-weight:600">레저 <span style="font-size:9px;color:#888">(추후)</span></td>
+                <td><span class="wf-badge" style="background:#f5f5f0;color:#888;font-size:9px">미설정</span></td>
+                <td style="color:#aaa">—</td>
+                <td style="font-size:10px;color:#aaa">마진 없음 (입금가 = 판매가)</td>
+                <td style="text-align:center;color:#aaa">0</td>
+                <td style="font-size:10px;color:#aaa">—</td>
+                <td><a href="s11-b-margin-form.html"><span class="wf-btn wf-btn-sm">수정</span></a></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="wf-hint" style="margin-top:8px">적용 상품 수: 해당 카테고리 상품 중 개별 마진 미설정(마스터 상속 중)인 상품 수. 카테고리 목록은 S17 티켓 카테고리 1뎁스 기준.</div>
+
+        </div><!-- /wf-main -->
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+    <!-- 티켓 탭 주석 -->
+    <div class="ann">
+      <h3>티켓 탭 주석</h3>
+      <div class="ann-item">
+        <div class="cn" style="background:#ec4899">A</div>
+        <div class="ann-body">
+          <div class="ann-title">티켓 마진 = 카테고리 단위</div>
+          <div class="ann-desc">숙소는 시설(Place) 단위, <b>티켓은 카테고리(1뎁스) 단위</b>로 기본 마진 마스터를 둔다. 단위만 다르고 2단계 계층(마스터 → 상품 개별 오버라이드)은 동일.</div>
+          <div class="ann-rule">상속 충돌 방지를 위해 1뎁스 카테고리 기준. 세분 차등은 상품 개별 마진(S14-B)으로.</div>
+        </div>
+      </div>
+      <div class="ann-item">
+        <div class="cn" style="background:#ec4899">B</div>
+        <div class="ann-body">
+          <div class="ann-title">카테고리</div>
+          <div class="ann-desc">S17 티켓 카테고리관리의 1뎁스 항목(스키·워터파크 등). 카테고리 추가 시 마진 목록에도 자동 노출(기본 미설정).</div>
+        </div>
+      </div>
+      <div class="ann-item">
+        <div class="cn" style="background:#ec4899">C</div>
+        <div class="ann-body">
+          <div class="ann-title">적용 상품 수</div>
+          <div class="ann-desc">해당 카테고리 상품 중 개별 마진 미설정(마스터 상속 중) 상품 수. 카테고리 마스터 변경 시 이 수만큼 판매가 즉시 반영.</div>
+          <div class="ann-rule">[수정] → S11-B 티켓 카테고리 마진 설정으로 이동.</div>
+        </div>
+      </div>
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

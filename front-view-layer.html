@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>REF-3 — 장소 레이어 데이터 매핑</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+.page { max-width: 1800px; }
+.fv-two-col { display: grid; grid-template-columns: 58% 40%; gap: 28px; align-items: start; }
+
+/* ── 장소 레이어 시뮬레이션 ── */
+.front-sim { border: 1px solid #d0d0c8; border-radius: 8px; overflow: visible; background: #fafaf8; font-family: "Segoe UI", Arial, sans-serif; }
+
+.ft-layer-head { background: #1a1f2e; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; border-radius: 8px 8px 0 0; }
+.ft-layer-title { color: #fff; font-size: 12px; font-weight: 700; }
+.ft-layer-close { color: rgba(255,255,255,.6); font-size: 15px; cursor: pointer; }
+
+.ft-layer-tabs { display: flex; border-bottom: 2px solid #e8e8e2; padding: 0 14px; background: #fff; }
+.ft-layer-tab { padding: 8px 12px; font-size: 10px; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; }
+.ft-layer-tab.on { color: #1a1f2e; border-bottom-color: #e74c3c; font-weight: 700; }
+
+.ft-layer-body { padding: 14px 16px; background: #fff; border-radius: 0 0 8px 8px; }
+
+.ft-guide-html { background: #fafaf8; border: 1px solid #e8e8e2; border-radius: 4px; padding: 8px 10px; font-size: 9px; color: #555; line-height: 1.7; margin-bottom: 12px; }
+
+.ft-fac-group { margin-bottom: 10px; }
+.ft-fac-group-title { font-size: 10px; font-weight: 700; color: #555; margin-bottom: 4px; padding-bottom: 3px; border-bottom: 1px solid #f0f0eb; }
+.ft-fac-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.ft-fac-chip { background: #f0f0ea; border-radius: 3px; font-size: 9px; color: #444; padding: 2px 7px; }
+
+.ft-policy-block { background: #fafaf8; border: 1px solid #e8e8e2; border-radius: 4px; padding: 8px 10px; font-size: 9px; color: #555; line-height: 1.7; margin-bottom: 6px; }
+.ft-map-img { background: #d8e8d4; border-radius: 4px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #4a6a44; margin-bottom: 6px; }
+
+.ft-section-divider { font-size: 9px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .05em; margin: 10px 0 6px; padding-bottom: 4px; border-bottom: 1px solid #f0f0eb; }
+
+/* ── 주석 패널 ── */
+.fv-ann { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.fv-ann h3 { font-size: 14px; font-weight: 700; color: #1a1f2e; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e8e8e2; }
+.fv-ann-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f0eb; display: flex; gap: 10px; align-items: flex-start; }
+.fv-ann-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.fv-ann-body { flex: 1; }
+.fv-ann-title { font-size: 13px; font-weight: 700; color: #1a1f2e; margin-bottom: 3px; }
+.fv-ann-desc { font-size: 11px; color: #555; line-height: 1.6; margin-bottom: 2px; }
+.fv-ann-admin { font-size: 10px; color: #444; background: #f0f0ea; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #999; line-height: 1.55; margin-top: 3px; }
+.fv-ann-ls { font-size: 10px; color: #1a1f2e; background: #f0f4ff; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #6366f1; line-height: 1.55; margin-top: 3px; font-family: monospace; }
+.fv-ann-front { font-size: 10px; color: #0e7490; background: #ecfeff; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #0e7490; line-height: 1.55; margin-top: 3px; }
+.fv-ann-rule { font-size: 10px; color: #92400e; background: #fefce8; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #fde68a; line-height: 1.55; margin-top: 3px; }
+
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; align-items: center; font-size: 11px; color: #666; padding: 8px 14px; background: #fff; border-radius: 6px; border: 1px solid #e8e8e2; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">REF-3 — 장소 레이어 데이터 매핑</span>
+  <span class="page-nav-route">#placeLayer · 안내 / 정책 / 위치 탭</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="front-view-mapping.html">← 이전</a>
+    <a class="page-nav-pager" href="front-view-rd.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">REF-3</span>
+    장소 레이어 데이터 매핑
+    <span style="font-size:12px;font-weight:400;color:#888">— 브릿지 페이지 Sticky Nav에서 안내·정책·위치 탭 클릭 시 슬라이드인</span>
+  </div>
+
+  <div class="legend">
+    <span style="font-weight:700;color:#1a1f2e;font-size:11px">범례</span>
+    <div class="legend-item"><div class="legend-dot" style="background:#f0f0ea;border:1px solid #bbb"></div> 어드민 화면 참조</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e8edff;border:1px solid #99a"></div> localStorage 키</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ecfeff;border:1px solid #a5f3fc"></div> 프런트 노출 위치</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fefce8;border:1px solid #fde68a"></div> 비즈니스 규칙</div>
+  </div>
+
+  <div class="fv-two-col">
+
+    <!-- ── 장소 레이어 시뮬레이션 ── -->
+    <div>
+      <div class="front-sim">
+
+        <!-- 레이어 헤더 -->
+        <div class="ft-layer-head">
+          <span class="ft-layer-title">그랜드 호텔 컨벤션타워 — 숙소 안내</span>
+          <span class="ft-layer-close">✕</span>
+        </div>
+
+        <!-- 레이어 탭 ① -->
+        <div style="position:relative;padding-right:28px">
+          <div class="ft-layer-tabs">
+            <div class="ft-layer-tab on">안내 (Guide)</div>
+            <div class="ft-layer-tab">정책 (Policy)</div>
+            <div class="ft-layer-tab">위치 (Location)</div>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:8px;right:4px">1</span>
+        </div>
+
+        <div class="ft-layer-body">
+
+          <!-- [안내 탭] 안내 HTML ② -->
+          <div style="position:relative;padding-right:24px">
+            <div class="ft-section-divider">안내 HTML (Guide Tab)</div>
+            <div class="ft-guide-html">
+              <strong style="font-size:9px">객실 이용 안내</strong><br>
+              체크인은 오후 03:00 이후이며, 체크아웃은 오전 11:00까지 완료 부탁드립니다.<br>
+              조기 체크인이 필요하신 경우 사전 문의 바랍니다.
+            </div>
+            <span class="wf-cn" style="position:absolute;top:20px;right:0">2</span>
+          </div>
+
+          <!-- [안내 탭] 시설 카테고리 헤더 ③ + 시설 항목 ④ -->
+          <div style="position:relative;padding-right:24px">
+            <div class="ft-section-divider">숙소 시설 (카테고리 그룹)</div>
+
+            <div class="ft-fac-group">
+              <div style="display:flex;align-items:center;gap:4px">
+                <div class="ft-fac-group-title" style="flex:1;border-bottom:none;margin-bottom:2px">편의시설</div>
+                <span class="wf-cn" style="flex-shrink:0">3</span>
+              </div>
+              <div class="ft-fac-chips">
+                <span class="ft-fac-chip">주차장</span>
+                <span class="ft-fac-chip">컨시어지</span>
+                <span class="ft-fac-chip">수하물 보관</span>
+                <span class="wf-cn" style="flex-shrink:0">4</span>
+              </div>
+            </div>
+
+            <div class="ft-fac-group">
+              <div class="ft-fac-group-title">식음료</div>
+              <div class="ft-fac-chips">
+                <span class="ft-fac-chip">레스토랑</span>
+                <span class="ft-fac-chip">카페</span>
+              </div>
+            </div>
+
+            <div class="ft-fac-group">
+              <div class="ft-fac-group-title">레저·스포츠</div>
+              <div class="ft-fac-chips">
+                <span class="ft-fac-chip">수영장</span>
+                <span class="ft-fac-chip">피트니스</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- [정책 탭] ⑤ -->
+          <div style="position:relative;padding-right:24px;margin-top:12px">
+            <div class="ft-section-divider">정책 (Policy Tab)</div>
+            <div class="ft-policy-block">
+              <strong style="font-size:9px">취소·환불 정책</strong><br>
+              체크인 3일 전까지 취소 시 전액 환불. 이후 취소는 1박 요금 공제.
+            </div>
+            <div class="ft-policy-block">
+              <strong style="font-size:9px">기타 이용 정책</strong><br>
+              반려동물 동반 불가. 흡연은 지정 구역에서만 가능합니다.
+            </div>
+            <span class="wf-cn" style="position:absolute;top:20px;right:0">5</span>
+          </div>
+
+          <!-- [위치 탭] 위치 HTML ⑥ + 주소 ⑦ -->
+          <div style="position:relative;padding-right:24px;margin-top:12px">
+            <div class="ft-section-divider">위치 (Location Tab)</div>
+            <div class="ft-map-img">지도 이미지 (location_detail HTML 내 삽입)</div>
+            <span class="wf-cn" style="position:absolute;top:20px;right:0">6</span>
+            <div style="display:flex;align-items:center;gap:4px">
+              <div style="font-size:9px;color:#555;line-height:1.6;flex:1">
+                강원도 정선군 고한읍 고한리 424 · 하이원 리조트 내<br>
+                <span style="color:#888">Gohan-ri 424, Gohan-eup, Jeongseon-gun, Gangwon-do</span>
+              </div>
+              <span class="wf-cn" style="flex-shrink:0">7</span>
+            </div>
+          </div>
+
+        </div><!-- /ft-layer-body -->
+      </div><!-- /front-sim -->
+    </div>
+
+    <!-- ── 주석 패널 ── -->
+    <div class="fv-ann">
+      <h3>장소 레이어 주석 (callout ①~⑦)</h3>
+
+      <div class="fv-ann-item">
+        <div class="cn">1</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">레이어 탭 — 안내 / 정책 / 위치</div>
+          <div class="fv-ann-desc">브릿지 페이지 Sticky Nav에서 탭 클릭 시 해당 탭이 활성화된 상태로 레이어가 슬라이드인됩니다. 탭별 렌더링 데이터가 다릅니다.</div>
+          <div class="fv-ann-admin">어드민 S02-4 Step4 (안내·정책) / S02-2 Step2 (위치)</div>
+          <div class="fv-ann-ls">h1_places[].guide_html · h1_places[].policy_html · h1_places[].location_detail</div>
+          <div class="fv-ann-front">
+            안내(detail) → guide_html + 숙소 시설 목록<br>
+            정책(policies) → policy_html<br>
+            위치(location) → location_detail + 주소
+          </div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">2</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">안내 HTML (guide_html)</div>
+          <div class="fv-ann-desc">안내 탭 상단에 innerHTML로 렌더링됩니다. HTML 마크업 그대로 출력.</div>
+          <div class="fv-ann-admin">어드민 S02-4 Step4 · 안내 HTML textarea (이미지 붙여넣기 지원)</div>
+          <div class="fv-ann-ls">h1_places[].guide_html</div>
+          <div class="fv-ann-front">안내 탭 상단 안내 블록 (innerHTML)</div>
+          <div class="fv-ann-rule">XSS 주의. 실서비스 배포 시 DOMPurify 등 새니타이저 필수 적용.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">3</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">시설 카테고리 그룹 헤더 (PLACE)</div>
+          <div class="fv-ann-desc">안내 탭 시설 목록의 그룹 헤더. 공통마스터의 PLACE 도메인 카테고리명이 그대로 표시됩니다.</div>
+          <div class="fv-ann-admin">어드민 S07-A 카테고리 목록 / S07-B 카테고리 등록·수정 · 카테고리명 (PLACE 도메인)</div>
+          <div class="fv-ann-ls">h1_facility_categories[].name (where domain = "PLACE")</div>
+          <div class="fv-ann-front">안내 탭 시설 목록 그룹 헤더 텍스트</div>
+          <div class="fv-ann-rule">카테고리명 변경 즉시 프런트 헤더도 변경됨. plain string (한국어 단일 문자열).</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">4</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">시설 항목명 (PLACE)</div>
+          <div class="fv-ann-desc">각 카테고리 그룹 하위에 해당 카테고리에 속한 시설명을 칩으로 나열. 숙소에 적용(체크)된 시설(facility_ids)만 표시.</div>
+          <div class="fv-ann-admin">S08-A 시설 목록 / S08-B 시설 등록 · 시설명 (PLACE) / S02-5 Step5 · 시설 체크박스 선택</div>
+          <div class="fv-ann-ls">h1_places[].facility_ids → h1_facilities[].name (PLACE 도메인)</div>
+          <div class="fv-ann-front">안내 탭 카테고리 그룹 내 시설명 칩</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">5</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">정책 (policy_html)</div>
+          <div class="fv-ann-desc">정책 탭에 innerHTML로 렌더링. 취소·환불 정책 및 기타 이용 규칙 등을 HTML로 직접 입력.</div>
+          <div class="fv-ann-admin">어드민 S02-4 Step4 · 정책 HTML textarea</div>
+          <div class="fv-ann-ls">h1_places[].policy_html</div>
+          <div class="fv-ann-front">정책 탭 콘텐츠 (innerHTML)</div>
+          <div class="fv-ann-rule">XSS 주의. 실서비스 배포 시 새니타이저 필수 적용.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">6</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">위치 HTML (location_detail)</div>
+          <div class="fv-ann-desc">위치 탭에 innerHTML로 렌더링. 지도 이미지·오시는 길·안내 문구 등을 HTML로 직접 입력. 이미지 클립보드 붙여넣기 지원.</div>
+          <div class="fv-ann-admin">어드민 S02-2 Step2 · 위치 상세 HTML textarea (이미지 붙여넣기 지원)</div>
+          <div class="fv-ann-ls">h1_places[].location_detail</div>
+          <div class="fv-ann-front">위치 탭 콘텐츠 (innerHTML)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">7</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">주소 (국문 · 영문)</div>
+          <div class="fv-ann-desc">위치 HTML 하단에 국문/영문 주소를 텍스트로 별도 표시. 언어 설정(KO/EN)에 따라 전환.</div>
+          <div class="fv-ann-admin">어드민 S02-2 Step2 · 주소(국문) / 주소(영문)</div>
+          <div class="fv-ann-ls">h1_places[].address · h1_places[].address_en</div>
+          <div class="fv-ann-front">위치 탭 하단 주소 텍스트 (lang에 따라 address / address_en 전환)</div>
+        </div>
+      </div>
+
+    </div><!-- /fv-ann -->
+  </div><!-- /fv-two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

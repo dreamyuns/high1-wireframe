@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S02-2 — 숙소 등록·수정 Step 2 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">숙소 등록·수정 — Step 2: 위치</span>
+  <span class="page-nav-route">#/places/new · #/places/edit/:id</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s02-1-wizard-step1.html">← 이전</a>
+    <a class="page-nav-pager" href="s02-3-wizard-step3.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">S02-2</span>
+    숙소 등록·수정 — Step 2 위치
+    <span style="font-size:12px;font-weight:400;color:#888">— #/places/new · #/places/edit/:id</span>
+  </div>
+
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item on">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">숙소관리</div>
+          <div class="wf-lnb-item on">숙소목록</div>
+          <div class="wf-lnb-item">객실목록</div>
+          <div class="wf-lnb-item">상품목록</div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="wf-main">
+          <div class="wf-page-title">숙소 등록 <span style="font-weight:400;color:#888;font-size:11px">/ 수정 시: PL-H001 그랜드 호텔 메인타워</span></div>
+
+          <!-- 5단계 탭바 -->
+          <div class="wf-step-bar">
+            <div class="wf-step done"><span>1</span>분류·기본·운영</div>
+            <div class="wf-step on"><span>2</span>위치</div>
+            <div class="wf-step"><span>3</span>이미지</div>
+            <div class="wf-step"><span>4</span>안내·정책</div>
+            <div class="wf-step"><span>5</span>숙소시설</div>
+          </div>
+
+          <!-- Step 2 폼 -->
+          <div class="wf-section-head">주소</div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">주소(국문) <span class="wf-cn">1</span></div>
+            <div class="wf-form-field">
+              <textarea class="wf-textarea">서울시 강남구 테헤란로 123</textarea>
+              <div class="wf-hint">도로명 주소 권장</div>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">주소(영문) <span class="wf-cn">2</span></div>
+            <div class="wf-form-field">
+              <textarea class="wf-textarea">123 Teheran-ro, Gangnam-gu, Seoul</textarea>
+            </div>
+          </div>
+
+          <div class="wf-section-head">위치 상세</div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">위치 상세(국문) <span class="wf-cn">3</span></div>
+            <div class="wf-form-field">
+              <textarea class="wf-textarea" style="min-height:80px">(위치 안내 문구, 이미지 붙여넣기 가능)</textarea>
+              <div class="wf-hint">지도 이미지를 Ctrl+V로 붙여넣기 가능. Data URL로 저장되므로 용량 주의.</div>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">위치 상세(영문) <span class="wf-cn">4</span></div>
+            <div class="wf-form-field">
+              <textarea class="wf-textarea" style="min-height:80px">(Location detail in English)</textarea>
+            </div>
+          </div>
+
+          <!-- 하단 버튼 -->
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #e0e0da">
+            <span class="wf-btn">취소</span>
+            <span class="wf-btn wf-btn-primary">저장</span>
+          </div>
+
+        </div>
+        <!-- /wf-main -->
+
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 주석 패널 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">주소(국문)</div>
+          <div class="ann-desc">
+            숙소의 국문 도로명 주소를 plain text로 입력한다. 도로명 주소 입력을 권장하며, 지번 주소도 허용한다.
+            프런트 영문 모드에서 영문 주소가 없을 경우 이 국문 주소가 대체 표시될 수 있으므로 정확하게 입력한다.
+            줄바꿈이 가능한 textarea이나 단순 한 줄 주소를 권장한다.
+          </div>
+          <div class="ann-front">→ 프런트: 숙소 레이어 > 장소정보 탭 주소 텍스트</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">주소(영문)</div>
+          <div class="ann-desc">
+            숙소의 영문 주소를 입력한다. 현재 선택 입력이며, 미입력 시 프런트 영문 모드에서 국문 주소가 대체 표시될 수 있다.
+            영문 주소는 외국인 고객 또는 영문 서비스 확장 시 필수 항목으로 격상될 수 있으므로, 가능하면 입력을 권장한다.
+            실서비스 전 필수 여부 정책 최종 확정 필요.
+          </div>
+          <div class="ann-rule">영문 주소는 현재 선택 입력. 실서비스에서 필수 여부 재정의 필요.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">위치 상세(국문)</div>
+          <div class="ann-desc">
+            숙소 위치에 대한 상세 안내 문구를 입력하는 영역이다. 텍스트 외에도 지도 스크린샷이나 위치 이미지를 Ctrl+V로 붙여넣기할 수 있으며, 붙여넣기된 이미지는 Data URL 형태로 저장된다.
+            이미지를 포함하면 저장 데이터 용량이 크게 증가할 수 있으므로, 이미지 크기를 최소화하거나 별도 이미지 업로드 방식(Step 3) 활용을 권장한다.
+            이 필드의 내용은 프런트 숙소 레이어 장소정보 탭의 위치 상세 영역에 그대로 렌더링된다.
+          </div>
+          <div class="ann-front">→ 프런트: 숙소 레이어 > 장소정보 탭 위치 상세 영역 렌더</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">위치 상세(영문)</div>
+          <div class="ann-desc">
+            국문 위치 상세와 동일한 구조로 영문 내용을 입력하는 영역이다. 이미지 붙여넣기(Data URL)를 동일하게 지원하므로 용량 급증 가능성을 사용자에게 안내해야 한다.
+            영문 미입력 시 프런트 영문 모드에서 국문 위치 상세 내용이 그대로 표시될 수 있다.
+            실서비스에서 다국어 지원 수준에 따라 이 필드의 활용 방식이 달라질 수 있으므로 정책 확정 후 개발 반영 필요.
+          </div>
+          <div class="ann-rule">이미지 붙여넣기(Data URL) 지원이지만 저장 용량 급증 가능. 사용자에게 안내 필요.</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

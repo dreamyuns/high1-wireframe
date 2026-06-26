@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S02-3 — 숙소 등록·수정 Step 3 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">숙소 등록·수정 — Step 3: 이미지</span>
+  <span class="page-nav-route">#/places/new · #/places/edit/:id</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s02-2-wizard-step2.html">← 이전</a>
+    <a class="page-nav-pager" href="s02-4-wizard-step4.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">S02-3</span>
+    숙소 등록·수정 — Step 3 이미지
+    <span style="font-size:12px;font-weight:400;color:#888">— #/places/new · #/places/edit/:id</span>
+  </div>
+
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item on">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">숙소관리</div>
+          <div class="wf-lnb-item on">숙소목록</div>
+          <div class="wf-lnb-item">객실목록</div>
+          <div class="wf-lnb-item">상품목록</div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="wf-main">
+          <div class="wf-page-title">숙소 등록 <span style="font-weight:400;color:#888;font-size:11px">/ 수정 시: PL-H001 그랜드 호텔 메인타워</span></div>
+
+          <!-- 5단계 탭바 -->
+          <div class="wf-step-bar">
+            <div class="wf-step done"><span>1</span>분류·기본·운영</div>
+            <div class="wf-step done"><span>2</span>위치</div>
+            <div class="wf-step on"><span>3</span>이미지</div>
+            <div class="wf-step"><span>4</span>안내·정책</div>
+            <div class="wf-step"><span>5</span>숙소시설</div>
+          </div>
+
+          <!-- Step 3: 이미지 업로드 -->
+          <div class="wf-section-head">이미지 업로드</div>
+
+          <!-- 대표 이미지 -->
+          <div style="margin-bottom:14px">
+            <div style="display:flex;align-items:flex-start;gap:10px">
+              <div class="wf-img-hero" style="width:180px;height:120px;flex-shrink:0">대표 이미지 (필수)</div>
+              <span class="wf-cn">1</span>
+            </div>
+            <div class="wf-hint">대표 이미지 1장 필수. 마법사 저장 시 image_meta.length &gt;= 1 검증.</div>
+          </div>
+
+          <!-- 추가 이미지 -->
+          <div style="margin-bottom:14px">
+            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start">
+              <div style="display:flex;align-items:flex-start;gap:4px">
+                <div class="wf-img-placeholder" style="width:80px;height:60px"></div>
+                <span class="wf-cn">2</span>
+              </div>
+              <div class="wf-img-placeholder" style="width:80px;height:60px"></div>
+              <div class="wf-img-placeholder" style="width:80px;height:60px"></div>
+              <div class="wf-img-placeholder" style="width:80px;height:60px"></div>
+              <div class="wf-img-placeholder" style="width:80px;height:60px"></div>
+              <div class="wf-img-placeholder" style="width:80px;height:60px"></div>
+              <div class="wf-img-placeholder" style="width:80px;height:60px"></div>
+              <div class="wf-img-placeholder" style="width:80px;height:60px"></div>
+              <div class="wf-img-placeholder" style="width:80px;height:60px"></div>
+            </div>
+            <div class="wf-hint">추가 이미지 최대 9장. 개별 삭제 가능.</div>
+          </div>
+
+          <!-- 파일 선택 버튼 -->
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="wf-btn">파일 선택</span>
+            <span class="wf-cn">3</span>
+          </div>
+          <div class="wf-hint">파일당 최대 2MB. 초과 시 해당 파일 거부 + 파일명 포함 오류 메시지 표시.</div>
+
+          <!-- Quota 경고 -->
+          <div style="display:flex;align-items:flex-start;gap:8px;margin-top:14px;margin-bottom:14px">
+            <div class="wf-alert" style="flex:1">⚠ localStorage 저장 용량 초과. 이미지를 줄여주세요. → 저장 후 이미지 단계(3단계)로 자동 이동합니다.</div>
+            <span class="wf-cn">4</span>
+          </div>
+
+          <!-- 이미지 목록 -->
+          <div class="wf-section-head">현재 등록된 이미지</div>
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:#f5f5f0;border-bottom:1px solid #ddd">
+                <th style="padding:6px 8px;text-align:left;font-weight:600;color:#555;width:60px">순서</th>
+                <th style="padding:6px 8px;text-align:left;font-weight:600;color:#555;width:60px">미리보기</th>
+                <th style="padding:6px 8px;text-align:left;font-weight:600;color:#555">파일명</th>
+                <th style="padding:6px 8px;text-align:left;font-weight:600;color:#555;width:60px">크기</th>
+                <th style="padding:6px 8px;text-align:left;font-weight:600;color:#555;width:50px">삭제</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #eee">
+                <td style="padding:6px 8px;color:#555">1 <span style="font-size:10px;color:#888">(대표)</span></td>
+                <td style="padding:6px 8px">
+                  <div style="width:50px;height:35px;background:#d0d0c8;border:1px solid #bbb;border-radius:2px"></div>
+                </td>
+                <td style="padding:6px 8px;color:#333">hotel-main.jpg</td>
+                <td style="padding:6px 8px;color:#555">1.2MB</td>
+                <td style="padding:6px 8px">
+                  <span class="wf-btn wf-btn-sm" style="color:#c00">삭제</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 하단 버튼 -->
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #e0e0da">
+            <span class="wf-btn">취소</span>
+            <span class="wf-btn wf-btn-primary">저장</span>
+          </div>
+
+        </div>
+        <!-- /wf-main -->
+
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 주석 패널 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">대표 이미지 (필수)</div>
+          <div class="ann-desc">
+            숙소당 대표 이미지 1장은 필수이다. 저장 시 image_meta.length &gt;= 1 조건을 검증하며,
+            미등록 상태에서 저장 시도 시 저장을 차단하고 오류 메시지를 표시한다.
+            등록된 이미지 중 첫 번째가 대표 이미지로 사용되며,
+            대표 이미지 삭제 시 다음 순서의 이미지가 자동으로 대표로 승격된다.
+          </div>
+          <div class="ann-front">→ 프런트: 브릿지 페이지 풀와이드 히어로 이미지. 2장 이상 시 캐러셀(← →) 자동 활성.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">추가 이미지 (최대 9장)</div>
+          <div class="ann-desc">
+            대표 이미지 외 추가 이미지를 최대 9장까지 등록할 수 있다.
+            각 이미지는 개별 삭제가 가능하며, 등록 순서대로 프런트에서 표시된다.
+            순서 변경 기능은 현재 미지원이며, 실서비스 시 드래그앤드롭 정렬 기능 추가를 고려한다.
+          </div>
+          <div class="ann-front">→ 프런트: 히어로 캐러셀 추가 슬라이드 / Room Detail 갤러리 그리드(최대 5장)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">파일 크기 제한</div>
+          <div class="ann-desc">
+            파일당 최대 2MB(PLACE_IMAGE_MAX_MB 상수)로 제한된다.
+            제한을 초과하는 파일은 해당 파일만 거부하고, 파일명을 포함한 오류 메시지를 표시한다.
+            나머지 파일은 정상적으로 처리되므로 일부 파일만 초과하더라도 나머지는 업로드된다.
+          </div>
+          <div class="ann-rule">localStorage 저장이므로 이미지 수 × 평균 크기가 총 용량에 영향. 용량 부족 시 Quota 초과 오류 발생.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">Quota 초과 경고</div>
+          <div class="ann-desc">
+            localStorage 저장 용량(보통 5~10MB)을 초과하면 경고 블록을 표시하고,
+            전역 에러 요약(#wiz_err)에도 반영하며, 3단계(이미지 단계)로 자동 이동한다.
+            이미지를 삭제하거나 크기를 줄인 후 다시 저장을 시도해야 한다.
+          </div>
+          <div class="ann-rule">Quota 초과는 이미지 외 HTML 필드에 붙여넣기 이미지가 쌓였을 때도 발생 가능.</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S11-B — 마진 설정 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">S11-B — 마진 설정</span>
+  <span class="page-nav-route">#/margin-management/:placeId</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s11-a-margin-list.html">← 이전</a>
+    <a class="page-nav-pager" href="s12-a-main-management.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">S11-B</span>
+    마진 설정
+    <span style="font-size:12px;font-weight:400;color:#888">— #/margin-management/:placeId · 시설 기본 마진 등록·수정</span>
+  </div>
+
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item on">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">공통관리</div>
+          <div class="wf-lnb-item">카테고리관리</div>
+          <div class="wf-lnb-item">시설관리</div>
+          <div class="wf-lnb-item">객실유형관리</div>
+          <div class="wf-lnb-item on">마진관리</div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="wf-main">
+          <div class="wf-page-title">마진 설정</div>
+
+          <!-- 시설 정보 (읽기전용) -->
+          <div class="wf-section-head">시설 정보</div>
+          <div class="wf-card" style="background:#f0f0ea;border-color:#ddd;margin-bottom:14px">
+            <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+              <div><span style="font-size:10px;color:#888">시설명:</span> <span style="font-size:12px;font-weight:600">그랜드 호텔 메인타워</span></div>
+              <div><span style="font-size:10px;color:#888">유형:</span> <span style="font-size:11px">숙소 · HOTEL</span></div>
+              <div><span style="font-size:10px;color:#888">마스터 상속 중인 상품:</span> <span style="font-size:11px;font-weight:600;color:#1a6fb8">12개</span> <span class="wf-cn">1</span></div>
+            </div>
+          </div>
+
+          <!-- 마진 설정 폼 -->
+          <div class="wf-section-head">마진 설정 <span class="wf-cn">2</span></div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">마진 유형 <span class="wf-form-req">*</span></div>
+            <div class="wf-form-field">
+              <div style="display:flex;gap:12px;align-items:center">
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+                  <input type="radio" name="margin_type" checked /> 마진율 (%)
+                </label>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+                  <input type="radio" name="margin_type" /> 마진금액 (원)
+                </label>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
+                  <input type="radio" name="margin_type" /> 마진 없음 (0)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">마진값 <span class="wf-form-req">*</span> <span class="wf-cn">3</span></div>
+            <div class="wf-form-field">
+              <div style="display:flex;gap:8px;align-items:center">
+                <input class="wf-input" style="width:80px" type="number" value="10" />
+                <span style="font-size:12px;color:#555">%</span>
+                <span style="font-size:10px;color:#888">(정수, 범위 -49 ~ +100)</span>
+              </div>
+              <div class="wf-hint">마진금액 선택 시: ±N원 입력. 하한 없음 (음수 허용).</div>
+            </div>
+          </div>
+
+          <!-- 판매가 미리보기 -->
+          <div class="wf-form-row">
+            <div class="wf-form-label">판매가 미리보기 <span class="wf-cn">4</span></div>
+            <div class="wf-form-field">
+              <div style="padding:10px 14px;background:#e8f0fe;border:1px solid #b8c8f0;border-radius:4px;font-size:12px">
+                입금가 <strong>100,000</strong>원 × 1.10 =
+                <strong style="font-size:14px;color:#1a4fa0">110,000</strong>원
+                <span style="font-size:10px;color:#888;margin-left:4px">(소수점 버림)</span>
+              </div>
+              <div class="wf-hint">PMS연동 상품은 날짜별 입금가가 달라 판매가도 날짜마다 다릅니다. S06-B/C에서 확인.</div>
+            </div>
+          </div>
+
+          <!-- 변경 사유 -->
+          <div class="wf-form-row">
+            <div class="wf-form-label">변경 사유 <span class="wf-cn">5</span></div>
+            <div class="wf-form-field">
+              <input class="wf-input" style="width:100%" placeholder="예: 성수기 마진 조정" />
+              <div class="wf-hint">선택 입력. 변경 이력에 기록됩니다.</div>
+            </div>
+          </div>
+
+          <!-- 하단 버튼 -->
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #e0e0da">
+            <span class="wf-btn">취소</span>
+            <span class="wf-btn wf-btn-primary">저장 <span class="wf-cn">6</span></span>
+          </div>
+
+          <!-- 변경 이력 섹션 -->
+          <div class="wf-section-head" style="margin-top:28px">변경 이력 <span class="wf-cn">7</span></div>
+
+          <table class="wf-table">
+            <thead>
+              <tr>
+                <th>변경일시</th>
+                <th>변경자</th>
+                <th>변경 전</th>
+                <th>변경 후</th>
+                <th>사유</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-size:10px">2026-05-20 14:30</td>
+                <td style="font-size:11px">admin01</td>
+                <td style="font-size:11px;color:#888">+5%</td>
+                <td style="font-size:11px;color:#1a6fb8;font-weight:600">+10%</td>
+                <td style="font-size:10px;color:#555">성수기 마진 조정</td>
+              </tr>
+              <tr>
+                <td style="font-size:10px">2026-05-10 09:15</td>
+                <td style="font-size:11px">admin01</td>
+                <td style="font-size:11px;color:#888">미설정 (0)</td>
+                <td style="font-size:11px;color:#1a6fb8;font-weight:600">+5%</td>
+                <td style="font-size:10px;color:#555">초기 마진 설정</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="wf-hint" style="margin-top:4px">저장 시 자동 기록. 삭제·수정 불가.</div>
+
+        </div><!-- /wf-main -->
+
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 주석 패널 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">마스터 상속 중인 상품 수</div>
+          <div class="ann-desc">
+            이 시설 소속 상품 중 개별 마진 미설정(마스터 상속 중)인 상품 수 표시. 마스터 변경 저장 시 이 수만큼의 상품 판매가가 즉시 변경된다. 변경 전 확인용.
+          </div>
+          <div class="ann-rule">마스터 변경 영향 범위 인지를 위해 반드시 표시.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">마진 설정 폼</div>
+          <div class="ann-desc">
+            마진 유형 3가지: 마진율(%) / 마진금액(원) / 마진 없음(0). 마진 없음 선택 시 마진값 입력 필드 숨김, 저장 시 margin=0으로 기록.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">마진값 입력</div>
+          <div class="ann-desc">
+            마진율: 정수만 (type=number step=1 min=-49 max=100). 소수점 입력 차단.<br>
+            마진금액: 정수 원(₩). 음수 허용, 하한 없음.
+          </div>
+          <div class="ann-rule">UI-MAR-01: 마진율 정수 검증 필수. 범위(-49~100) 초과 시 저장 차단.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">판매가 미리보기</div>
+          <div class="ann-desc">
+            마진값 입력 시 실시간으로 계산 결과 표시. 입금가 100,000원(마진율) 또는 이 시설의 대표 상품 최근 입금가(마진금액)를 기준으로 계산.<br>
+            공식: 마진율 = Math.floor(입금가 × (1 + 마진율/100)), 마진금액 = 입금가 + 마진금액.
+          </div>
+          <div class="ann-rule">BIZ-MAR-01: 소수점 버림(floor). 반올림 아님.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">변경 사유</div>
+          <div class="ann-desc">
+            선택 입력. 변경 이력 테이블의 '사유' 컬럼에 기록.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">6</div>
+        <div class="ann-body">
+          <div class="ann-title">[저장] 버튼</div>
+          <div class="ann-desc">
+            저장 시: 1) 마진 마스터 업데이트 2) 변경 이력 자동 기록(변경일시·변경자·변경 전/후·사유) 3) 마스터 상속 중인 상품 판매가 즉시 반영.
+          </div>
+          <div class="ann-rule">BIZ-MAR-02: 변경 이력 필수 기록. 이력은 삭제·수정 불가.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">7</div>
+        <div class="ann-body">
+          <div class="ann-title">변경 이력 테이블</div>
+          <div class="ann-desc">
+            변경일시 / 변경자 / 변경 전 / 변경 후 / 사유. 최신 이력이 상단에 표시. 이력은 삭제·수정 불가 (append-only).
+          </div>
+          <div class="ann-front">→ 프런트: 미노출 (운영 내부 이력)</div>
+          <div class="ann-rule">이력 건수가 많을 경우 페이지네이션 또는 최근 N건 표시 + "전체보기" 제공.</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+
+  <!-- ════════════════════════════════════════════════
+       티켓 카테고리 마진 설정 (티켓 탭에서 진입)
+  ════════════════════════════════════════════════ -->
+  <div class="sec-title" style="margin-top:48px;border-bottom-color:#ec4899">
+    <span class="sec-badge" style="background:#ec4899">S11-B</span>
+    마진 설정 — 티켓 카테고리
+    <span style="font-size:12px;font-weight:400;color:#888">— 카테고리 단위 마진 등록·수정 (S11-A 티켓 탭에서 진입)</span>
+  </div>
+  <div class="sec-sub">
+    티켓은 <b>카테고리(1뎁스) 단위</b> 마진 마스터. 폼·이력 구조는 숙소(시설)와 동일하며, 대상만 카테고리로 바뀐다.
+  </div>
+
+  <div class="two-col">
+
+    <!-- 와이어프레임 — 티켓 카테고리 마진 -->
+    <div class="wf">
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item">화면관리</span>
+        <span class="wf-gnb-item on">공통관리</span>
+      </div>
+      <div class="wf-body">
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">공통관리</div>
+          <div class="wf-lnb-item">카테고리관리</div>
+          <div class="wf-lnb-item">시설관리</div>
+          <div class="wf-lnb-item">객실유형관리</div>
+          <div class="wf-lnb-item on">마진관리</div>
+        </div>
+        <div class="wf-main">
+          <div class="wf-page-title">마진 설정 — 티켓 카테고리</div>
+
+          <!-- 카테고리 정보 (읽기전용) -->
+          <div class="wf-section-head">카테고리 정보 <span class="wf-cn" style="background:#ec4899">A</span></div>
+          <div class="wf-card" style="background:#fdf2f8;border-color:#fbcfe8;margin-bottom:14px">
+            <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+              <div><span style="font-size:10px;color:#888">카테고리:</span> <span style="font-size:12px;font-weight:600">워터파크</span></div>
+              <div><span style="font-size:10px;color:#888">유형:</span> <span style="font-size:11px">티켓 · 1뎁스</span></div>
+              <div><span style="font-size:10px;color:#888">마스터 상속 중인 상품:</span> <span style="font-size:11px;font-weight:600;color:#9d174d">2개</span></div>
+            </div>
+          </div>
+
+          <!-- 마진 설정 폼 (숙소와 동일) -->
+          <div class="wf-section-head">마진 설정 <span class="wf-cn" style="background:#ec4899">B</span></div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">마진 유형 <span class="wf-form-req">*</span></div>
+            <div class="wf-form-field">
+              <div style="display:flex;gap:12px;align-items:center">
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="radio" name="tk_margin_type" checked /> 마진율 (%)</label>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="radio" name="tk_margin_type" /> 마진금액 (원)</label>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="radio" name="tk_margin_type" /> 마진 없음 (0)</label>
+              </div>
+            </div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">마진값 <span class="wf-form-req">*</span></div>
+            <div class="wf-form-field">
+              <div style="display:flex;gap:8px;align-items:center">
+                <input class="wf-input" style="width:80px" type="number" value="10" />
+                <span style="font-size:12px;color:#555">%</span>
+                <span style="font-size:10px;color:#888">(정수, 범위 -49 ~ +100)</span>
+              </div>
+              <div class="wf-hint">마진금액 선택 시: ±N원 입력. 하한 없음.</div>
+            </div>
+          </div>
+          <!-- 마진 적용 영향 미리보기 (연결 스펙 입금가 기반) -->
+          <div class="wf-section-head" style="margin-top:18px;">마진 적용 영향 미리보기 <span class="wf-cn" style="background:#ec4899">C</span></div>
+          <div class="wf-hint" style="margin-top:0;margin-bottom:6px;">이 카테고리(워터파크)에 연결된 스펙·레벨의 <b>실제 입금가</b>를 불러와 마진 적용 결과를 표시. 마진값 변경 시 실시간 재계산.</div>
+          <table class="wf-table">
+            <thead>
+              <tr>
+                <th>스펙 / 레벨</th>
+                <th style="text-align:right;">입금가</th>
+                <th style="text-align:right;">적용 후 판매가</th>
+                <th style="text-align:center;">적용 상품</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>OAT / 대인</td>
+                <td style="text-align:right;">40,000</td>
+                <td style="text-align:right;color:#9d174d;font-weight:600;">44,000</td>
+                <td style="text-align:center;">1개</td>
+              </tr>
+              <tr>
+                <td>OAT / 소인</td>
+                <td style="text-align:right;">35,000</td>
+                <td style="text-align:right;color:#9d174d;font-weight:600;">38,500</td>
+                <td style="text-align:center;">1개</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="wf-hint" style="margin-top:4px;">· 판매가 = 입금가 + 마진(소수점 버림). · <b>개별 마진(S14-B) 설정 상품은 제외</b> — 마스터 상속 상품만 영향. · 날짜별 입금가 조정 상품(S14-C)은 기본 입금가 기준 표시.</div>
+
+          <div class="wf-form-row" style="margin-top:14px;">
+            <div class="wf-form-label">변경 사유</div>
+            <div class="wf-form-field">
+              <input class="wf-input" style="width:100%" placeholder="예: 성수기 마진 조정" />
+              <div class="wf-hint">선택 입력. 변경 이력에 기록됩니다.</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #e0e0da">
+            <span class="wf-btn">취소</span>
+            <span class="wf-btn wf-btn-primary" style="background:#ec4899;border-color:#ec4899">저장</span>
+          </div>
+
+          <!-- 변경 이력 -->
+          <div class="wf-section-head" style="margin-top:28px">변경 이력 <span class="wf-cn" style="background:#ec4899">D</span></div>
+          <table class="wf-table">
+            <thead>
+              <tr><th>변경일시</th><th>변경자</th><th>변경 전</th><th>변경 후</th><th>사유</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-size:10px">2026-06-22 09:15</td>
+                <td style="font-size:11px">admin01</td>
+                <td style="font-size:11px;color:#888">미설정 (0)</td>
+                <td style="font-size:11px;color:#9d174d;font-weight:600">+10%</td>
+                <td style="font-size:10px;color:#555">티켓 초기 마진 설정</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="wf-hint" style="margin-top:4px">저장 시 자동 기록. 삭제·수정 불가.</div>
+
+        </div><!-- /wf-main -->
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+    <!-- 티켓 카테고리 마진 주석 -->
+    <div class="ann">
+      <h3>티켓 카테고리 마진 주석</h3>
+      <div class="ann-item">
+        <div class="cn" style="background:#ec4899">A</div>
+        <div class="ann-body">
+          <div class="ann-title">카테고리 정보 (읽기전용)</div>
+          <div class="ann-desc">S11-A 티켓 탭에서 선택한 <b>카테고리(1뎁스)</b>와 마스터 상속 중 상품 수 표시. 숙소의 '시설 정보' 자리를 카테고리가 대체.</div>
+        </div>
+      </div>
+      <div class="ann-item">
+        <div class="cn" style="background:#ec4899">B</div>
+        <div class="ann-body">
+          <div class="ann-title">마진 설정 폼 (숙소와 동일)</div>
+          <div class="ann-desc">마진 유형(율/금액/없음) + 마진값. 마진율 정수 -49~+100, floor. 숙소(S11-B) 폼과 완전 동일 — 대상만 카테고리.</div>
+        </div>
+      </div>
+      <div class="ann-item">
+        <div class="cn" style="background:#ec4899">C</div>
+        <div class="ann-body">
+          <div class="ann-title">마진 적용 영향 미리보기 (연결 스펙 입금가)</div>
+          <div class="ann-desc">대표 가정값이 아니라, 이 카테고리에 <b>연결된 스펙(S13)·레벨의 실제 입금가를 불러와</b> 마진 적용 후 판매가를 표로 표시. 마진율/금액 변경 시 실시간 재계산.</div>
+          <div class="ann-rule">개별 마진(S14-B 토글 ON) 상품은 마스터 영향을 받지 않으므로 표에서 제외(상속 상품만). 마진금액(정액) 설정 시 입금가별 결과 차이를 정확히 확인 가능. 날짜별 입금가 조정분은 기본 입금가 기준 표시.</div>
+        </div>
+      </div>
+      <div class="ann-item">
+        <div class="cn" style="background:#ec4899">D</div>
+        <div class="ann-body">
+          <div class="ann-title">변경 이력</div>
+          <div class="ann-desc">변경일시·변경자·전/후·사유 append-only 기록. 카테고리 마스터 변경 시 상속 중 상품 판매가 즉시 반영.</div>
+        </div>
+      </div>
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

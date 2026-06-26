@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>REF-7 — 프런트 메인 화면 데이터 매핑 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+/* ── 프런트 시뮬레이션 ── */
+.front-sim{border:1px solid #d0d0c8;border-radius:8px;overflow:hidden;background:#fafaf8;font-family:"Segoe UI",Arial,sans-serif}
+.ft-topbar{background:#1a1f2e;display:flex;align-items:center;padding:7px 12px;gap:10px;border-radius:8px 8px 0 0}
+.ft-logo{color:#c49a6c;font-weight:700;font-size:12px}
+.ft-logo span{color:#fff}
+.ft-nav-btn{color:rgba(255,255,255,.5);font-size:10px;padding:3px 8px;border-radius:3px;border:none;background:none;cursor:pointer}
+.ft-nav-btn.on{background:rgba(255,255,255,.15);color:#fff;font-weight:600}
+.ft-lang-btn{background:rgba(255,255,255,.1);color:rgba(255,255,255,.55);font-size:9px;padding:2px 6px;border-radius:3px;border:none;margin-left:auto}
+/* ── 섹션 목업 ── */
+.sec-tab-bar{display:flex;background:#fff;border-bottom:2px solid #e8e8e2}
+.sec-tab{padding:6px 12px;font-size:10px;color:#888;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer}
+.sec-tab.on{color:#1a1f2e;border-bottom-color:#10b981;font-weight:700}
+.sec-card-grid{padding:10px;background:#f5f5f2;display:flex;gap:8px;flex-wrap:wrap}
+.sec-card{border:1px solid #e0e0da;border-radius:6px;background:#fff;overflow:hidden}
+.sec-card-thumb{background:linear-gradient(135deg,#c0cad4,#a0aab4);display:flex;align-items:center;justify-content:center;font-size:9px;color:#888}
+/* ── 주석 소스 박스 ── */
+.ann-source{font-size:10px;color:#1a1f2e;background:#f0f4ff;padding:3px 8px;border-radius:3px;border-left:2px solid #6366f1;line-height:1.65;margin-top:4px;font-family:monospace;word-break:break-all}
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">REF-7 — 프런트 메인 화면 데이터 매핑</span>
+  <span class="page-nav-route">어드민 입력 → 프런트 메인 페이지 노출</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s12-c-recommend-form.html">← 이전</a>
+    <a class="page-nav-pager" href="data-mapping.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page" style="max-width:1400px">
+
+  <div class="sec-title">
+    <span class="sec-badge" style="background:#f59e0b">REF-7</span>
+    프런트 메인 화면 데이터 매핑
+    <span style="font-size:12px;font-weight:400;color:#888">— S12-A/B/C 어드민 입력 → 프런트 메인 페이지 노출 위치·규칙</span>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- A. 메인 페이지 레이아웃                         -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="sec-sub">A. 메인 페이지 레이아웃</div>
+
+  <div class="two-col">
+
+    <!-- ── 좌: 프런트 시뮬레이션 ── -->
+    <div class="wf">
+      <div class="front-sim">
+
+        <!-- Topbar -->
+        <div class="ft-topbar">
+          <span class="ft-logo">high<span>1</span></span>
+          <div style="display:flex;gap:2px">
+            <button class="ft-nav-btn on">Hotel</button>
+            <button class="ft-nav-btn">Condo</button>
+          </div>
+          <button class="ft-lang-btn">KO</button>
+        </div>
+
+        <!-- ① 히어로 슬라이더 -->
+        <div style="position:relative">
+          <div style="background:linear-gradient(135deg,#b0b8c4,#8590a0);height:130px;display:flex;align-items:flex-end;padding:10px 14px;overflow:hidden;position:relative">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(255,255,255,.4)">히어로 이미지 슬라이드 (← →)</div>
+            <div style="position:relative;z-index:2;width:100%">
+              <div style="color:rgba(255,255,255,.75);font-size:9px;margin-bottom:2px">Special Promotion</div>
+              <div style="color:#fff;font-size:13px;font-weight:700;margin-bottom:5px">이번 주말, 하이원에서</div>
+              <div style="display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;font-size:9px;padding:2px 9px;border-radius:3px">자세히 보기</div>
+            </div>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:8px;right:8px">1</span>
+        </div>
+
+        <!-- ② 추천 섹션 헤더 -->
+        <div style="position:relative;background:#fff;padding:10px 14px 8px;border-bottom:1px solid #e8e8e2">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#1a1f2e">이번 주 추천 호텔</div>
+              <div style="font-size:10px;color:#888;margin-top:2px">하이원 대표 호텔을 특별가로 만나보세요</div>
+            </div>
+            <span style="font-size:9px;background:#f0f0ea;padding:2px 8px;border-radius:3px;color:#555;white-space:nowrap;flex-shrink:0;margin-top:2px">전체보기 →</span>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:8px;right:36px">2</span>
+        </div>
+
+        <!-- ③ 2뎁스 탭 (탭분리 ON + 숙소 2개↑ 시 [전체] 탭 추가) -->
+        <div style="position:relative">
+          <div class="sec-tab-bar">
+            <div class="sec-tab on">전체</div>
+            <div class="sec-tab">그랜드 호텔</div>
+            <div class="sec-tab">팰리스 호텔</div>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:4px;right:8px">3</span>
+        </div>
+
+        <!-- ④ 카드 그리드 -->
+        <div style="position:relative">
+          <div class="sec-card-grid">
+            <div class="sec-card" style="width:148px">
+              <div class="sec-card-thumb" style="height:78px">썸네일</div>
+              <div style="padding:8px">
+                <div style="font-size:8px;color:#888;margin-bottom:2px">그랜드 호텔</div>
+                <div style="font-size:11px;font-weight:700;color:#1a1f2e;margin-bottom:3px">디럭스 더블</div>
+                <div style="font-size:8px;color:#888;margin-bottom:3px">기준2-최대4 , 38m²</div>
+                <div style="font-size:10px;font-weight:700;color:#1a6fb8">₩180,000~</div>
+                <div style="background:#1a1f2e;color:#fff;text-align:center;padding:4px;border-radius:3px;font-size:8px;margin-top:5px">예약하기</div>
+              </div>
+            </div>
+            <div class="sec-card" style="width:148px;opacity:.4">
+              <div class="sec-card-thumb" style="height:78px"></div>
+              <div style="padding:8px">
+                <div style="font-size:8px;color:#aaa;margin-bottom:2px">팰리스 호텔</div>
+                <div style="font-size:11px;font-weight:700;color:#bbb;margin-bottom:3px">슈페리어 트윈</div>
+                <div style="font-size:8px;color:#ccc;margin-bottom:3px">기준2-최대3 , 32m²</div>
+                <div style="font-size:10px;color:#ccc">₩150,000~</div>
+              </div>
+            </div>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:8px;right:8px">4</span>
+        </div>
+
+        <!-- 섹션 반복 -->
+        <div style="padding:6px 14px;font-size:9px;color:#bbb;border-top:1px solid #f0f0ea;background:#fafaf8;text-align:center">
+          ⋯ 추천 섹션 반복 (S12-A 등록 순서대로)
+        </div>
+
+      </div><!-- /front-sim -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 우: 주석 패널 ── -->
+    <div class="ann">
+      <h3>주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">히어로 슬라이더</div>
+          <div class="ann-desc">
+            메인 최상단 전체 폭. S12-B 슬라이드 설정 기반.<br>
+            이미지·동영상·타이틀(KO/EN)·서브타이틀·CTA 버튼 포함.<br>
+            S12-A 목록 순서대로 노출. 노출 조건(기간·force_off) 통과 슬라이드만 렌더링.
+          </div>
+          <div class="ann-source">hero_pc_image / hero_mobile_image<br>hero_title_ko / hero_title_en<br>hero_subtitle_ko / hero_subtitle_en<br>hero_cta_use / hero_cta_label_ko / hero_cta_label_en / hero_cta_url<br>hero_autoplay / hero_interval_sec<br>hero_period_start / hero_period_end / hero_force_off</div>
+          <div class="ann-rule">ON 슬라이드 0개 시 히어로 영역 전체 미노출.<br>force_off=true 시 기간 무관 즉시 미노출.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">추천 섹션 헤더</div>
+          <div class="ann-desc">
+            섹션 타이틀, 서브타이틀, 전체보기 버튼. 상세는 B. 섹션·카드 상세 참조.<br>
+            섹션 노출 조건: visible=true AND 기간 내 AND SHOW 객실 ≥ 1.<br>
+            조건 미충족 시 섹션 전체 미노출 (빈 카드 그리드 방지).
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">2뎁스 탭 (숙소별 탭)</div>
+          <div class="ann-desc">
+            tab_enabled=ON + 2뎁스 <strong>2개 이상</strong> 선택 시 가로 탭 UI 표시.<br>
+            &nbsp;→ 탭 순서: <strong>[전체]</strong> (첫 번째) + 숙소별 탭.<br>
+            &nbsp;→ [전체] 탭: 선택된 모든 숙소의 카드를 통합 그리드로 표시.<br>
+            tab_enabled=OFF 또는 선택 숙소 1개: 탭 없이 통합 그리드 (전체 탭 미노출).
+          </div>
+          <div class="ann-source">section_tab_enabled / section_place_ids[]</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">객실 카드 그리드</div>
+          <div class="ann-desc">
+            최대 10개 카드 나열.<br>
+            수동 모드: S12-C에서 관리자가 지정한 순서.<br>
+            자동 모드: 정렬 기준(가격순·A-Z·인기순) 상위 순.<br>
+            room.visible=SHOW인 객실만 표시. HIDE 객실 자동 제외.
+          </div>
+          <div class="ann-source">section_room_ids[] (수동) / section_sort_type (자동)</div>
+          <div class="ann-rule">SHOW 카드 0건 시 섹션 전체 미노출.</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+  </div><!-- /two-col -->
+
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- B. 섹션·카드 상세                              -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="sec-sub" style="margin-top:32px">B. 섹션 · 카드 상세</div>
+
+  <div class="two-col">
+
+    <!-- ── 좌: 프런트 시뮬레이션 (섹션 상세) ── -->
+    <div class="wf">
+      <div class="front-sim">
+
+        <!-- 섹션 헤더 상세 -->
+        <div style="background:#fff;padding:12px 14px;border-bottom:1px solid #e8e8e2;position:relative">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+            <div>
+              <!-- 타이틀 -->
+              <div style="position:relative;display:inline-block;padding-right:24px">
+                <span style="font-size:14px;font-weight:700;color:#1a1f2e">이번 주 추천 호텔</span>
+                <span class="wf-cn" style="position:absolute;top:0;right:0">5</span>
+              </div>
+              <!-- 서브타이틀 -->
+              <div style="position:relative;display:inline-block;padding-right:24px;margin-top:3px;display:block">
+                <span style="font-size:10px;color:#888">하이원 대표 호텔을 특별가로 만나보세요</span>
+                <span class="wf-cn" style="position:absolute;top:-4px;right:0">6</span>
+              </div>
+            </div>
+            <!-- 전체보기 버튼 -->
+            <div style="position:relative;flex-shrink:0;padding-right:24px">
+              <span style="font-size:9px;background:#f0f0ea;padding:3px 10px;border-radius:3px;color:#555;white-space:nowrap">전체보기 →</span>
+              <span class="wf-cn" style="position:absolute;top:-4px;right:0">7</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2뎁스 탭 (탭분리 ON + 숙소 2개↑ 시 [전체] 탭 첫 번째) -->
+        <div style="position:relative">
+          <div class="sec-tab-bar">
+            <div class="sec-tab on">전체</div>
+            <div class="sec-tab">그랜드 호텔 메인타워</div>
+            <div class="sec-tab">팰리스 호텔</div>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:4px;right:8px">8</span>
+        </div>
+
+        <!-- 카드 1개 상세 -->
+        <div style="padding:12px;background:#f5f5f2">
+          <div style="border:1px solid #e0e0da;border-radius:6px;background:#fff;overflow:hidden;max-width:280px">
+
+            <!-- ⑨ 썸네일 -->
+            <div style="position:relative">
+              <div style="background:linear-gradient(135deg,#c0cad4,#a0aab4);height:120px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#888">객실 대표 이미지</div>
+              <span class="wf-cn" style="position:absolute;top:8px;right:8px">9</span>
+            </div>
+
+            <div style="padding:10px 12px">
+
+              <!-- ⑩ 숙소명 -->
+              <div style="position:relative;padding-right:26px;margin-bottom:2px">
+                <span style="font-size:9px;color:#888">그랜드 호텔 메인타워</span>
+                <span class="wf-cn" style="position:absolute;top:-3px;right:0">10</span>
+              </div>
+
+              <!-- ⑪ 객실명 -->
+              <div style="position:relative;padding-right:26px;margin-bottom:5px">
+                <span style="font-size:13px;font-weight:700;color:#1a1f2e">디럭스 더블</span>
+                <span class="wf-cn" style="position:absolute;top:0;right:0">11</span>
+              </div>
+
+              <!-- ⑫ 인원·면적 -->
+              <div style="position:relative;padding-right:26px;margin-bottom:6px">
+                <span style="font-size:9px;color:#555">기준2-최대4 , 38m²</span>
+                <span class="wf-cn" style="position:absolute;top:-3px;right:0">12</span>
+              </div>
+
+              <!-- ⑬ 최저가 -->
+              <div style="position:relative;padding-right:26px;margin-bottom:1px">
+                <span style="font-size:12px;font-weight:700;color:#1a6fb8">₩180,000 ~</span>
+                <span class="wf-cn" style="position:absolute;top:-1px;right:0">13</span>
+              </div>
+              <div style="font-size:8px;color:#aaa;margin-bottom:8px">최저가 (30일 이내)</div>
+
+              <!-- ⑭ CTA -->
+              <div style="position:relative;padding-right:26px">
+                <div style="background:#1a1f2e;color:#fff;text-align:center;padding:6px;border-radius:4px;font-size:10px;font-weight:700">예약하기</div>
+                <span class="wf-cn" style="position:absolute;top:4px;right:0">14</span>
+              </div>
+
+            </div>
+          </div><!-- /카드 -->
+        </div>
+
+      </div><!-- /front-sim -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 우: 주석 패널 ── -->
+    <div class="ann">
+      <h3>주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">섹션 타이틀</div>
+          <div class="ann-desc">KO/EN 별도 입력. 언어 설정에 따라 전환. 타이틀 KO 필수.</div>
+          <div class="ann-source">section_title_ko / section_title_en</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">6</div>
+        <div class="ann-body">
+          <div class="ann-title">섹션 서브타이틀</div>
+          <div class="ann-desc">선택 입력. KO/EN 별도 입력. 미입력 시 해당 라인 미노출.</div>
+          <div class="ann-source">section_subtitle_ko / section_subtitle_en</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">7</div>
+        <div class="ann-body">
+          <div class="ann-title">전체보기 버튼</div>
+          <div class="ann-desc">
+            viewall_use=ON 시 섹션 헤더 우측에 버튼 표시. KO/EN 버튼명 별도 입력.<br>
+            URL 내부(/…) → 현재 탭. 외부(https://) → 새 탭(_blank).
+          </div>
+          <div class="ann-source">section_viewall_use<br>section_viewall_label_ko / section_viewall_label_en<br>section_viewall_url</div>
+          <div class="ann-rule">use=ON 시 버튼명 KO + URL 필수. 미입력 시 저장 불가.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">8</div>
+        <div class="ann-body">
+          <div class="ann-title">2뎁스 탭</div>
+          <div class="ann-desc">
+            tab_enabled=ON + 2뎁스 2개 이상: <strong>[전체]</strong> 탭 + 숙소별 탭.<br>
+            OFF 또는 1개 선택: 탭 없이 통합 그리드 (전체 탭 미노출).<br>
+            전체 카드 상한: 10개 (탭 ON/OFF 무관).
+          </div>
+          <div class="ann-source">section_tab_enabled / section_place_ids[]</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">9</div>
+        <div class="ann-body">
+          <div class="ann-title">카드 — 썸네일</div>
+          <div class="ann-desc">S04 객실 등록 시 업로드한 대표 이미지. 미등록 시 숙소 대표 이미지 폴백.</div>
+          <div class="ann-source">room.thumbnail_url</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">10</div>
+        <div class="ann-body">
+          <div class="ann-title">카드 — 숙소명</div>
+          <div class="ann-desc">언어 설정에 따라 KO/EN 전환.</div>
+          <div class="ann-source">place.name_ko / place.name_en</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">11</div>
+        <div class="ann-body">
+          <div class="ann-title">카드 — 객실명</div>
+          <div class="ann-desc">언어 설정에 따라 KO/EN 전환.</div>
+          <div class="ann-source">room.name_ko / room.name_en</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">12</div>
+        <div class="ann-body">
+          <div class="ann-title">카드 — 인원 · 면적</div>
+          <div class="ann-desc">
+            형식: "기준N-최대N , Nm²" (1행 콤마 구분).<br>
+            면적 미입력 시 "기준N-최대N"만 표시.<br>
+            인원·면적 모두 미입력 시 해당 라인 미노출.
+          </div>
+          <div class="ann-source">room.base_guests / room.max_guests / room.area_m2</div>
+          <div class="ann-rule">⚠ S04 어드민 직접 입력. PMS 미제공 — 객실 등록 시 반드시 입력 필요.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">13</div>
+        <div class="ann-body">
+          <div class="ann-title">카드 — 최저가</div>
+          <div class="ann-desc">
+            오늘부터 30일 이내 최저 판매가(마진 적용 후 고객 청구 금액). 배치 1일 2회 갱신.<br>
+            값 없음(판매 가능 상품 없음·배치 실패) → 가격 영역 미노출.
+          </div>
+          <div class="ann-source">room.price_min_batch (배치 계산값)</div>
+          <div class="ann-rule">최저가는 참고용. 정확한 가격은 날짜 선택 후 브릿지 페이지에서 확인.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">14</div>
+        <div class="ann-body">
+          <div class="ann-title">카드 — CTA 버튼</div>
+          <div class="ann-desc">
+            고정 텍스트 "예약하기 / Book Now". 카드 전체 클릭과 동일 동작.<br>
+            클릭 시 해당 숙소 브릿지 페이지로 이동 (place·room 파라미터 포함, REF-2 참조).
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+  </div><!-- /two-col -->
+
+
+</div><!-- /page -->
+</body>
+</html>
