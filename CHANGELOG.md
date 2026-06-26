@@ -2,6 +2,19 @@
 
 ---
 
+## v0.8.22 — 2026-06-24
+
+### GitHub Pages 발행 + 정책서 실명 익명화 (PO 요청)
+
+- **GitHub 저장소 신규 생성**: `dreamyuns/high1-wireframe` (Public)
+  - GitHub Pages URL: https://dreamyuns.github.io/high1-wireframe/
+  - 개발사·담당자 공유용. 글로벌 GitHub 운영 정책 절차 따름
+- `ticket-coupon-policy-v0.3.html` — Public 공개 전 **실명 익명화**: "박세원 과장" → "High1 마케팅 담당자"(KO), "Mgr. Park" → "High1 Marketing"(EN)
+- `.gitignore` 신규 — `prototypes/backup/`(구버전·zip) 공개 제외
+- 점검: 화면기획서·프로토타입은 더미데이터만 확인. 입금가·API 구조는 정책서 성격상 유지(담당자 전달 목적)
+
+---
+
 ## v0.8.21 — 2026-06-23
 
 ### 프로토타입 경로 수정 (PO가 prototypes 폴더 이동)
