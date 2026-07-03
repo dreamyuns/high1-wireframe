@@ -81,9 +81,7 @@
                 <th>숙소</th>
                 <th>객실명</th>
                 <th>기준/최대 인원</th>
-                <th>엑스트라베드 <span class="wf-cn">4</span></th>
-                <th>추가인원비용 <span class="wf-cn">5</span></th>
-                <th>상품연결 <span class="wf-cn">6</span></th>
+                <th>상품연결 <span class="wf-cn">4</span></th>
                 <th>수정일시</th>
                 <th>수정</th>
               </tr>
@@ -94,8 +92,6 @@
                 <td>그랜드 호텔 메인타워</td>
                 <td>디럭스 킹</td>
                 <td>기준2 / 최대2</td>
-                <td><span class="wf-badge bg-n">N</span></td>
-                <td><span class="wf-badge bg-n">N</span></td>
                 <td><a class="wf-link">3</a></td>
                 <td>2026-05-15</td>
                 <td><span class="wf-btn wf-btn-sm">수정</span></td>
@@ -105,8 +101,6 @@
                 <td>그랜드 호텔 메인타워</td>
                 <td>주니어 스위트</td>
                 <td>기준2 / 최대3</td>
-                <td><span class="wf-badge bg-n">N</span></td>
-                <td><span class="wf-badge bg-y">Y</span></td>
                 <td><a class="wf-link">2</a></td>
                 <td>2026-05-15</td>
                 <td><span class="wf-btn wf-btn-sm">수정</span></td>
@@ -116,8 +110,6 @@
                 <td>팰리스 호텔</td>
                 <td>스위트 킹</td>
                 <td>기준2 / 최대4</td>
-                <td><span class="wf-badge bg-y">Y</span></td>
-                <td><span class="wf-badge bg-y">Y</span></td>
                 <td><a class="wf-link">2</a></td>
                 <td>2026-05-15</td>
                 <td><span class="wf-btn wf-btn-sm">수정</span></td>
@@ -168,30 +160,10 @@
         </div>
       </div>
 
+      <!-- v0.2: CN4 엑스트라베드·CN5 추가인원비용 컬럼/주석 제거 (부가요금 결제 개념 폐기 → 숙소 S02-4 추가요금 안내로 이관) -->
+
       <div class="ann-item">
         <div class="cn">4</div>
-        <div class="ann-body">
-          <div class="ann-title">엑스트라베드 Y/N</div>
-          <div class="ann-desc">
-            extra_bed_enabled 필드 값을 Y/N 배지로 표시한다. Y이면 프런트 Room Detail 모달 ② 객실정책 섹션에 '엑스트라베드' 요금 카드가 표시된다.
-          </div>
-          <div class="ann-front">→ 프런트: Room Detail 모달 ② 객실정책 > 엑스트라베드 요금 카드 (활성 시만 표시)</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="cn">5</div>
-        <div class="ann-body">
-          <div class="ann-title">추가인원비용 Y/N</div>
-          <div class="ann-desc">
-            occupant_extra_charge_enabled 필드 값을 Y/N 배지로 표시한다. Y이면 프런트 Room Detail 모달 ② 객실정책 섹션에 '인원추가요금' 카드가 표시된다.
-          </div>
-          <div class="ann-front">→ 프런트: Room Detail 모달 ② 객실정책 > 인원추가요금 카드 (활성 시만 표시)</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="cn">6</div>
         <div class="ann-body">
           <div class="ann-title">상품연결 수</div>
           <div class="ann-desc">
