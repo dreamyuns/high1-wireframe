@@ -23,7 +23,7 @@
 
   <div class="sec-title">
     <span class="sec-badge">S06-B</span>
-    재고·요금 편집 — 목록형
+    재고·요금 — 목록형 (재고·요금 읽기전용 · 예약조건 벌크)
     <span style="font-size:12px;font-weight:400;color:#888">— 탭2 인벤토리 / 목록형 뷰</span>
   </div>
 
@@ -70,20 +70,10 @@
             </div>
           </div>
 
-          <!-- PMS연동 모드 전용 배너 (수기 모드 시 숨김) -->
-          <div style="display:flex;align-items:center;gap:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:8px 12px;font-size:11px;color:#1a4fa0;margin-bottom:12px">
-            <span style="font-weight:600">PMS연동 모드</span>
-            <span style="color:#555">— 요금은 PMS(하이원)에서 관리됩니다. 아래 요금 데이터는 읽기 전용입니다.</span>
-            <span class="wf-btn wf-btn-sm wf-btn-primary" style="margin-left:auto" title="클릭 시 확인 팝업 표시">
-              요금 동기화 <span class="wf-cn">19</span>
-            </span>
-            <span style="font-size:9px;color:#888;margin-left:4px">→ confirm 팝업 후 실행</span>
-          </div>
-
-          <!-- 재고 관리 위치 안내 -->
-          <div style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:7px 12px;font-size:11px;color:#166534;margin-bottom:10px">
-            <span>📦</span>
-            <span><strong>재고 관리</strong>(잔여·총운영·예약됨)는 <strong><a href="s04-inv.html" style="color:#166534">S04-INV 재고 관리</a></strong>에서 수행합니다. 여기서는 요금만 편집합니다.</span>
+          <!-- 읽기전용 안내 배너 (재고·요금·날짜는 PMS/S04-INV 연동) -->
+          <div style="display:flex;align-items:flex-start;gap:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:9px 12px;font-size:11px;color:#1a4fa0;margin-bottom:10px">
+            <span>📌</span>
+            <span style="color:#334;line-height:1.6"><strong>재고·요금·날짜는 읽기전용</strong> <span class="wf-cn">19</span> — 날짜·입금가·판매가·재고는 PMS(하이원) 연동으로 자동 수신되어 이 화면에서 <strong>수정·추가·삭제할 수 없습니다</strong>. 요금 갱신은 <a href="s04-inv.html" style="color:#1a6fb8">S04-INV(객실 타입)</a>에서 수행합니다. 이 화면에서는 <strong>예약조건(체크인허용·최소/최대박·컷오프)만 구간 일괄(벌크)로 설정</strong>합니다.</span>
           </div>
 
           <!-- 메인 탭 -->
@@ -98,9 +88,9 @@
             <div class="wf-tab" style="color:#aaa;font-size:11px">달력형 &nbsp;<a href="s06-inventory-cal.html" style="color:#1a6fb8">S06-C →</a></div>
           </div>
 
-          <!-- 구간 일괄 적용 -->
+          <!-- 예약조건 구간 일괄(벌크) 적용 -->
           <div class="wf-card">
-            <div style="font-size:11px;font-weight:700;color:#1a1f2e;margin-bottom:10px">구간 일괄 적용 <span class="wf-cn">4</span></div>
+            <div style="font-size:11px;font-weight:700;color:#1a1f2e;margin-bottom:10px">예약조건 구간 일괄(벌크) 적용 <span class="wf-cn">4</span></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
               <div>
                 <div style="font-size:10px;color:#888;margin-bottom:3px">시작일</div>
@@ -109,14 +99,6 @@
               <div>
                 <div style="font-size:10px;color:#888;margin-bottom:3px">종료일</div>
                 <input class="wf-input" style="width:100px" value="2026-06-30" />
-              </div>
-              <div>
-                <div style="font-size:10px;color:#888;margin-bottom:3px">입금가</div>
-                <input class="wf-input" style="width:80px" value="340,000" />
-              </div>
-              <div>
-                <div style="font-size:10px;color:#888;margin-bottom:3px">판매가 <span style="font-size:9px;color:#bbb">(계산)</span></div>
-                <input class="wf-input" style="width:80px;background:#f5f5f0;color:#555" value="374,000" readonly />
               </div>
               <div>
                 <div style="font-size:10px;color:#888;margin-bottom:3px">체크인허용</div>
@@ -141,7 +123,7 @@
                 <span class="wf-btn wf-btn-primary wf-btn-sm">일괄 적용</span>
               </div>
             </div>
-            <div class="wf-hint" style="margin-top:8px">해당 범위 inventory[] 행 전체 덮어씀. 기존 데이터 주의.</div>
+            <div class="wf-hint" style="margin-top:8px">해당 범위 날짜의 <b>예약조건(체크인허용·최소/최대박·컷오프)만</b> 덮어씀. 입금가·판매가·재고는 변경되지 않음(읽기전용).</div>
           </div>
 
           <!-- 날짜 필터 -->
@@ -151,15 +133,14 @@
             <span style="font-size:10px;color:#888">~</span>
             <input class="wf-input" style="width:100px" value="2026-06-30" />
             <span class="wf-btn wf-btn-sm">조회</span>
-            <span class="wf-btn wf-btn-sm" style="margin-left:auto">+ 날짜 추가 <span class="wf-cn">13</span></span>
-            <span class="wf-btn wf-btn-sm" style="background:#f0f0ea;border-color:#bbb">이력 보기 <span class="wf-cn">21</span></span>
+            <span class="wf-btn wf-btn-sm" style="margin-left:auto;background:#f0f0ea;border-color:#bbb">이력 보기 <span class="wf-cn">21</span></span>
           </div>
 
-          <!-- 인벤토리 목록 테이블 -->
+          <!-- 인벤토리 목록 테이블 (재고·요금·날짜=읽기전용, 예약조건=벌크 적용 결과 표시) -->
           <table class="inv-table">
             <thead>
               <tr>
-                <th>날짜</th>
+                <th>날짜 <span class="wf-badge" style="background:#eef;color:#66a;font-size:8px">PMS</span></th>
                 <th>입금가 <span class="wf-cn">6</span></th>
                 <th>판매가 <span class="wf-cn">20</span></th>
                 <th>사용가능 객실수 <span class="wf-cn">7</span></th>
@@ -168,35 +149,13 @@
                 <th>최대박</th>
                 <th>컷오프 <span class="wf-cn">9</span></th>
                 <th>상태 <span class="wf-cn">10</span></th>
-                <th>편집</th>
               </tr>
             </thead>
             <tbody>
-              <!-- 날짜 추가 신규 행 (최상단 삽입, 편집 모드 활성화 상태) -->
-              <tr style="background:#eff6ff;outline:2px solid #93c5fd;outline-offset:-2px">
-                <td><input class="wf-input" type="date" style="width:108px" placeholder="날짜 선택" /></td>
-                <td><input class="wf-input" style="width:75px" placeholder="0" /></td>
-                <td style="color:#aaa;font-size:10px;text-align:center">—</td>
-                <td style="color:#aaa;font-size:10px;text-align:center" title="객실 상세 재고관리 탭에서 관리">—</td>
-                <td>
-                  <select class="wf-select" style="width:55px">
-                    <option>Y ▾</option>
-                    <option>N</option>
-                  </select>
-                </td>
-                <td><input class="wf-input" style="width:38px" value="1" /></td>
-                <td><input class="wf-input" style="width:38px" value="30" /></td>
-                <td><input class="wf-input" style="width:38px" value="1" /></td>
-                <td>—</td>
-                <td>
-                  <span class="wf-btn wf-btn-sm wf-btn-primary">저장</span>
-                  <span class="wf-btn wf-btn-sm">취소</span>
-                </td>
-              </tr>
-              <!-- 정상 행 -->
+              <!-- 정상 행 (전부 읽기전용 표시) -->
               <tr>
                 <td>2026-06-01</td>
-                <td>340,000</td>
+                <td style="color:#555">340,000</td>
                 <td style="color:#555">374,000</td>
                 <td>8</td>
                 <td><span class="wf-badge bg-y">Y</span></td>
@@ -204,36 +163,22 @@
                 <td>30</td>
                 <td>1</td>
                 <td><span class="wf-badge bg-y">정상</span></td>
-                <td>
-                  <span class="wf-btn wf-btn-sm">편집 <span class="wf-cn">14</span></span>
-                  <span class="wf-btn wf-btn-sm wf-btn-danger">삭제 <span class="wf-cn">16</span></span>
-                </td>
               </tr>
-              <!-- 인라인 편집 중인 행 -->
-              <tr style="background:#fffbea">
-                <td style="font-weight:700;color:#1a1f2e">2026-06-02 <span style="font-size:9px;color:#888">(기존 행 편집 중)</span></td>
-                <td><input class="wf-input" style="width:75px" value="340,000" /></td>
-                <td style="background:#f5f5f0;color:#555;font-size:11px">374,000</td>
-                <td style="color:#555;text-align:center;font-size:11px" title="객실 상세 재고관리 탭에서 관리">5 <span style="font-size:9px;color:#aaa">(읽기전용)</span></td>
-                <td>
-                  <select class="wf-select" style="width:55px">
-                    <option>Y ▾</option>
-                    <option>N</option>
-                  </select>
-                </td>
-                <td><input class="wf-input" style="width:38px" value="1" /></td>
-                <td><input class="wf-input" style="width:38px" value="30" /></td>
-                <td><input class="wf-input" style="width:38px" value="1" /></td>
-                <td>—</td>
-                <td>
-                  <span class="wf-btn wf-btn-sm wf-btn-primary">저장 <span class="wf-cn">15</span></span>
-                  <span class="wf-btn wf-btn-sm">취소</span>
-                </td>
+              <tr>
+                <td>2026-06-02</td>
+                <td style="color:#555">340,000</td>
+                <td style="color:#555">374,000</td>
+                <td>5</td>
+                <td><span class="wf-badge bg-y">Y</span></td>
+                <td>1</td>
+                <td>30</td>
+                <td>1</td>
+                <td><span class="wf-badge bg-y">정상</span></td>
               </tr>
               <!-- SOLD OUT 행 -->
               <tr>
                 <td>2026-06-03</td>
-                <td>340,000</td>
+                <td style="color:#555">340,000</td>
                 <td style="color:#555">374,000</td>
                 <td style="color:#e74c3c;font-weight:700">0</td>
                 <td><span class="wf-badge bg-y">Y</span></td>
@@ -241,15 +186,11 @@
                 <td>30</td>
                 <td>1</td>
                 <td><span class="wf-badge bg-hide">SOLD OUT</span></td>
-                <td>
-                  <span class="wf-btn wf-btn-sm">편집</span>
-                  <span class="wf-btn wf-btn-sm wf-btn-danger">삭제</span>
-                </td>
               </tr>
               <!-- 체크인불가 행 -->
               <tr>
                 <td>2026-06-04</td>
-                <td>340,000</td>
+                <td style="color:#555">340,000</td>
                 <td style="color:#555">374,000</td>
                 <td>6</td>
                 <td><span class="wf-badge bg-n">N</span></td>
@@ -257,16 +198,12 @@
                 <td>30</td>
                 <td>1</td>
                 <td><span class="wf-badge" style="background:#f0f0ea;color:#888">체크인불가</span></td>
-                <td>
-                  <span class="wf-btn wf-btn-sm">편집</span>
-                  <span class="wf-btn wf-btn-sm wf-btn-danger">삭제</span>
-                </td>
               </tr>
             </tbody>
           </table>
 
           <div class="wf-hint" style="margin-top:8px">
-            저장 시 날짜 중복 여부 자동 검증. <span class="wf-cn">11</span>
+            날짜·입금가·판매가·재고는 <b>읽기전용</b>(PMS/S04-INV 연동). 예약조건은 위 <b>구간 일괄(벌크) 적용</b>으로만 변경. 개별 행 인라인 편집·행 추가·행 삭제 없음. <span class="wf-cn">11</span>
           </div>
 
           <!-- 하단 버튼 -->
@@ -375,22 +312,24 @@
       <div class="ann-item">
         <div class="cn">3</div>
         <div class="ann-body">
-          <div class="ann-title">목록형 뷰</div>
+          <div class="ann-title">목록형 뷰 (읽기전용 + 예약조건 벌크)</div>
           <div class="ann-desc">
-            날짜 행별로 입금가·판매가·재고·상태를 테이블 형식으로 표시. 개별 행 인라인 편집, 날짜 추가/삭제 가능.
+            날짜 행별로 입금가·판매가·재고·예약조건·상태를 테이블로 표시. <strong>날짜·입금가·판매가·재고는 읽기전용</strong>(PMS/S04-INV 연동).
+            개별 행 인라인 편집·날짜 추가·행 삭제는 <strong>제공하지 않는다</strong>. 예약조건 변경은 상단 구간 일괄(벌크) 적용으로만 수행.
           </div>
-          <div class="ann-rule">달력형(S06-C)과 동일한 inventory[] 배열을 편집. 두 뷰는 동일 데이터 소스.</div>
+          <div class="ann-rule">달력형(S06-C)과 동일한 inventory[] 데이터. 두 뷰 모두 재고·요금은 조회만.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">4</div>
         <div class="ann-body">
-          <div class="ann-title">구간 일괄 적용</div>
+          <div class="ann-title">예약조건 구간 일괄(벌크) 적용</div>
           <div class="ann-desc">
-            시작일~종료일 + 입금가·재고·체크인허용·최소박·최대박·컷오프를 한 번에 입력 후 '일괄 적용' 클릭. 기존 행은 덮어씀, 없는 날짜는 신규 생성. 판매가는 마진 적용으로 자동 계산.
+            시작일~종료일 + <strong>체크인허용·최소박·최대박·컷오프</strong>를 한 번에 입력 후 '일괄 적용' 클릭. 해당 범위 날짜의 예약조건만 덮어씀.<br>
+            <strong>입금가·판매가·재고는 이 패널에 없음</strong> — 읽기전용(PMS/S04-INV)이므로 벌크 대상에서 제외. 날짜 신규 생성도 없음(PMS 연동 날짜만 존재).
           </div>
-          <div class="ann-rule">일괄 적용 후 날짜별 세부 수정은 인라인 편집 또는 S06-C 달력형 사용.</div>
+          <div class="ann-rule">예약조건은 날짜별 개별 편집이 아니라 <strong>구간 일괄(벌크)</strong>로만 설정한다.</div>
         </div>
       </div>
 
@@ -407,9 +346,9 @@
       <div class="ann-item">
         <div class="cn">6</div>
         <div class="ann-body">
-          <div class="ann-title">입금가 (price)</div>
+          <div class="ann-title">입금가 (price) — 읽기전용</div>
           <div class="ann-desc">
-            해당 날짜의 1박 원가 (KRW). PMS연동 상품은 [요금 동기화] 버튼 실행 시 API 3(SELL_ITM_AMT) 동기화 금액, 수기 상품은 관리자 직접 입력. 마진 미적용 금액. (API 4 SELL_ITM_AMT 무시 확정)
+            해당 날짜의 1박 원가 (KRW). <strong>이 화면에서 수정 불가(읽기전용).</strong> PMS(API 3, SELL_ITM_AMT) 연동으로 수신하며, 요금 갱신은 <strong>S04-INV(객실 타입) 요금 동기화</strong>에서 수행한다. 마진 미적용 금액. (API 4 SELL_ITM_AMT 무시 확정)
           </div>
           <div class="ann-front">→ 프런트: 미노출 (고객에게는 판매가만 표시)</div>
         </div>
@@ -475,11 +414,11 @@
       <div class="ann-item">
         <div class="cn">11</div>
         <div class="ann-body">
-          <div class="ann-title">저장 시 날짜 중복 검증</div>
+          <div class="ann-title">편집 범위 — 예약조건만</div>
           <div class="ann-desc">
-            inventory[] 내 동일 date 중복 여부를 자동 검증. 중복 발견 시 저장 차단 후 중복 날짜 목록 표시.
+            이 화면은 <strong>날짜·입금가·판매가·재고를 조회(읽기전용)</strong>만 하고, <strong>예약조건(체크인허용·최소/최대박·컷오프)만</strong> 구간 일괄(벌크)로 변경한다.<br>
+            날짜는 PMS 연동으로만 생성되므로 관리자 날짜 추가·삭제·중복 검증이 필요 없다.
           </div>
-          <div class="ann-rule">PR-FORM-04: 저장 시 날짜 중복 검증 필수.</div>
         </div>
       </div>
 
@@ -495,62 +434,17 @@
         </div>
       </div>
 
-      <div class="ann-item">
-        <div class="cn">13</div>
-        <div class="ann-body">
-          <div class="ann-title">[+ 날짜 추가] 버튼</div>
-          <div class="ann-desc">
-            클릭 시 테이블 최상단에 신규 빈 행을 인라인 편집 모드로 삽입.
-          </div>
-          <div class="ann-rule">
-            날짜 필드: 빈 date picker (필수 입력). 나머지 기본값 — 입금가: 빈값, 재고: 0, 체크인허용: Y, 최소박: 1, 최대박: 30, 컷오프: 1. 판매가: 입금가 입력 후 자동 계산.<br>
-            날짜 미입력 상태로 [저장] 클릭 시 오류 표시 후 저장 차단.
-          </div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="cn">14</div>
-        <div class="ann-body">
-          <div class="ann-title">[편집] 버튼</div>
-          <div class="ann-desc">
-            해당 행을 인라인 편집 모드로 전환. 모든 필드(입금가·재고·체크인허용·최소박·최대박·컷오프)가 input/select로 교체되고, 버튼 영역이 [저장]+[취소]로 바뀜. 판매가 셀은 읽기 전용으로 유지.
-          </div>
-          <div class="ann-rule">동시에 1행만 편집 가능. 다른 행 편집 중 [편집] 클릭 시 "저장되지 않은 변경사항이 있습니다" 경고.</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="cn">15</div>
-        <div class="ann-body">
-          <div class="ann-title">행 [저장] / 행 [취소] 버튼</div>
-          <div class="ann-desc">
-            [저장]: 해당 행 변경사항을 페이지 state(메모리)에 반영. localStorage에는 아직 기록하지 않음. 편집 모드 종료 후 상태 배지 즉시 갱신.<br>
-            [취소]: 변경 파기, 편집 전 원래 값으로 복원하고 편집 모드 종료.
-          </div>
-          <div class="ann-rule">행 [저장] ≠ localStorage 저장. 최종 기록은 하단 ⑰ [저장] 버튼에서 수행.</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="cn">16</div>
-        <div class="ann-body">
-          <div class="ann-title">[삭제] 버튼</div>
-          <div class="ann-desc">
-            확인 다이얼로그 없이 해당 행을 페이지 state에서 즉시 제거. localStorage에는 아직 반영되지 않으므로, 하단 ⑱ [취소]로 페이지 전체를 되돌려 복구 가능.
-          </div>
-          <div class="ann-rule">하단 ⑰ [저장] 클릭 전까지는 실수로 삭제해도 ⑱ [취소]로 복구 가능.</div>
-        </div>
-      </div>
+      <!-- v0.9.5: CN13(+날짜 추가)·CN14(편집)·CN15(행 저장/취소)·CN16(삭제) 주석 제거 — 인라인 편집·행 추가/삭제 기능 폐지 -->
 
       <div class="ann-item">
         <div class="cn">17</div>
         <div class="ann-body">
-          <div class="ann-title">하단 [저장] 버튼</div>
+          <div class="ann-title">하단 [저장] 버튼 — 예약조건만</div>
           <div class="ann-desc">
-            탭1(S06-A) 마스터 정보 + 탭2(S06-B) 인벤토리 전체를 localStorage에 최종 기록. 실행 전 날짜 중복 자동 검증 (⑪) → 중복 있으면 저장 차단.
+            구간 일괄(벌크)로 적용한 <strong>예약조건(체크인허용·최소/최대박·컷오프)</strong>을 localStorage에 최종 기록.
+            입금가·판매가·재고는 읽기전용이라 저장 대상이 아니다(PMS/S04-INV 원본 유지).
           </div>
-          <div class="ann-rule">행 단위 [저장](⑮)과 다름. 이 버튼을 눌러야 실제 데이터가 저장됨.</div>
+          <div class="ann-rule">탭1(S06-A) 마스터 저장과 독립적으로 동작.</div>
         </div>
       </div>
 
@@ -559,7 +453,7 @@
         <div class="ann-body">
           <div class="ann-title">하단 [취소] 버튼</div>
           <div class="ann-desc">
-            페이지에서 작업한 모든 변경사항(행 추가·편집·삭제)을 파기하고 상품 목록(S05)으로 이동.
+            벌크로 적용한 예약조건 변경을 파기하고 상품 목록(S05)으로 이동.
           </div>
           <div class="ann-rule">localStorage에 저장되지 않은 변경만 파기됨. 이미 저장된 데이터는 유지.</div>
         </div>
@@ -568,16 +462,13 @@
       <div class="ann-item">
         <div class="cn">19</div>
         <div class="ann-body">
-          <div class="ann-title">요금 동기화 (PMS연동 모드 전용)</div>
+          <div class="ann-title">재고·요금·날짜 읽기전용 안내</div>
           <div class="ann-desc">
-            <strong>[PMS연동 모드]</strong>: [요금 동기화] 버튼 클릭 시 API 3(otaHbItmInfo.do) 호출하여 날짜별 입금가(SELL_ITM_AMT) 갱신. 진입 시 자동 호출 없음. 요금 컬럼은 읽기 전용(편집·삭제 버튼 없음).<br>
-            <strong>[수기 모드]</strong>: 이 배너 숨김. 기존 편집 UI(⑬~⑰) 그대로 표시.<br>
-            <strong>재고 관리</strong>는 S04-INV에서 별도 수행(최초 1회 수동 동기화 필수 → 이후 배치 자동 업데이트). API 4 SELL_ITM_AMT 무시 확정 (하이원 2026-05-27).
+            <strong>날짜·입금가·판매가·재고는 이 화면에서 수정·추가·삭제 불가(읽기전용).</strong><br>
+            요금(입금가)은 <strong>S04-INV(객실 타입)</strong>에서 PMS(API 3, SELL_ITM_AMT) 동기화로 갱신 → 상품은 그 값을 참조해 표시만. 재고(API 4 AVLB_RM_CNT)도 S04-INV/PMS 연동. 날짜(인벤토리 행)는 PMS 연동으로만 생성됨.<br>
+            <strong>[요금 동기화] 버튼은 S06에서 제거</strong>됨 — 요금 갱신 창구는 S04-INV로 일원화. API 4 SELL_ITM_AMT 무시 확정 (하이원 2026-05-27).
           </div>
-          <div class="ann-rule">
-            [요금 동기화] 버튼 클릭 시: "PMS 요금 값으로 입금가가 덮어쓰기 됩니다. 진행하시겠습니까?" 확인 팝업 표시. 취소 시 동기화 중단.<br>
-            PMS연동 모드에서는 입금가 직접 편집 버튼 비활성화.
-          </div>
+          <div class="ann-rule">전 상품 PMS 연동 운영 전제. 이 화면의 편집 대상은 예약조건(체크인허용·최소/최대박·컷오프)뿐이며, 구간 일괄(벌크)로만 설정한다.</div>
         </div>
       </div>
 

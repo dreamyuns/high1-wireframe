@@ -76,7 +76,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
 <!-- 좌측 고정 목차 -->
 <nav class="toc">
   <div class="toc-logo">high<span>1</span></div>
-  <div class="toc-ver">Admin Wireframe v0.9.3</div>
+  <div class="toc-ver">Admin Wireframe v0.9.5</div>
   <a class="toc-link" data-target="grp-policy"><span class="toc-dot" style="background:#fbbf24"></span>정책 문서</a>
   <a class="toc-link" data-target="grp-property"><span class="toc-dot" style="background:#60a5fa"></span>숙소관리</a>
   <a class="toc-link" data-target="grp-ticket"><span class="toc-dot" style="background:#f472b6"></span>티켓관리</a>
@@ -90,7 +90,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
 <div class="cover">
   <div class="cover-logo">high<span>1</span></div>
   <div class="cover-title">Admin Wireframe</div>
-  <div class="cover-meta">v0.9.3 · 2026-07-03 · 개발자 전달용 화면기획서</div>
+  <div class="cover-meta">v0.9.5 · 2026-07-03 · 개발자 전달용 화면기획서</div>
   <div class="cover-desc">
     <strong>admin-prototype-v0.4</strong> 기준 화면 레이아웃 · 필드 정의 · 동작 규칙 · 프런트 데이터 매핑.<br>
     각 화면 카드를 클릭하면 해당 화면의 상세 기획서로 이동합니다.<br>
@@ -105,8 +105,8 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
         <div class="sc-num">POLICY</div>
         <div class="sc-name">기획 정책서</div>
         <div class="sc-route">확정 결정사항 · 미결 사항 · 한/영 병기</div>
-        <div class="sc-desc">용어 정의 · 숙소코드 · 연동 모드 · 마진 계산 · 취소정책 A안 · 객실 자동처리 B안 · 인원 처리 A안 · 수기예약 정책 · 부가요금 · 미결(TIME_CD)</div>
-        <div class="sc-date">2026-05-29</div>
+        <div class="sc-desc">용어 정의 · 숙소코드 · 객실 식별자 이원화(RM-#### vs RM_TYP_CD) · 연동 모드 · 마진 계산 · 취소정책 A안 · 인원 처리 · 추가요금 안내(정보성) · 미결(TIME_CD)</div>
+        <div class="sc-date">2026-07-03</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s10-reservation-policy.html">
@@ -222,18 +222,18 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
       </a>
       <a class="screen-card" href="s06-inventory-list.html">
         <div class="sc-num">S06-B</div>
-        <div class="sc-name">재고·요금 편집 — 목록형</div>
+        <div class="sc-name">재고·요금 — 목록형 (읽기전용·예약조건 벌크)</div>
         <div class="sc-route">탭2 인벤토리 / 목록형</div>
-        <div class="sc-desc">구간 일괄 적용 / 인라인 행 편집 / 상태 배지</div>
-        <div class="sc-date">2026-05-29</div>
+        <div class="sc-desc">재고·요금·날짜 읽기전용(PMS/S04-INV) · 예약조건(체크인허용·최소/최대박·컷오프)만 구간 일괄(벌크) · 인라인편집·행추가/삭제·요금동기화 제거</div>
+        <div class="sc-date">2026-07-03</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s06-inventory-cal.html">
         <div class="sc-num">S06-C</div>
-        <div class="sc-name">재고·요금 편집 — 달력형</div>
+        <div class="sc-name">재고·요금 — 달력형 (조회 전용)</div>
         <div class="sc-route">탭2 인벤토리 / 달력형</div>
-        <div class="sc-desc">월 달력 그리드 / 색상 코딩 / 셀 클릭 편집 패널</div>
-        <div class="sc-date">2026-05-29</div>
+        <div class="sc-desc">월 달력 그리드 / 색상 코딩 / 셀 클릭 시 날짜 상세(읽기전용) · 편집·저장·삭제·요금동기화 모두 제거 · 순수 조회 뷰</div>
+        <div class="sc-date">2026-07-03</div>
         <div class="sc-arrow">→</div>
       </a>
     </div>
@@ -540,7 +540,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
   </div>
 
   <div class="footer">
-    High1 Admin Wireframe v0.9.3 · 2026-07-03 · 개발자 전달용<br>
+    High1 Admin Wireframe v0.9.5 · 2026-07-03 · 개발자 전달용<br>
     와이어프레임은 레이아웃·기능 기준이며, 실제 비주얼 디자인은 Figma에서 별도 정의합니다.
   </div>
 </div>

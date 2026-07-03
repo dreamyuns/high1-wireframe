@@ -44,8 +44,8 @@
 
   <div class="sec-title">
     <span class="sec-badge">S06-C</span>
-    재고·요금 편집 — 달력형
-    <span style="font-size:12px;font-weight:400;color:#888">— 탭2 인벤토리 / 달력형 뷰</span>
+    재고·요금 조회 — 달력형 (읽기전용)
+    <span style="font-size:12px;font-weight:400;color:#888">— 탭2 인벤토리 / 달력형 조회 뷰</span>
   </div>
 
   <div class="two-col">
@@ -91,20 +91,10 @@
             </div>
           </div>
 
-          <!-- PMS연동 모드 전용 배너 (수기 모드 시 숨김) -->
-          <div style="display:flex;align-items:center;gap:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:8px 12px;font-size:11px;color:#1a4fa0;margin-bottom:12px">
-            <span style="font-weight:600">PMS연동 모드</span>
-            <span style="color:#555">— 요금은 [요금 동기화] 버튼으로 PMS(API 3)에서 갱신합니다. 재고는 S04-INV에서 별도 관리.</span>
-            <span class="wf-btn wf-btn-sm wf-btn-primary" style="margin-left:auto" title="클릭 시 확인 팝업 표시">
-              요금 동기화 <span class="wf-cn">16</span>
-            </span>
-            <span style="font-size:9px;color:#888;margin-left:4px">→ confirm 팝업 후 실행</span>
-          </div>
-
-          <!-- 재고 관리 위치 안내 -->
-          <div style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:7px 12px;font-size:11px;color:#166534;margin-bottom:10px">
-            <span>📦</span>
-            <span><strong>사용가능 객실수</strong>는 읽기전용으로만 표시됩니다. 재고 관리는 <strong>객실 상세 &gt; 재고관리 탭</strong>에서 수행합니다.</span>
+          <!-- 읽기전용 안내 배너 (달력형 = 재고·요금 조회 전용) -->
+          <div style="display:flex;align-items:flex-start;gap:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:9px 12px;font-size:11px;color:#1a4fa0;margin-bottom:10px">
+            <span>📌</span>
+            <span style="color:#334;line-height:1.6"><strong>달력형은 조회 전용(읽기전용)</strong> <span class="wf-cn">16</span> — 날짜·입금가·판매가·재고는 PMS(하이원)/<a href="s04-inv.html" style="color:#1a6fb8">S04-INV(객실 타입)</a> 연동으로 자동 수신되어 이 화면에서 <strong>수정·삭제할 수 없습니다</strong>. <strong>예약조건(체크인허용·최소/최대박·컷오프) 변경은 <a href="s06-inventory-list.html" style="color:#1a6fb8">목록형(S06-B)</a>의 구간 일괄(벌크) 적용</strong>에서 수행합니다.</span>
           </div>
 
           <!-- 메인 탭 -->
@@ -256,17 +246,17 @@
               <div class="wf-hint" style="margin-top:4px">색상 범례 <span class="wf-cn">6</span></div>
             </div>
 
-            <!-- 편집 패널 -->
+            <!-- 날짜 상세 패널 (읽기전용) -->
             <div class="edit-panel">
-              <div class="edit-panel-title">날짜 편집 패널 <span class="wf-cn">7</span></div>
+              <div class="edit-panel-title">날짜 상세 (읽기전용) <span class="wf-cn">7</span></div>
               <div style="font-size:10px;color:#888;margin-bottom:12px">
                 선택 날짜: <strong style="color:#1a6fb8">2026-06-02</strong>
               </div>
 
               <div class="ep-row">
                 <span class="ep-label">입금가 <span class="wf-cn">8</span></span>
-                <input class="wf-input" style="width:80px" value="340,000" />
-                <span style="font-size:10px;color:#888">원</span>
+                <input class="wf-input" style="width:80px;background:#f5f5f0;color:#555" value="340,000" readonly />
+                <span style="font-size:9px;color:#aaa">읽기전용</span>
               </div>
               <div class="ep-row">
                 <span class="ep-label" style="color:#e67e22">판매가 <span class="wf-cn">17</span></span>
@@ -278,44 +268,39 @@
                 <input class="wf-input" style="width:50px;background:#f5f5f0;color:#555" value="5" readonly />
                 <span style="font-size:9px;color:#aaa">읽기전용</span>
               </div>
+
+              <div style="margin:10px 0 6px;padding-top:8px;border-top:1px dashed #e5e5e5;font-size:9px;color:#999;font-weight:600">예약조건 (변경은 S06-B 벌크)</div>
               <div class="ep-row">
                 <span class="ep-label">체크인허용</span>
-                <select class="wf-select" style="width:68px">
-                  <option>Y ▾</option>
-                  <option>N</option>
-                </select>
+                <input class="wf-input" style="width:50px;background:#f5f5f0;color:#555" value="Y" readonly />
               </div>
               <div class="ep-row">
                 <span class="ep-label">최소박</span>
-                <input class="wf-input" style="width:42px" value="1" />
+                <input class="wf-input" style="width:42px;background:#f5f5f0;color:#555" value="1" readonly />
                 <span style="font-size:10px;color:#888">박</span>
               </div>
               <div class="ep-row">
                 <span class="ep-label">최대박</span>
-                <input class="wf-input" style="width:42px" value="30" />
+                <input class="wf-input" style="width:42px;background:#f5f5f0;color:#555" value="30" readonly />
                 <span style="font-size:10px;color:#888">박</span>
               </div>
               <div class="ep-row">
                 <span class="ep-label">컷오프 <span class="wf-cn">10</span></span>
-                <input class="wf-input" style="width:42px" value="1" />
+                <input class="wf-input" style="width:42px;background:#f5f5f0;color:#555" value="1" readonly />
                 <span style="font-size:10px;color:#888">일 전</span>
               </div>
 
-              <div style="display:flex;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid #eee">
-                <span class="wf-btn wf-btn-primary wf-btn-sm" style="flex:1;text-align:center">저장 <span class="wf-cn">12</span></span>
-                <span class="wf-btn wf-btn-sm" style="flex:1;text-align:center">취소</span>
-              </div>
-              <div style="display:flex;justify-content:center;margin-top:8px">
-                <span class="wf-btn wf-btn-sm wf-btn-danger">이 날짜 삭제 <span class="wf-cn">13</span></span>
+              <div class="wf-hint" style="margin-top:14px;padding-top:12px;border-top:1px solid #eee">
+                이 패널은 <b>조회 전용</b>입니다. 예약조건 변경은 <a href="s06-inventory-list.html" style="color:#1a6fb8">목록형(S06-B)</a> 구간 일괄(벌크) 적용에서 수행하세요. <span class="wf-cn">12</span>
               </div>
             </div>
 
           </div><!-- /inv-cal-wrap -->
 
-          <!-- 하단 버튼 -->
-          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid #e0e0da">
-            <span class="wf-btn">취소 <span class="wf-cn">15</span></span>
-            <span class="wf-btn wf-btn-primary">저장 <span class="wf-cn">14</span></span>
+          <!-- 하단 버튼 (조회 전용 — 저장 없음) -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid #e0e0da">
+            <span style="font-size:10px;color:#999">달력형은 조회 전용입니다. 예약조건 변경·저장은 목록형(S06-B)에서 수행합니다. <span class="wf-cn">14</span></span>
+            <span class="wf-btn">목록으로 <span class="wf-cn">15</span></span>
           </div>
 
           <!-- [이력 보기] 모달 활성 상태 (B안) -->
@@ -460,19 +445,19 @@
       <div class="ann-item">
         <div class="cn">7</div>
         <div class="ann-body">
-          <div class="ann-title">편집 패널 (셀 클릭 시 활성화)</div>
+          <div class="ann-title">날짜 상세 패널 (읽기전용)</div>
           <div class="ann-desc">
-            달력 셀 클릭 시 우측 패널에서 해당 날짜의 입금가·재고·체크인허용·최소박·최대박·컷오프를 개별 편집. 판매가는 입금가 기준 마진 적용 후 자동 계산(읽기 전용).
+            달력 셀 클릭 시 우측 패널에 해당 날짜의 입금가·판매가·재고·체크인허용·최소박·최대박·컷오프를 <strong>읽기전용으로 표시만</strong> 한다. 입력·저장·삭제 없음.
           </div>
-          <div class="ann-rule">구간 일괄 적용(S06-B) 후 개별 날짜 미세 조정 시 주로 사용.</div>
+          <div class="ann-rule">예약조건 변경은 목록형(S06-B) 구간 일괄(벌크) 적용에서 수행. 달력형은 현황 조회 전용.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">8</div>
         <div class="ann-body">
-          <div class="ann-title">입금가 (price)</div>
-          <div class="ann-desc">해당 날짜 1박 원가. PMS연동 상품은 [요금 동기화] 버튼 클릭 시 API 3(SELL_ITM_AMT) 동기화 금액, 수기 상품은 관리자 직접 입력. 달력 셀에 "입 XXX,XXX"로 표시.</div>
+          <div class="ann-title">입금가 (price) — 읽기전용</div>
+          <div class="ann-desc">해당 날짜 1박 원가. <strong>이 화면에서 수정 불가(읽기전용).</strong> PMS(API 3, SELL_ITM_AMT) 연동으로 수신하며 요금 갱신은 S04-INV(객실 타입)에서 수행. 달력 셀에 "입 XXX,XXX"로 표시.</div>
           <div class="ann-front">→ 프런트: 미노출. 고객에게는 판매가(⑰)만 표시.</div>
         </div>
       </div>
@@ -511,76 +496,49 @@
         </div>
       </div>
 
-      <div class="ann-item">
-        <div class="cn">11</div>
-        <div class="ann-body">
-          <div class="ann-title">저장 범위 — 탭2(인벤토리)만</div>
-          <div class="ann-desc">
-            S06-C의 [저장]은 <strong>탭2 인벤토리(inventory[])만</strong> localStorage에 기록. 탭1(S06-A) 마스터·취소정책 데이터는 건드리지 않음.<br>
-            S06-A [저장] ↔ S06-B/C [저장]은 각자 독립적으로 동작하며, 서로의 데이터를 덮어쓰지 않음.
-          </div>
-          <div class="ann-rule">PR-FORM-04: 저장 전 날짜 중복 자동 검증. 중복 있으면 저장 차단 후 중복 날짜 목록 표시.</div>
-        </div>
-      </div>
+      <!-- v0.9.5: CN11(저장범위)·CN13(이 날짜 삭제) 주석 제거 — 달력형은 조회 전용, 편집·삭제 없음 -->
 
       <div class="ann-item">
         <div class="cn">12</div>
         <div class="ann-body">
-          <div class="ann-title">패널 [저장] / [취소] 버튼</div>
+          <div class="ann-title">조회 전용 패널 안내</div>
           <div class="ann-desc">
-            [저장]: 선택된 날짜의 변경사항을 페이지 state(메모리)에 반영. 달력 셀 색상·숫자가 즉시 갱신됨. localStorage에는 아직 기록하지 않음.<br>
-            [취소]: 변경 파기. 패널 입력값을 편집 전 원래 값으로 복원. 패널은 열린 상태 유지.
+            달력형 상세 패널은 <strong>조회 전용</strong>이다. 패널 [저장]·[취소]·[이 날짜 삭제] 버튼은 <strong>모두 제거</strong>되었다.<br>
+            예약조건(체크인허용·최소/최대박·컷오프) 변경은 목록형(S06-B) 구간 일괄(벌크) 적용에서만 수행한다.
           </div>
-          <div class="ann-rule">패널 [저장] ≠ localStorage 저장. 최종 기록은 하단 ⑭ [저장] 버튼에서 수행.</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="cn">13</div>
-        <div class="ann-body">
-          <div class="ann-title">[이 날짜 삭제] 버튼</div>
-          <div class="ann-desc">
-            선택된 날짜를 페이지 state에서 제거. 달력 셀이 즉시 "미설정"(흰색)으로 변경됨. localStorage에는 반영되지 않음.
-          </div>
-          <div class="ann-rule">확인 다이얼로그 없이 즉시 제거. 하단 ⑮ [취소]로 전체 복구 가능.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">14</div>
         <div class="ann-body">
-          <div class="ann-title">하단 [저장] 버튼</div>
+          <div class="ann-title">하단 안내 — 저장 없음</div>
           <div class="ann-desc">
-            탭2 인벤토리(inventory[]) 데이터를 localStorage에 최종 기록. 패널 [저장](⑫)으로 state에 반영해 둔 모든 변경사항이 이 시점에 확정됨.
+            달력형은 조회 전용이라 <strong>[저장] 버튼이 없다.</strong> 재고·요금은 읽기전용(PMS/S04-INV), 예약조건 저장은 목록형(S06-B)에서 수행.
           </div>
-          <div class="ann-rule">저장 전 날짜 중복 자동 검증(⑪). 중복 있으면 저장 차단.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">15</div>
         <div class="ann-body">
-          <div class="ann-title">하단 [취소] 버튼</div>
+          <div class="ann-title">[목록으로] 버튼</div>
           <div class="ann-desc">
-            페이지의 모든 변경사항(날짜 편집·삭제 포함)을 파기하고 상품 목록(S05)으로 이동. localStorage에 저장되지 않은 변경만 파기됨.
+            상품 목록(S05)으로 이동. 달력형은 조회 전용이므로 파기할 변경사항이 없다.
           </div>
-          <div class="ann-rule">이 버튼으로 패널 [저장](⑫)·[이 날짜 삭제](⑬)로 state에 반영한 변경도 모두 복구 가능.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">16</div>
         <div class="ann-body">
-          <div class="ann-title">요금 동기화 (PMS연동 모드 전용)</div>
+          <div class="ann-title">재고·요금·날짜 읽기전용 안내</div>
           <div class="ann-desc">
-            <strong>[PMS연동 모드]</strong>: 상품 등록 후 최초 1회 [요금 동기화] 버튼 클릭 필수 → API 3(otaHbItmInfo.do) 호출하여 달력에 날짜별 입금가(SELL_ITM_AMT) 초기 적재. 이후 배치 자동 업데이트. 배치 실패 시 버튼으로 fallback. 달력 셀 요금은 읽기 전용(편집 패널 비활성).<br>
-            <strong>재고(AVLB_RM_CNT)</strong>는 S04-INV에서 별도 관리(API 4). 이 화면에서는 읽기전용으로만 표시.<br>
-            <strong>[수기 모드]</strong>: 이 배너 숨김. 기존 달력 편집 UI(⑦~⑮) 그대로 표시.
+            <strong>날짜·입금가·판매가·재고는 이 화면에서 수정·삭제 불가(읽기전용).</strong><br>
+            요금(입금가)은 <strong>S04-INV(객실 타입)</strong>에서 PMS(API 3, SELL_ITM_AMT) 동기화로 갱신 → 달력은 그 값을 참조해 표시만. 재고(API 4 AVLB_RM_CNT)도 S04-INV/PMS 연동. 날짜(인벤토리)는 PMS 연동으로만 생성.<br>
+            <strong>[요금 동기화] 버튼은 S06에서 제거</strong> — 요금 갱신 창구는 S04-INV로 일원화.
           </div>
-          <div class="ann-rule">
-            [요금 동기화] 버튼 클릭 시: "PMS 요금 값으로 입금가가 덮어쓰기 됩니다. 진행하시겠습니까?" 확인 팝업 표시. 취소 시 동기화 중단.<br>
-            PMS연동 모드에서는 편집 패널 입력, [이 날짜 삭제] 버튼 모두 비활성화.
-          </div>
+          <div class="ann-rule">전 상품 PMS 연동 운영 전제. 달력형은 예약조건 편집도 하지 않는 순수 조회 뷰(예약조건 변경은 S06-B 벌크).</div>
         </div>
       </div>
 

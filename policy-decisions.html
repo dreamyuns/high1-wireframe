@@ -622,16 +622,21 @@ body { padding-left:200px; box-sizing:border-box; }
           <div class="pd-warn">연결 객실 변경이 필요한 경우(예: 리노베이션으로 대체): 기존 상품 OFF 후 신규 상품으로 등록.</div>
         </div>
         <div class="pd-item">
-          <div class="pd-item-title">재고·요금 S06-B/C 수정 범위</div>
-          <div class="pd-desc">노출이력 여부와 관계없이 <strong>항상 수정 가능</strong>. 변경 시 날짜별 이력 기록.</div>
+          <div class="pd-item-title">재고·요금 S06-B/C 편집 범위 <span class="pd-status confirmed">v0.9.5 변경</span></div>
+          <div class="pd-desc">
+            전 상품 PMS 연동 운영 전제. S06-B/C(상품 인벤토리)에서 <strong>재고·요금·날짜는 읽기전용(조회만)</strong>, <strong>예약조건만 구간 일괄(벌크)로 편집</strong>한다.
+            개별 날짜 인라인 편집·날짜 추가·행 삭제는 제공하지 않는다(날짜는 PMS 연동으로만 생성).
+          </div>
           <table class="pd-table" style="margin-top:8px">
-            <thead><tr><th>필드</th><th>수정 가능</th><th>이력</th></tr></thead>
+            <thead><tr><th>필드</th><th>S06-B/C</th><th>관리 위치</th></tr></thead>
             <tbody>
-              <tr><td>입금가</td><td>✅</td><td>✅ 날짜별 기록</td></tr>
-              <tr><td>재고 수량</td><td>✅</td><td>✅ 날짜별 기록</td></tr>
-              <tr><td>판매 상태</td><td>✅</td><td>✅ 날짜별 기록</td></tr>
+              <tr><td>입금가 · 판매가</td><td>🔒 읽기전용</td><td>요금 동기화 = S04-INV(객실 타입), API 3</td></tr>
+              <tr><td>재고(사용가능 객실수)</td><td>🔒 읽기전용</td><td>S04-INV / PMS API 4 AVLB_RM_CNT</td></tr>
+              <tr><td>날짜(인벤토리 행)</td><td>🔒 읽기전용 (추가·삭제 없음)</td><td>PMS 연동 수신</td></tr>
+              <tr><td>예약조건(체크인허용·최소/최대박·컷오프)</td><td>✅ 구간 일괄(벌크) 편집</td><td>S06-B 목록형 벌크 패널</td></tr>
             </tbody>
           </table>
+          <div class="pd-rule">S06-C 달력형 = 순수 조회 뷰(예약조건 편집도 S06-B에서). S06에서 [요금 동기화] 버튼 제거 → 요금 갱신 창구는 S04-INV로 일원화.</div>
         </div>
       </div>
     </div>
@@ -840,8 +845,8 @@ body { padding-left:200px; box-sizing:border-box; }
                 <div style="width:2px;background:#ddd;flex:1;margin:2px 0"></div>
               </div>
               <div style="background:#f8f8f4;border:1px solid #ddd;border-radius:6px;padding:8px 12px;margin:0 0 0 8px;flex:1;margin-bottom:6px">
-                <strong>S04-INV 또는 S06-B/C에서 날짜 범위 설정</strong><br>
-                <span style="font-size:11px;color:#666">컷오프일·최소박·최대박 등 기본값 일괄 입력 (요금·재고 공란)</span>
+                <strong>S06-B에서 예약조건 구간 일괄(벌크) 입력</strong><br>
+                <span style="font-size:11px;color:#666">체크인허용·컷오프·최소박·최대박 등 예약조건 벌크 설정 (요금·재고는 PMS 동기화로 채움)</span>
               </div>
             </div>
 
@@ -862,8 +867,8 @@ body { padding-left:200px; box-sizing:border-box; }
                 <div style="width:2px;background:#ddd;flex:1;margin:2px 0"></div>
               </div>
               <div style="background:#f0f5ff;border:1px solid #c3dafe;border-radius:6px;padding:8px 12px;margin:0 0 0 8px;flex:1;margin-bottom:6px">
-                <strong>S06-A/B/C [요금 동기화] → API 3</strong><br>
-                <span style="font-size:11px;color:#4338ca">날짜별 SELL_ITM_AMT(입금가) 채움 → 판매가 자동 계산 (입금가 + 마진)</span>
+                <strong>S04-INV [요금 동기화] → API 3</strong><br>
+                <span style="font-size:11px;color:#4338ca">날짜별 SELL_ITM_AMT(입금가) 채움 → 판매가 자동 계산 (입금가 + 마진). S06-B/C는 읽기전용 표시</span>
               </div>
             </div>
 
@@ -879,7 +884,7 @@ body { padding-left:200px; box-sizing:border-box; }
             </div>
 
           </div>
-          <div class="pd-warn">재고([재고 동기화])와 요금([요금 동기화])은 <strong>버튼이 분리</strong>되어 있다. 재고는 S04-INV(객실관리), 요금은 S06-A/B/C(상품관리)에서 각각 관리.</div>
+          <div class="pd-warn">재고([재고 동기화])와 요금([요금 동기화]) 버튼은 <strong>분리</strong>되어 있으나, 둘 다 <strong>S04-INV(객실 타입 단위)</strong>에 위치한다(v0.9.5 일원화). S06-A/B/C(상품)에서는 요금·재고를 <strong>읽기전용 조회</strong>만 한다.</div>
         </div>
 
         <!-- 플로우 C: 이후 정기 동기화 -->
@@ -898,7 +903,7 @@ body { padding-left:200px; box-sizing:border-box; }
                 <td><strong>요금</strong> (SELL_ITM_AMT)</td>
                 <td>최초 1회 수동 동기화 필수 → 이후 배치 자동 업데이트. 배치 실패 시 [요금 동기화] 수동 버튼으로 fallback.</td>
                 <td>API 3</td>
-                <td>S06-A/B/C</td>
+                <td>S04-INV</td>
               </tr>
               <tr>
                 <td><strong>실시간 마감여부</strong> (CLSE_YN)</td>
@@ -1535,14 +1540,18 @@ body { padding-left:200px; box-sizing:border-box; }
           <div class="pd-warn">To change the linked room (e.g., room renovation): deactivate the existing product and register a new one.</div>
         </div>
         <div class="pd-item">
-          <div class="pd-item-title">Stock &amp; Rate S06-B/C Edit Scope</div>
-          <div class="pd-desc">Always editable regardless of publish history. All changes are logged per date.</div>
+          <div class="pd-item-title">Stock &amp; Rate S06-B/C Edit Scope <span class="pd-status confirmed">Changed in v0.9.5</span></div>
+          <div class="pd-desc">
+            All products run in PMS-integrated mode. In S06-B/C (product inventory), <strong>stock, rate and dates are read-only (view only)</strong>;
+            only <strong>booking conditions are edited in bulk by date range</strong>. No per-date inline edit, no date add/delete (dates come only from PMS sync).
+          </div>
           <table class="pd-table" style="margin-top:8px">
-            <thead><tr><th>Field</th><th>Editable</th><th>History</th></tr></thead>
+            <thead><tr><th>Field</th><th>S06-B/C</th><th>Managed at</th></tr></thead>
             <tbody>
-              <tr><td>Base Price</td><td>✅</td><td>✅ Per-date log</td></tr>
-              <tr><td>Stock Count</td><td>✅</td><td>✅ Per-date log</td></tr>
-              <tr><td>Sale Status</td><td>✅</td><td>✅ Per-date log</td></tr>
+              <tr><td>Base Price · Sale Price</td><td>🔒 Read-only</td><td>Rate sync = S04-INV (room type), API 3</td></tr>
+              <tr><td>Stock (available rooms)</td><td>🔒 Read-only</td><td>S04-INV / PMS API 4 AVLB_RM_CNT</td></tr>
+              <tr><td>Date (inventory row)</td><td>🔒 Read-only (no add/delete)</td><td>Received via PMS sync</td></tr>
+              <tr><td>Booking conditions (check-in allowed, min/max nights, cutoff)</td><td>✅ Bulk edit by range</td><td>S06-B list bulk panel</td></tr>
             </tbody>
           </table>
         </div>
@@ -1705,13 +1714,13 @@ body { padding-left:200px; box-sizing:border-box; }
           <table class="pd-table" style="margin-top:8px">
             <thead><tr><th>Step</th><th>Action</th><th>API / Result</th></tr></thead>
             <tbody>
-              <tr><td>① Admin</td><td>Set date range + bulk defaults (cutoff, min/max nights) — leave stock &amp; rate empty</td><td>—</td></tr>
+              <tr><td>① Admin</td><td>Bulk-set booking conditions (check-in allowed, cutoff, min/max nights) in S06-B — stock &amp; rate filled via PMS sync</td><td>—</td></tr>
               <tr><td>② Admin</td><td>Click [Sync Stock] in S04-INV</td><td>API 4 → AVLB_RM_CNT / OPER_RM_CNT / RSV_CNT per date</td></tr>
-              <tr><td>③ Admin</td><td>Click [Sync Rate] in S06-A/B/C</td><td>API 3 → SELL_ITM_AMT (base price) per date → Sell price auto-calculated</td></tr>
+              <tr><td>③ Admin</td><td>Click [Sync Rate] in S04-INV</td><td>API 3 → SELL_ITM_AMT (base price) per date → Sell price auto-calculated. S06-B/C is read-only</td></tr>
               <tr><td>④ System</td><td>Ongoing updates via batch job</td><td>Manual sync buttons available if batch is unavailable</td></tr>
             </tbody>
           </table>
-          <div class="pd-warn">Stock ([Sync Stock]) and Rate ([Sync Rate]) are <strong>separate buttons</strong>. Stock is managed in S04-INV (Room); Rate is managed in S06-A/B/C (Product).</div>
+          <div class="pd-warn">Stock ([Sync Stock]) and Rate ([Sync Rate]) are <strong>separate buttons</strong>, but both live in <strong>S04-INV (room type)</strong> (unified in v0.9.5). S06-A/B/C (product) only shows stock/rate as <strong>read-only</strong>.</div>
         </div>
 
         <div class="pd-item">
@@ -1720,7 +1729,7 @@ body { padding-left:200px; box-sizing:border-box; }
             <thead><tr><th>Target</th><th>Trigger</th><th>API</th><th>Screen</th></tr></thead>
             <tbody>
               <tr><td><strong>Stock</strong> (AVLB_RM_CNT)</td><td>Initial sync required once manually → then batch auto-update. Manual [Sync Stock] as batch failure fallback.</td><td>API 4</td><td>S04-INV</td></tr>
-              <tr><td><strong>Rate</strong> (SELL_ITM_AMT)</td><td>Initial sync required once manually → then batch auto-update. Manual [Sync Rate] as batch failure fallback.</td><td>API 3</td><td>S06-A/B/C</td></tr>
+              <tr><td><strong>Rate</strong> (SELL_ITM_AMT)</td><td>Initial sync required once manually → then batch auto-update. Manual [Sync Rate] as batch failure fallback.</td><td>API 3</td><td>S04-INV</td></tr>
               <tr><td><strong>Close status</strong> (CLSE_YN)</td><td>Auto on S06-A/B/C open</td><td>API 5</td><td>S06-A/B/C</td></tr>
             </tbody>
           </table>
