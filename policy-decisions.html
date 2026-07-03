@@ -260,6 +260,21 @@ body { padding-left:200px; box-sizing:border-box; }
       <div class="pd-section-title"><span class="badge">03</span> 객실 식별 체계 (RM_TYP_CD)</div>
       <div class="pd-body">
         <div class="pd-item">
+          <div class="pd-item-title">객실 식별자 이원화 — 내부 객실코드(RM-####) vs PMS코드(RM_TYP_CD) <span class="pd-status confirmed">확정</span></div>
+          <div class="pd-desc">
+            객실은 <strong>두 종류의 코드</strong>를 갖는다. 역할이 다르므로 혼동하지 않도록 구분한다.
+          </div>
+          <table class="pd-table" style="margin-top:10px">
+            <thead><tr><th>코드</th><th>발급 주체</th><th>역할</th><th>화면 표시</th></tr></thead>
+            <tbody>
+              <tr><td><code>RM-####</code> (객실코드)</td><td>우리 시스템 자동채번</td><td>내부 객실 식별자 (1객실 = 1코드). 상품연결·예약·이력 참조 키</td><td>S03 목록: 객실명 아래 병기 / S04: 읽기전용 필드</td></tr>
+              <tr><td><code>RM_TYP_CD</code> (PMS코드)</td><td>PMS 동기화</td><td>요금·재고·마진 기준 키 (업장 내 고유, 전역 고유 아님)</td><td>S03 목록: PMS코드 컬럼 / S04: 별도 필드</td></tr>
+            </tbody>
+          </table>
+          <div class="pd-rule">RM-#### ≠ RM_TYP_CD. 하나의 RM_TYP_CD(예: STD)에 여러 객실(RM-0001·RM-0007…)이 매핑될 수 있다.</div>
+          <div class="pd-rule">S03 객실 목록 맨 앞 <strong>No.(순번)</strong>은 정렬·필터에 따라 바뀌는 화면 표시용 번호이며 식별자가 아니다.</div>
+        </div>
+        <div class="pd-item">
           <div class="pd-item-title">RM_TYP_CD 범위 <span class="pd-status confirmed">확정</span></div>
           <div class="pd-desc">
             <code>RM_TYP_CD</code>는 <strong>업장(SLST_ID) 단위 고유</strong>. 전역(글로벌) 고유가 아님.<br>
@@ -1157,6 +1172,21 @@ body { padding-left:200px; box-sizing:border-box; }
     <div class="pd-section">
       <div class="pd-section-title"><span class="badge">03</span> Room Type ID System (RM_TYP_CD)</div>
       <div class="pd-body">
+        <div class="pd-item">
+          <div class="pd-item-title">Two Room Identifiers — Internal Room Code (RM-####) vs PMS Code (RM_TYP_CD) <span class="pd-status confirmed">Confirmed</span></div>
+          <div class="pd-desc">
+            A room carries <strong>two kinds of code</strong> with different roles; keep them distinct to avoid confusion.
+          </div>
+          <table class="pd-table" style="margin-top:10px">
+            <thead><tr><th>Code</th><th>Issued by</th><th>Role</th><th>Display</th></tr></thead>
+            <tbody>
+              <tr><td><code>RM-####</code> (Room Code)</td><td>Our system (auto-numbered)</td><td>Internal room identifier (1 room = 1 code). Reference key for product links, bookings, history</td><td>S03 list: under room name / S04: read-only field</td></tr>
+              <tr><td><code>RM_TYP_CD</code> (PMS Code)</td><td>PMS sync</td><td>Key for pricing, inventory, margin (unique per outlet, not global)</td><td>S03 list: PMS Code column / S04: separate field</td></tr>
+            </tbody>
+          </table>
+          <div class="pd-rule">RM-#### ≠ RM_TYP_CD. One RM_TYP_CD (e.g., STD) may map to multiple rooms (RM-0001, RM-0007…).</div>
+          <div class="pd-rule">The leading <strong>No.</strong> column in the S03 room list is a display sequence affected by sort/filter — not an identifier.</div>
+        </div>
         <div class="pd-item">
           <div class="pd-item-title">RM_TYP_CD Scope <span class="pd-status confirmed">Confirmed</span></div>
           <div class="pd-desc">

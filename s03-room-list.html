@@ -77,38 +77,42 @@
           <table class="wf-table">
             <thead>
               <tr>
-                <th>객실코드</th>
+                <th style="width:44px">No.</th>
                 <th>숙소</th>
-                <th>객실명</th>
+                <th>객실명 <span class="wf-cn">4</span></th>
+                <th>PMS코드 <span class="wf-cn">5</span></th>
                 <th>기준/최대 인원</th>
-                <th>상품연결 <span class="wf-cn">4</span></th>
+                <th>상품연결 <span class="wf-cn">6</span></th>
                 <th>수정일시</th>
                 <th>수정</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>RM-0001</td>
+                <td>1</td>
                 <td>그랜드 호텔 메인타워</td>
-                <td>디럭스 킹</td>
+                <td>디럭스 킹<br><span style="font-size:10px;color:#999">· RM-0001</span></td>
+                <td><span class="wf-badge">STD</span></td>
                 <td>기준2 / 최대2</td>
                 <td><a class="wf-link">3</a></td>
                 <td>2026-05-15</td>
                 <td><span class="wf-btn wf-btn-sm">수정</span></td>
               </tr>
               <tr>
-                <td>RM-0002</td>
+                <td>2</td>
                 <td>그랜드 호텔 메인타워</td>
-                <td>주니어 스위트</td>
+                <td>주니어 스위트<br><span style="font-size:10px;color:#999">· RM-0002</span></td>
+                <td><span class="wf-badge">JSD</span></td>
                 <td>기준2 / 최대3</td>
                 <td><a class="wf-link">2</a></td>
                 <td>2026-05-15</td>
                 <td><span class="wf-btn wf-btn-sm">수정</span></td>
               </tr>
               <tr>
-                <td>RM-0006</td>
+                <td>3</td>
                 <td>팰리스 호텔</td>
-                <td>스위트 킹</td>
+                <td>스위트 킹<br><span style="font-size:10px;color:#999">· RM-0006</span></td>
+                <td><span class="wf-badge">DLX</span></td>
                 <td>기준2 / 최대4</td>
                 <td><a class="wf-link">2</a></td>
                 <td>2026-05-15</td>
@@ -160,10 +164,38 @@
         </div>
       </div>
 
-      <!-- v0.2: CN4 엑스트라베드·CN5 추가인원비용 컬럼/주석 제거 (부가요금 결제 개념 폐기 → 숙소 S02-4 추가요금 안내로 이관) -->
+      <!-- v0.2: 엑스트라베드·추가인원비용 컬럼/주석 제거 (부가요금 결제 개념 폐기 → 숙소 S02-4 추가요금 안내로 이관) -->
 
       <div class="ann-item">
         <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">객실명 · 객실코드 병기</div>
+          <div class="ann-desc">
+            객실명(예: 디럭스 킹) 아래 작은 회색 글씨로 <b>내부 객실코드(RM-####)</b>를 함께 표시한다.<br>
+            <b>객실코드(RM-####)</b>는 우리 시스템이 자동으로 부여하는 <b>내부 식별자</b>(1객실=1코드)로, 관리자가 특정 객실을 지목·검색할 때 쓴다.
+            목록 맨 앞의 <b>No.(순번)</b>은 정렬·필터에 따라 바뀌는 화면 표시용 번호일 뿐이며 식별자가 아니다.
+          </div>
+          <div class="ann-front">→ 프런트: 미노출 (RM-#### · No. 모두 내부용)</div>
+          <div class="ann-rule">RM-#### ≠ RM_TYP_CD(PMS코드). 상품연결·예약·이력 참조 키는 객실코드(RM-####). 상세: policy-decisions.html 섹션 03.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">PMS코드 (RM_TYP_CD)</div>
+          <div class="ann-desc">
+            PMS 동기화로 받아오는 <b>객실 유형 코드(RM_TYP_CD)</b>. 예: STD·JSD·DLX.
+            <b>요금·재고·마진의 기준 키</b>로, 같은 코드가 서로 다른 업장(SLST_ID)에 중복 존재할 수 있다(업장 내 고유).
+            객실코드(RM-####)와는 별개 개념이다.
+          </div>
+          <div class="ann-front">→ 프런트: 미노출 (내부 기준 키)</div>
+          <div class="ann-rule">원천: S04 PMS 동기화. 전 상품 PMS 연동 운영 전제. 상세: policy-decisions.html 섹션 03.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">6</div>
         <div class="ann-body">
           <div class="ann-title">상품연결 수</div>
           <div class="ann-desc">
