@@ -57,13 +57,13 @@
         <div class="wf-main">
           <div class="wf-page-title">마진 설정</div>
 
-          <!-- 시설 정보 (읽기전용) -->
-          <div class="wf-section-head">시설 정보</div>
+          <!-- 객실 타입 정보 (읽기전용) — v0.2 -->
+          <div class="wf-section-head">객실 타입 정보</div>
           <div class="wf-card" style="background:#f0f0ea;border-color:#ddd;margin-bottom:14px">
             <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
-              <div><span style="font-size:10px;color:#888">시설명:</span> <span style="font-size:12px;font-weight:600">그랜드 호텔 메인타워</span></div>
-              <div><span style="font-size:10px;color:#888">유형:</span> <span style="font-size:11px">숙소 · HOTEL</span></div>
-              <div><span style="font-size:10px;color:#888">마스터 상속 중인 상품:</span> <span style="font-size:11px;font-weight:600;color:#1a6fb8">12개</span> <span class="wf-cn">1</span></div>
+              <div><span style="font-size:10px;color:#888">객실 타입(RM_TYP_CD):</span> <span style="font-size:12px;font-weight:600">STD</span></div>
+              <div><span style="font-size:10px;color:#888">숙소:</span> <span style="font-size:11px">그랜드 호텔 메인타워 · HOTEL</span></div>
+              <div><span style="font-size:10px;color:#888">마스터 상속 중인 상품:</span> <span style="font-size:11px;font-weight:600;color:#1a6fb8">8개</span> <span class="wf-cn">1</span></div>
             </div>
           </div>
 
@@ -74,16 +74,17 @@
             <div class="wf-form-label">마진 유형 <span class="wf-form-req">*</span></div>
             <div class="wf-form-field">
               <div style="display:flex;gap:12px;align-items:center">
-                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
-                  <input type="radio" name="margin_type" checked /> 마진율 (%)
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:700;color:#6b21a8">
+                  <input type="radio" name="margin_type" checked /> 마진금액 (원) ★ 권장
                 </label>
                 <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
-                  <input type="radio" name="margin_type" /> 마진금액 (원)
+                  <input type="radio" name="margin_type" /> 마진율 (%)
                 </label>
                 <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">
                   <input type="radio" name="margin_type" /> 마진 없음 (0)
                 </label>
               </div>
+              <div class="wf-hint"><b>소수점 없는 정확한 판매가 설정을 위해 마진 금액(정액) 입력을 권장합니다.</b></div>
             </div>
           </div>
 
@@ -91,11 +92,11 @@
             <div class="wf-form-label">마진값 <span class="wf-form-req">*</span> <span class="wf-cn">3</span></div>
             <div class="wf-form-field">
               <div style="display:flex;gap:8px;align-items:center">
-                <input class="wf-input" style="width:80px" type="number" value="10" />
-                <span style="font-size:12px;color:#555">%</span>
-                <span style="font-size:10px;color:#888">(정수, 범위 -49 ~ +100)</span>
+                <input class="wf-input" style="width:100px" type="number" value="27000" />
+                <span style="font-size:12px;color:#555">원</span>
+                <span style="font-size:10px;color:#888">(정액, 하한 없음·음수 허용)</span>
               </div>
-              <div class="wf-hint">마진금액 선택 시: ±N원 입력. 하한 없음 (음수 허용).</div>
+              <div class="wf-hint">마진율(%) 선택 시: 정수 -49 ~ +100 입력, 소수점 발생 시 버림(floor).</div>
             </div>
           </div>
 
@@ -104,11 +105,11 @@
             <div class="wf-form-label">판매가 미리보기 <span class="wf-cn">4</span></div>
             <div class="wf-form-field">
               <div style="padding:10px 14px;background:#e8f0fe;border:1px solid #b8c8f0;border-radius:4px;font-size:12px">
-                입금가 <strong>100,000</strong>원 × 1.10 =
-                <strong style="font-size:14px;color:#1a4fa0">110,000</strong>원
-                <span style="font-size:10px;color:#888;margin-left:4px">(소수점 버림)</span>
+                입금가 <strong>340,000</strong>원 + 마진 <strong>27,000</strong>원 =
+                <strong style="font-size:14px;color:#1a4fa0">367,000</strong>원
+                <span style="font-size:10px;color:#888;margin-left:4px">(정액 = 판매가 정확 고정)</span>
               </div>
-              <div class="wf-hint">PMS연동 상품은 날짜별 입금가가 달라 판매가도 날짜마다 다릅니다. S06-B/C에서 확인.</div>
+              <div class="wf-hint">PMS 입금가가 날짜별로 다르면 판매가도 날짜마다 다름(마진 금액은 고정). 날짜별 입금가·판매가는 S04-INV(재고·요금)에서 확인.</div>
             </div>
           </div>
 
@@ -172,9 +173,10 @@
       <div class="ann-item">
         <div class="cn">1</div>
         <div class="ann-body">
-          <div class="ann-title">마스터 상속 중인 상품 수</div>
+          <div class="ann-title">객실 타입 정보 / 마스터 상속 상품 수 — v0.2</div>
           <div class="ann-desc">
-            이 시설 소속 상품 중 개별 마진 미설정(마스터 상속 중)인 상품 수 표시. 마스터 변경 저장 시 이 수만큼의 상품 판매가가 즉시 변경된다. 변경 전 확인용.
+            <strong>v0.2:</strong> 마진 단위가 시설 → <b>객실 타입(RM_TYP_CD)</b>. 상단에 객실 타입 코드·숙소·상속 상품 수 표시.<br>
+            이 <b>객실 타입</b> 상품 중 개별 마진 미설정(마스터 상속 중) 상품 수. 마스터 변경 저장 시 이 수만큼 판매가 즉시 변경. 변경 전 확인용.
           </div>
           <div class="ann-rule">마스터 변경 영향 범위 인지를 위해 반드시 표시.</div>
         </div>
@@ -183,9 +185,9 @@
       <div class="ann-item">
         <div class="cn">2</div>
         <div class="ann-body">
-          <div class="ann-title">마진 설정 폼</div>
+          <div class="ann-title">마진 설정 폼 — 마진금액 우선(★)</div>
           <div class="ann-desc">
-            마진 유형 3가지: 마진율(%) / 마진금액(원) / 마진 없음(0). 마진 없음 선택 시 마진값 입력 필드 숨김, 저장 시 margin=0으로 기록.
+            마진 유형 3가지. <b>표시·기본 선택 순서: 마진금액(원) ★ → 마진율(%) → 마진 없음(0).</b> v0.2: 마진 금액(정액) 방식 권장(판매가 정확 고정, 소수점 없음). 마진 없음 선택 시 마진값 필드 숨김, margin=0 기록.
           </div>
         </div>
       </div>
@@ -207,10 +209,10 @@
         <div class="ann-body">
           <div class="ann-title">판매가 미리보기</div>
           <div class="ann-desc">
-            마진값 입력 시 실시간으로 계산 결과 표시. 입금가 100,000원(마진율) 또는 이 시설의 대표 상품 최근 입금가(마진금액)를 기준으로 계산.<br>
-            공식: 마진율 = Math.floor(입금가 × (1 + 마진율/100)), 마진금액 = 입금가 + 마진금액.
+            마진값 입력 시 실시간 계산. <b>마진금액(권장): 입금가 + 마진금액 = 판매가(정확 고정).</b> 이 객실 타입의 대표 입금가 기준.<br>
+            공식: 마진금액 = 입금가 + 마진금액 / 마진율 = Math.floor(입금가 × (1 + 마진율/100)).
           </div>
-          <div class="ann-rule">BIZ-MAR-01: 소수점 버림(floor). 반올림 아님.</div>
+          <div class="ann-rule">BIZ-MAR-01: 마진율 사용 시 소수점 버림(floor). 마진금액은 소수점 발생 없음(권장 사유).</div>
         </div>
       </div>
 

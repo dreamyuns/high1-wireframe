@@ -97,6 +97,43 @@
             <span class="wf-cn">3</span>
           </div>
 
+          <!-- 추가요금 안내 (v0.2 신설 — 객실 부가요금에서 이관) -->
+          <div class="wf-section-head">추가요금 안내 (extra_fee_notes) <span class="wf-cn">4</span></div>
+
+          <div class="wf-hint" style="margin-bottom:8px">결제와 무관한 <b>정보 노출용 안내 텍스트</b>입니다. 한 줄에 하나씩 자유롭게 입력하며, 프런트 정책정보 탭 하단 '추가요금' 블록에 그대로 표시됩니다.</div>
+
+          <!-- 행 1 -->
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="width:26px;font-size:10px;color:#888">EN*</span>
+                <input class="wf-input" style="flex:1" value="Extra bedding: KRW 15,000 per set / night" />
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="width:26px;font-size:10px;color:#bbb">ZH</span>
+                <input class="wf-input" style="flex:1" placeholder="선택 입력 (미입력 시 EN 표시)" value="加床寝具：每套每晚 15,000韩元" />
+              </div>
+            </div>
+            <span class="wf-btn wf-btn-sm wf-btn-danger">삭제</span>
+          </div>
+
+          <!-- 행 2 -->
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="width:26px;font-size:10px;color:#888">EN*</span>
+                <input class="wf-input" style="flex:1" value="Towels: Large KRW 2,000 · Small KRW 1,000 / Child (age 13 or under): KRW 5,000" />
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="width:26px;font-size:10px;color:#bbb">ZH</span>
+                <input class="wf-input" style="flex:1" placeholder="선택 입력 (미입력 시 EN 표시)" value="" />
+              </div>
+            </div>
+            <span class="wf-btn wf-btn-sm wf-btn-danger">삭제</span>
+          </div>
+
+          <div><span class="wf-btn wf-btn-sm">+ 항목 추가</span></div>
+
           <!-- 하단 버튼 -->
           <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #e0e0da">
             <span class="wf-btn">취소</span>
@@ -150,6 +187,24 @@
             이 경고는 항상 표시되어 입력 전에 사용자가 인지할 수 있도록 한다.
           </div>
           <div class="ann-rule">실서비스에서는 이미지 업로드 파이프라인(CDN) 구축 후 URL만 저장하도록 변경 필요.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">추가요금 안내 (extra_fee_notes) — v0.2 신설</div>
+          <div class="ann-desc">
+            <strong>기존 객실(S04)의 '부가요금 설정'을 이 숙소 화면으로 옮긴 항목입니다.</strong>
+            예전에는 객실마다 "1인당 30,000원(현장 결제)" 같은 <b>결제와 연결된 값</b>이었지만,
+            이제는 <b>결제와 아무 관련이 없는 안내용 글</b>로 바뀌었습니다.
+            즉 여기 입력한 금액은 실제로 계산·청구되지 않고, 고객에게 "이런 추가요금이 있어요"라고 <b>알려주기만</b> 합니다.<br>
+            입력 방법: <b>한 줄에 하나씩</b> 자유롭게 적습니다. (예: <i>Extra bedding: KRW 15,000 per set / night</i>)
+            [+ 항목 추가] 버튼으로 줄을 늘리고, 각 줄의 [삭제] 버튼으로 지웁니다.<br>
+            <b>언어 규칙</b>: 각 줄마다 영어(EN)는 <b>반드시</b> 입력해야 저장됩니다. 중국어(ZH)는 선택이며, 비워두면 고객 화면에 영어가 대신 보입니다. (한국어 입력칸 없음 — 외국인 전용 사이트)
+          </div>
+          <div class="ann-front">→ 프런트: 숙소 레이어 > 정책정보(Policy) 탭, '정책 안내' 아래 <b>'추가요금(Extra Fees)'</b> 블록에 입력한 줄들이 목록(•)으로 표시됨.</div>
+          <div class="ann-rule">저장 필드: extra_fee_notes (배열). 각 항목 { en(필수), zh(선택) }. EN 미입력 행이 있으면 저장 불가(유효성 검사). 빈 배열이면 프런트 '추가요금' 블록 자체를 숨김.</div>
         </div>
       </div>
 

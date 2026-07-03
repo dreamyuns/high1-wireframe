@@ -59,7 +59,7 @@
           <!-- 객실 탭 구조 (기본정보 / 재고관리) -->
           <div style="display:flex;border-bottom:2px solid #d4d4cc;margin-bottom:12px">
             <div style="padding:6px 16px;font-size:12px;font-weight:700;color:#2c5282;border-bottom:2px solid #2c5282;margin-bottom:-2px;cursor:pointer">기본정보</div>
-            <div style="padding:6px 16px;font-size:12px;font-weight:400;color:#888;cursor:pointer">재고관리 <span class="wf-cn" style="font-size:9px">11</span></div>
+            <div style="padding:6px 16px;font-size:12px;font-weight:400;color:#888;cursor:pointer">재고관리 <span class="wf-cn" style="font-size:9px">10</span></div>
           </div>
 
           <!-- 기본 정보 섹션 -->
@@ -97,28 +97,26 @@
           <div class="wf-form-row">
             <div class="wf-form-label">객실유형 <span class="wf-form-req">*</span> <span class="wf-cn">2</span></div>
             <div class="wf-form-field">
-              <div>
-                <span class="wf-chip wf-chip-on">디럭스</span>
-                <span class="wf-chip">스탠다드</span>
-                <span class="wf-chip">스위트</span>
-                <span class="wf-chip">패밀리</span>
-              </div>
-              <div class="wf-hint">1개 이상 필수. 복수 선택 가능. 마스터 관리 > 객실유형에서 추가 가능.</div>
+              <select class="wf-select" style="width:100%">
+                <option>디럭스 ▾</option>
+                <option>스탠다드</option>
+                <option>스위트</option>
+                <option>패밀리</option>
+              </select>
+              <div class="wf-hint">1개만 선택(단일). <b>프런트 검색 필터·정보 노출용 분류</b>이며 PMS 코드와 무관. 마스터 관리 > 객실유형에서 추가 가능.</div>
             </div>
           </div>
 
+          <!-- PMS 객실코드 (RM_TYP_CD) — PMS 동기화로 획득 -->
           <div class="wf-form-row">
-            <div class="wf-form-label">객실특징 <span class="wf-cn">2</span></div>
+            <div class="wf-form-label">PMS 객실코드 <span class="wf-cn">2</span></div>
             <div class="wf-form-field">
-              <div>
-                <span class="wf-chip wf-chip-on">금연</span>
-                <span class="wf-chip wf-chip-on">마운틴뷰</span>
-                <span class="wf-chip">고층</span>
-                <span class="wf-chip">코너룸</span>
-              </div>
-              <div class="wf-hint">선택 선택. 마스터 관리 > 객실특징에서 추가 가능.</div>
+              <input class="wf-input-ro" value="HSR" readonly style="width:100%" />
+              <div class="wf-hint"><b>PMS 동기화 시 자동 입력(RM_TYP_CD, 읽기전용).</b> 요금·재고(S05)·마진(S11)의 기준 키입니다. 전 상품 PMS 연동 운영 전제.</div>
             </div>
           </div>
+
+          <!-- v0.2: 객실특징 섹션 제거 (시설 소개 화면에 이미 포함되어 중복) -->
 
           <div class="wf-form-row">
             <div class="wf-form-label">침대 구성 <span style="color:#888;font-size:10px;font-weight:400">[선택]</span> <span class="wf-cn">3</span></div>
@@ -143,62 +141,35 @@
           <div class="wf-form-row">
             <div class="wf-form-label">객실명 <span style="color:#888;font-size:10px;font-weight:400">[선택]</span> <span class="wf-cn">4</span></div>
             <div class="wf-form-field">
-              <span class="wf-btn wf-btn-sm" style="white-space:nowrap;margin-bottom:6px;display:inline-block">마스터로 객실명 채우기</span>
-              <div class="wf-hint" style="margin-bottom:6px">PMS 연동 시 RM_TYP_NM이 기본값으로 사용됨. 직접 입력 시 오버라이드. 『마스터로 객실명 채우기』는 현재 침대 구성 기준으로 자동 생성하여 덮어씁니다.</div>
-              <input class="wf-input" placeholder="미입력 시 PMS 제공 객실명 사용" value="디럭스 킹" style="width:100%" />
+              <input class="wf-input" placeholder="미입력 시 PMS 제공 객실명 사용" value="Deluxe King" style="width:100%" />
+              <div class="wf-hint" style="margin-top:6px">PMS 동기화 시 RM_TYP_NM(객실명) 자동 입력. 필요 시 직접 수정(영어 필수·중국어 선택).</div>
             </div>
           </div>
 
           <div class="wf-form-row">
             <div class="wf-form-label">인원·크기 <span class="wf-form-req">*</span> <span class="wf-cn">5</span></div>
             <div class="wf-form-field">
-              <!-- 기준인원 행 -->
-              <div style="display:grid;grid-template-columns:60px 1fr 1fr 8px 1fr;gap:6px;align-items:end;margin-bottom:8px">
-                <div style="font-size:10px;color:#555;font-weight:600;padding-bottom:2px">기준인원</div>
+              <!-- v0.2: 성인/아동 분리 제거 → 기준/최대 인원 2개 필드로 간소화 -->
+              <div style="display:flex;gap:16px;align-items:end;flex-wrap:wrap">
                 <div>
-                  <div style="font-size:10px;color:#888;margin-bottom:3px">성인 *</div>
-                  <input class="wf-input" value="2" style="width:100%" />
+                  <div style="font-size:10px;color:#888;margin-bottom:3px">기준 인원 (Standard) *</div>
+                  <input class="wf-input" value="2" style="width:90px" /> <span style="font-size:11px;color:#888">명</span>
                 </div>
                 <div>
-                  <div style="font-size:10px;color:#888;margin-bottom:3px">아동</div>
-                  <input class="wf-input" value="0" style="width:100%" />
+                  <div style="font-size:10px;color:#888;margin-bottom:3px">최대 인원 (Max) *</div>
+                  <input class="wf-input" value="4" style="width:90px" /> <span style="font-size:11px;color:#888">명</span>
                 </div>
-                <span style="font-size:10px;color:#888;padding-bottom:6px">→</span>
-                <div>
-                  <div style="font-size:10px;color:#888;margin-bottom:3px">총 기준인원 (자동)</div>
-                  <input class="wf-input wf-input-ro" value="2" readonly style="width:100%;background:#f5f5f0" />
-                </div>
-              </div>
-              <!-- 최대인원 행 -->
-              <div style="display:grid;grid-template-columns:60px 1fr 1fr 8px 1fr;gap:6px;align-items:end;margin-bottom:8px">
-                <div style="font-size:10px;color:#555;font-weight:600;padding-bottom:2px">최대인원</div>
-                <div>
-                  <div style="font-size:10px;color:#888;margin-bottom:3px">성인 *</div>
-                  <input class="wf-input" value="2" style="width:100%" />
-                </div>
-                <div>
-                  <div style="font-size:10px;color:#888;margin-bottom:3px">아동</div>
-                  <input class="wf-input" value="2" style="width:100%" />
-                </div>
-                <span style="font-size:10px;color:#888;padding-bottom:6px">→</span>
-                <div>
-                  <div style="font-size:10px;color:#888;margin-bottom:3px">총 최대인원 (자동)</div>
-                  <input class="wf-input wf-input-ro" value="4" readonly style="width:100%;background:#f5f5f0" />
-                </div>
-              </div>
-              <!-- 크기 -->
-              <div style="display:flex;gap:8px;align-items:center">
                 <div>
                   <div style="font-size:10px;color:#888;margin-bottom:3px">크기(㎡)</div>
                   <input class="wf-input" value="32" style="width:80px" />
                 </div>
               </div>
-              <div class="wf-hint" style="margin-top:6px">총 기준/최대인원 = 성인 + 아동 자동 합산. 총 최대인원 ≥ 총 기준인원 검증. PMS 예약 시 STAY_ADLT_PCNT / STAY_CHLD_PCNT로 각각 전송.</div>
+              <div class="wf-hint" style="margin-top:6px">기준 인원·최대 인원 각각 1개 값으로 입력(성인/아동 구분 없음). <b>최대 인원 ≥ 기준 인원</b> 검증. 크기는 숫자·소수점 허용, 선택 입력.</div>
             </div>
           </div>
 
           <div class="wf-form-row">
-            <div class="wf-form-label">노출 여부 <span class="wf-cn">12</span></div>
+            <div class="wf-form-label">노출 여부 <span class="wf-cn">11</span></div>
             <div class="wf-form-field">
               <select class="wf-select" style="width:100%">
                 <option>SHOW(Y)</option>
@@ -282,15 +253,15 @@
           <div class="wf-form-row">
             <div class="wf-form-label">객실 소개</div>
             <div class="wf-form-field">
-              <textarea class="wf-textarea">(객실소개를 입력해주세요)</textarea>
-              <div class="wf-hint">관리자 직접 입력. PMS RM_TYP_DESC 자동 매핑 없음. → 프런트: Room Detail 객실안내 섹션 '객실 소개' 표시.</div>
+              <textarea class="wf-textarea">A spacious room with a king-size bed and mountain view.</textarea>
+              <div class="wf-hint">관리자 직접 입력(영어 필수·중국어 선택). PMS RM_TYP_DESC 자동 매핑 없음. → 프런트: Room Detail 객실안내 섹션 '객실 소개' 표시.</div>
             </div>
           </div>
 
           <div class="wf-form-row">
             <div class="wf-form-label">객실 안내(HTML)</div>
             <div class="wf-form-field">
-              <textarea class="wf-textarea" placeholder="예: 원룸(더블1), 욕실, 발코니"></textarea>
+              <textarea class="wf-textarea" placeholder="e.g. Studio (1 double), bathroom, balcony"></textarea>
               <div class="wf-hint">관리자 직접 입력. PMS RM_TYP_INFO 자동 매핑 없음.</div>
             </div>
           </div>
@@ -298,41 +269,18 @@
           <div class="wf-form-row">
             <div class="wf-form-label">객실 정책(HTML)</div>
             <div class="wf-form-field">
-              <textarea class="wf-textarea">(금연 객실입니다 등)</textarea>
+              <textarea class="wf-textarea">Non-smoking room.</textarea>
               <div class="wf-hint">이미지 붙여넣기 지원. 프런트에서 각각 별도 섹션으로 렌더링.</div>
             </div>
           </div>
 
-          <!-- 부가요금 설정 섹션 -->
-          <div class="wf-section-head">부가요금 설정 <span class="wf-cn">9</span></div>
-
-          <div class="wf-toggle-row">
-            <div class="wf-toggle on"></div>
-            <span class="wf-toggle-label">인원 추가요금 활성</span>
-          </div>
-          <div style="margin-left:36px;margin-bottom:10px">
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <div>
-                <div style="font-size:10px;color:#888;margin-bottom:3px">1인당 요금</div>
-                <input class="wf-input" style="width:90px" value="30,000" />
-              </div>
-              <div>
-                <div style="font-size:10px;color:#888;margin-bottom:3px">반영기준</div>
-                <span style="font-size:11px;background:#f0f0ea;padding:4px 8px;border-radius:3px;color:#555;display:inline-block">ON_SITE (현장 결제) — 고정</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="wf-toggle-row">
-            <div class="wf-toggle"></div>
-            <span class="wf-toggle-label">엑스트라베드 활성</span>
-          </div>
-          <div class="wf-hint" style="margin-left:36px;margin-bottom:14px">활성화 시 최대 개수, 1개당 요금 입력 가능. 반영기준: ON_SITE(현장 결제) 고정.</div>
+          <!-- v0.2: 부가요금 설정 섹션 제거 → 숙소(S02-4 안내·정책)의 '추가요금 안내'로 이관.
+               결제 연동(인원추가요금·엑스트라베드 ON_SITE) 개념 폐기, 정보성 안내 텍스트로 전환. -->
 
           <!-- 변경이력 (A안: 접이식 섹션) -->
           <div style="margin-top:16px;border:1px solid #d8d8d0;border-radius:4px;overflow:hidden">
             <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#f5f5f0;cursor:pointer">
-              <span style="font-size:11px;font-weight:600;color:#333">변경이력 <span class="wf-cn">10</span></span>
+              <span style="font-size:11px;font-weight:600;color:#333">변경이력 <span class="wf-cn">9</span></span>
               <span style="font-size:10px;color:#888">▲ 접기</span>
             </div>
             <div style="padding:10px 12px">
@@ -379,7 +327,7 @@
 
           <!-- 하단 버튼 -->
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:14px;border-top:1px solid #e0e0da">
-            <span class="wf-btn" style="border-color:#10b981;color:#10b981">복사하기 <span class="wf-cn">13</span></span>
+            <span class="wf-btn" style="border-color:#10b981;color:#10b981">복사하기 <span class="wf-cn">12</span></span>
             <div style="display:flex;gap:8px">
               <span class="wf-btn">취소</span>
               <span class="wf-btn wf-btn-primary">저장</span>
@@ -410,14 +358,14 @@
       <div class="ann-item">
         <div class="cn">2</div>
         <div class="ann-body">
-          <div class="ann-title">객실유형·특징 (멀티칩) — 저장 필수 조건</div>
+          <div class="ann-title">객실유형 / PMS 객실코드 — v0.2 재정의</div>
           <div class="ann-desc">
-            마스터 데이터(공통관리 > 객실유형관리)에서 불러온 선택지로 구성된다. 객실유형은 최소 1개 이상 선택 필수(RM-FORM-01). 객실특징은 선택 입력이다.<br>
-            객실유형을 선택하지 않으면 저장 시 유효성 검사 실패 → 저장 불가.<br><br>
-            <strong>숙소별 필터:</strong> 위 숙소(Place) 선택 시 해당 숙소에 등록된 객실유형(S09-B)만 칩으로 표시됨. 숙소 미선택 또는 해당 숙소에 등록된 객실유형이 없는 경우 칩 목록 비어있음 → 먼저 공통관리 &gt; 객실유형관리에서 해당 숙소 객실유형을 등록해야 함.
+            <b>객실유형 (단일 선택):</b> 공통관리 > 객실유형관리의 분류. <b>프런트 검색 필터·정보 노출용</b>이며 PMS 코드와 무관. 멀티칩 → <b>1개만 선택</b>으로 변경. 저장 필수(RM-FORM-01).<br>
+            <b>PMS 객실코드 (RM_TYP_CD):</b> <b>객실관리에서 PMS 동기화 시 자동 획득</b>(읽기전용). 요금·재고(S05)·마진(S11)의 <b>기준 단위 키</b>. 객실유형과 별개 필드.<br>
+            <strong>v0.2:</strong> 객실특징 섹션 제거(시설 소개와 중복). RM_TYP_CD의 원천은 객실유형 마스터(S09)가 아니라 <b>PMS 동기화</b>. (S09에서는 PMS 코드 필드 삭제됨)
           </div>
-          <div class="ann-front">→ 프런트: 현재 미노출. 향후 Room Detail 표시 예정.</div>
-          <div class="ann-rule">RM-FORM-01: 객실유형 1개 이상 필수 (저장 시 검사). 상세: policy-decisions.html 섹션 12.</div>
+          <div class="ann-front">→ 객실유형: 프런트 검색 필터·정보 노출 / RM_TYP_CD: 미노출(내부 기준 키)</div>
+          <div class="ann-rule">RM-FORM-01: 객실유형 1개 필수. RM_TYP_CD = 요금·재고·마진 기준 키(PMS 동기화). 전 상품 PMS 연동 운영 전제.</div>
         </div>
       </div>
 
@@ -436,12 +384,10 @@
       <div class="ann-item">
         <div class="cn">4</div>
         <div class="ann-body">
-          <div class="ann-title">객실명 (room_name_ko) — <span style="color:#666;font-weight:400">선택 입력</span></div>
+          <div class="ann-title">객실명 — PMS 동기화 / 직접 입력</div>
           <div class="ann-desc">
-            <strong>선택 입력사항:</strong> 미입력 시 PMS RM_TYP_NM(한글명) 사용. 직접 입력 시 오버라이드. 수기 상품은 직접 입력 필요.<br><br>
-            <b>[마스터로 객실명 채우기]</b> 버튼: 폼 어느 단계에서도 클릭 가능. 현재 선택된 침대유형 + 개수 조합 기준으로 자동 생성하여 입력 필드를 즉시 덮어씀 (확인 다이얼로그 없음).<br />
-            수동으로 입력한 값도 버튼 클릭 시 덮어써진다. 버튼으로 채운 뒤 직접 수정 가능하며, 버튼 재클릭 시 다시 자동 생성값으로 교체된다.<br />
-            침대 구성 변경 시 버튼을 직접 클릭하지 않으면 필드 자동 갱신 없음.
+            PMS 동기화 시 <b>RM_TYP_NM(객실명) 자동 입력</b>. 필요 시 직접 수정(오버라이드). 영어(EN) 필수·중국어(ZH) 선택.<br>
+            <strong>v0.2: "마스터로 객실명 채우기" 버튼 제거</strong> — PMS 연동 시 객실명이 자동 전송되어 불필요.
           </div>
           <div class="ann-front">→ 프런트: 상품 카드 객실명 텍스트 / Room Detail 모달 헤더 대형 텍스트</div>
         </div>
@@ -450,14 +396,14 @@
       <div class="ann-item">
         <div class="cn">5</div>
         <div class="ann-body">
-          <div class="ann-title">인원 (성인/아동 분리)</div>
+          <div class="ann-title">인원 (기준/최대) — v0.2 간소화</div>
           <div class="ann-desc">
-            기준인원과 최대인원을 각각 성인/아동으로 분리 입력. 총 기준인원 = 성인기준 + 아동기준, 총 최대인원 = 성인최대 + 아동최대 (자동 계산, 읽기 전용 표시).<br>
-            검증: 총 최대인원 ≥ 총 기준인원, 성인 기준·최대 ≥ 1. 크기는 숫자·소수점만 허용, 선택 입력.<br>
-            저장 필드: adult_standard_count, child_standard_count, adult_max_count, child_max_count, room_size_sqm.
+            <strong>v0.2 변경:</strong> 성인/아동 분리 입력을 제거하고 <b>기준 인원 · 최대 인원 2개 값</b>으로 간소화.<br>
+            검증: 최대 인원 ≥ 기준 인원, 기준 인원 ≥ 1. 크기는 숫자·소수점만 허용, 선택 입력.<br>
+            저장 필드: standard_count, max_count, room_size_sqm.
           </div>
-          <div class="ann-front">→ 총 기준/최대인원: 상품 카드 인원 표기 / Room Detail Information > 인원<br>→ PMS 예약 시: STAY_ADLT_PCNT = 성인 인원, STAY_CHLD_PCNT = 아동 인원으로 분리 전송<br>→ room_size_sqm: Room Detail Information > 크기 'NN㎡'</div>
-          <div class="ann-rule">RM-FORM-01: 총 최대인원 ≥ 총 기준인원 검증 필수.</div>
+          <div class="ann-front">→ 기준/최대 인원: 상품 카드 인원 표기 / Room Detail Information > 인원<br>→ room_size_sqm: Room Detail Information > 크기 'NN㎡'</div>
+          <div class="ann-rule">RM-FORM-01: 최대 인원 ≥ 기준 인원 검증 필수. ※ PMS 예약 전송 시 성인/아동 매핑 방식은 개발팀 확인 필요(간소화에 따른 미결).</div>
         </div>
       </div>
 
@@ -500,20 +446,10 @@
         </div>
       </div>
 
-      <div class="ann-item">
-        <div class="cn">9</div>
-        <div class="ann-body">
-          <div class="ann-title">부가요금 토글</div>
-          <div class="ann-desc">
-            인원추가요금: 기준인원 초과 시 1인당 요금 부과. 엑스트라베드: 베드 추가 가능 여부. 비활성 시 하위 필드 disabled. 반영기준: PMS 추가요금 연동 미지원으로 ON_SITE(현장 결제) 고정.
-          </div>
-          <div class="ann-front">→ 프런트: Room Detail 모달 ② 객실정책 > 인원추가요금·엑스트라베드 카드 (각각 활성 시에만 표시)</div>
-          <div class="ann-rule">저장 성공 시 → #/rooms/place/:place_id 로 이동. RM-FORM-06</div>
-        </div>
-      </div>
+      <!-- v0.2: CN9 부가요금 토글 주석 제거 → 부가요금 섹션이 숙소(S02-4)로 이관됨 -->
 
       <div class="ann-item">
-        <div class="cn">10</div>
+        <div class="cn">9</div>
         <div class="ann-body">
           <div class="ann-title">변경이력 (A안 — 접이식 섹션)</div>
           <div class="ann-desc">
@@ -521,7 +457,7 @@
             <strong>이력 기록 조건</strong>: [저장] 성공 시 아래 항목 중 변경이 있는 경우에만 새 이력 행 생성.
           </div>
           <div class="ann-rule">
-            기록 대상 항목: 객실명, 기준인원(성인·아동), 최대인원(성인·아동), 엑스트라베드 활성여부, 노출여부.<br>
+            기록 대상 항목: 객실명, 기준/최대 인원, 노출여부. (v0.2: 부가요금 이관으로 엑스트라베드 항목 제거)<br>
             이력 컬럼: 변경일시 / 변경자 / 항목 / 변경 전 / 변경 후 / 사유(선택입력).<br>
             신규 등록 시 이력 없음 ("이력이 없습니다" 문구 표시). 최신 이력이 상단.
           </div>
@@ -529,7 +465,7 @@
       </div>
 
       <div class="ann-item">
-        <div class="cn">11</div>
+        <div class="cn">10</div>
         <div class="ann-body">
           <div class="ann-title">재고관리 탭</div>
           <div class="ann-desc">
@@ -542,7 +478,7 @@
       </div>
 
       <div class="ann-item">
-        <div class="cn">12</div>
+        <div class="cn">11</div>
         <div class="ann-body">
           <div class="ann-title">노출 여부</div>
           <div class="ann-desc">
@@ -554,7 +490,7 @@
       </div>
 
       <div class="ann-item">
-        <div class="cn">13</div>
+        <div class="cn">12</div>
         <div class="ann-body">
           <div class="ann-title">복사하기</div>
           <div class="ann-desc">

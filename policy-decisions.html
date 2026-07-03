@@ -142,7 +142,7 @@ body { padding-left:200px; box-sizing:border-box; }
   </a>
   <a class="toc-item" href="#ko-09">
     <span class="toc-num">09</span>
-    <span><span class="toc-ko-text">부가요금 반영기준</span><span class="toc-en-text">Extra Charge</span></span>
+    <span><span class="toc-ko-text">추가요금 안내</span><span class="toc-en-text">Extra Fee Notes</span></span>
   </a>
   <a class="toc-item" href="#ko-10">
     <span class="toc-num">10</span>
@@ -526,17 +526,21 @@ body { padding-left:200px; box-sizing:border-box; }
       </div>
     </div>
 
-    <!-- 10. 부가요금 반영기준 -->
+    <!-- 10. 추가요금 안내 (v0.2 재정의) -->
     <div class="pd-section">
-      <div class="pd-section-title"><span class="badge">09</span> 부가요금 반영기준</div>
+      <div class="pd-section-title"><span class="badge">09</span> 추가요금 안내 (정보 노출성)</div>
       <div class="pd-body">
         <div class="pd-item">
-          <div class="pd-item-title">항상 ON_SITE (현장 결제) 고정 <span class="pd-status confirmed">확정</span></div>
+          <div class="pd-item-title">v0.2 — 객실 부가요금 → 숙소 추가요금 안내로 이관 <span class="pd-status confirmed">확정</span></div>
           <div class="pd-desc">
-            엑스트라베드·추가인원 요금의 결제 방식은 <strong>현장 결제(ON_SITE) 고정</strong>.<br>
-            PMS 추가요금 연동을 지원하지 않으므로, 예약 시 결제(AT_BOOKING) 옵션 미제공.
+            기존 객실(S04)의 <strong>'부가요금 설정'(인원 추가요금·엑스트라베드, ON_SITE 현장 결제)</strong> 을 폐기하고,
+            숙소(S02-4 안내·정책)의 <strong>'추가요금 안내(extra_fee_notes)'</strong> 로 이관한다.<br>
+            성격이 <strong>결제 연동 필드 → 정보 노출성 안내 텍스트</strong>로 바뀐다.
+            여기 입력한 금액은 <strong>실제 계산·청구에 사용되지 않으며</strong>, 고객에게 "이런 추가요금이 있다"는 안내 목적만 갖는다.
           </div>
-          <div class="pd-rule">어드민 S04 부가요금 설정 화면에서 반영기준 셀렉트 제거. "ON_SITE — 고정" 배지로 표시.</div>
+          <div class="pd-rule">입력 단위: 숙소(Place). 한 줄에 하나씩 자유 텍스트. [+ 항목 추가]/[삭제]로 행 관리. 저장 필드 extra_fee_notes[] { en(필수), zh(선택) }.</div>
+          <div class="pd-rule">다국어: 각 행 EN 필수(미입력 시 저장 불가) · ZH 선택(미입력 시 EN 대체). KO 입력칸 없음.</div>
+          <div class="pd-warn">결제 개념(ON_SITE / AT_BOOKING) 완전 폐기. 인원 추가요금·엑스트라베드의 결제·계산 로직 없음. 프런트 정책정보 탭 '추가요금' 블록에 목록(•)으로만 표시(빈 배열이면 블록 숨김).</div>
         </div>
       </div>
     </div>
@@ -578,7 +582,7 @@ body { padding-left:200px; box-sizing:border-box; }
               <tr><td>침대 구성</td><td>수정</td><td><span class="lock-text">🔒 잠금</span></td></tr>
               <tr><td>객실명 (국문/영문)</td><td>수정</td><td>수정 <span class="hist-badge">이력</span></td></tr>
               <tr><td>기준인원 / 최대인원 (성인·아동)</td><td>수정</td><td>수정 <span class="hist-badge">이력</span></td></tr>
-              <tr><td>엑스트라베드 여부</td><td>수정</td><td>수정 <span class="hist-badge">이력</span></td></tr>
+              <!-- v0.2: 엑스트라베드 행 제거 (부가요금 → 숙소 추가요금 안내로 이관) -->
               <tr><td>이미지 / 시설 / 안내·정책 HTML</td><td>수정</td><td>수정</td></tr>
               <tr><td>노출 여부</td><td>수정</td><td>수정 <span class="hist-badge">이력</span></td></tr>
             </tbody>
@@ -657,7 +661,7 @@ body { padding-left:200px; box-sizing:border-box; }
               </tr>
               <tr>
                 <td>객실상세 (S04)</td>
-                <td>객실명 · 기준/최대 인원 · 엑스트라베드 · 노출여부</td>
+                <td>객실명 · 기준/최대 인원 · 노출여부 <span style="color:#888">(v0.2: 엑스트라베드 제거)</span></td>
                 <td>페이지 하단 접이식 섹션</td>
               </tr>
               <tr>
@@ -1420,17 +1424,21 @@ body { padding-left:200px; box-sizing:border-box; }
       </div>
     </div>
 
-    <!-- 10. Extra Charge Settlement -->
+    <!-- 10. Extra Fee Notes (redefined in v0.2) -->
     <div class="pd-section">
-      <div class="pd-section-title"><span class="badge">09</span> Extra Charge Settlement</div>
+      <div class="pd-section-title"><span class="badge">09</span> Extra Fee Notes (Informational)</div>
       <div class="pd-body">
         <div class="pd-item">
-          <div class="pd-item-title">Always ON_SITE (Pay at Property) <span class="pd-status confirmed">Confirmed</span></div>
+          <div class="pd-item-title">v0.2 — Moved from Room extra charges to Property extra fee notes <span class="pd-status confirmed">Confirmed</span></div>
           <div class="pd-desc">
-            Extra bed and additional occupancy charges are fixed as <strong>ON_SITE (pay at property)</strong>.<br>
-            PMS extra charge integration is not supported; AT_BOOKING option is not offered.
+            The room-level <strong>"Extra Charge Settings" (per-person surcharge, extra bed; ON_SITE payment)</strong> in S04 is discontinued and
+            moved to the property-level <strong>"Extra Fee Notes (extra_fee_notes)"</strong> in S02-4 (Guide &amp; Policy).<br>
+            Its nature changes from a <strong>payment-linked field to informational display text</strong>.
+            The amounts entered here are <strong>never calculated or charged</strong>; they only inform the customer that such extra fees exist.
           </div>
-          <div class="pd-rule">S04 extra charge form: settlement type selector removed. Displayed as fixed badge "ON_SITE".</div>
+          <div class="pd-rule">Input unit: Property. One free-text line per item. Managed via [+ Add] / [Delete]. Stored as extra_fee_notes[] { en(required), zh(optional) }.</div>
+          <div class="pd-rule">Localization: EN required per row (blocks save if empty) · ZH optional (falls back to EN). No KO input.</div>
+          <div class="pd-warn">Payment concept (ON_SITE / AT_BOOKING) fully discontinued. No settlement/calculation logic for per-person surcharge or extra bed. Rendered only as a bulleted list in the front Policy tab "Extra Fees" block (hidden if the array is empty).</div>
         </div>
       </div>
     </div>
@@ -1472,7 +1480,7 @@ body { padding-left:200px; box-sizing:border-box; }
               <tr><td>Bed Configuration</td><td>Editable</td><td><span class="lock-text">🔒 Locked</span></td></tr>
               <tr><td>Room Name (KO/EN)</td><td>Editable</td><td>Editable <span class="hist-badge">logged</span></td></tr>
               <tr><td>Standard / Max Occupancy (Adult · Child)</td><td>Editable</td><td>Editable <span class="hist-badge">logged</span></td></tr>
-              <tr><td>Extra Bed</td><td>Editable</td><td>Editable <span class="hist-badge">logged</span></td></tr>
+              <!-- v0.2: Extra Bed row removed (extra charges moved to Property extra fee notes) -->
               <tr><td>Images / Amenities / Guide · Policy HTML</td><td>Editable</td><td>Editable</td></tr>
               <tr><td>Visibility</td><td>Editable</td><td>Editable <span class="hist-badge">logged</span></td></tr>
             </tbody>
@@ -1551,7 +1559,7 @@ body { padding-left:200px; box-sizing:border-box; }
               </tr>
               <tr>
                 <td>Room Detail (S04)</td>
-                <td>Name · Occupancy · Extra Bed · Visibility</td>
+                <td>Name · Occupancy · Visibility <span style="color:#888">(v0.2: Extra Bed removed)</span></td>
                 <td>Collapsible section at page bottom</td>
               </tr>
               <tr>

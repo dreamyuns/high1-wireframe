@@ -161,6 +161,13 @@
               <strong style="font-size:9px">기타 이용 정책</strong><br>
               반려동물 동반 불가. 흡연은 지정 구역에서만 가능합니다.
             </div>
+            <!-- 추가요금 블록 (v0.2 신설 — 어드민 S02-4 extra_fee_notes) -->
+            <div class="ft-policy-block" style="position:relative">
+              <strong style="font-size:9px">추가요금 (Extra Fees)</strong><br>
+              • Extra bedding: KRW 15,000 per set / night<br>
+              • Towels: Large KRW 2,000 · Small KRW 1,000 / Child (age 13 or under): KRW 5,000
+              <span class="wf-cn" style="position:absolute;top:-2px;right:0">8</span>
+            </div>
             <span class="wf-cn" style="position:absolute;top:20px;right:0">5</span>
           </div>
 
@@ -184,7 +191,7 @@
 
     <!-- ── 주석 패널 ── -->
     <div class="fv-ann">
-      <h3>장소 레이어 주석 (callout ①~⑦)</h3>
+      <h3>장소 레이어 주석 (callout ①~⑧)</h3>
 
       <div class="fv-ann-item">
         <div class="cn">1</div>
@@ -267,6 +274,23 @@
           <div class="fv-ann-admin">어드민 S02-2 Step2 · 주소(국문) / 주소(영문)</div>
           <div class="fv-ann-ls">h1_places[].address · h1_places[].address_en</div>
           <div class="fv-ann-front">위치 탭 하단 주소 텍스트 (lang에 따라 address / address_en 전환)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">8</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">추가요금 (Extra Fees) — v0.2 신설</div>
+          <div class="fv-ann-desc">
+            정책 탭의 '정책 안내' 아래에 <b>'추가요금(Extra Fees)'</b> 블록으로 표시됩니다.
+            어드민에 입력한 안내 줄들이 목록(•)으로 하나씩 나열됩니다.
+            <b>결제와 무관한 안내용 텍스트</b>이며, 실제 청구·계산에는 쓰이지 않습니다.
+            (기존 객실 '부가요금'에서 숙소 단위 안내로 이관됨.)<br>
+            중국어(ZH)로 보는 고객에게는 ZH 값이, 없으면 EN 값이 표시됩니다. 입력된 줄이 하나도 없으면 이 블록 자체가 숨겨집니다.
+          </div>
+          <div class="fv-ann-admin">어드민 S02-4 Step4 · 추가요금 안내 (extra_fee_notes 행 목록)</div>
+          <div class="fv-ann-ls">h1_places[].extra_fee_notes[] { en(필수), zh(선택) }</div>
+          <div class="fv-ann-front">정책 탭 '추가요금' 블록 · 각 항목을 • 목록으로 렌더링 (빈 배열이면 블록 미표시)</div>
         </div>
       </div>
 

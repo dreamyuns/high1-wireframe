@@ -72,7 +72,7 @@
                 <option>팰리스 호텔</option>
                 <option>마운틴 콘도</option>
               </select>
-              <div class="wf-hint">필수. PMS RM_TYP_CD는 숙소(SLST_ID) 단위로 독립 관리되므로 숙소 지정 필요.</div>
+              <div class="wf-hint">필수. 객실유형은 숙소(Place)별로 분류 관리되므로 숙소 지정 필요. (프런트 검색 필터·정보 노출용)</div>
             </div>
           </div>
 
@@ -84,14 +84,7 @@
             </div>
           </div>
 
-          <!-- PMS 코드 매핑 -->
-          <div class="wf-form-row" style="border-left:3px solid #93c5fd;background:#eff6ff;padding-left:8px">
-            <div class="wf-form-label" style="color:#1a4fa0">PMS 코드 <span class="wf-cn">4</span></div>
-            <div class="wf-form-field">
-              <input class="wf-input" style="width:120px" placeholder="예: STD" value="" />
-              <div class="wf-hint">PMS(하이원) RM_TYP_CD 값. 선택한 숙소 기준 코드 입력. API 3/4/5 데이터 매핑에 사용.<br>수기 관리 상품만 사용하는 경우 빈값으로 두어도 무방.</div>
-            </div>
-          </div>
+          <!-- v0.2: PMS 코드(RM_TYP_CD) 필드 삭제 — 객실유형은 프런트 검색 필터·정보 노출용 분류로만 사용. RM_TYP_CD는 객실관리(S04)에서 PMS 동기화로 획득. -->
 
           <div class="wf-form-row">
             <div class="wf-form-label">노출 여부 <span class="wf-cn">5</span></div>
@@ -130,11 +123,11 @@
         <div class="ann-title"><span class="cn">2</span> 숙소 선택 (필수)</div>
         <div class="ann-body">
           <div class="ann-desc">
-            객실유형은 숙소(Place) 단위로 관리. PMS RM_TYP_CD가 숙소(SLST_ID)별 독립 코드 체계를 갖기 때문.<br>
-            숙소를 선택해야 이후 PMS 코드 입력이 의미를 가짐.<br>
-            수정 시에도 숙소 변경 불가 (코드 체계 변경이므로 재등록 필요).
+            객실유형은 숙소(Place)별로 분류 관리된다. <b>프런트 검색 필터·정보 노출용</b> 분류이며 PMS 코드와 무관.<br>
+            <strong>v0.2:</strong> PMS 코드(RM_TYP_CD) 입력 필드 제거 — 코드는 객실관리(S04)에서 PMS 동기화로 획득.<br>
+            수정 시 숙소 변경 불가 (재등록 필요).
           </div>
-          <div class="ann-rule">S04 객실 등록 시 숙소 선택 → 해당 숙소 객실유형만 칩으로 표시됨.</div>
+          <div class="ann-rule">S04 객실 등록 시 숙소 선택 → 해당 숙소 객실유형만 목록으로 표시됨(단일 선택).</div>
         </div>
       </div>
 
@@ -146,18 +139,7 @@
         </div>
       </div>
 
-      <div class="ann-item">
-        <div class="ann-title"><span class="cn">4</span> PMS RM_TYP_CD 매핑</div>
-        <div class="ann-body">
-          <div class="ann-desc">
-            하이원 PMS RM_TYP_CD(객실유형 코드)를 어드민 객실유형 마스터와 매핑하는 필드.<br>
-            선택한 숙소(SLST_ID) 기준 코드 입력. API 3/4/5 데이터 수신 시 RM_TYP_CD + SLST_ID 조합으로 어드민 객실유형과 자동 매핑.<br>
-            PMS 코드 예시 (메인타워): STD, STT, STR, STO, SWD, JSD, JSF, JSC.
-          </div>
-          <div class="ann-rule">코드 변경 시 PMS 연동 매핑에 즉시 영향. 수기 관리만 사용 시 빈값 허용.</div>
-          <div class="ann-front">→ 프런트: 미노출 (연동 매핑용 내부 필드)</div>
-        </div>
-      </div>
+      <!-- v0.2: PMS RM_TYP_CD 매핑 주석(4번) 삭제 — 코드는 S04 PMS 동기화로 획득 -->
 
       <div class="ann-item">
         <div class="ann-title"><span class="cn">5</span> 노출 여부</div>
