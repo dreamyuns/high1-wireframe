@@ -1,6 +1,6 @@
 /**
- * High1 Front Bridge v0.3
- * - admin-prototype-v0.2 localStorage와 동일 키 사용 (읽기 전용)
+ * High1 Front Bridge v0.5
+ * - admin-prototype localStorage와 동일 키 사용 (읽기 전용)
  * - 비즈니스 로직(evaluateProductForStay, cancelSummaryLine 등) 유지
  * - 렌더링 구조 전면 개선: 풀와이드 히어로 · 스티키 내비 탭 · 3컬럼 카드
  */
@@ -360,9 +360,37 @@ function roomFeaturedChips(room, maps) {
 }
 
 /* ─── 인벤토리 / 예약 가능 여부 (비즈니스 로직 — 변경 없음) ─── */
+/** 실판매가 = 입금가 + 마진 (마진율: floor(base×(1+율/100)) · 마진금액: base+금액). 소수점 버림. */
+function computeSellPriceFront(basePrice, marginType, marginValue) {
+  const base = Math.max(0, parseInt(String(basePrice).replace(/\D/g, ""), 10) || 0);
+  const v = parseFloat(marginValue);
+  if (marginType === "rate" && !Number.isNaN(v)) return Math.max(0, Math.floor(base * (1 + v / 100)));
+  if (marginType === "amount" && !Number.isNaN(v)) return Math.max(0, base + Math.floor(v));
+  return base;
+}
+
 function inventoryRow(product, ymd) {
-  const inv = Array.isArray(product.inventory) ? product.inventory : [];
-  return inv.find((r) => String(r.date || "").trim() === ymd) || null;
+  const prodInv = Array.isArray(product.inventory) ? product.inventory : [];
+  const prodRow = prodInv.find((r) => String(r.date || "").trim() === ymd) || null;
+  // 재고·요금·마감(closed)은 객실(room.inventory)에서 실시간 참조, 예약조건은 상품에서
+  const rooms = loadJson(STORAGE_ROOMS);
+  const room = (Array.isArray(rooms) ? rooms : []).find((r) => r.id === product.room_id);
+  const roomInv = Array.isArray(room?.inventory) ? room.inventory : [];
+  const roomRow = roomInv.find((r) => String(r.date || "").trim() === ymd) || null;
+  if (!roomRow) return prodRow; // 객실 재고·요금 미동기화 시 하위호환(상품 스냅샷)
+  const avlb = roomRow.avlb_cnt != null ? roomRow.avlb_cnt : roomRow.stock != null ? roomRow.stock : 0;
+  return {
+    date: ymd,
+    price: roomRow.price,
+    stock: avlb,
+    closed: roomRow.closed === true,
+    checkin_allowed: prodRow ? prodRow.checkin_allowed : true,
+    cutoff_days_before_checkin: prodRow ? prodRow.cutoff_days_before_checkin : 0,
+    min_stay_nights: prodRow ? prodRow.min_stay_nights : 1,
+    max_stay_nights: prodRow ? prodRow.max_stay_nights : 30,
+    margin_type: prodRow ? prodRow.margin_type : "", // 일자별 마진(상품 inventory)
+    margin_value: prodRow ? prodRow.margin_value : "",
+  };
 }
 
 function cancelSummaryLine(product, firstNightYmd, todayStr) {
@@ -399,6 +427,12 @@ function evaluateProductForStay(product, checkin, checkout) {
     && todayStr >= s0 && todayStr <= s1;
   if (!saleOk) { base.state = "sale_out"; return base; }
 
+  // 투숙 가능 기간: 체크인일(first)이 stay 범위를 벗어나면 예약 불가
+  const stayS = String(product.stay_start_date || "").slice(0, 10);
+  const stayE = String(product.stay_end_date || "").slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(stayS) && first < stayS) { base.state = "no_inv"; return base; }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(stayE) && first > stayE) { base.state = "no_inv"; return base; }
+
   let sum = 0;
   for (const ymd of nights) {
     const row = inventoryRow(product, ymd);
@@ -406,12 +440,13 @@ function evaluateProductForStay(product, checkin, checkout) {
     if (row.checkin_allowed === false || row.checkin_allowed === "N" || row.checkin_allowed === "n") {
       base.state = "closed"; return base;
     }
+    if (row.closed === true) { base.state = "soldout"; return base; } // 객실 재고·요금 강제 마감(CLSE_YN)
     if (cutoffBlocksBooking(ymd, row.cutoff_days_before_checkin, todayStr)) {
       base.state = "cutoff"; return base;
     }
     const stock = Math.max(0, parseInt(String(row.stock).replace(/\D/g, ""), 10) || 0);
     if (stock <= 0) { base.state = "soldout"; return base; }
-    sum += Math.max(0, parseInt(String(row.price).replace(/\D/g, ""), 10) || 0);
+    sum += computeSellPriceFront(row.price, row.margin_type, row.margin_value);
   }
   base.totalPrice = sum;
   base.state = "ok";
@@ -506,14 +541,14 @@ function productCardHtml(place, room, product, maps, bedById) {
        </div>`;
 
   /* Content */
-  const desc = String(product.description || "").trim();
+  const desc = String((uiState.lang === "zh" && product.description_zh) || product.description_en || product.description || "").trim();
   const descBlock = desc ? `<div class="pc-desc">${escapeHtml(desc)}</div>` : "";
   const cancelText = ev.cancelLine || (hasDates ? "" : "");
 
   const contentHtml = `<div class="pc-content">
     <div class="pc-sub-label">${escapeHtml(subLabel(String(place.category || "HOTEL").toUpperCase(), place.sub_place))}</div>
     <div class="pc-room-name">${escapeHtml(room.room_name || room.room_code || "-")}</div>
-    <div class="pc-product-name">${escapeHtml(product.name || "-")}</div>
+    <div class="pc-product-name">${escapeHtml((uiState.lang === "zh" && product.name_zh) || product.name_en || product.name || "-")}</div>
     <div class="pc-info-line">
       침대: ${escapeHtml(bedLine(room, bedById))}
       &nbsp;·&nbsp;
@@ -860,9 +895,19 @@ function renderPlaceLayer() {
       <h3>${escapeHtml(t("facilityTitle"))}</h3>
       ${groupedFacilitiesHtml(place.facility_ids, maps)}`;
   } else if (uiState.placeLayer.tab === "policy") {
+    const feeNotes = Array.isArray(place.extra_fee_notes)
+      ? place.extra_fee_notes.filter((n) => n && (n.en || n.zh))
+      : [];
+    const feeTitle = uiState.lang === "en" ? "Extra Fees" : "추가요금";
+    const feeHtml = feeNotes.length
+      ? `<hr /><h3>${escapeHtml(feeTitle)}</h3><ul class="ft-extra-fee">${feeNotes
+          .map((n) => `<li>${escapeHtml(n.en || n.zh)}</li>`)
+          .join("")}</ul>`
+      : "";
     body.innerHTML = `
       <h3>${escapeHtml(t("policyTitle"))}</h3>
-      ${richTextOrParagraph(localizeField(place, "policy_html") || place.policy_html, t("noPolicy"))}`;
+      ${richTextOrParagraph(localizeField(place, "policy_html") || place.policy_html, t("noPolicy"))}
+      ${feeHtml}`;
   } else {
     body.innerHTML = `
       <h3>${escapeHtml(t("locationTitle"))}</h3>
@@ -916,7 +961,7 @@ function renderRoomDetailModal() {
   const maps    = facilityMaps();
 
   document.getElementById("rdRoomName").textContent    = room.room_name || room.room_code || "";
-  document.getElementById("rdProductName").textContent = product.name || "";
+  document.getElementById("rdProductName").textContent = (uiState.lang === "zh" && product.name_zh) || product.name_en || product.name || "";
 
   /* 갤러리: 첫 장 풀와이드 + 나머지 2열 그리드 */
   const imgs = roomImages(room);
@@ -954,58 +999,35 @@ function renderRoomDetailModal() {
   const rdSections = [];
 
   // ① 상품안내/정책
-  if (String(product.guide_policy_html || "").trim()) {
+  const productGuideHtml =
+    (uiState.lang === "zh" && product.guide_policy_html_zh) || product.guide_policy_html_en || product.guide_policy_html || "";
+  if (String(productGuideHtml).trim()) {
     rdSections.push({
       id: "rd-sec-product",
       label: "상품안내/정책",
-      html: richTextOrParagraph(product.guide_policy_html, ""),
+      html: richTextOrParagraph(productGuideHtml, ""),
     });
   }
 
-  // ② 객실정책
-  const hasExtraBed      = room.extra_bed_enabled === true;
-  const hasOccupantCharge = room.occupant_extra_charge_enabled === true;
-  if (String(room.policy_html || "").trim() || hasExtraBed || hasOccupantCharge) {
-    let policyHtml = richTextOrParagraph(room.policy_html, "");
-    if (hasExtraBed || hasOccupantCharge) {
-      policyHtml += `<div class="rd-extra-charges">`;
-      if (hasOccupantCharge) {
-        policyHtml += `<div class="rd-extra-charge-item">
-          <div class="rd-extra-charge-label">인원추가요금</div>
-          <div class="rd-extra-charge-row">
-            <span>1인당 추가요금</span>
-            <span>${escapeHtml(formatWon(room.occupant_extra_charge_per_person))}</span>
-          </div>
-          <div class="rd-extra-charge-row">
-            <span>반영 기준</span>
-            <span>${escapeHtml(settlementLabel(room.occupant_extra_charge_settlement))}</span>
-          </div>
-        </div>`;
-      }
-      if (hasExtraBed) {
-        policyHtml += `<div class="rd-extra-charge-item">
-          <div class="rd-extra-charge-label">엑스트라베드</div>
-          <div class="rd-extra-charge-row">
-            <span>1개당 추가비용</span>
-            <span>${escapeHtml(formatWon(room.extra_bed_fee))}</span>
-          </div>
-          <div class="rd-extra-charge-row">
-            <span>반영 기준</span>
-            <span>${escapeHtml(settlementLabel(room.extra_bed_settlement))}</span>
-          </div>
-        </div>`;
-      }
-      policyHtml += `</div>`;
-    }
-    rdSections.push({ id: "rd-sec-room-policy", label: "객실정책", html: policyHtml });
+  // ② 객실정책 (v0.5: 부가요금 표시 제거 · 국문 미사용 — 중문 접속 시 중문, 없으면 영문. 구버전 policy_html 폴백)
+  const roomPolicyHtml =
+    (uiState.lang === "zh" && room.policy_html_zh) || room.policy_html_en || room.policy_html_zh || room.policy_html || "";
+  if (String(roomPolicyHtml || "").trim()) {
+    rdSections.push({
+      id: "rd-sec-room-policy",
+      label: "객실정책",
+      html: richTextOrParagraph(roomPolicyHtml, ""),
+    });
   }
 
-  // ③ 객실안내
-  if (String(room.guide_html || "").trim()) {
+  // ③ 객실안내 (국문 미사용 · 영문 우선)
+  const roomGuideHtml =
+    (uiState.lang === "zh" && room.guide_html_zh) || room.guide_html_en || room.guide_html_zh || room.guide_html || "";
+  if (String(roomGuideHtml || "").trim()) {
     rdSections.push({
       id: "rd-sec-room-guide",
       label: "객실안내",
-      html: richTextOrParagraph(room.guide_html, ""),
+      html: richTextOrParagraph(roomGuideHtml, ""),
     });
   }
 

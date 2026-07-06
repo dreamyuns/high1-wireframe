@@ -1,5 +1,5 @@
 ﻿/**
- * High1 admin prototype v0.2 — localStorage only
+ * High1 admin prototype v0.5 — localStorage only
  * Places: high1_places_v1
  * Facility categories / Facilities: (동일 v1)
  * Room masters: high1_room_master_room_type_v1, high1_room_master_trait_v1, high1_room_master_bed_type_v1
@@ -16,6 +16,7 @@ const STORAGE_ROOM_TRAITS = "high1_room_master_trait_v1";
 const STORAGE_BED_TYPES = "high1_room_master_bed_type_v1";
 const STORAGE_ROOMS = "high1_rooms_v1";
 const STORAGE_PRODUCTS = "high1_products_v1";
+const STORAGE_MARGIN_MASTER = "high1_margin_master_v1"; // 공통관리 마진 마스터 (RM_TYP_CD별 일자별 마진 디폴트)
 
 /** 객실 부가요금 반영 기준 — 프런트 정책 노출은 모드와 무관하게 동일하게 표시 */
 const ROOM_CHARGE_SETTLEMENT = {
@@ -75,6 +76,88 @@ function loadPlaces() {
 
 function savePlaces(list) {
   localStorage.setItem(STORAGE_PLACES, JSON.stringify(list));
+}
+
+/**
+ * PMS 동기화 더미 데이터 (MVP 숙소목록 캡쳐 기준 7개).
+ * 프로토타입에는 실제 PMS API가 없으므로, [PMS 동기화] 클릭 시 이 셋을 주입/갱신하여 시뮬레이션한다.
+ * PMS 수신 필드: place_code / place_name(한글) / category / sub_place / check_in/out / image 수.
+ * 관리자 보완 필드(_en, guide/policy_html, facility_ids, extra_fee_notes 등)는 재동기화 시 보존.
+ */
+const PMS_DUMMY_PLACES_SEED = [
+  { place_code: "PL-DAB431", place_name: "메인타워", category: "HOTEL", sub_place: "", check_in_time: "15:00", check_out_time: "11:00", image_count: 3, visibility: "HIDE" },
+  { place_code: "PL-A17411", place_name: "마운틴PLUS콘도", category: "CONDO", sub_place: "", check_in_time: "15:00", check_out_time: "11:00", image_count: 0, visibility: "HIDE" },
+  { place_code: "PL-96903C", place_name: "컨벤션타워", category: "HOTEL", sub_place: "grand_convention", check_in_time: "15:00", check_out_time: "11:00", image_count: 4, visibility: "SHOW" },
+  { place_code: "PL-B66F6A", place_name: "마운틴콘도", category: "CONDO", sub_place: "mountain", check_in_time: "15:00", check_out_time: "11:00", image_count: 3, visibility: "SHOW" },
+  { place_code: "PL-C07303", place_name: "밸리콘도", category: "CONDO", sub_place: "valley", check_in_time: "15:00", check_out_time: "11:00", image_count: 3, visibility: "SHOW" },
+  { place_code: "PL-4F7F0D", place_name: "힐콘도", category: "CONDO", sub_place: "hill", check_in_time: "15:00", check_out_time: "11:00", image_count: 3, visibility: "SHOW" },
+  { place_code: "PL-7064E0", place_name: "하이원팰리스", category: "HOTEL", sub_place: "palace", check_in_time: "15:00", check_out_time: "11:00", image_count: 4, visibility: "SHOW" },
+];
+
+/** AI 번역(더미) — PMS는 한글명만 주므로, 미입력 영문명을 자동 채움 시뮬레이션 */
+const PLACE_NAME_EN_MAP = {
+  "메인타워": "Main Tower",
+  "마운틴PLUS콘도": "Mountain PLUS Condo",
+  "컨벤션타워": "Convention Tower",
+  "마운틴콘도": "Mountain Condo",
+  "밸리콘도": "Valley Condo",
+  "힐콘도": "Hill Condo",
+  "하이원팰리스": "High1 Palace",
+};
+
+/** [PMS 동기화/갱신] — 더미 PMS 숙소를 주입/갱신. 기존 관리자 보완 필드는 보존. */
+function syncPmsPlaces() {
+  const existing = loadPlaces();
+  const now = new Date().toISOString();
+  const merged = PMS_DUMMY_PLACES_SEED.map((seed) => {
+    const prev = existing.find((p) => p.place_code === seed.place_code);
+    return {
+      // 관리자 보완 필드 보존 (재동기화 시 유지)
+      id: prev?.id || uid(),
+      place_name_en: prev?.place_name_en || "",
+      address: prev?.address || "",
+      address_en: prev?.address_en || "",
+      location_detail: prev?.location_detail || "",
+      guide_html: prev?.guide_html || "",
+      guide_html_en: prev?.guide_html_en || "",
+      policy_html: prev?.policy_html || "",
+      policy_html_en: prev?.policy_html_en || "",
+      facility_ids: prev?.facility_ids || [],
+      featured_facility_ids: prev?.featured_facility_ids || [],
+      category_facility_text: prev?.category_facility_text || "",
+      category_facility_text_en: prev?.category_facility_text_en || "",
+      extra_fee_notes: prev?.extra_fee_notes || [],
+      created_at: prev?.created_at || now,
+      // PMS 수신 필드 (갱신)
+      place_code: seed.place_code,
+      place_name: seed.place_name,
+      category: seed.category,
+      sub_place: seed.sub_place,
+      check_in_time: seed.check_in_time,
+      check_out_time: seed.check_out_time,
+      visibility: prev ? prev.visibility : seed.visibility,
+      image_meta: prev?.image_meta && prev.image_meta.length ? prev.image_meta : Array.from({ length: seed.image_count }, () => ({ from_pms: true })),
+      updated_at: now,
+      updated_by: "PMS 동기화",
+    };
+  });
+  savePlaces(merged);
+  return merged.length;
+}
+
+/** [비영문 이름 AI 번역](더미) — 미입력 place_name_en 자동 채움 */
+function aiTranslatePlaceNames() {
+  const list = loadPlaces();
+  let n = 0;
+  list.forEach((p) => {
+    if (!p.place_name_en && p.place_name) {
+      p.place_name_en = PLACE_NAME_EN_MAP[p.place_name] || p.place_name;
+      p.updated_at = new Date().toISOString();
+      n++;
+    }
+  });
+  savePlaces(list);
+  return n;
 }
 
 function isStorageQuotaExceeded(err) {
@@ -589,6 +672,144 @@ function saveRooms(list) {
   localStorage.setItem(STORAGE_ROOMS, JSON.stringify(list));
 }
 
+/**
+ * PMS 객실 동기화 더미 데이터 (숙소별 객실 + RM_TYP_CD).
+ * [PMS 객실 동기화] 클릭 시 주입/갱신. place_code로 소속 숙소를 찾아 연결한다.
+ * RM_TYP_CD = PMS 객실타입코드(요금·재고·마진 기준 키). 객실코드(RM-####)와 별개.
+ */
+const PMS_DUMMY_ROOMS_SEED = [
+  { place_code: "PL-DAB431", rm_typ_cd: "STD", room_name: "스탠다드", standard: 2, max: 2 },
+  { place_code: "PL-DAB431", rm_typ_cd: "DLX", room_name: "디럭스", standard: 2, max: 4 },
+  { place_code: "PL-96903C", rm_typ_cd: "LSD", room_name: "럭셔리스위트 더블", standard: 2, max: 2 },
+  { place_code: "PL-96903C", rm_typ_cd: "LBD", room_name: "럭셔리스위트 베스트슬립 더블", standard: 2, max: 2 },
+  { place_code: "PL-96903C", rm_typ_cd: "SPD", room_name: "슈페리어 더블", standard: 2, max: 2 },
+  { place_code: "PL-7064E0", rm_typ_cd: "PST", room_name: "팰리스 스위트", standard: 2, max: 4 },
+  { place_code: "PL-B66F6A", rm_typ_cd: "MST", room_name: "마운틴 스탠다드", standard: 4, max: 6 },
+  { place_code: "PL-C07303", rm_typ_cd: "VST", room_name: "밸리 스탠다드", standard: 4, max: 6 },
+  { place_code: "PL-4F7F0D", rm_typ_cd: "HST", room_name: "힐 스탠다드", standard: 4, max: 6 },
+];
+
+const ROOM_NAME_EN_MAP = {
+  "스탠다드": "Standard",
+  "디럭스": "Deluxe",
+  "럭셔리스위트 더블": "Luxury Suite Double",
+  "럭셔리스위트 베스트슬립 더블": "Luxury Suite BestSleep Double",
+  "슈페리어 더블": "Superior Double",
+  "팰리스 스위트": "Palace Suite",
+  "마운틴 스탠다드": "Mountain Standard",
+  "밸리 스탠다드": "Valley Standard",
+  "힐 스탠다드": "Hill Standard",
+};
+
+/** [PMS 객실 동기화] — 더미 PMS 객실을 주입/갱신. 소속 숙소가 없으면(미동기화) 스킵. */
+function syncPmsRooms() {
+  const places = loadPlaces();
+  const placeByCode = new Map(places.map((p) => [p.place_code, p]));
+  const existing = loadRooms();
+  const now = new Date().toISOString();
+  let seq = 0;
+  const nextCode = () => {
+    seq += 1;
+    return "RM-" + String(seq).padStart(4, "0");
+  };
+  const merged = [];
+  PMS_DUMMY_ROOMS_SEED.forEach((seed) => {
+    const place = placeByCode.get(seed.place_code);
+    if (!place) return; // 숙소 미동기화 → 스킵
+    const prev = existing.find((r) => r.place_id === place.id && r.rm_typ_cd === seed.rm_typ_cd);
+    merged.push({
+      id: prev?.id || uid(),
+      place_id: place.id,
+      room_code: prev?.room_code || nextCode(),
+      rm_typ_cd: seed.rm_typ_cd, // PMS 객실타입코드 (기준 키)
+      room_name: seed.room_name,
+      room_name_en: prev?.room_name_en || "",
+      // 관리자 보완 필드 보존
+      room_type_id: prev?.room_type_id || "",
+      room_trait_ids: prev?.room_trait_ids || [],
+      bed_rows: prev?.bed_rows || [],
+      facility_ids: prev?.facility_ids || [],
+      featured_facility_ids: prev?.featured_facility_ids || [],
+      room_size_sqm: prev?.room_size_sqm || "",
+      policy_html_en: prev?.policy_html_en || "",
+      policy_html_zh: prev?.policy_html_zh || "",
+      guide_html_en: prev?.guide_html_en || "",
+      guide_html_zh: prev?.guide_html_zh || "",
+      image_meta: prev?.image_meta || [],
+      // PMS 수신
+      standard_occupancy: seed.standard,
+      max_occupancy: seed.max,
+      visibility: prev ? prev.visibility : "SHOW",
+      created_at: prev?.created_at || now,
+      updated_at: now,
+      updated_by: "PMS 동기화",
+    });
+  });
+  saveRooms(merged);
+  return merged.length;
+}
+
+/** [누락된 필드 AI 번역](더미) — 미입력 room_name_en 자동 채움 */
+function aiTranslateRoomNames() {
+  const list = loadRooms();
+  let n = 0;
+  list.forEach((r) => {
+    if (!r.room_name_en && r.room_name) {
+      r.room_name_en = ROOM_NAME_EN_MAP[r.room_name] || r.room_name;
+      r.updated_at = new Date().toISOString();
+      n++;
+    }
+  });
+  saveRooms(list);
+  return n;
+}
+
+/** 객실타입(RM_TYP_CD)별 더미 입금가 (재고·요금 동기화용) */
+const RM_TYP_RATE_MAP = {
+  STD: 250000, DLX: 350000, LSD: 400000, LBD: 420000, SPD: 300000,
+  PST: 500000, MST: 280000, VST: 280000, HST: 280000,
+};
+
+/** 7/1~8/31 날짜별 인벤토리(재고·요금) 더미 생성 · 재고 3값(총운영/예약/잔여) */
+function buildDummyRoomInventory(price, totalStock) {
+  const rows = [];
+  [
+    ["07", 31],
+    ["08", 31],
+  ].forEach(([mm, days]) => {
+    for (let d = 1; d <= days; d++) {
+      rows.push({
+        date: `2026-${mm}-${String(d).padStart(2, "0")}`,
+        price,
+        oper_cnt: totalStock, // 총 운영 (OPER_RM_CNT)
+        rsv_cnt: 0, // 예약됨 (RSV_CNT)
+        avlb_cnt: totalStock, // 잔여 (AVLB_RM_CNT) ★ 프런트 sold out 기준
+        stock: totalStock, // 하위호환(= 잔여)
+        closed: false,
+      });
+    }
+  });
+  return rows;
+}
+
+/** [재고·요금 동기화] — 객실별 PMS 재고·요금(room.inventory) 채움. 객실 정보 동기화와 별개. */
+function syncPmsRoomInventory() {
+  const rooms = loadRooms();
+  if (!rooms.length) return 0;
+  const now = new Date().toISOString();
+  let count = 0;
+  rooms.forEach((room) => {
+    const price = RM_TYP_RATE_MAP[room.rm_typ_cd] || 300000;
+    // 재동기화 시 기존 강제 마감(closed) 상태 보존
+    const prevClosed = new Map((Array.isArray(room.inventory) ? room.inventory : []).map((r) => [r.date, r.closed === true]));
+    room.inventory = buildDummyRoomInventory(price, 30).map((r) => ({ ...r, closed: prevClosed.get(r.date) === true })); // 7/1~8/31, 재고 30
+    room.inventory_synced_at = now;
+    count += 1;
+  });
+  saveRooms(rooms);
+  return count;
+}
+
 function loadProducts() {
   try {
     const raw = localStorage.getItem(STORAGE_PRODUCTS);
@@ -599,6 +820,73 @@ function loadProducts() {
 
 function saveProducts(list) {
   localStorage.setItem(STORAGE_PRODUCTS, JSON.stringify(list));
+}
+
+/**
+ * PMS 상품정보 동기화 (더미). 동기화된 각 객실당 룸온리 상품 1건 생성/갱신.
+ * - 전 상품 PMS 연동 전제(pms_linked). 취소정책은 PMS API 9 표시(읽기전용).
+ * - 재고·요금(inventory)은 S04-INV/PMS 연동이며 상품에서는 읽기전용 조회. 동기화 직후 인벤토리 0행.
+ */
+function syncPmsProducts() {
+  const rooms = loadRooms();
+  if (!rooms.length) return 0;
+  const existing = loadProducts();
+  const now = new Date().toISOString();
+  let seq = 0;
+  const nextCode = () => {
+    seq += 1;
+    return "PR-" + String(seq).padStart(4, "0");
+  };
+  const merged = [];
+  rooms.forEach((room) => {
+    const prev = existing.find((p) => p.room_id === room.id && p.pms_linked);
+    const baseName = room.room_name_en || room.room_name || room.rm_typ_cd || "Room";
+    merged.push({
+      id: prev?.id || uid(),
+      product_code: prev?.product_code || nextCode(),
+      room_id: room.id,
+      pms_linked: true,
+      product_type: PRODUCT_TYPE.ROOM_ONLY,
+      // 다국어 (국문 미사용 · EN 필수 · ZH 선택)
+      name_en: prev?.name_en || `${baseName} Room Only`,
+      name_zh: prev?.name_zh || "",
+      description_en: prev?.description_en || "",
+      description_zh: prev?.description_zh || "",
+      guide_policy_html_en: prev?.guide_policy_html_en || "",
+      guide_policy_html_zh: prev?.guide_policy_html_zh || "",
+      // PMS 수신 / 정책
+      visibility: prev ? prev.visibility : "Y",
+      sale_start_date: prev?.sale_start_date || "2026-07-01",
+      sale_end_date: prev?.sale_end_date || "2026-12-31",
+      cancel_policy_type: "PMS_API9", // PMS 취소정책 (API 9/10, 읽기전용)
+      cancel_free_days_before: null,
+      inventory: prev?.inventory || [], // 재고·요금은 S04-INV/PMS 연동, 마진은 일자별(inventory row)
+      created_at: prev?.created_at || now,
+      updated_at: now,
+      updated_by: "PMS 동기화",
+    });
+  });
+  saveProducts(merged);
+  return merged.length;
+}
+
+/** [누락된 필드 AI 번역](더미) — 미입력 상품명 영문 자동 채움 */
+function aiTranslateProductNames() {
+  const rooms = loadRooms();
+  const roomById = new Map(rooms.map((r) => [r.id, r]));
+  const list = loadProducts();
+  let n = 0;
+  list.forEach((p) => {
+    if (!p.name_en) {
+      const room = roomById.get(p.room_id);
+      const base = room?.room_name_en || room?.room_name || room?.rm_typ_cd || "Room";
+      p.name_en = `${base} Room Only`;
+      p.updated_at = new Date().toISOString();
+      n++;
+    }
+  });
+  saveProducts(list);
+  return n;
 }
 
 /** 객실 id당 연결된 상품 건수 */
@@ -681,15 +969,53 @@ function normalizeInventoryRow(raw) {
     0,
     parseInt(String(raw?.cutoff_days_before_checkin ?? "").replace(/\D/g, ""), 10) || 0
   );
+  const margin_type = raw?.margin_type === "rate" || raw?.margin_type === "amount" ? raw.margin_type : "";
+  const margin_value = raw?.margin_value === "" || raw?.margin_value == null ? "" : String(raw.margin_value);
+  const margin_source = raw?.margin_source === "manual" ? "manual" : "master"; // manual=관리자 개별, master=마스터 상속
   return {
     date,
     price,
     stock,
+    closed: raw?.closed === true,
     checkin_allowed,
     min_stay_nights,
     max_stay_nights,
     cutoff_days_before_checkin,
+    margin_type, // 일자별 마진 유형 (amount/rate/"")
+    margin_value, // 일자별 마진 값
+    margin_source, // 마스터 상속(master) / 관리자 개별(manual)
   };
+}
+
+/** 공통관리 마진관리 — 전역 기본 디폴트 (마스터 미설정 RM_TYP_CD에 적용) */
+const DEFAULT_DAILY_MARGIN = { type: "amount", value: "30000" };
+
+function loadMarginMaster() {
+  try {
+    const raw = localStorage.getItem(STORAGE_MARGIN_MASTER);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+function saveMarginMaster(map) {
+  localStorage.setItem(STORAGE_MARGIN_MASTER, JSON.stringify(map || {}));
+}
+/** RM_TYP_CD의 마진 마스터 값 (없으면 전역 디폴트) — 상품 일자별 마진 디폴트 소스 */
+function getMarginMaster(rmTypCd) {
+  const m = loadMarginMaster();
+  const e = rmTypCd && m[rmTypCd];
+  if (e && (e.type === "amount" || e.type === "rate")) return { type: e.type, value: String(e.value ?? "") };
+  return { type: DEFAULT_DAILY_MARGIN.type, value: DEFAULT_DAILY_MARGIN.value };
+}
+
+/** 실판매가 = 입금가 + 마진 (마진율: floor(base×(1+율/100)) · 마진금액: base+금액). 소수점 버림. */
+function computeSellPrice(basePrice, marginType, marginValue) {
+  const base = Math.max(0, parseInt(basePrice, 10) || 0);
+  const v = parseFloat(marginValue);
+  if (marginType === "rate" && !Number.isNaN(v)) return Math.max(0, Math.floor(base * (1 + v / 100)));
+  if (marginType === "amount" && !Number.isNaN(v)) return Math.max(0, base + Math.floor(v));
+  return base; // 마진 없음 → 판매가 = 입금가
 }
 
 function invMapFromRows(inventory) {
@@ -876,8 +1202,139 @@ function setActiveNav() {
       (target === "places" && path.startsWith("places")) ||
       (target === "rooms" && path.startsWith("rooms")) ||
       (target === "products" && path.startsWith("products")) ||
-      (target === "room-masters" && path.startsWith("room-masters"));
+      (target === "room-masters" && path.startsWith("room-masters")) ||
+      (target === "margin-management" && path.startsWith("margin-management"));
     el.classList.toggle("active", on);
+  });
+}
+
+function renderMarginMaster(main) {
+  const rooms = loadRooms();
+  const places = loadPlaces();
+  const placeById = new Map(places.map((p) => [p.id, p]));
+  const master = loadMarginMaster();
+  const seen = new Set();
+  const types = [];
+  rooms.forEach((r) => {
+    const code = r.rm_typ_cd;
+    if (!code || seen.has(code)) return;
+    seen.add(code);
+    types.push({
+      code,
+      roomName: r.room_name_en || r.room_name || "",
+      placeName: placeById.get(r.place_id)?.place_name || "",
+      placeId: r.place_id || "",
+    });
+  });
+  function previewCell(mt, mv) {
+    const p = computeSellPrice(300000, mt || DEFAULT_DAILY_MARGIN.type, mt ? mv : DEFAULT_DAILY_MARGIN.value);
+    return p.toLocaleString() + "원";
+  }
+  const rowsHtml = types.length
+    ? types
+        .map((t) => {
+          const e = master[t.code] || {};
+          const mt = e.type === "amount" || e.type === "rate" ? e.type : "";
+          const mv = e.value ?? "";
+          return `<tr data-code="${escapeAttr(t.code)}" data-place="${escapeAttr(t.placeId || "")}">
+            <td><span class="badge" style="background:#eef;color:#4457c7">${escapeHtml(t.code)}</span></td>
+            <td>${escapeHtml(t.placeName || "-")}</td>
+            <td>${escapeHtml(t.roomName || "-")}</td>
+            <td><select class="mm-type" style="width:110px">
+              <option value="" ${!mt ? "selected" : ""}>전역 디폴트</option>
+              <option value="amount" ${mt === "amount" ? "selected" : ""}>마진금액</option>
+              <option value="rate" ${mt === "rate" ? "selected" : ""}>마진율%</option>
+            </select></td>
+            <td><input class="mm-value" type="text" inputmode="numeric" value="${escapeAttr(String(mv))}" style="width:90px" ${!mt ? "disabled" : ""} /></td>
+            <td style="color:#1a6fb8;font-weight:600">${previewCell(mt, mv)}</td>
+          </tr>`;
+        })
+        .join("")
+    : `<tr><td colspan="6" class="muted" style="padding:12px">객실이 없습니다. 객실관리에서 [PMS 객실 동기화] 후 이용하세요.</td></tr>`;
+
+  main.innerHTML = `
+    <h2 class="page-title">마진관리 <span style="font-size:12px;font-weight:400;color:#888">— 공통관리 · 객실 타입(RM_TYP_CD)별 마진 디폴트</span></h2>
+    <p class="page-desc">여기서 설정한 마진이 상품 재고·요금의 <strong>일자별 마진 디폴트</strong>로 주입됩니다. 날짜별 개별 조정은 상품(S06) 재고·요금 탭에서 합니다. 전역 기본 디폴트: 마진금액 ${DEFAULT_DAILY_MARGIN.value}원.</p>
+    <div class="card">
+      <div class="product-bulk-bar" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
+        <span class="product-bulk-title" style="width:100%;margin-bottom:2px;">일괄 적용</span>
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888;">숙소 필터
+          <select id="mm_bulk_place" style="width:180px;">
+            <option value="">전체</option>
+            ${places.map((p) => `<option value="${escapeAttr(p.id)}">${escapeHtml(p.place_name)}</option>`).join("")}
+          </select></label>
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888;">마진 유형
+          <select id="mm_bulk_type" style="width:120px;">
+            <option value="">선택</option>
+            <option value="amount">마진금액</option>
+            <option value="rate">마진율%</option>
+          </select></label>
+        <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888;">마진 값
+          <input type="text" id="mm_bulk_value" inputmode="numeric" style="width:90px;" /></label>
+        <button type="button" class="btn" id="mm_bulk_apply" style="height:34px;">전체 적용</button>
+        <span style="flex:1"></span>
+        <button type="button" class="btn btn-primary" id="mm_save" style="height:34px;">마진 마스터 저장</button>
+      </div>
+      <div class="product-inv-wrap" style="margin-top:10px"><table class="room-list-table">
+        <thead><tr><th>RM_TYP_CD</th><th>숙소명</th><th>객실명</th><th>마진 유형</th><th>마진 값</th><th>판매가 예시 (입금가 300,000)</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table></div>
+      <p class="field-hint" style="margin-top:8px">유형 '전역 디폴트' 선택 시 전역 기본(마진금액 ${DEFAULT_DAILY_MARGIN.value}원)이 적용됩니다. 저장 후 상품 재고·요금에서 마진 미설정 일자에 이 값이 디폴트로 반영됩니다.</p>
+    </div>
+  `;
+
+  function refreshRowPreview(tr) {
+    const mt = tr.querySelector(".mm-type")?.value || "";
+    const mv = tr.querySelector(".mm-value")?.value || "";
+    tr.querySelector("td:last-child").textContent = previewCell(mt, mv);
+  }
+  main.querySelectorAll(".mm-type").forEach((sel) => {
+    sel.addEventListener("change", () => {
+      const tr = sel.closest("tr");
+      const valInp = tr.querySelector(".mm-value");
+      if (valInp) valInp.disabled = !sel.value;
+      refreshRowPreview(tr);
+    });
+  });
+  main.querySelectorAll(".mm-value").forEach((inp) => {
+    inp.addEventListener("input", () => refreshRowPreview(inp.closest("tr")));
+  });
+
+  document.getElementById("mm_bulk_apply")?.addEventListener("click", () => {
+    const bt = document.getElementById("mm_bulk_type")?.value || "";
+    const bv = String(document.getElementById("mm_bulk_value")?.value || "").trim();
+    const bp = document.getElementById("mm_bulk_place")?.value || ""; // "" = 전체
+    if (bt !== "amount" && bt !== "rate") {
+      alert("마진 유형(마진금액/마진율)을 선택하세요.");
+      return;
+    }
+    let n = 0;
+    main.querySelectorAll("tbody tr[data-code]").forEach((tr) => {
+      if (bp && tr.getAttribute("data-place") !== bp) return; // 숙소 필터 (전체가 아니면 해당 숙소만)
+      const sel = tr.querySelector(".mm-type");
+      const inp = tr.querySelector(".mm-value");
+      if (sel) sel.value = bt;
+      if (inp) {
+        inp.value = bv;
+        inp.disabled = false;
+      }
+      refreshRowPreview(tr);
+      n += 1;
+    });
+    if (!n) alert("선택한 숙소에 해당하는 객실 타입이 없습니다.");
+  });
+
+  document.getElementById("mm_save")?.addEventListener("click", () => {
+    if (!confirm("마진 마스터를 저장하시겠습니까?\n저장 시 상품 재고·요금의 마진 미설정 일자에 디폴트로 반영됩니다.")) return;
+    const map = {};
+    main.querySelectorAll("tbody tr[data-code]").forEach((tr) => {
+      const code = tr.getAttribute("data-code");
+      const mt = tr.querySelector(".mm-type")?.value || "";
+      const mv = String(tr.querySelector(".mm-value")?.value || "").trim();
+      if (mt === "amount" || mt === "rate") map[code] = { type: mt, value: mv };
+    });
+    saveMarginMaster(map);
+    alert("마진 마스터가 저장되었습니다.");
   });
 }
 
@@ -899,8 +1356,13 @@ function route() {
   if (!main) return;
 
   if (parts[0] === "room-masters") {
-    const tab = parts[1] === "traits" ? "traits" : parts[1] === "beds" ? "beds" : "types";
+    const tab = parts[1] === "beds" ? "beds" : "types";
     renderRoomMastersPage(main, tab);
+    return;
+  }
+
+  if (parts[0] === "margin-management") {
+    renderMarginMaster(main);
     return;
   }
 
@@ -1044,45 +1506,50 @@ function renderPlaceList(main) {
   const rooms = loadRooms();
   const products = loadProducts();
   const placeProductCount = productCountByPlaceId(products, rooms);
+  const untranslated = places.filter((p) => !p.place_name_en && p.place_name).length;
   const rows = places
     .slice()
     .sort((a, b) => (b.updated_at || "").localeCompare(a.updated_at || ""))
     .map(
-      (p) => `
+      (p) => {
+        const imgCount = Array.isArray(p.image_meta) ? p.image_meta.length : 0;
+        return `
     <tr data-id="${p.id}">
       <td>${escapeHtml(p.place_code)}</td>
-      <td>${escapeHtml(p.place_name)}</td>
-      <td>${p.category === "CONDO" ? "Condo" : "Hotel"}</td>
-      <td>${escapeHtml(subLabel(p.category, p.sub_place))}</td>
+      <td>${escapeHtml(p.place_name)}${imgCount ? ` <span class="badge" style="background:#eef;color:#4457c7">img:${imgCount}</span>` : ""}</td>
+      <td><span class="badge ${p.category === "CONDO" ? "" : "on"}">${p.category === "CONDO" ? "CONDO" : "HOTEL"}</span></td>
+      <td>${escapeHtml(subLabel(p.category, p.sub_place) || "-")}</td>
       <td><span class="badge ${p.visibility === "HIDE" ? "off" : "on"}">${visibilityLabel(p.visibility)}</span></td>
-      <td>${escapeHtml(p.check_in_time || "-")}</td>
-      <td>${escapeHtml(p.check_out_time || "-")}</td>
-      <td><a class="btn btn-ghost" href="#/rooms/place/${p.id}">객실 ${rooms.filter((r) => r.place_id === p.id).length}</a></td>
-      <td><a class="btn btn-ghost" href="#/products/place/${p.id}">${placeProductCount.get(p.id) || 0}개</a></td>
+      <td>${escapeHtml(p.check_in_time || "-")} / ${escapeHtml(p.check_out_time || "-")}</td>
+      <td><a class="btn btn-ghost" href="#/rooms/place/${p.id}">${rooms.filter((r) => r.place_id === p.id).length}</a></td>
+      <td><a class="btn btn-ghost" href="#/products/place/${p.id}">${placeProductCount.get(p.id) || 0}</a></td>
       <td>${formatDate(p.updated_at)}</td>
-      <td>${escapeHtml(p.updated_by || "-")}</td>
       <td><button type="button" class="btn btn-ghost js-edit" data-id="${p.id}">수정</button></td>
-    </tr>`
+    </tr>`;
+      }
     )
     .join("");
 
   main.innerHTML = `
     <h2 class="page-title">숙소관리</h2>
-    <p class="page-desc">숙소(Place) 데이터를 등록·수정합니다. (프로토타입: 브라우저 localStorage 저장) · v0.2 · 상품연결은 소속 객실에 매핑된 <code>${escapeHtml(STORAGE_PRODUCTS)}</code> 건수 합계입니다.</p>
+    <p class="page-desc">스토어에 노출되는 숙소(호텔/콘도)를 관리합니다. <strong>신규 숙소는 PMS 동기화로만 생성됩니다.</strong> (프로토타입: PMS 연동은 더미 데이터로 시뮬레이션)</p>
     <div class="card">
-      <div class="toolbar">
-        <a href="#/places/new" class="btn btn-primary">숙소 등록</a>
-        <a href="#/rooms/new" class="btn">객실 등록</a>
-        <span style="color:var(--muted);font-size:13px;">저장소: <code>${STORAGE_PLACES}</code></span>
+      <div class="toolbar" style="justify-content:flex-end;gap:8px">
+        <span style="color:var(--muted);font-size:13px;margin-right:auto">저장소: <code>${STORAGE_PLACES}</code></span>
+        <button type="button" class="btn btn-primary js-pms-sync">PMS 동기화 / 갱신</button>
+        <button type="button" class="btn js-ai-translate"${untranslated ? "" : " disabled"}>비영문 이름 AI 번역${untranslated ? ` (${untranslated})` : ""}</button>
+      </div>
+      <div class="notice" style="background:#fff9e6;border:1px solid #f0d98c;border-radius:6px;padding:8px 12px;font-size:13px;color:#7a5c00;margin-bottom:12px">
+        여기서 수정한 내용은 C-side 숙소 카탈로그(이름, 히어로 이미지, 소개)에 반영되며, HIDE하면 스토어에서 숙소가 숨겨집니다. <strong>신규 숙소는 먼저 PMS를 동기화한 뒤, 여기서 보완 항목만 수정합니다.</strong>
       </div>
       ${
         places.length === 0
-          ? `<div class="empty"><strong>등록된 숙소가 없습니다.</strong>「숙소 등록」으로 첫 데이터를 만들어 보세요.</div>`
+          ? `<div class="empty"><strong>동기화된 숙소가 없습니다.</strong> 상단 <strong>[PMS 동기화 / 갱신]</strong> 버튼을 눌러 PMS에서 숙소를 불러오세요. (최초 1회 필수)</div>`
           : `<table>
         <thead><tr>
-          <th>숙소코드</th><th>숙소명</th><th>1차 분류</th><th>2차</th><th>운영</th>
-          <th>체크인</th><th>체크아웃</th><th>객실</th><th>상품연결</th>
-          <th>수정일시</th><th>수정자</th><th></th>
+          <th>숙소코드</th><th>숙소명</th><th>1차 분류</th><th>2차 구역</th><th>노출 여부</th>
+          <th>체크인/체크아웃</th><th>객실수</th><th>상품연결</th>
+          <th>수정일시</th><th>수정</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>`
@@ -1093,6 +1560,25 @@ function renderPlaceList(main) {
   main.querySelectorAll(".js-edit").forEach((btn) => {
     btn.addEventListener("click", () => navigate("places/edit/" + btn.getAttribute("data-id")));
   });
+
+  const syncBtn = main.querySelector(".js-pms-sync");
+  if (syncBtn) {
+    syncBtn.addEventListener("click", () => {
+      if (!confirm("PMS에서 숙소 정보를 동기화(갱신)합니다.\nPMS 수신 항목(숙소명·분류·체크인 시간 등)은 갱신되고, 관리자 보완 항목(영문명·소개·정책·시설 등)은 유지됩니다.\n진행할까요?")) return;
+      const n = syncPmsPlaces();
+      alert(`PMS 동기화 완료 — 숙소 ${n}건 반영되었습니다.`);
+      renderPlaceList(main);
+    });
+  }
+
+  const aiBtn = main.querySelector(".js-ai-translate");
+  if (aiBtn) {
+    aiBtn.addEventListener("click", () => {
+      const n = aiTranslatePlaceNames();
+      alert(n ? `AI 번역 완료 — 영문명 ${n}건 자동 입력되었습니다. (더미)` : "번역할 미입력 영문명이 없습니다.");
+      renderPlaceList(main);
+    });
+  }
 }
 
 // --- Place wizard ---
@@ -1124,13 +1610,13 @@ function renderPlaceWizard(main, editId) {
     address: existing?.address || "",
     address_en: existing?.address_en || "",
     location_detail: existing?.location_detail || "",
-    location_detail_en: existing?.location_detail_en || "",
     image_meta: existing?.image_meta || [],
     image_storage_warning: "",
     guide_html: existing?.guide_html || "",
     guide_html_en: existing?.guide_html_en || "",
     policy_html: existing?.policy_html || "",
     policy_html_en: existing?.policy_html_en || "",
+    extra_fee_notes: Array.isArray(existing?.extra_fee_notes) ? existing.extra_fee_notes.map((n) => ({ en: n.en || "", zh: n.zh || "" })) : [],
     facility_ids: existing?.facility_ids || [],
     featured_facility_ids: normalizeFeaturedFacilityIds(
       existing?.featured_facility_ids,
@@ -1269,9 +1755,6 @@ function renderPlaceWizard(main, editId) {
         <label class="field"><span>위치 상세 (HTML 또는 텍스트)</span>
           <textarea id="f_loc_detail" class="js-image-paste" rows="6" placeholder="<p>...</p> 또는 안내 문구">${escapeForTextarea(state.location_detail)}</textarea>
         </label>
-        <label class="field"><span>위치 상세 영문 (선택)</span>
-          <textarea id="f_loc_detail_en" class="js-image-paste" rows="6" placeholder="<p>...</p> or detail text">${escapeForTextarea(state.location_detail_en)}</textarea>
-        </label>
         <p style="font-size:12px;color:var(--muted);margin:-8px 0 12px;">클립보드 이미지 붙여넣기 가능 · 길게 저장 시 용량이 커지므로 2MB 이하 권장(프로토타입은 Data URL로 삽입)</p>
       `;
     } else if (state.step === 3) {
@@ -1307,6 +1790,19 @@ function renderPlaceWizard(main, editId) {
         }
       `;
     } else if (state.step === 4) {
+      const efn = Array.isArray(state.extra_fee_notes) ? state.extra_fee_notes : [];
+      const efnRowsHtml = efn.length
+        ? efn
+            .map(
+              (n, i) => `
+          <div class="efn-row" style="display:flex;gap:6px;margin-bottom:6px;align-items:center">
+            <input class="efn-en" placeholder="EN (필수)" value="${escapeHtml(n.en || "")}" style="flex:1" />
+            <input class="efn-zh" placeholder="ZH (선택 · 미입력 시 EN 대체)" value="${escapeHtml(n.zh || "")}" style="flex:1" />
+            <button type="button" class="btn btn-ghost efn-del" data-idx="${i}">삭제</button>
+          </div>`
+            )
+            .join("")
+        : `<p style="font-size:12px;color:var(--muted);margin:0 0 6px">등록된 추가요금 안내가 없습니다. [+ 항목 추가]로 입력하세요.</p>`;
       body = `
         <div class="dual">
           <label class="field"><span>숙소 안내</span>
@@ -1323,6 +1819,16 @@ function renderPlaceWizard(main, editId) {
           </label>
         </div>
         <p style="font-size:12px;color:var(--muted);margin:0 0 14px;">위 두 입력칸에 스크린샷 등 이미지를 복사한 뒤 <kbd>Ctrl</kbd>+<kbd>V</kbd>(Mac: <kbd>⌘</kbd>+<kbd>V</kbd>)로 붙여넣으면 이미지가 본문에 삽입됩니다.</p>
+
+        <div class="field" style="margin-top:8px;border-top:1px solid var(--border, #e3e3e3);padding-top:14px">
+          <span>추가요금 안내 (extra_fee_notes · 정보성, 결제와 무관)</span>
+          <p style="font-size:12px;color:var(--muted);margin:2px 0 8px">한 줄에 하나씩 입력합니다. EN 필수·ZH 선택. 프런트 정책정보 탭 '추가요금' 블록에 목록으로 표시됩니다. (예: Extra bedding: KRW 15,000 per set / night)</p>
+          <div id="efn_rows">${efnRowsHtml}</div>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button type="button" class="btn" id="efn_add">+ 항목 추가</button>
+            <button type="button" class="btn" id="efn_ai">AI 번역 (미입력 EN/ZH 자동 채움)</button>
+          </div>
+        </div>
       `;
     } else {
       const cats = categoriesForPlaceFacilities()
@@ -1459,6 +1965,37 @@ function renderPlaceWizard(main, editId) {
       document.getElementById("f_sub").addEventListener("change", (e) => {
         state.sub_place = e.target.value;
       });
+    }
+    if (state.step === 4) {
+      const addBtn = document.getElementById("efn_add");
+      if (addBtn)
+        addBtn.addEventListener("click", () => {
+          syncStepFields();
+          state.extra_fee_notes = state.extra_fee_notes || [];
+          state.extra_fee_notes.push({ en: "", zh: "" });
+          renderStep();
+        });
+      document.querySelectorAll(".efn-del").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          syncStepFields();
+          const i = parseInt(btn.getAttribute("data-idx"), 10);
+          if (!Number.isNaN(i) && Array.isArray(state.extra_fee_notes)) state.extra_fee_notes.splice(i, 1);
+          renderStep();
+        });
+      });
+      const aiBtn = document.getElementById("efn_ai");
+      if (aiBtn)
+        aiBtn.addEventListener("click", () => {
+          syncStepFields();
+          // 더미 AI 번역: 미입력 영문/중문 자동 채움
+          if (!state.guide_html_en && state.guide_html) state.guide_html_en = state.guide_html;
+          if (!state.policy_html_en && state.policy_html) state.policy_html_en = state.policy_html;
+          (state.extra_fee_notes || []).forEach((n) => {
+            if (n.en && !n.zh) n.zh = n.en;
+          });
+          renderStep();
+          alert("AI 번역(더미) 완료 — 미입력 영문/중문을 자동 채웠습니다.");
+        });
     }
     if (state.step === 3) {
       main.querySelectorAll(".js-place-image-remove").forEach((btn) => {
@@ -1629,7 +2166,6 @@ function renderPlaceWizard(main, editId) {
       state.address = document.getElementById("f_addr").value.trim();
       state.address_en = document.getElementById("f_addr_en")?.value.trim() || "";
       state.location_detail = document.getElementById("f_loc_detail").value;
-      state.location_detail_en = document.getElementById("f_loc_detail_en")?.value || "";
     } else if (step === 4) {
       const g = document.getElementById("f_guide");
       const p = document.getElementById("f_policy");
@@ -1639,6 +2175,15 @@ function renderPlaceWizard(main, editId) {
       const pe = document.getElementById("f_policy_en");
       if (ge) state.guide_html_en = ge.value;
       if (pe) state.policy_html_en = pe.value;
+      const efnRowsEl = document.getElementById("efn_rows");
+      if (efnRowsEl) {
+        state.extra_fee_notes = Array.from(efnRowsEl.querySelectorAll(".efn-row"))
+          .map((r) => ({
+            en: (r.querySelector(".efn-en")?.value || "").trim(),
+            zh: (r.querySelector(".efn-zh")?.value || "").trim(),
+          }))
+          .filter((x) => x.en || x.zh);
+      }
     } else if (step === 5) {
       const cf = document.getElementById("f_cat_fac");
       const cfe = document.getElementById("f_cat_fac_en");
@@ -1672,12 +2217,12 @@ function renderPlaceWizard(main, editId) {
       address: state.address,
       address_en: state.address_en,
       location_detail: state.location_detail,
-      location_detail_en: state.location_detail_en,
       image_meta: state.image_meta,
       guide_html: state.guide_html,
       guide_html_en: state.guide_html_en,
       policy_html: state.policy_html,
       policy_html_en: state.policy_html_en,
+      extra_fee_notes: (state.extra_fee_notes || []).filter((n) => n.en || n.zh),
       facility_ids: state.facility_ids,
       featured_facility_ids: normalizeFeaturedFacilityIds(
         state.featured_facility_ids,
@@ -2108,10 +2653,9 @@ function selectRangeOptions(min, max, selected) {
 
 function renderRoomMastersPage(main, tab) {
   ensureRoomMasters();
-  const t = tab === "traits" ? "traits" : tab === "beds" ? "beds" : "types";
+  const t = tab === "beds" ? "beds" : "types"; // v0.5: 객실특징(traits) 탭 제거 — 객실/객실유형에서 특징 미사용
   const tabs = [
     { id: "types", label: "객실유형", href: "#/room-masters/types" },
-    { id: "traits", label: "객실특징", href: "#/room-masters/traits" },
     { id: "beds", label: "침대유형", href: "#/room-masters/beds" },
   ];
   const tabPills = tabs
@@ -2265,56 +2809,47 @@ function renderRoomList(main, placeFilterId) {
     .sort((a, b) => (b.updated_at || "").localeCompare(a.updated_at || ""))
     .map((r) => {
       const pl = placeById.get(r.place_id);
-      const xbedYn = r.extra_bed_enabled ? "Y" : "N";
-      const occExtraYn = r.occupant_extra_charge_enabled ? "Y" : "N";
       const nProd = roomProductCount.get(r.id) || 0;
       return `
       <tr>
         <td>${escapeHtml(r.room_code || "-")}</td>
         <td>${pl ? escapeHtml(pl.place_name) : "?"}</td>
+        <td>${r.rm_typ_cd ? `<span class="badge" style="background:#eef;color:#4457c7">${escapeHtml(r.rm_typ_cd)}</span>` : "-"}</td>
         <td>${escapeHtml(r.room_name || "-")}</td>
         <td>${escapeHtml(String(r.standard_occupancy ?? "-"))}</td>
         <td>${escapeHtml(String(r.max_occupancy ?? "-"))}</td>
-        <td title="${r.extra_bed_enabled ? "있음 (Y)" : "없음 (N)"}"><span class="room-yn">${escapeHtml(xbedYn)}</span></td>
-        <td title="${r.occupant_extra_charge_enabled ? "있음 (Y)" : "없음 (N)"}"><span class="room-yn">${escapeHtml(occExtraYn)}</span></td>
+        <td><span class="badge ${r.visibility === "HIDE" ? "off" : "on"}">${visibilityLabel(r.visibility)}</span></td>
         <td><a class="btn btn-ghost" href="#/products/place/${escapeAttr(r.place_id)}">${nProd}개</a></td>
         <td>${formatDate(r.updated_at)}</td>
         <td><button type="button" class="btn btn-ghost js-room-edit" data-id="${escapeAttr(r.id)}">수정</button></td>
       </tr>`;
     })
     .join("");
+  const untranslatedRooms = filtered.filter((r) => !r.room_name_en && r.room_name).length;
 
   main.innerHTML = `
     <h2 class="page-title">객실관리</h2>
-    <p class="page-desc">숙소에 종속된 객실 데이터입니다. 저장소: <code>${escapeHtml(STORAGE_ROOMS)}</code> · 상품연결 건수는 <code>${escapeHtml(STORAGE_PRODUCTS)}</code>의 <code>room_id</code> 기준 · <a href="#/products">상품관리</a>에서 등록합니다.</p>
+    <p class="page-desc">각 숙소의 객실 유형을 관리합니다. <strong>신규 객실은 PMS 동기화로만 생성</strong>되고, 여기서 보완 항목을 편집합니다. (RM_TYP_CD = PMS 객실타입코드, 요금·재고·마진 기준 키)</p>
     <div class="card">
-      <div class="toolbar room-list-toolbar">
+      <div class="toolbar room-list-toolbar" style="justify-content:space-between">
         <label class="field" style="flex-direction:row;align-items:center;gap:8px;margin:0;">
           <span style="font-weight:600;">숙소 필터</span>
           <select id="room_place_filter" style="min-width:220px;">${placeOpts}</select>
         </label>
-        ${
-          placeFilterId
-            ? `<a href="#/rooms/new/place/${escapeAttr(placeFilterId)}" class="btn room-list-place-register-btn">이 숙소로 등록</a>
-          <a href="#/products/place/${escapeAttr(placeFilterId)}" class="btn">이 숙소 상품</a>`
-            : ""
-        }
-      </div>
-      <div class="room-list-table-bar" aria-label="객실 목록 도구">
-        <div class="room-list-table-bar-actions">
-          <a href="#/rooms/new" class="btn btn-primary">객실 등록</a>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn btn-primary js-pms-room-sync">PMS 객실 동기화</button>
+          <button type="button" class="btn btn-primary js-pms-inv-sync">재고·요금 동기화</button>
+          <button type="button" class="btn js-ai-room-translate"${untranslatedRooms ? "" : " disabled"}>누락된 필드 AI 번역${untranslatedRooms ? ` (${untranslatedRooms})` : ""}</button>
         </div>
       </div>
       ${
         filtered.length === 0
-          ? `<div class="empty"><strong>객실이 없습니다.</strong> 마스터(<a href="#/room-masters/types">객실유형관리</a>)와 숙소를 준비한 뒤 등록하세요.</div>`
+          ? `<div class="empty"><strong>동기화된 객실이 없습니다.</strong> 상단 <strong>[PMS 객실 동기화]</strong> 버튼을 눌러 PMS에서 객실을 불러오세요. (숙소를 먼저 동기화해야 합니다 · 최초 1회 필수)</div>`
           : `<div class="room-list-table-wrap">
       <table class="room-list-table">
         <thead><tr>
-          <th>객실코드</th><th>숙소</th><th>객실명</th><th>기준인원</th><th>최대인원</th>
-          <th title="Y=엑스트라베드 있음, N=없음">엑스트라베드<br /><span class="th-sub">Y/N</span></th>
-          <th title="Y=기준인원 초과 1인당 추가요금 있음, N=없음">추가인원비용<br /><span class="th-sub">Y/N</span></th>
-          <th>상품연결</th><th>수정일시</th><th></th>
+          <th>객실코드</th><th>숙소</th><th>PMS 객실타입코드</th><th>객실명</th><th>기준인원</th><th>최대인원</th>
+          <th>노출 여부</th><th>상품연결</th><th>수정일시</th><th>수정</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -2329,6 +2864,43 @@ function renderRoomList(main, placeFilterId) {
       const v = sel.value;
       if (v) navigate(`rooms/place/${v}`);
       else navigate("rooms");
+    });
+  }
+
+  const roomSyncBtn = main.querySelector(".js-pms-room-sync");
+  if (roomSyncBtn) {
+    roomSyncBtn.addEventListener("click", () => {
+      if (loadPlaces().length === 0) {
+        alert("먼저 숙소관리에서 [PMS 동기화]로 숙소를 불러오세요.");
+        return;
+      }
+      if (!confirm("PMS에서 객실 정보를 동기화(갱신)합니다.\nRM_TYP_CD·객실명·인원 등 PMS 수신 항목은 갱신되고, 관리자 보완 항목(영문명·시설·침대구성 등)은 유지됩니다.\n진행할까요?")) return;
+      const n = syncPmsRooms();
+      alert(`PMS 객실 동기화 완료 — 객실 ${n}건 반영되었습니다.`);
+      renderRoomList(main, placeFilterId);
+    });
+  }
+
+  const invSyncBtn = main.querySelector(".js-pms-inv-sync");
+  if (invSyncBtn) {
+    invSyncBtn.addEventListener("click", () => {
+      if (loadRooms().length === 0) {
+        alert("먼저 [PMS 객실 동기화]로 객실을 불러오세요.");
+        return;
+      }
+      if (!confirm("PMS에서 재고·요금을 동기화합니다. (객실 정보 동기화와 별개)\n2026-07-01 ~ 08-31 날짜별 재고·요금이 채워집니다.\n진행할까요?")) return;
+      const n = syncPmsRoomInventory();
+      alert(`재고·요금 동기화 완료 — 객실 ${n}건에 7/1~8/31 인벤토리(재고 30)가 반영되었습니다.`);
+      renderRoomList(main, placeFilterId);
+    });
+  }
+
+  const aiRoomBtn = main.querySelector(".js-ai-room-translate");
+  if (aiRoomBtn) {
+    aiRoomBtn.addEventListener("click", () => {
+      const n = aiTranslateRoomNames();
+      alert(n ? `AI 번역 완료 — 객실 영문명 ${n}건 자동 입력되었습니다. (더미)` : "번역할 미입력 영문명이 없습니다.");
+      renderRoomList(main, placeFilterId);
     });
   }
 
@@ -2378,7 +2950,7 @@ function renderRoomForm(main, editId, presetPlaceId) {
     room_code: existing?.room_code || (isEdit ? "" : nextRoomCode(allRooms)),
     room_name: existing?.room_name || "",
     room_type_id: existing?.room_type_id || "",
-    room_trait_ids: Array.isArray(existing?.room_trait_ids) ? [...existing.room_trait_ids] : [],
+    rm_typ_cd: existing?.rm_typ_cd || "",
     bed_rows: normalizeRoomBedRows(existing),
     standard_occupancy: existing?.standard_occupancy ?? 2,
     max_occupancy: existing?.max_occupancy ?? 4,
@@ -2389,18 +2961,14 @@ function renderRoomForm(main, editId, presetPlaceId) {
     ),
     pickerCategoryId: "",
     room_size_sqm: existing?.room_size_sqm ?? "",
-    policy_html: existing?.policy_html || "",
-    guide_html: existing?.guide_html || "",
-    extra_bed_enabled: !!existing?.extra_bed_enabled,
-    extra_bed_max_count: existing?.extra_bed_max_count ?? 1,
-    extra_bed_fee: existing?.extra_bed_fee ?? 0,
-    occupant_extra_charge_enabled: !!existing?.occupant_extra_charge_enabled,
-    occupant_extra_charge_per_person: existing?.occupant_extra_charge_per_person ?? 0,
-    occupant_extra_charge_settlement: normalizeRoomChargeSettlement(existing?.occupant_extra_charge_settlement),
-    extra_bed_settlement: normalizeRoomChargeSettlement(existing?.extra_bed_settlement),
+    policy_html_en: existing?.policy_html_en || "",
+    policy_html_zh: existing?.policy_html_zh || "",
+    guide_html_en: existing?.guide_html_en || "",
+    guide_html_zh: existing?.guide_html_zh || "",
     visibility: existing?.visibility === "HIDE" ? "HIDE" : "SHOW",
     image_meta: Array.isArray(existing?.image_meta) ? [...existing.image_meta] : [],
     image_storage_warning: "",
+    rfTab: "basic",
   };
 
   const roomCats = categoriesForRoomFacilities()
@@ -2477,23 +3045,10 @@ function renderRoomForm(main, editId, presetPlaceId) {
     state.standard_occupancy = parseInt(document.getElementById("rf_std_occ")?.value, 10) || 1;
     state.max_occupancy = parseInt(document.getElementById("rf_max_occ")?.value, 10) || 1;
     state.room_size_sqm = sanitizeRoomSizeSqmInput(document.getElementById("rf_size")?.value ?? "");
-    state.policy_html = document.getElementById("rf_policy")?.value ?? "";
-    state.guide_html = document.getElementById("rf_guide")?.value ?? "";
-    state.extra_bed_enabled = document.getElementById("rf_xbed_on")?.checked || false;
-    state.extra_bed_max_count = state.extra_bed_enabled
-      ? parseInt(document.getElementById("rf_xbed_max")?.value, 10) || 0
-      : 0;
-    state.extra_bed_fee = state.extra_bed_enabled
-      ? document.getElementById("rf_xbed_fee")?.value.trim() || "0"
-      : "0";
-    state.occupant_extra_charge_enabled = document.getElementById("rf_occ_extra_on")?.checked || false;
-    state.occupant_extra_charge_per_person = state.occupant_extra_charge_enabled
-      ? document.getElementById("rf_occ_extra_amt")?.value.trim() || "0"
-      : "0";
-    state.occupant_extra_charge_settlement = normalizeRoomChargeSettlement(
-      document.getElementById("rf_occ_extra_mode")?.value
-    );
-    state.extra_bed_settlement = normalizeRoomChargeSettlement(document.getElementById("rf_xbed_mode")?.value);
+    state.policy_html_en = document.getElementById("rf_policy_en")?.value ?? "";
+    state.policy_html_zh = document.getElementById("rf_policy_zh")?.value ?? "";
+    state.guide_html_en = document.getElementById("rf_guide_en")?.value ?? "";
+    state.guide_html_zh = document.getElementById("rf_guide_zh")?.value ?? "";
     state.visibility = document.getElementById("rf_vis")?.value || "SHOW";
     syncBedCountsFromDom();
   }
@@ -2523,13 +3078,6 @@ function renderRoomForm(main, editId, presetPlaceId) {
         (x) =>
           `<button type="button" class="tag-pill ${state.room_type_id === x.id ? "active" : ""} js-rt" data-id="${escapeAttr(x.id)}">${escapeHtml(x.name)}</button>`
       )
-      .join("");
-
-    const traitPills = masters.traits
-      .map((x) => {
-        const on = state.room_trait_ids.includes(x.id);
-        return `<button type="button" class="tag-pill ${on ? "active" : ""} js-tr" data-id="${escapeAttr(x.id)}">${escapeHtml(x.name)}</button>`;
-      })
       .join("");
 
     const bedPills = masters.bedTypes
@@ -2591,13 +3139,16 @@ function renderRoomForm(main, editId, presetPlaceId) {
       })
       .join("");
 
-    const autofillHint =
-      "「마스터로 객실명 채우기」는 언제든 누를 수 있으며, 클릭 시 현재 선택·침대 개수 기준으로 객실명을 덮어씁니다(수동 입력보다 우선).";
-
     main.innerHTML = `
       <h2 class="page-title">${isEdit ? "객실 수정" : "객실 등록"}</h2>
-      <p class="page-desc">숙소에 종속된 객실 · v0.2 · 코드 <code>${escapeHtml(state.room_code)}</code></p>
+      <p class="page-desc">숙소에 종속된 객실 · v0.5 · 코드 <code>${escapeHtml(state.room_code)}</code></p>
 
+      <div class="pf-form-tabs" role="tablist" aria-label="객실 수정 탭">
+        <button type="button" role="tab" class="pf-tab ${state.rfTab === "basic" ? "is-active" : ""}" id="rf_tab_basic">기본정보</button>
+        <button type="button" role="tab" class="pf-tab ${state.rfTab === "inv" ? "is-active" : ""}" id="rf_tab_inv">재고·요금</button>
+      </div>
+
+      <div id="rf_panel_basic" style="display:${state.rfTab === "basic" ? "block" : "none"}">
       <div class="card">
         <h3 class="section-title">소속 · 코드</h3>
         <div class="form-grid">
@@ -2606,6 +3157,9 @@ function renderRoomForm(main, editId, presetPlaceId) {
           </label>
           <label class="field"><span>객실코드</span>
             <input type="text" id="rf_code" value="${escapeAttr(state.room_code)}" ${isEdit ? "readonly" : ""} />
+          </label>
+          <label class="field"><span>PMS 객실타입코드 (RM_TYP_CD)</span>
+            <input type="text" id="rf_rm_typ_cd" value="${escapeAttr(state.rm_typ_cd || "")}" readonly placeholder="PMS 동기화 시 자동" style="background:#f5f5f5;color:#555" />
           </label>
           <label class="field"><span>운영</span>
             <select id="rf_vis">
@@ -2617,22 +3171,18 @@ function renderRoomForm(main, editId, presetPlaceId) {
       </div>
 
       <div class="card">
-        <h3 class="section-title">객실유형 · 특징 · 침대</h3>
-        <p class="field-hint">객실유형 1개 필수 · 특징은 선택(클릭 순서대로 명칭 앞에 붙음) · 침대유형 1개 이상 필수 · 침대 개수는 선택 순서와 동일합니다.</p>
+        <h3 class="section-title">객실유형 · 침대</h3>
+        <p class="field-hint">객실유형 1개 필수 · 침대유형 1개 이상 필수 · 침대 개수는 선택 순서와 동일합니다.</p>
         <div class="tag-section"><strong>객실유형</strong><div class="tag-pool">${rtPills || "<span class='muted'>마스터 없음</span>"}</div></div>
-        <div class="tag-section"><strong>객실특징</strong><div class="tag-pool">${traitPills || ""}</div></div>
         <div class="tag-section"><strong>침대유형</strong><div class="tag-pool">${bedPills || ""}</div></div>
         <div class="bed-count-grid">${bedCountRows || "<p class='muted small'>침대유형을 선택하면 개수 입력이 나타납니다.</p>"}</div>
       </div>
 
       <div class="card">
         <h3 class="section-title">객실명</h3>
-        <p class="field-hint">${escapeHtml(autofillHint)}</p>
-        <div class="toolbar" style="margin-bottom:10px;">
-          <button type="button" class="btn btn-primary" id="rf_autofill_name">마스터로 객실명 채우기</button>
-        </div>
+        <p class="field-hint">PMS 동기화 시 객실명이 자동 입력됩니다. 필요 시 직접 수정하세요. (영문명은 [누락된 필드 AI 번역]으로 채움)</p>
         <label class="field"><span>객실명</span>
-          <input type="text" id="rf_name" value="${escapeAttr(state.room_name)}" placeholder="자동 또는 직접 입력" />
+          <input type="text" id="rf_name" value="${escapeAttr(state.room_name)}" placeholder="PMS 수신 또는 직접 입력" />
         </label>
       </div>
 
@@ -2680,50 +3230,7 @@ function renderRoomForm(main, editId, presetPlaceId) {
         }
       </div>
 
-      <div class="card">
-        <h3 class="section-title">인원 추가요금 (객실정책)</h3>
-        <p class="field-hint" style="margin:-6px 0 12px;font-size:12px;">반영 기준은 결제 흐름용입니다. 프런트 정책 화면에는 금액·조건이 선택과 관계없이 노출됩니다.</p>
-        <label class="field row-inline">
-          <input type="checkbox" id="rf_occ_extra_on" ${state.occupant_extra_charge_enabled ? "checked" : ""} />
-          <span>기준인원 초과 시 추가요금 있음</span>
-        </label>
-        <label class="field"><span>1인당 추가요금 (숫자)</span>
-          <input type="text" id="rf_occ_extra_amt" inputmode="numeric" placeholder="원" value="${escapeAttr(String(state.occupant_extra_charge_per_person ?? ""))}" ${
-      !state.occupant_extra_charge_enabled ? "disabled" : ""
-    } />
-        </label>
-        <label class="field"><span>추가요금 반영 기준</span>
-          <select id="rf_occ_extra_mode" ${!state.occupant_extra_charge_enabled ? "disabled" : ""}>
-            <option value="${ROOM_CHARGE_SETTLEMENT.AT_BOOKING}" ${state.occupant_extra_charge_settlement === ROOM_CHARGE_SETTLEMENT.AT_BOOKING ? "selected" : ""}>예약·결제 시 반영</option>
-            <option value="${ROOM_CHARGE_SETTLEMENT.ON_SITE}" ${state.occupant_extra_charge_settlement === ROOM_CHARGE_SETTLEMENT.ON_SITE ? "selected" : ""}>현장 결제</option>
-          </select>
-        </label>
-      </div>
-
-      <div class="card">
-        <h3 class="section-title">엑스트라베드</h3>
-        <p class="field-hint" style="margin:-6px 0 12px;font-size:12px;">반영 기준은 결제 흐름용입니다. 프런트 정책 화면에는 금액·조건이 선택과 관계없이 노출됩니다.</p>
-        <label class="field row-inline">
-          <input type="checkbox" id="rf_xbed_on" ${state.extra_bed_enabled ? "checked" : ""} />
-          <span>엑스트라베드 사용</span>
-        </label>
-        <div class="form-grid">
-          <label class="field"><span>최대 신청 개수</span>
-            <select id="rf_xbed_max" ${!state.extra_bed_enabled ? "disabled" : ""}>${selectRangeOptions(0, 10, state.extra_bed_max_count)}</select>
-          </label>
-          <label class="field"><span>추가비용 · 1개당 (숫자)</span>
-            <input type="text" id="rf_xbed_fee" inputmode="numeric" placeholder="1개·1박당 원 단위 등" value="${escapeAttr(String(state.extra_bed_fee ?? ""))}" ${
-      !state.extra_bed_enabled ? "disabled" : ""
-    } />
-          </label>
-          <label class="field"><span>추가비용 반영 기준</span>
-            <select id="rf_xbed_mode" ${!state.extra_bed_enabled ? "disabled" : ""}>
-              <option value="${ROOM_CHARGE_SETTLEMENT.AT_BOOKING}" ${state.extra_bed_settlement === ROOM_CHARGE_SETTLEMENT.AT_BOOKING ? "selected" : ""}>예약·결제 시 반영</option>
-              <option value="${ROOM_CHARGE_SETTLEMENT.ON_SITE}" ${state.extra_bed_settlement === ROOM_CHARGE_SETTLEMENT.ON_SITE ? "selected" : ""}>현장 결제</option>
-            </select>
-          </label>
-        </div>
-      </div>
+      <!-- v0.5: 객실 부가요금(인원추가요금·엑스트라베드) 섹션 제거 → 숙소 '추가요금 안내(extra_fee_notes)'로 이관, 결제 개념 폐기 -->
 
       <div class="card">
         <div class="facility-step-banner">
@@ -2751,11 +3258,19 @@ function renderRoomForm(main, editId, presetPlaceId) {
 
       <div class="card">
         <h3 class="section-title">객실정책 · 객실안내</h3>
-        <label class="field"><span>객실정책 (HTML·이미지 붙여넣기)</span>
-          <textarea id="rf_policy" class="js-image-paste" rows="8">${escapeForTextarea(state.policy_html)}</textarea>
+        <p class="field-hint" style="margin:-6px 0 12px;font-size:12px;">영문(필수)·중문(선택)으로 입력합니다. (외국인 전용 · 국문 미사용) 프런트는 중문 접속 시 중문, 없으면 영문으로 표시됩니다.</p>
+        <label class="field"><span>객실정책 (영문, 필수)</span>
+          <textarea id="rf_policy_en" class="js-image-paste" rows="6" placeholder="HTML or plain text">${escapeForTextarea(state.policy_html_en)}</textarea>
         </label>
-        <label class="field"><span>객실안내 (HTML·이미지 붙여넣기)</span>
-          <textarea id="rf_guide" class="js-image-paste" rows="8">${escapeForTextarea(state.guide_html)}</textarea>
+        <label class="field"><span>객실정책 (중문, 선택)</span>
+          <textarea id="rf_policy_zh" class="js-image-paste" rows="6" placeholder="中文（可选）">${escapeForTextarea(state.policy_html_zh)}</textarea>
+        </label>
+        <hr style="border:0;border-top:1px solid var(--border);margin:12px 0;" />
+        <label class="field"><span>객실안내 (영문, 필수)</span>
+          <textarea id="rf_guide_en" class="js-image-paste" rows="6" placeholder="HTML or plain text">${escapeForTextarea(state.guide_html_en)}</textarea>
+        </label>
+        <label class="field"><span>객실안내 (중문, 선택)</span>
+          <textarea id="rf_guide_zh" class="js-image-paste" rows="6" placeholder="中文（可选）">${escapeForTextarea(state.guide_html_zh)}</textarea>
         </label>
       </div>
 
@@ -2766,26 +3281,123 @@ function renderRoomForm(main, editId, presetPlaceId) {
           <button type="button" class="btn btn-primary" id="rf_save">${isEdit ? "저장" : "등록"}</button>
         </div>
       </div>
+      </div><!-- /rf_panel_basic -->
+
+      <div id="rf_panel_inv" style="display:${state.rfTab === "inv" ? "block" : "none"}">
+        <div class="card">
+          <h3 class="section-title">재고·요금 (PMS 동기화 · 객실 타입 단위)</h3>
+          <div class="notice" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:9px 12px;font-size:13px;color:#1a4fa0;margin-bottom:10px">
+            재고(총운영/예약/잔여)·요금은 <strong>PMS 동기화로 채워지는 조회 전용</strong> 데이터입니다. 상품(S06)에서도 읽기전용으로 참조합니다. (RM_TYP_CD: <strong>${escapeHtml(state.rm_typ_cd || "-")}</strong>)
+          </div>
+          <div class="toolbar" style="margin-bottom:10px;">
+            <button type="button" class="btn" id="rf_inv_sync">이 객실 재고·요금 동기화</button>
+          </div>
+          <div style="background:#fef9c3;border:1px solid #f59e0b;border-radius:6px;padding:9px 12px;font-size:13px;color:#7a5c00;margin-bottom:10px">
+            ⚠️ <strong>주의</strong> — 판매 ON/OFF 변경은 우측 상단 <strong>[판매 ON/OFF 저장]</strong>을 눌러야 반영됩니다. 마감(OFF) 처리 시 <strong>해당 일자 예약이 즉시 차단</strong>되며, 이 객실에 연결된 <strong>모든 상품</strong>에 적용됩니다. 신중히 확인 후 저장하세요.
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px;gap:12px;">
+            <p class="field-hint" style="margin:0;">잔여 재고가 0이면 자동 SOLD OUT. 판매 ON/OFF로 <strong>재고와 무관하게 강제 마감</strong>(CLSE_YN)할 수 있습니다.</p>
+            <button type="button" class="btn btn-primary" id="rf_inv_save" style="flex-shrink:0;">판매 ON/OFF 저장</button>
+          </div>
+          ${(() => {
+            const rfInv = Array.isArray(existing?.inventory) ? existing.inventory : [];
+            if (!rfInv.length)
+              return `<p class="muted" style="padding:8px 0;">재고·요금이 없습니다. <strong>[이 객실 재고·요금 동기화]</strong> 또는 객실 목록의 <strong>[재고·요금 동기화]</strong>를 실행하세요. ${isEdit ? "" : "(신규 등록은 저장 후 동기화 가능)"}</p>`;
+            const rows = rfInv
+              .slice()
+              .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+              .map((r) => {
+                const avlb = r.avlb_cnt ?? r.stock ?? 0;
+                const status =
+                  avlb <= 0
+                    ? `<span style="color:#e74c3c;font-weight:600">SOLD OUT</span>`
+                    : r.closed
+                      ? `<span style="color:#b45309;font-weight:600">마감(강제)</span>`
+                      : `<span style="color:#166534">판매중</span>`;
+                return `<tr data-date="${escapeAttr(r.date)}">
+                  <td>${escapeHtml(r.date)}</td>
+                  <td style="color:#555">${escapeHtml(Number(r.price || 0).toLocaleString())}</td>
+                  <td style="color:#555;text-align:center">${escapeHtml(String(r.oper_cnt ?? r.stock ?? 0))}</td>
+                  <td style="color:#555;text-align:center">${escapeHtml(String(r.rsv_cnt ?? 0))}</td>
+                  <td style="color:#1a6fb8;text-align:center;font-weight:600">${escapeHtml(String(avlb))}</td>
+                  <td>${status}</td>
+                  <td style="text-align:center"><input type="checkbox" class="rf-inv-onoff" data-date="${escapeAttr(r.date)}" ${r.closed ? "" : "checked"} title="해제 시 해당 일자 강제 마감" /></td>
+                </tr>`;
+              })
+              .join("");
+            return `<div class="product-inv-wrap"><table class="room-list-table"><thead><tr><th>날짜(체크인)</th><th>입금가</th><th>총재고</th><th>예약</th><th>잔여</th><th>판매상태</th><th>판매 ON/OFF</th></tr></thead><tbody>${rows}</tbody></table></div>
+              <p class="field-hint" style="margin-top:6px;">총 ${rfInv.length}일 · 재고 3값(총운영/예약/잔여, PMS API 4) · 예약조건(최소/최대박·컷오프)은 상품(S06)에서 관리합니다.</p>`;
+          })()}
+        </div>
+      </div>
       <p id="rf_err" class="error" style="min-height:20px;"></p>
     `;
 
     const errEl = () => document.getElementById("rf_err");
 
+    document.getElementById("rf_tab_basic")?.addEventListener("click", () => {
+      persistFromDom();
+      state.rfTab = "basic";
+      render();
+    });
+    document.getElementById("rf_tab_inv")?.addEventListener("click", () => {
+      persistFromDom();
+      state.rfTab = "inv";
+      render();
+    });
+    document.getElementById("rf_inv_sync")?.addEventListener("click", () => {
+      if (!isEdit) {
+        alert("객실을 먼저 저장한 뒤 재고·요금을 동기화할 수 있습니다.");
+        return;
+      }
+      if (!confirm("이 객실의 재고·요금을 PMS에서 동기화합니다.\n2026-07-01 ~ 08-31 · 재고 30이 채워집니다.\n진행할까요?")) return;
+      const price = RM_TYP_RATE_MAP[state.rm_typ_cd] || 300000;
+      const list = loadRooms();
+      const idx = list.findIndex((r) => r.id === state.id);
+      const prevClosed = new Map(
+        (idx >= 0 && Array.isArray(list[idx].inventory) ? list[idx].inventory : []).map((r) => [r.date, r.closed === true])
+      );
+      const inv = buildDummyRoomInventory(price, 30).map((r) => ({ ...r, closed: prevClosed.get(r.date) === true }));
+      if (idx >= 0) {
+        list[idx].inventory = inv;
+        list[idx].inventory_synced_at = new Date().toISOString();
+        saveRooms(list);
+      }
+      if (existing) existing.inventory = inv;
+      alert("재고·요금 동기화 완료 — 7/1~8/31 재고 30 반영되었습니다.");
+      render();
+    });
+
+    // 판매 ON/OFF는 즉시 저장하지 않고, [변경사항 저장] 클릭 시 일괄 반영 (민감 항목)
+    document.getElementById("rf_inv_save")?.addEventListener("click", () => {
+      const panel = document.getElementById("rf_panel_inv");
+      if (!panel) return;
+      const list = loadRooms();
+      const idx = list.findIndex((r) => r.id === state.id);
+      if (idx < 0 || !Array.isArray(list[idx].inventory) || !list[idx].inventory.length) {
+        alert("동기화된 재고·요금이 없습니다. 먼저 [이 객실 재고·요금 동기화]를 실행하세요.");
+        return;
+      }
+      const offDates = [];
+      const invByDate = new Map(list[idx].inventory.map((r) => [r.date, r]));
+      panel.querySelectorAll(".rf-inv-onoff").forEach((cb) => {
+        const row = invByDate.get(cb.getAttribute("data-date"));
+        if (row) {
+          row.closed = !cb.checked;
+          if (row.closed) offDates.push(row.date);
+        }
+      });
+      if (!confirm(`판매 ON/OFF 변경사항을 저장합니다.\n강제 마감(OFF) 일자: ${offDates.length}건\n마감된 일자는 이 객실에 연결된 모든 상품에서 예약이 차단됩니다. 진행할까요?`)) return;
+      saveRooms(list);
+      if (existing) existing.inventory = list[idx].inventory;
+      alert("판매 ON/OFF 변경사항이 저장되었습니다. 연결된 상품에 반영됩니다.");
+      render();
+    });
+
     main.querySelectorAll(".js-rt").forEach((btn) => {
       btn.addEventListener("click", () => {
         persistFromDom();
         state.room_type_id = btn.getAttribute("data-id");
-        render();
-      });
-    });
-
-    main.querySelectorAll(".js-tr").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        persistFromDom();
-        const id = btn.getAttribute("data-id");
-        const idx = state.room_trait_ids.indexOf(id);
-        if (idx >= 0) state.room_trait_ids.splice(idx, 1);
-        else state.room_trait_ids.push(id);
         render();
       });
     });
@@ -2799,27 +3411,6 @@ function renderRoomForm(main, editId, presetPlaceId) {
         else state.bed_rows.push({ bed_type_id: id, count: 1 });
         render();
       });
-    });
-
-    document.getElementById("rf_autofill_name")?.addEventListener("click", () => {
-      persistFromDom();
-      if (!state.room_type_id || !state.bed_rows.length) {
-        errEl().textContent = "객실유형과 침대유형을 먼저 선택하세요.";
-        return;
-      }
-      state.room_name = buildAutoRoomName(state, masters);
-      errEl().textContent = "";
-      render();
-    });
-
-    document.getElementById("rf_occ_extra_on")?.addEventListener("change", () => {
-      persistFromDom();
-      render();
-    });
-
-    document.getElementById("rf_xbed_on")?.addEventListener("change", () => {
-      persistFromDom();
-      render();
     });
 
     const sizeInp = document.getElementById("rf_size");
@@ -2995,7 +3586,7 @@ function renderRoomForm(main, editId, presetPlaceId) {
         room_code: state.room_code,
         room_name: state.room_name.trim(),
         room_type_id: state.room_type_id,
-        room_trait_ids: [...state.room_trait_ids],
+        rm_typ_cd: state.rm_typ_cd || "",
         bed_rows: state.bed_rows.map((r) => ({
           bed_type_id: r.bed_type_id,
           count: Math.max(1, parseInt(r.count, 10) || 1),
@@ -3008,17 +3599,10 @@ function renderRoomForm(main, editId, presetPlaceId) {
           String(sanitizeRoomSizeSqmInput(state.room_size_sqm || "")).trim() === ""
             ? ""
             : Number(String(sanitizeRoomSizeSqmInput(state.room_size_sqm)).trim()),
-        policy_html: state.policy_html,
-        guide_html: state.guide_html,
-        extra_bed_enabled: state.extra_bed_enabled,
-        extra_bed_max_count: state.extra_bed_enabled ? Math.max(0, parseInt(state.extra_bed_max_count, 10) || 0) : 0,
-        extra_bed_fee: state.extra_bed_enabled ? Math.max(0, parseInt(String(state.extra_bed_fee).replace(/\D/g, ""), 10) || 0) : 0,
-        occupant_extra_charge_enabled: state.occupant_extra_charge_enabled,
-        occupant_extra_charge_per_person: state.occupant_extra_charge_enabled
-          ? Math.max(0, parseInt(String(state.occupant_extra_charge_per_person).replace(/\D/g, ""), 10) || 0)
-          : 0,
-        occupant_extra_charge_settlement: normalizeRoomChargeSettlement(state.occupant_extra_charge_settlement),
-        extra_bed_settlement: normalizeRoomChargeSettlement(state.extra_bed_settlement),
+        policy_html_en: state.policy_html_en,
+        policy_html_zh: state.policy_html_zh,
+        guide_html_en: state.guide_html_en,
+        guide_html_zh: state.guide_html_zh,
         visibility: state.visibility,
         image_meta: Array.isArray(state.image_meta) ? [...state.image_meta] : [],
         updated_at: now,
@@ -3093,16 +3677,21 @@ function renderProductList(main, placeFilterId) {
       const invN = Array.isArray(p.inventory) ? p.inventory.length : 0;
       const vis = p.visibility === "N" ? "N" : "Y";
       const sale = `${escapeHtml(p.sale_start_date || "-")} ~ ${escapeHtml(p.sale_end_date || "-")}`;
+      const linked = p.pms_linked
+        ? `<span class="badge on">PMS연동</span>`
+        : `<span class="badge">수기</span>`;
+      const dispName = p.name_en || p.name || "-";
       return `<tr>
         <td>${escapeHtml(p.product_code || "-")}</td>
         <td>${pl ? escapeHtml(pl.place_name) : "?"}</td>
         <td>${r ? escapeHtml(r.room_name || r.room_code || "-") : "?"}</td>
         <td>${typeLabel(p.product_type)}</td>
-        <td>${escapeHtml(p.name || "-")}</td>
+        <td>${escapeHtml(dispName)}</td>
+        <td>${linked}</td>
         <td><span class="room-yn">${escapeHtml(vis)}</span></td>
         <td>${sale}</td>
-        <td>${escapeHtml(cancelPolicyLabel(p))}</td>
-        <td>${invN}</td>
+        <td>${escapeHtml(p.stay_start_date || "-")}</td>
+        <td>${escapeHtml(p.stay_end_date || "-")}</td>
         <td>${formatDate(p.updated_at)}</td>
         <td>
           <button type="button" class="btn btn-ghost js-pf-edit" data-id="${escapeAttr(p.id)}">수정</button>
@@ -3111,38 +3700,32 @@ function renderProductList(main, placeFilterId) {
       </tr>`;
     })
     .join("");
+  const untranslatedProducts = filtered.filter((p) => !p.name_en).length;
 
   main.innerHTML = `
     <h2 class="page-title">상품관리</h2>
-    <p class="page-desc">객실에 종속된 판매 SKU입니다. 저장소: <code>${escapeHtml(STORAGE_PRODUCTS)}</code> · 판매상태 필드 없음(노출·판매기간·재고·체크인허용·컷오프 조합, §5.10.3).</p>
+    <p class="page-desc">PMS 연동으로 등록된 숙소 상품(SKU)을 관리합니다. <strong>전 상품 PMS 연동</strong> · 재고·요금·취소정책은 PMS/S04-INV 연동(읽기전용), 예약조건만 상품에서 관리.</p>
     <div class="card">
-      <div class="toolbar room-list-toolbar">
+      <div class="toolbar room-list-toolbar" style="justify-content:space-between">
         <label class="field" style="flex-direction:row;align-items:center;gap:8px;margin:0;">
           <span style="font-weight:600;">숙소 필터</span>
           <select id="pf_place_filter" style="min-width:220px;">${placeOpts}</select>
         </label>
-        ${
-          firstRoomInPlace
-            ? `<a href="#/products/new/room/${escapeAttr(firstRoomInPlace.id)}" class="btn">선택 숙소 첫 객실로 상품 등록</a>`
-            : ""
-        }
-      </div>
-      <div class="room-list-table-bar">
-        <div class="room-list-table-bar-actions">
-          <a href="#/products/new" class="btn btn-primary">상품 등록</a>
-          <a href="#/rooms" class="btn">객실 목록</a>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn btn-primary js-pms-product-sync">PMS 상품정보 동기화</button>
+          <button type="button" class="btn js-ai-product-translate"${untranslatedProducts ? "" : " disabled"}>누락된 필드 AI 번역${untranslatedProducts ? ` (${untranslatedProducts})` : ""}</button>
         </div>
       </div>
       ${
         rooms.length === 0
-          ? `<div class="empty"><strong>객실이 없습니다.</strong> 먼저 <a href="#/rooms/new">객실 등록</a> 후 상품을 만드세요.</div>`
+          ? `<div class="empty"><strong>객실이 없습니다.</strong> 먼저 객실관리에서 <strong>[PMS 객실 동기화]</strong>로 객실을 불러오세요.</div>`
           : filtered.length === 0
-            ? `<div class="empty"><strong>상품이 없습니다.</strong>「상품 등록」으로 추가하세요.</div>`
+            ? `<div class="empty"><strong>동기화된 상품이 없습니다.</strong> 상단 <strong>[PMS 상품정보 동기화]</strong> 버튼을 눌러 PMS에서 상품을 불러오세요. (최초 1회 필수)</div>`
             : `<div class="product-inv-wrap">
         <table class="room-list-table product-master-table">
           <thead><tr>
-            <th>상품코드</th><th>숙소</th><th>객실</th><th>유형</th><th>상품명</th><th>노출</th>
-            <th>판매기간</th><th>취소</th><th>일자행</th><th>수정일시</th><th></th>
+            <th>상품코드</th><th>숙소</th><th>객실</th><th>유형</th><th>상품명</th><th>연동</th><th>노출</th>
+            <th>판매기간</th><th>투숙 시작일</th><th>투숙 종료일</th><th>수정일시</th><th>수정/삭제</th>
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
@@ -3157,6 +3740,29 @@ function renderProductList(main, placeFilterId) {
       const v = pfSel.value;
       if (v) navigate(`products/place/${v}`);
       else navigate("products");
+    });
+  }
+
+  const prodSyncBtn = main.querySelector(".js-pms-product-sync");
+  if (prodSyncBtn) {
+    prodSyncBtn.addEventListener("click", () => {
+      if (loadRooms().length === 0) {
+        alert("먼저 객실관리에서 [PMS 객실 동기화]로 객실을 불러오세요.");
+        return;
+      }
+      if (!confirm("PMS에서 상품 정보를 동기화(갱신)합니다.\n각 객실당 룸온리 상품이 생성되며, 취소정책은 PMS(API 9), 재고·요금은 S04-INV 연동입니다.\n진행할까요?")) return;
+      const n = syncPmsProducts();
+      alert(`PMS 상품정보 동기화 완료 — 상품 ${n}건 반영되었습니다.`);
+      renderProductList(main, placeFilterId);
+    });
+  }
+
+  const aiProdBtn = main.querySelector(".js-ai-product-translate");
+  if (aiProdBtn) {
+    aiProdBtn.addEventListener("click", () => {
+      const n = aiTranslateProductNames();
+      alert(n ? `AI 번역 완료 — 상품 영문명 ${n}건 자동 입력되었습니다. (더미)` : "번역할 미입력 영문명이 없습니다.");
+      renderProductList(main, placeFilterId);
     });
   }
   main.querySelectorAll(".js-pf-edit").forEach((btn) => {
@@ -3174,7 +3780,7 @@ function renderProductList(main, placeFilterId) {
 
 function validateProduct(st) {
   if (!st.room_id) return "객실을 선택하세요.";
-  if (!String(st.name || "").trim()) return "상품명을 입력하세요.";
+  if (!String(st.name_en || "").trim()) return "상품명(영문)을 입력하세요.";
   const sd = String(st.sale_start_date || "").trim();
   const ed = String(st.sale_end_date || "").trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(sd) || !/^\d{4}-\d{2}-\d{2}$/.test(ed)) return "판매 시작일·종료일을 YYYY-MM-DD 형식으로 입력하세요.";
@@ -3222,9 +3828,15 @@ function renderProductForm(main, editId, presetRoomId) {
       (presetRoomId && rooms.some((r) => r.id === presetRoomId) ? presetRoomId : rooms[0]?.id || ""),
     product_type:
       existing?.product_type === PRODUCT_TYPE.PACKAGE ? PRODUCT_TYPE.PACKAGE : PRODUCT_TYPE.ROOM_ONLY,
-    name: existing?.name || "",
-    description: existing?.description || "",
-    guide_policy_html: existing?.guide_policy_html || "",
+    pms_linked: existing?.pms_linked || false,
+    stay_start_date: existing?.stay_start_date || "",
+    stay_end_date: existing?.stay_end_date || "",
+    name_en: existing?.name_en || "",
+    name_zh: existing?.name_zh || "",
+    description_en: existing?.description_en || "",
+    description_zh: existing?.description_zh || "",
+    guide_policy_html_en: existing?.guide_policy_html_en || "",
+    guide_policy_html_zh: existing?.guide_policy_html_zh || "",
     visibility: existing?.visibility === "N" ? "N" : "Y",
     sale_start_date: String(existing?.sale_start_date || today).slice(0, 10),
     sale_end_date: String(
@@ -3343,40 +3955,27 @@ function renderProductForm(main, editId, presetRoomId) {
 
   function persistInventoryFromDom() {
     const tb = document.getElementById("pf_inv_tbody");
-    if (tb) {
-      const next = [];
-      tb.querySelectorAll("tr").forEach((tr) => {
-        if (tr.querySelector("td.muted")) return;
-        const dateInp = tr.querySelector(".js-inv-date-inp");
-        if (!dateInp) return;
-        const date = String(dateInp.value || "").trim();
-        const price = Math.max(0, parseInt(tr.querySelector(".js-inv-price")?.value.replace(/\D/g, "") || "0", 10) || 0);
-        const stock = Math.max(0, parseInt(tr.querySelector(".js-inv-stock")?.value.replace(/\D/g, "") || "0", 10) || 0);
-        const checkin_allowed = !!tr.querySelector(".js-inv-allow")?.checked;
-        const min_stay_nights = Math.max(1, parseInt(tr.querySelector(".js-inv-min")?.value, 10) || 1);
-        const max_stay_nights = Math.max(
-          min_stay_nights,
-          parseInt(tr.querySelector(".js-inv-max")?.value, 10) || 30
-        );
-        const cutoff_days_before_checkin = Math.max(
+    if (!tb) return;
+    // 재고·요금(price/stock)은 room 소스라 유지, 예약조건(체크인허용·최소/최대박·컷오프)만 DOM에서 반영
+    const condMap = new Map();
+    tb.querySelectorAll("tr.js-inv-row").forEach((tr) => {
+      const date = tr.getAttribute("data-date");
+      if (!date) return;
+      condMap.set(date, {
+        min_stay_nights: Math.max(1, parseInt(tr.querySelector(".js-inv-min")?.value, 10) || 1),
+        max_stay_nights: Math.max(1, parseInt(tr.querySelector(".js-inv-max")?.value, 10) || 30),
+        cutoff_days_before_checkin: Math.max(
           0,
           parseInt(String(tr.querySelector(".js-inv-cutoff")?.value || "").replace(/\D/g, ""), 10) || 0
-        );
-        next.push(
-          normalizeInventoryRow({
-            date,
-            price,
-            stock,
-            checkin_allowed,
-            min_stay_nights,
-            max_stay_nights,
-            cutoff_days_before_checkin,
-          })
-        );
+        ),
+        margin_type: tr.querySelector(".js-inv-margin-type")?.value || "",
+        margin_value: String(tr.querySelector(".js-inv-margin-value")?.value || "").trim(),
       });
-      state.inventory = next;
-      return;
-    }
+    });
+    state.inventory = state.inventory.map((row) => {
+      const c = condMap.get(row.date);
+      return c ? normalizeInventoryRow({ ...row, ...c }) : row;
+    });
   }
 
   /** 탭 1 마스터·취소 — DOM → state (탭이 숨겨져 있어도 요소는 DOM에 남음) */
@@ -3392,12 +3991,22 @@ function renderProductForm(main, editId, presetRoomId) {
     if (ss) state.sale_start_date = String(ss.value || "").slice(0, 10);
     const se = el("pf_sale_e");
     if (se) state.sale_end_date = String(se.value || "").slice(0, 10);
-    const nm = el("pf_name");
-    if (nm) state.name = String(nm.value || "").trim();
-    const desc = el("pf_desc");
-    if (desc) state.description = desc.value || "";
-    const guide = el("pf_guide");
-    if (guide) state.guide_policy_html = guide.value || "";
+    const sts = el("pf_stay_s");
+    if (sts) state.stay_start_date = String(sts.value || "").slice(0, 10);
+    const ste = el("pf_stay_e");
+    if (ste) state.stay_end_date = String(ste.value || "").slice(0, 10);
+    const nmEn = el("pf_name_en");
+    if (nmEn) state.name_en = String(nmEn.value || "").trim();
+    const nmZh = el("pf_name_zh");
+    if (nmZh) state.name_zh = String(nmZh.value || "").trim();
+    const descEn = el("pf_desc_en");
+    if (descEn) state.description_en = descEn.value || "";
+    const descZh = el("pf_desc_zh");
+    if (descZh) state.description_zh = descZh.value || "";
+    const guideEn = el("pf_guide_en");
+    if (guideEn) state.guide_policy_html_en = guideEn.value || "";
+    const guideZh = el("pf_guide_zh");
+    if (guideZh) state.guide_policy_html_zh = guideZh.value || "";
     const ct = el("pf_cancel_t");
     if (ct) state.cancel_policy_type = ct.value || PRODUCT_CANCEL_POLICY.NON_REFUNDABLE;
     const cn = el("pf_cancel_n");
@@ -3413,23 +4022,41 @@ function renderProductForm(main, editId, presetRoomId) {
   }
 
   function invRowsHtml() {
-    sortInv();
-    if (!state.inventory.length) {
-      return `<tr><td colspan="8" class="muted" style="padding:12px;">일자별 행이 없습니다.「행 추가」또는「구간 일괄 적용」을 사용하세요.</td></tr>`;
+    const room = rooms.find((r) => r.id === state.room_id);
+    if (!Array.isArray(room?.inventory) || !room.inventory.length) {
+      return `<tr><td colspan="8" class="muted" style="padding:12px;">재고·요금이 없습니다. <strong>객실관리 → [재고·요금 동기화]</strong> 후 이용하세요.</td></tr>`;
     }
+    sortInv();
     return state.inventory
-      .map(
-        (row) => `<tr class="js-inv-row">
-        <td><input type="date" class="js-inv-date-inp" value="${escapeAttr(row.date)}" /></td>
-        <td><input type="text" class="js-inv-price" inputmode="numeric" value="${escapeAttr(String(row.price))}" style="width:100px;" /></td>
-        <td><input type="text" class="js-inv-stock" inputmode="numeric" value="${escapeAttr(String(row.stock))}" style="width:72px;" /></td>
-        <td style="text-align:center;"><input type="checkbox" class="js-inv-allow" ${row.checkin_allowed ? "checked" : ""} title="체크인 허용" /></td>
-        <td><input type="number" class="js-inv-min" min="1" max="365" value="${escapeAttr(String(row.min_stay_nights))}" style="width:64px;" /></td>
-        <td><input type="number" class="js-inv-max" min="1" max="365" value="${escapeAttr(String(row.max_stay_nights))}" style="width:64px;" /></td>
-        <td><input type="text" class="js-inv-cutoff" inputmode="numeric" value="${escapeAttr(String(row.cutoff_days_before_checkin))}" style="width:56px;" title="체크인 N일 전 00:00부터 예약 불가" /></td>
-        <td><button type="button" class="btn btn-ghost js-inv-remove" aria-label="행 삭제">×</button></td>
-      </tr>`
-      )
+      .map((row) => {
+        const avlb = row.avlb_cnt ?? row.stock ?? 0;
+        const off = row.closed === true;
+        const soldout = avlb <= 0;
+        const status = soldout
+          ? `<span style="color:#e74c3c;font-weight:600">SOLD OUT</span>`
+          : off
+            ? `<span style="color:#b45309;font-weight:600">마감</span>`
+            : `<span style="color:#166534">판매중</span>`;
+        const rowStyle = off || soldout ? ' style="background:#f3f4f6;color:#9ca3af;"' : "";
+        const mt = row.margin_type || "";
+        const sell = computeSellPrice(row.price, mt, row.margin_value);
+        return `<tr class="js-inv-row" data-date="${escapeAttr(row.date)}"${rowStyle}>
+        <td>${escapeHtml(row.date)}</td>
+        <td style="color:#888">${escapeHtml(Number(row.price || 0).toLocaleString())} <span style="font-size:10px;color:#aaa">읽기전용</span></td>
+        <td><select class="js-inv-margin-type" style="width:88px;">
+          <option value="" ${!mt ? "selected" : ""}>없음</option>
+          <option value="amount" ${mt === "amount" ? "selected" : ""}>마진금액</option>
+          <option value="rate" ${mt === "rate" ? "selected" : ""}>마진율%</option>
+        </select> ${row.margin_source === "manual" ? '<span style="font-size:9px;color:#b45309">개별</span>' : '<span style="font-size:9px;color:#999">상속</span>'}</td>
+        <td><input type="text" class="js-inv-margin-value" inputmode="numeric" value="${escapeAttr(String(row.margin_value ?? ""))}" style="width:72px;" ${!mt ? "disabled" : ""} /></td>
+        <td style="color:#1a6fb8;font-weight:600">${escapeHtml(sell.toLocaleString())}</td>
+        <td style="text-align:center;color:#555">${escapeHtml(String(avlb))}</td>
+        <td style="text-align:center;">${status}</td>
+        <td><input type="number" class="js-inv-min" min="1" max="365" value="${escapeAttr(String(row.min_stay_nights))}" style="width:56px;" /></td>
+        <td><input type="number" class="js-inv-max" min="1" max="365" value="${escapeAttr(String(row.max_stay_nights))}" style="width:56px;" /></td>
+        <td><input type="text" class="js-inv-cutoff" inputmode="numeric" value="${escapeAttr(String(row.cutoff_days_before_checkin))}" style="width:52px;" title="체크인 N일 전 00:00부터 예약 불가" /></td>
+      </tr>`;
+      })
       .join("");
   }
 
@@ -3498,6 +4125,30 @@ function renderProductForm(main, editId, presetRoomId) {
   function render() {
     const room = rooms.find((r) => r.id === state.room_id);
     const placeId = room?.place_id || "";
+    // 재고·요금은 객실(room.inventory) 소스(읽기전용), 예약조건은 기존 state.inventory 유지 — 매 렌더 병합
+    {
+      const roomInv = Array.isArray(room?.inventory) ? room.inventory : [];
+      const condMap = invMapFromRows(state.inventory);
+      state.inventory = roomInv.map((ri) => {
+        const c = condMap.get(ri.date);
+        // 관리자가 개별 설정한(manual) 마진만 유지, 그 외(상속/미설정)는 공통관리 마스터 최신값 반영
+        const isManual = c && c.margin_source === "manual" && (c.margin_type === "amount" || c.margin_type === "rate");
+        const dm = getMarginMaster(room?.rm_typ_cd); // 공통관리 마진 마스터(객실 타입별) 디폴트
+        return normalizeInventoryRow({
+          date: ri.date,
+          price: ri.price,
+          stock: ri.stock,
+          closed: ri.closed,
+          checkin_allowed: c ? c.checkin_allowed : true,
+          min_stay_nights: c ? c.min_stay_nights : 1,
+          max_stay_nights: c ? c.max_stay_nights : 30,
+          cutoff_days_before_checkin: c ? c.cutoff_days_before_checkin : 0,
+          margin_type: isManual ? c.margin_type : dm.type,
+          margin_value: isManual ? c.margin_value : dm.value,
+          margin_source: isManual ? "manual" : "master",
+        });
+      });
+    }
     const pkgDescHint =
       state.product_type === PRODUCT_TYPE.PACKAGE
         ? `<p class="field-hint" style="margin-top:-6px;">패키지 포함 내역·구성은 <strong>상품 설명</strong>에 함께 적어 주세요.</p>`
@@ -3549,7 +4200,7 @@ function renderProductForm(main, editId, presetRoomId) {
 
       <div id="pf_panel1" class="pf-tab-panel" style="display:${state.pfTab === 1 ? "block" : "none"}">
       <div class="card">
-        <h3 class="section-title">상품 마스터</h3>
+        <h3 class="section-title">① 기본 정보</h3>
         <div class="form-grid">
           <label class="field"><span>객실 (필수)</span>
             <select id="pf_room">${roomOpts || '<option value="">객실 없음</option>'}</select>
@@ -3566,29 +4217,69 @@ function renderProductForm(main, editId, presetRoomId) {
               <option value="N" ${state.visibility === "N" ? "selected" : ""}>N (비노출)</option>
             </select>
           </label>
-          <label class="field"><span>판매 시작일 (포함)</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">② 기간 (판매기간 · 투숙 가능 기간)</h3>
+        <div class="form-grid">
+          <label class="field"><span>판매 시작일</span>
             <input type="date" id="pf_sale_s" value="${escapeAttr(state.sale_start_date)}" />
           </label>
-          <label class="field"><span>판매 종료일 (포함)</span>
+          <label class="field"><span>판매 종료일</span>
             <input type="date" id="pf_sale_e" value="${escapeAttr(state.sale_end_date)}" />
           </label>
+          <label class="field"><span>투숙 가능 시작일</span>
+            <input type="date" id="pf_stay_s" value="${escapeAttr(state.stay_start_date || (Array.isArray(room?.inventory) && room.inventory.length ? room.inventory.map((r) => r.date).sort()[0] : ""))}" />
+          </label>
+          <label class="field"><span>투숙 가능 종료일</span>
+            <input type="date" id="pf_stay_e" value="${escapeAttr(state.stay_end_date || (Array.isArray(room?.inventory) && room.inventory.length ? room.inventory.map((r) => r.date).sort().slice(-1)[0] : ""))}" />
+          </label>
         </div>
-        <p class="field-hint">판매기간은 <strong>구매(예약 결제) 가능 시점</strong>이며, 투숙 체크인일과 다릅니다.</p>
-        <label class="field"><span>상품명</span>
-          <input type="text" id="pf_name" value="${escapeAttr(state.name)}" placeholder="예: 조식 패키지 디럭스" />
+        <div class="pd-rule" style="background:#f0f5ff;border-left:3px solid #6366f1;padding:8px 12px;border-radius:0 4px 4px 0;font-size:12px;color:#334;margin-top:8px">
+          <strong>판매기간</strong> = 유저가 프런트에서 <strong>상품을 검색·구매(예약 결제)할 수 있는 기간</strong>.<br>
+          <strong>투숙 가능 기간</strong> = 유저가 <strong>실제 투숙일로 선택할 수 있는 날짜 범위</strong>. PMS 인벤토리 기준으로 자동 세팅되며, 관리자가 좁혀서 지정할 수 있습니다.
+        </div>
+        <p class="field-hint" style="margin-top:6px;color:#b45309;">※ '투숙 가능 기간'은 신규 항목입니다 — 정책서 반영 대기(대화창 1 전달 예정).</p>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">③ 상품명 · 설명 <span style="font-size:12px;font-weight:400;color:#888">(영문 필수 · 중문 선택)</span></h3>
+        <p class="field-hint" style="margin:0 0 8px;font-size:12px;">국문 미사용. 프런트는 중문 접속 시 중문, 없으면 영문 표시.</p>
+        <label class="field"><span>상품명 (영문, 필수)</span>
+          <input type="text" id="pf_name_en" value="${escapeAttr(state.name_en)}" placeholder="e.g. Deluxe King Room Only" />
         </label>
-        <label class="field"><span>상품 설명 (plain, 줄바꿈 허용)</span>
-          <textarea id="pf_desc" rows="4" placeholder="룸온리·패키지 모두 여기에 요약·포함 내역을 적을 수 있습니다.">${escapeForTextarea(state.description)}</textarea>
+        <label class="field"><span>상품명 (중문, 선택)</span>
+          <input type="text" id="pf_name_zh" value="${escapeAttr(state.name_zh)}" placeholder="中文（可选）" />
         </label>
-        ${pkgDescHint}
-        <label class="field"><span>상품 안내 / 정책 (HTML·이미지 붙여넣기)</span>
-          <textarea id="pf_guide" class="js-image-paste" rows="6">${escapeForTextarea(state.guide_policy_html)}</textarea>
+        <label class="field"><span>상품 설명 (영문, 필수)</span>
+          <textarea id="pf_desc_en" rows="3" placeholder="Summary / inclusions">${escapeForTextarea(state.description_en)}</textarea>
+        </label>
+        <label class="field"><span>상품 설명 (중문, 선택)</span>
+          <textarea id="pf_desc_zh" rows="3" placeholder="中文（可选）">${escapeForTextarea(state.description_zh)}</textarea>
         </label>
       </div>
 
       <div class="card">
-        <h3 class="section-title">취소 정책 (상품)</h3>
-        <label class="field"><span>유형</span>
+        <h3 class="section-title">④ 상품 안내 / 정책 <span style="font-size:12px;font-weight:400;color:#888">(영문 필수 · 중문 선택)</span></h3>
+        ${pkgDescHint}
+        <label class="field"><span>상품 안내/정책 (영문, 필수)</span>
+          <textarea id="pf_guide_en" class="js-image-paste" rows="5">${escapeForTextarea(state.guide_policy_html_en)}</textarea>
+        </label>
+        <label class="field"><span>상품 안내/정책 (중문, 선택)</span>
+          <textarea id="pf_guide_zh" class="js-image-paste" rows="5">${escapeForTextarea(state.guide_policy_html_zh)}</textarea>
+        </label>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">⑤ 취소 정책 (상품)</h3>
+        ${
+          state.pms_linked
+            ? `<div class="notice" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:9px 12px;font-size:13px;color:#1a4fa0;">
+                 <strong>PMS 연동 상품</strong> — 취소·환불 정책은 <strong>PMS API 9/10</strong>에서 내려온 규정이 적용되며, 어드민에서 수정할 수 없습니다.
+               </div>
+               <p class="field-hint" style="margin:8px 0 0;">적용 정책: <strong>API 9 (PMS 취소·환불 규정, 읽기전용)</strong></p>`
+            : `<label class="field"><span>유형</span>
           <select id="pf_cancel_t">
             <option value="${PRODUCT_CANCEL_POLICY.FREE_N_DAYS}" ${state.cancel_policy_type === PRODUCT_CANCEL_POLICY.FREE_N_DAYS ? "selected" : ""}>체크인 기준 N일 전 무료취소</option>
             <option value="${PRODUCT_CANCEL_POLICY.NON_REFUNDABLE}" ${state.cancel_policy_type === PRODUCT_CANCEL_POLICY.NON_REFUNDABLE ? "selected" : ""}>취소 및 환불불가</option>
@@ -3602,33 +4293,48 @@ function renderProductForm(main, editId, presetRoomId) {
             }>${cancelNOptions}</select>
           </label>
           <span class="pf-cancel-n-suffix muted">체크인 당일=0, 하루 전=1 …</span>
-        </div>
+        </div>`
+        }
       </div>
+
       </div>
 
       <div id="pf_panel2" class="pf-tab-panel" style="display:${state.pfTab === 2 ? "block" : "none"}">
       <div class="card">
-        <h3 class="section-title">재고·가격 (일자별, 체크인 1박 기준)</h3>
-        <p class="field-hint">컷오프: 체크인 <strong>N일 전 00:00</strong>부터 해당 체크인일 예약 불가(프런트). <code>체크인 허용</code> 해제 시 해당 일자는 체크인 시작일로 예약 불가(재고와 별개).</p>
-        <div class="product-bulk-bar">
-          <span class="product-bulk-title">구간 일괄 적용</span>
-          <input type="date" id="pf_bulk_a" />
-          <span>~</span>
-          <input type="date" id="pf_bulk_b" />
-          <input type="text" id="pf_bulk_price" placeholder="판매가" inputmode="numeric" style="width:90px;" />
-          <input type="text" id="pf_bulk_stock" placeholder="재고" inputmode="numeric" style="width:64px;" />
-          <label class="row-inline" style="gap:6px;"><input type="checkbox" id="pf_bulk_allow" checked /><span>체크인허용</span></label>
-          <input type="number" id="pf_bulk_min" min="1" value="1" style="width:56px;" title="최소숙박" />
-          <input type="number" id="pf_bulk_max" min="1" value="30" style="width:56px;" title="최대숙박" />
-          <input type="text" id="pf_bulk_cut" placeholder="컷오프N" inputmode="numeric" style="width:64px;" />
-          <button type="button" class="btn btn-primary" id="pf_bulk_go">적용</button>
+        <h3 class="section-title">재고·요금 (읽기전용) · 예약조건 (편집)</h3>
+        <div class="notice" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:9px 12px;font-size:13px;color:#1a4fa0;margin-bottom:10px">
+          <strong>재고·요금(입금가·재고)은 읽기전용</strong>입니다 — 객실관리 <strong>[재고·요금 동기화]</strong>로 채워지며 상품에서 수정할 수 없습니다. 이 화면에서는 <strong>체크인허용·최소/최대박·컷오프(예약조건)</strong>만 관리합니다.
         </div>
-        <div class="pf-daily-mode-bar">
-          <span class="product-bulk-title">데일리 화면</span>
-          <button type="button" class="btn ${state.dailyMode === "list" ? "btn-primary" : ""}" id="pf_dm_list">목록형</button>
-          <button type="button" class="btn ${state.dailyMode === "calendar" ? "btn-primary" : ""}" id="pf_dm_cal">월 캘린더</button>
+        <div class="product-bulk-bar" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
+          <span class="product-bulk-title" style="width:100%;margin-bottom:2px;">예약조건·마진 구간 일괄</span>
+          <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888;">시작일
+            <input type="date" id="pf_bulk_a" style="width:132px;" /></label>
+          <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888;">종료일
+            <input type="date" id="pf_bulk_b" style="width:132px;" /></label>
+          <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888;">최소박
+            <input type="number" id="pf_bulk_min" min="1" value="1" style="width:56px;" /></label>
+          <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888;">최대박
+            <input type="number" id="pf_bulk_max" min="1" value="30" style="width:56px;" /></label>
+          <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888;">컷오프N
+            <input type="text" id="pf_bulk_cut" inputmode="numeric" style="width:56px;" /></label>
+          <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888;">마진 유형
+            <select id="pf_bulk_margin_type" style="width:104px;">
+              <option value="">변경없음</option>
+              <option value="amount">마진금액</option>
+              <option value="rate">마진율%</option>
+            </select></label>
+          <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888;">마진 값
+            <input type="text" id="pf_bulk_margin_value" inputmode="numeric" style="width:76px;" /></label>
+          <button type="button" class="btn btn-primary" id="pf_bulk_go" style="height:34px;">적용</button>
         </div>
-        ${state.dailyMode === "list" ? listDailyBlock : calendarDailyBlock}
+        <div class="product-inv-wrap">
+          <table class="room-list-table product-inv-table">
+            <thead><tr>
+              <th>날짜(체크인)</th><th>입금가</th><th>마진유형</th><th>마진값</th><th>판매가</th><th>잔여</th><th>판매상태</th><th>최소박</th><th>최대박</th><th>컷오프N</th>
+            </tr></thead>
+            <tbody id="pf_inv_tbody">${invRowsHtml()}</tbody>
+          </table>
+        </div>
       </div>
       </div>
 
@@ -3733,13 +4439,11 @@ function renderProductForm(main, editId, presetRoomId) {
 
     main.querySelectorAll("textarea.js-image-paste").forEach((ta) => attachClipboardImagePaste(ta));
 
+    // 예약조건 구간 일괄(벌크) — 재고·요금은 room 소스라 제외, room.inventory에 있는 날짜만 적용
     document.getElementById("pf_bulk_go")?.addEventListener("click", () => {
       syncAllFromDomBeforeRender();
       const a = document.getElementById("pf_bulk_a")?.value;
       const b = document.getElementById("pf_bulk_b")?.value;
-      const price = Math.max(0, parseInt(String(document.getElementById("pf_bulk_price")?.value || "").replace(/\D/g, ""), 10) || 0);
-      const stock = Math.max(0, parseInt(String(document.getElementById("pf_bulk_stock")?.value || "").replace(/\D/g, ""), 10) || 0);
-      const checkin_allowed = !!document.getElementById("pf_bulk_allow")?.checked;
       const min_stay_nights = Math.max(1, parseInt(document.getElementById("pf_bulk_min")?.value, 10) || 1);
       const max_stay_nights = Math.max(
         min_stay_nights,
@@ -3749,58 +4453,37 @@ function renderProductForm(main, editId, presetRoomId) {
         0,
         parseInt(String(document.getElementById("pf_bulk_cut")?.value || "").replace(/\D/g, ""), 10) || 0
       );
+      const bmt = document.getElementById("pf_bulk_margin_type")?.value || "";
+      const bmv = String(document.getElementById("pf_bulk_margin_value")?.value || "").trim();
       const map = new Map(state.inventory.map((r) => [r.date, { ...r }]));
       eachDateInclusive(a, b, (ymd) => {
-        map.set(ymd, {
-          date: ymd,
-          price,
-          stock,
-          checkin_allowed,
-          min_stay_nights,
-          max_stay_nights,
-          cutoff_days_before_checkin,
-        });
+        const cur = map.get(ymd);
+        if (!cur) return; // room 재고·요금이 없는 날짜는 건너뜀
+        const next = { ...cur, min_stay_nights, max_stay_nights, cutoff_days_before_checkin };
+        // 마진 유형을 '변경없음'이 아닌 값으로 선택했을 때만 마진 일괄 적용 (개별=manual)
+        if (bmt === "amount" || bmt === "rate") {
+          next.margin_type = bmt;
+          next.margin_value = bmv;
+          next.margin_source = "manual";
+        }
+        map.set(ymd, next);
       });
       state.inventory = [...map.values()].map((x) => normalizeInventoryRow(x));
       errEl().textContent = "";
       render();
     });
 
-    document.getElementById("pf_inv_add")?.addEventListener("click", () => {
-      syncAllFromDomBeforeRender();
-      let next = today;
-      if (state.inventory.length) {
-        const last = [...state.inventory].sort((x, y) => y.date.localeCompare(x.date))[0].date;
-        const d = new Date(last + "T12:00:00");
-        d.setDate(d.getDate() + 1);
-        next = d.toISOString().slice(0, 10);
+    // 일자별 마진 유형/값 변경 시 판매가·입력 활성화 즉시 갱신
+    document.getElementById("pf_inv_tbody")?.addEventListener("change", (e) => {
+      const t = e.target;
+      if (t && (t.classList.contains("js-inv-margin-type") || t.classList.contains("js-inv-margin-value"))) {
+        syncAllFromDomBeforeRender();
+        const tr = t.closest("tr[data-date]");
+        const date = tr?.getAttribute("data-date");
+        const row = state.inventory.find((r) => r.date === date);
+        if (row) row.margin_source = "manual"; // 관리자 개별 설정 → 마스터 상속 해제
+        render();
       }
-      if (!state.inventory.some((r) => r.date === next)) {
-        state.inventory.push(
-          normalizeInventoryRow({
-            date: next,
-            price: 0,
-            stock: 0,
-            checkin_allowed: true,
-            min_stay_nights: 1,
-            max_stay_nights: 30,
-            cutoff_days_before_checkin: 0,
-          })
-        );
-      }
-      errEl().textContent = "";
-      render();
-    });
-
-    document.getElementById("pf_inv_tbody")?.addEventListener("click", (e) => {
-      const rm = e.target.closest(".js-inv-remove");
-      if (!rm) return;
-      const tr = rm.closest("tr");
-      const ds = String(tr?.querySelector(".js-inv-date-inp")?.value || "").trim();
-      syncAllFromDomBeforeRender();
-      state.inventory = ds ? state.inventory.filter((x) => x.date !== ds) : state.inventory;
-      errEl().textContent = "";
-      render();
     });
 
     document.getElementById("pf_save")?.addEventListener("click", () => {
@@ -3818,16 +4501,22 @@ function renderProductForm(main, editId, presetRoomId) {
         product_code: state.product_code,
         room_id: state.room_id,
         product_type: state.product_type,
-        name: state.name,
-        description: state.description,
+        pms_linked: state.pms_linked,
+        name_en: state.name_en,
+        name_zh: state.name_zh,
+        description_en: state.description_en,
+        description_zh: state.description_zh,
         package_inclusions_text: "",
-        guide_policy_html: state.guide_policy_html,
+        guide_policy_html_en: state.guide_policy_html_en,
+        guide_policy_html_zh: state.guide_policy_html_zh,
         visibility: state.visibility,
         sale_start_date: state.sale_start_date,
         sale_end_date: state.sale_end_date,
-        cancel_policy_type: state.cancel_policy_type,
+        stay_start_date: state.stay_start_date,
+        stay_end_date: state.stay_end_date,
+        cancel_policy_type: state.pms_linked ? "PMS_API9" : state.cancel_policy_type,
         cancel_free_days_before:
-          state.cancel_policy_type === PRODUCT_CANCEL_POLICY.FREE_N_DAYS ? state.cancel_free_days_before : null,
+          !state.pms_linked && state.cancel_policy_type === PRODUCT_CANCEL_POLICY.FREE_N_DAYS ? state.cancel_free_days_before : null,
         inventory: state.inventory.map((r) => normalizeInventoryRow(r)),
         updated_at: now,
         updated_by: "admin",
