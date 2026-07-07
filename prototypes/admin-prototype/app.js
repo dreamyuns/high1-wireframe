@@ -17,6 +17,9 @@ const STORAGE_BED_TYPES = "high1_room_master_bed_type_v1";
 const STORAGE_ROOMS = "high1_rooms_v1";
 const STORAGE_PRODUCTS = "high1_products_v1";
 const STORAGE_MARGIN_MASTER = "high1_margin_master_v1"; // 공통관리 마진 마스터 (RM_TYP_CD별 일자별 마진 디폴트)
+const STORAGE_MAIN_HERO = "high1_main_hero_v1"; // 화면관리 > 메인관리 히어로 슬라이드
+const STORAGE_MAIN_HERO_CFG = "high1_main_hero_cfg_v1"; // 히어로 전역 설정(자동슬라이드·주기)
+const STORAGE_MAIN_SECTION = "high1_main_section_v1"; // 추천 섹션
 
 /** 객실 부가요금 반영 기준 — 프런트 정책 노출은 모드와 무관하게 동일하게 표시 */
 const ROOM_CHARGE_SETTLEMENT = {
@@ -1009,6 +1012,51 @@ function getMarginMaster(rmTypCd) {
   return { type: DEFAULT_DAILY_MARGIN.type, value: DEFAULT_DAILY_MARGIN.value };
 }
 
+/* ── 화면관리 > 메인관리 ── */
+function loadMainHero() {
+  try {
+    const r = localStorage.getItem(STORAGE_MAIN_HERO);
+    return r ? JSON.parse(r) : [];
+  } catch {
+    return [];
+  }
+}
+function saveMainHero(list) {
+  localStorage.setItem(STORAGE_MAIN_HERO, JSON.stringify(list || []));
+}
+function loadMainHeroCfg() {
+  try {
+    const r = localStorage.getItem(STORAGE_MAIN_HERO_CFG);
+    const cfg = r ? JSON.parse(r) : null;
+    return cfg && typeof cfg === "object" ? { autoplay: cfg.autoplay !== false, interval_sec: cfg.interval_sec || 5 } : { autoplay: true, interval_sec: 5 };
+  } catch {
+    return { autoplay: true, interval_sec: 5 };
+  }
+}
+function saveMainHeroCfg(cfg) {
+  localStorage.setItem(STORAGE_MAIN_HERO_CFG, JSON.stringify(cfg || {}));
+}
+function loadMainSection() {
+  try {
+    const r = localStorage.getItem(STORAGE_MAIN_SECTION);
+    return r ? JSON.parse(r) : [];
+  } catch {
+    return [];
+  }
+}
+function saveMainSection(list) {
+  localStorage.setItem(STORAGE_MAIN_SECTION, JSON.stringify(list || []));
+}
+/** 히어로 슬라이드 상태 계산: 강제종료 OR 노출기간 경과 → OFF */
+function heroSlideOn(h, todayStr) {
+  if (h.force_off) return false;
+  const s = String(h.period_start || "").slice(0, 10);
+  const e = String(h.period_end || "").slice(0, 10);
+  if (s && todayStr < s) return false;
+  if (e && todayStr > e) return false;
+  return true;
+}
+
 /** 실판매가 = 입금가 + 마진 (마진율: floor(base×(1+율/100)) · 마진금액: base+금액). 소수점 버림. */
 function computeSellPrice(basePrice, marginType, marginValue) {
   const base = Math.max(0, parseInt(basePrice, 10) || 0);
@@ -1203,7 +1251,8 @@ function setActiveNav() {
       (target === "rooms" && path.startsWith("rooms")) ||
       (target === "products" && path.startsWith("products")) ||
       (target === "room-masters" && path.startsWith("room-masters")) ||
-      (target === "margin-management" && path.startsWith("margin-management"));
+      (target === "margin-management" && path.startsWith("margin-management")) ||
+      (target === "main-management" && path.startsWith("main-management"));
     el.classList.toggle("active", on);
   });
 }
@@ -1338,6 +1387,544 @@ function renderMarginMaster(main) {
   });
 }
 
+function sortLabel(t) {
+  return t === "az" ? "A-Z" : t === "za" ? "Z-A" : t === "popular" ? "인기순" : "가격순(낮은순)";
+}
+function sectionOn(s, todayStr) {
+  if (s.visible === false) return false;
+  const st = String(s.period_start || "").slice(0, 10);
+  const e = String(s.period_end || "").slice(0, 10);
+  if (st && todayStr < st) return false;
+  if (e && todayStr > e) return false;
+  return true;
+}
+
+function renderMainManagement(main) {
+  const heroes = loadMainHero();
+  const cfg = loadMainHeroCfg();
+  const sections = loadMainSection();
+  const placeById = new Map(loadPlaces().map((p) => [p.id, p]));
+  const today = new Date().toISOString().slice(0, 10);
+
+  const heroRows = heroes.length
+    ? heroes
+        .slice()
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        .map((h) => {
+          const on = heroSlideOn(h, today);
+          const period = h.period_start || h.period_end ? `${escapeHtml(h.period_start || "")} ~ ${escapeHtml(h.period_end || "")}` : "상시";
+          return `<tr>
+            <td><span class="badge" style="background:${h.media_type === "video" ? "#f3e8ff;color:#6b21a8" : "#dbeafe;color:#1e40af"}">${h.media_type === "video" ? "동영상" : "이미지"}</span></td>
+            <td>${escapeHtml(h.title_ko || h.title_en || "-")}</td>
+            <td style="font-size:11px">${period}</td>
+            <td style="text-align:center">${h.force_off ? `<span class="badge off">강제OFF</span>` : "—"}</td>
+            <td><span class="badge ${on ? "on" : "off"}">${on ? "ON" : "OFF"}</span></td>
+            <td style="white-space:nowrap"><button type="button" class="btn btn-ghost js-hero-edit" data-id="${escapeAttr(h.id)}">수정</button> <button type="button" class="btn btn-ghost js-hero-del" data-id="${escapeAttr(h.id)}">삭제</button></td>
+          </tr>`;
+        })
+        .join("")
+    : `<tr><td colspan="6" class="muted" style="padding:12px">등록된 슬라이드가 없습니다. [+ 슬라이드 추가]로 등록하세요.</td></tr>`;
+
+  const secRows = sections.length
+    ? sections
+        .slice()
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        .map((s) => {
+          const cat = (s.cat_1depth || []).map((c) => (c === "condo" ? "Condo" : "Hotel")).join(", ") || "-";
+          const placeFilter = s.place_ids && s.place_ids.length ? s.place_ids.map((id) => placeById.get(id)?.place_name || "?").join(", ") : "전체";
+          const roomSel = s.room_mode === "manual" ? `수동 · ${(s.room_ids || []).length}개` : `자동 · ${sortLabel(s.sort_type)}`;
+          const period = s.period_start || s.period_end ? `${escapeHtml(s.period_start || "")} ~ ${escapeHtml(s.period_end || "")}` : "상시";
+          const on = sectionOn(s, today);
+          return `<tr>
+            <td style="font-weight:600">${escapeHtml(s.title_ko || s.title_en || "-")}</td>
+            <td>${escapeHtml(cat)}</td>
+            <td style="font-size:11px">${escapeHtml(placeFilter)}</td>
+            <td style="font-size:11px">${escapeHtml(roomSel)}</td>
+            <td style="font-size:11px">${period}</td>
+            <td><span class="badge ${on ? "on" : "off"}">${on ? "SHOW" : "HIDE"}</span></td>
+            <td style="white-space:nowrap"><button type="button" class="btn btn-ghost js-sec-edit" data-id="${escapeAttr(s.id)}">수정</button> <button type="button" class="btn btn-ghost js-sec-del" data-id="${escapeAttr(s.id)}">삭제</button></td>
+          </tr>`;
+        })
+        .join("")
+    : `<tr><td colspan="7" class="muted" style="padding:12px">등록된 섹션이 없습니다. [+ 섹션 추가]로 등록하세요.</td></tr>`;
+
+  main.innerHTML = `
+    <h2 class="page-title">메인 화면 관리 <span style="font-size:12px;font-weight:400;color:#888">— 화면관리 &gt; 메인관리</span></h2>
+    <p class="page-desc">프런트 메인 페이지의 <strong>히어로 슬라이드</strong>와 <strong>추천 섹션</strong>을 관리합니다. 두 영역은 독립 저장됩니다. (숙소 집중 · 티켓·투어 추후)</p>
+
+    <div class="card" style="border:1.5px solid #10b981">
+      <h3 class="section-title" style="color:#065f46">▶ 히어로 이미지 영역</h3>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:12px">
+        <strong style="color:#065f46">전역 설정</strong>
+        <label style="display:flex;align-items:center;gap:5px">자동 슬라이드
+          <select id="mh_autoplay"><option value="on" ${cfg.autoplay ? "selected" : ""}>ON</option><option value="off" ${!cfg.autoplay ? "selected" : ""}>OFF</option></select>
+        </label>
+        <label style="display:flex;align-items:center;gap:5px">주기 <input id="mh_interval" type="number" min="1" value="${cfg.interval_sec}" style="width:56px"> 초</label>
+        <button type="button" class="btn btn-primary" id="mh_cfg_save" style="margin-left:auto;background:#10b981;border-color:#10b981">전역 설정 저장</button>
+      </div>
+      <div style="font-size:10px;color:#888;margin-bottom:5px">슬라이드 목록 (${heroes.length} / 최대 10장)</div>
+      <div class="product-inv-wrap"><table class="room-list-table"><thead><tr><th>유형</th><th>타이틀(KO)</th><th>노출 기간</th><th>강제종료</th><th>상태</th><th>작업</th></tr></thead><tbody>${heroRows}</tbody></table></div>
+      <div style="margin-top:8px"><a href="#/main-management/hero/new" class="btn ${heroes.length >= 10 ? "" : ""}">+ 슬라이드 추가</a></div>
+    </div>
+
+    <div class="card" style="border:1.5px solid #6366f1;margin-top:16px">
+      <h3 class="section-title" style="color:#3730a3">★ 추천 섹션 영역</h3>
+      <div style="font-size:10px;color:#888;margin-bottom:5px">섹션 목록 (${sections.length}개)</div>
+      <div class="product-inv-wrap"><table class="room-list-table"><thead><tr><th>섹션 타이틀(KO)</th><th>카테고리</th><th>숙소 필터</th><th>객실 선택</th><th>노출 기간</th><th>상태</th><th>작업</th></tr></thead><tbody>${secRows}</tbody></table></div>
+      <div style="margin-top:8px"><a href="#/main-management/section/new" class="btn">+ 섹션 추가</a></div>
+    </div>
+  `;
+
+  document.getElementById("mh_cfg_save")?.addEventListener("click", () => {
+    const autoplay = document.getElementById("mh_autoplay")?.value === "on";
+    const interval_sec = Math.max(1, parseInt(document.getElementById("mh_interval")?.value, 10) || 5);
+    saveMainHeroCfg({ autoplay, interval_sec });
+    alert("전역 설정이 저장되었습니다.");
+  });
+  main.querySelectorAll(".js-hero-edit").forEach((b) => b.addEventListener("click", () => navigate("main-management/hero/edit/" + b.getAttribute("data-id"))));
+  main.querySelectorAll(".js-hero-del").forEach((b) =>
+    b.addEventListener("click", () => {
+      if (!confirm("이 슬라이드를 삭제할까요?")) return;
+      saveMainHero(loadMainHero().filter((x) => x.id !== b.getAttribute("data-id")));
+      renderMainManagement(main);
+    })
+  );
+  main.querySelectorAll(".js-sec-edit").forEach((b) => b.addEventListener("click", () => navigate("main-management/section/edit/" + b.getAttribute("data-id"))));
+  main.querySelectorAll(".js-sec-del").forEach((b) =>
+    b.addEventListener("click", () => {
+      if (!confirm("이 섹션을 삭제할까요?")) return;
+      saveMainSection(loadMainSection().filter((x) => x.id !== b.getAttribute("data-id")));
+      renderMainManagement(main);
+    })
+  );
+}
+
+/** S12-B 히어로 슬라이드 등록·수정 */
+function renderHeroForm(main, editId) {
+  const heroes = loadMainHero();
+  const existing = editId ? heroes.find((h) => h.id === editId) : null;
+  const isEdit = !!existing;
+  const state = {
+    id: existing?.id || uid(),
+    media_type: existing?.media_type || "image",
+    pc_image: existing?.pc_image || "",
+    mobile_image: existing?.mobile_image || "",
+    video_url: existing?.video_url || "",
+    video_autoplay: existing?.video_autoplay !== false,
+    title_ko: existing?.title_ko || "",
+    title_en: existing?.title_en || "",
+    subtitle_ko: existing?.subtitle_ko || "",
+    subtitle_en: existing?.subtitle_en || "",
+    period_start: existing?.period_start || "",
+    period_end: existing?.period_end || "",
+    force_off: !!existing?.force_off,
+    cta_use: existing?.cta_use ?? true,
+    cta_label_ko: existing?.cta_label_ko || "",
+    cta_label_en: existing?.cta_label_en || "",
+    cta_url: existing?.cta_url || "",
+    order: existing?.order ?? heroes.length,
+  };
+
+  function persist() {
+    const v = (id) => document.getElementById(id);
+    state.media_type = v("hf_type")?.value || "image";
+    if (state.media_type === "image") {
+      state.pc_image = v("hf_pc")?.value.trim() ?? state.pc_image;
+      state.mobile_image = v("hf_mo")?.value.trim() ?? state.mobile_image;
+    } else {
+      state.video_url = v("hf_video")?.value.trim() ?? state.video_url;
+      if (v("hf_autoplay")) state.video_autoplay = v("hf_autoplay").value === "on";
+    }
+    if (v("hf_title_ko")) state.title_ko = v("hf_title_ko").value;
+    if (v("hf_title_en")) state.title_en = v("hf_title_en").value;
+    if (v("hf_sub_ko")) state.subtitle_ko = v("hf_sub_ko").value;
+    if (v("hf_sub_en")) state.subtitle_en = v("hf_sub_en").value;
+    if (v("hf_ps")) state.period_start = v("hf_ps").value;
+    if (v("hf_pe")) state.period_end = v("hf_pe").value;
+    if (v("hf_force")) state.force_off = v("hf_force").value === "on";
+    if (v("hf_cta_use")) state.cta_use = v("hf_cta_use").value === "on";
+    if (v("hf_cta_ko")) state.cta_label_ko = v("hf_cta_ko").value;
+    if (v("hf_cta_en")) state.cta_label_en = v("hf_cta_en").value;
+    if (v("hf_cta_url")) state.cta_url = v("hf_cta_url").value.trim();
+  }
+
+  function render() {
+    const mediaBlock =
+      state.media_type === "image"
+        ? `<label class="field"><span>PC 이미지 URL</span><input id="hf_pc" type="text" value="${escapeAttr(state.pc_image)}" placeholder="https://... (권장 1920×600)" /></label>
+           <label class="field"><span>모바일 이미지 URL</span><input id="hf_mo" type="text" value="${escapeAttr(state.mobile_image)}" placeholder="https://... (권장 768×450, 미입력 시 PC 이미지 사용)" /></label>
+           ${state.pc_image ? `<div style="margin:4px 0 8px"><img src="${escapeAttr(state.pc_image)}" alt="미리보기" style="max-width:360px;max-height:130px;border:1px solid #ddd;border-radius:4px" onerror="this.style.display='none'" /></div>` : ""}`
+        : `<label class="field"><span>동영상 URL</span><input id="hf_video" type="text" value="${escapeAttr(state.video_url)}" placeholder="https://....mp4" /></label>
+           <label class="field"><span>자동 재생</span><select id="hf_autoplay"><option value="on" ${state.video_autoplay ? "selected" : ""}>ON</option><option value="off" ${!state.video_autoplay ? "selected" : ""}>OFF</option></select></label>
+           <div class="notice" style="background:#fff9e6;border:1px solid #f0d98c;border-radius:6px;padding:8px 12px;font-size:12px;color:#7a5c00">동영상은 폼에서 관리만 하며, 프런트 실제 재생 연동은 제외됩니다(용량 이슈). 프런트는 이미지 슬라이드만 렌더링됩니다.</div>`;
+
+    const ctaBlock = state.cta_use
+      ? `<label class="field"><span>버튼명 KO <span style="color:#e74c3c">*</span></span><input id="hf_cta_ko" type="text" value="${escapeAttr(state.cta_label_ko)}" placeholder="예) 지금 예약하기" /></label>
+         <label class="field"><span>버튼명 EN</span><input id="hf_cta_en" type="text" value="${escapeAttr(state.cta_label_en)}" placeholder="e.g. Book Now" /></label>
+         <label class="field"><span>링크 URL <span style="color:#e74c3c">*</span></span><input id="hf_cta_url" type="text" value="${escapeAttr(state.cta_url)}" placeholder="예) /hotel 또는 https://..." /></label>
+         <p class="field-hint">내부(/…)·외부(https://) 모두 허용. 외부 URL은 새 탭. CTA 사용 시 버튼명 KO·URL 필수.</p>`
+      : "";
+
+    main.innerHTML = `
+      <h2 class="page-title">히어로 슬라이드 ${isEdit ? "수정" : "등록"}</h2>
+      <p class="page-desc">프런트 메인 최상단 슬라이드. 이미지는 <strong>URL 입력</strong> 방식(용량 이슈로 파일 업로드 대신).</p>
+
+      <div class="card">
+        <h3 class="section-title">① 미디어</h3>
+        <label class="field"><span>유형</span>
+          <select id="hf_type"><option value="image" ${state.media_type === "image" ? "selected" : ""}>이미지</option><option value="video" ${state.media_type === "video" ? "selected" : ""}>동영상</option></select>
+        </label>
+        ${mediaBlock}
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">② 텍스트 <span style="font-size:12px;font-weight:400;color:#888">(KO/EN)</span></h3>
+        <label class="field"><span>타이틀 KO</span><input id="hf_title_ko" type="text" value="${escapeAttr(state.title_ko)}" placeholder="예) 하이원의 봄" /></label>
+        <label class="field"><span>타이틀 EN</span><input id="hf_title_en" type="text" value="${escapeAttr(state.title_en)}" placeholder="e.g. Spring at High1" /></label>
+        <label class="field"><span>서브타이틀 KO</span><input id="hf_sub_ko" type="text" value="${escapeAttr(state.subtitle_ko)}" /></label>
+        <label class="field"><span>서브타이틀 EN</span><input id="hf_sub_en" type="text" value="${escapeAttr(state.subtitle_en)}" /></label>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">③ 노출 설정</h3>
+        <div class="form-grid">
+          <label class="field"><span>노출 시작일</span><input id="hf_ps" type="date" value="${escapeAttr(state.period_start)}" /></label>
+          <label class="field"><span>노출 종료일</span><input id="hf_pe" type="date" value="${escapeAttr(state.period_end)}" /></label>
+        </div>
+        <p class="field-hint">비워두면 상시 노출. 종료일 경과 시 자동 OFF.</p>
+        <label class="field"><span>강제 종료</span><select id="hf_force"><option value="off" ${!state.force_off ? "selected" : ""}>OFF</option><option value="on" ${state.force_off ? "selected" : ""}>ON (즉시 비노출)</option></select></label>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">④ CTA 버튼</h3>
+        <label class="field"><span>CTA 사용</span><select id="hf_cta_use"><option value="on" ${state.cta_use ? "selected" : ""}>사용</option><option value="off" ${!state.cta_use ? "selected" : ""}>미사용</option></select></label>
+        ${ctaBlock}
+      </div>
+
+      <div class="wizard-actions wizard-actions--sticky">
+        <a href="#/main-management" class="btn">목록</a>
+        <div class="wizard-actions-trailing">
+          <a href="#/main-management" class="btn">취소</a>
+          <button type="button" class="btn btn-primary" id="hf_save" style="background:#10b981;border-color:#10b981">${isEdit ? "저장" : "등록"}</button>
+        </div>
+      </div>
+      <p id="hf_err" class="error" style="min-height:20px"></p>
+    `;
+
+    document.getElementById("hf_type")?.addEventListener("change", () => {
+      persist();
+      render();
+    });
+    document.getElementById("hf_cta_use")?.addEventListener("change", () => {
+      persist();
+      render();
+    });
+    const pcInp = document.getElementById("hf_pc");
+    if (pcInp) pcInp.addEventListener("change", () => { persist(); render(); }); // 미리보기 갱신
+
+    document.getElementById("hf_save")?.addEventListener("click", () => {
+      persist();
+      const err = document.getElementById("hf_err");
+      if (state.media_type === "image" && !state.pc_image) {
+        err.textContent = "PC 이미지 URL을 입력하세요.";
+        return;
+      }
+      if (state.media_type === "video" && !state.video_url) {
+        err.textContent = "동영상 URL을 입력하세요.";
+        return;
+      }
+      if (state.cta_use && (!state.cta_label_ko.trim() || !state.cta_url.trim())) {
+        err.textContent = "CTA 사용 시 버튼명 KO와 링크 URL은 필수입니다.";
+        return;
+      }
+      const list = loadMainHero();
+      const idx = list.findIndex((h) => h.id === state.id);
+      const now = new Date().toISOString();
+      const record = { ...state, updated_at: now };
+      if (idx >= 0) list[idx] = { ...list[idx], ...record };
+      else {
+        record.created_at = now;
+        list.push(record);
+      }
+      saveMainHero(list);
+      navigate("main-management");
+    });
+  }
+  render();
+}
+/** S12-C 추천 섹션 설정 (카테고리→숙소→객실 자동/수동 + 선택 팝업) */
+function renderSectionForm(main, editId) {
+  const sections = loadMainSection();
+  const existing = editId ? sections.find((s) => s.id === editId) : null;
+  const isEdit = !!existing;
+  const state = {
+    id: existing?.id || uid(),
+    title_ko: existing?.title_ko || "",
+    title_en: existing?.title_en || "",
+    subtitle_ko: existing?.subtitle_ko || "",
+    subtitle_en: existing?.subtitle_en || "",
+    visible: existing?.visible !== false,
+    period_start: existing?.period_start || "",
+    period_end: existing?.period_end || "",
+    viewall_use: existing?.viewall_use ?? true,
+    viewall_label_ko: existing?.viewall_label_ko || "",
+    viewall_label_en: existing?.viewall_label_en || "",
+    viewall_url: existing?.viewall_url || "",
+    cat_1depth: Array.isArray(existing?.cat_1depth) ? [...existing.cat_1depth] : [],
+    place_ids: Array.isArray(existing?.place_ids) ? [...existing.place_ids] : [],
+    tab_enabled: !!existing?.tab_enabled,
+    room_mode: existing?.room_mode === "manual" ? "manual" : "auto",
+    sort_type: existing?.sort_type || "price",
+    room_ids: Array.isArray(existing?.room_ids) ? [...existing.room_ids] : [],
+    order: existing?.order ?? sections.length,
+    popupOpen: false,
+  };
+
+  const allPlaces = loadPlaces();
+  const placeById = new Map(allPlaces.map((p) => [p.id, p]));
+  const allRooms = loadRooms().filter((r) => r.visibility !== "HIDE");
+  const roomById = new Map(allRooms.map((r) => [r.id, r]));
+  const catOf = (p) => (p.category === "CONDO" ? "condo" : "hotel");
+  const roomLabel = (r) => {
+    const pl = placeById.get(r.place_id);
+    const occ = r.standard_occupancy != null ? `기준${r.standard_occupancy}-최대${r.max_occupancy ?? "?"}` : "";
+    const sz = r.room_size_sqm ? `${r.room_size_sqm}m²` : "";
+    const meta = [occ, sz].filter(Boolean).join(" , ");
+    return `${pl ? pl.place_name + " — " : ""}${r.room_name_en || r.room_name || r.rm_typ_cd || "객실"}${meta ? " , " + meta : ""}`;
+  };
+
+  function catPlaces() {
+    return allPlaces.filter((p) => state.cat_1depth.includes(catOf(p)));
+  }
+  function targetPlaceIds() {
+    return state.place_ids.length ? state.place_ids : catPlaces().map((p) => p.id);
+  }
+  function candidateRooms() {
+    const ids = new Set(targetPlaceIds());
+    return allRooms.filter((r) => ids.has(r.place_id));
+  }
+
+  function persistBasics() {
+    const v = (id) => document.getElementById(id);
+    if (v("sf_title_ko")) state.title_ko = v("sf_title_ko").value;
+    if (v("sf_title_en")) state.title_en = v("sf_title_en").value;
+    if (v("sf_sub_ko")) state.subtitle_ko = v("sf_sub_ko").value;
+    if (v("sf_sub_en")) state.subtitle_en = v("sf_sub_en").value;
+    if (v("sf_visible")) state.visible = v("sf_visible").value === "on";
+    if (v("sf_ps")) state.period_start = v("sf_ps").value;
+    if (v("sf_pe")) state.period_end = v("sf_pe").value;
+    if (v("sf_va_use")) state.viewall_use = v("sf_va_use").value === "on";
+    if (v("sf_va_ko")) state.viewall_label_ko = v("sf_va_ko").value;
+    if (v("sf_va_en")) state.viewall_label_en = v("sf_va_en").value;
+    if (v("sf_va_url")) state.viewall_url = v("sf_va_url").value.trim();
+    if (v("sf_sort")) state.sort_type = v("sf_sort").value;
+    // 체크박스류
+    const cats = [...main.querySelectorAll(".sf-cat:checked")].map((c) => c.value);
+    if (main.querySelector(".sf-cat")) state.cat_1depth = cats;
+    if (main.querySelector(".sf-place")) state.place_ids = [...main.querySelectorAll(".sf-place:checked")].map((c) => c.value);
+    if (v("sf_tab")) state.tab_enabled = v("sf_tab").value === "on";
+    if (v("sf_mode")) state.room_mode = v("sf_mode").value === "manual" ? "manual" : "auto";
+    // place_ids 중 현재 카테고리에서 벗어난 것 정리
+    const validPids = new Set(catPlaces().map((p) => p.id));
+    state.place_ids = state.place_ids.filter((id) => validPids.has(id));
+    // room_ids 중 후보 벗어난 것 정리
+    const cand = new Set(candidateRooms().map((r) => r.id));
+    state.room_ids = state.room_ids.filter((id) => cand.has(id));
+  }
+
+  function render() {
+    const twoDepthBlock = state.cat_1depth.length
+      ? `<div class="wf-form-field" style="margin-top:6px">
+          <div style="border:1px solid #ddd;border-radius:4px;padding:8px 10px;background:#fff;font-size:12px">
+            <div style="color:#888;font-size:10px;margin-bottom:6px">2뎁스 — 숙소 선택 (미선택 시 카테고리 전체)</div>
+            ${catPlaces()
+              .map((p) => `<label style="display:flex;align-items:center;gap:6px;padding:3px 0;cursor:pointer"><input type="checkbox" class="sf-place" value="${escapeAttr(p.id)}" ${state.place_ids.includes(p.id) ? "checked" : ""}> ${escapeHtml(p.place_name)}</label>`)
+              .join("") || `<span class="muted">해당 카테고리 숙소가 없습니다.</span>`}
+          </div>
+        </div>`
+      : `<p class="field-hint" style="color:#f59e0b">▲ 1뎁스(Hotel/Condo)를 먼저 선택하면 숙소 목록이 표시됩니다.</p>`;
+
+    const tabBlock =
+      state.place_ids.length >= 2
+        ? `<label class="field"><span>탭 분리</span><select id="sf_tab"><option value="on" ${state.tab_enabled ? "selected" : ""}>ON (숙소별 탭)</option><option value="off" ${!state.tab_enabled ? "selected" : ""}>OFF (통합)</option></select></label>`
+        : `<p class="field-hint">탭 분리는 2뎁스 숙소를 <strong>2개 이상</strong> 선택하면 활성화됩니다. (현재 통합 그리드)</p>`;
+
+    const autoBlock = `<label class="field"><span>정렬 기준</span><select id="sf_sort">
+        <option value="price" ${state.sort_type === "price" ? "selected" : ""}>가격순 (낮은순)</option>
+        <option value="az" ${state.sort_type === "az" ? "selected" : ""}>A-Z</option>
+        <option value="za" ${state.sort_type === "za" ? "selected" : ""}>Z-A</option>
+        <option value="popular" ${state.sort_type === "popular" ? "selected" : ""}>인기순</option>
+      </select></label>`;
+
+    const manualList = state.room_ids.length
+      ? state.room_ids
+          .map((id) => {
+            const r = roomById.get(id);
+            return `<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid #f0f0eb;font-size:12px">
+              <span style="flex:1">${r ? escapeHtml(roomLabel(r)) : `<span style="color:#e74c3c">삭제된/숨김 객실 (${escapeHtml(id)})</span>`}</span>
+              <button type="button" class="btn btn-ghost btn-danger sf-room-rm" data-id="${escapeAttr(id)}" style="padding:1px 6px">제거</button>
+            </div>`;
+          })
+          .join("")
+      : `<p class="muted" style="padding:6px 0">선택된 객실이 없습니다. [객실 선택]으로 추가하세요.</p>`;
+    const manualBlock = `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <button type="button" class="btn" id="sf_pick">객실 선택</button>
+        <span style="font-size:12px;color:#555">선택됨: <strong>${state.room_ids.length}</strong> / 10</span>
+      </div>
+      <div style="border:1px solid #ddd;border-radius:4px;background:#fff;padding:6px 8px">${manualList}</div>`;
+
+    const popup = state.popupOpen ? renderPickPopup() : "";
+
+    main.innerHTML = `
+      <h2 class="page-title">추천 섹션 ${isEdit ? "수정" : "등록"}</h2>
+      <p class="page-desc">프런트 메인 추천 섹션. 카테고리→숙소→객실 순으로 노출 범위를 정합니다. (숙소 집중)</p>
+
+      <div class="card">
+        <h3 class="section-title">① 기본 정보 <span style="font-size:12px;font-weight:400;color:#888">(KO/EN)</span></h3>
+        <label class="field"><span>타이틀 KO <span style="color:#e74c3c">*</span></span><input id="sf_title_ko" type="text" value="${escapeAttr(state.title_ko)}" placeholder="예) 이번 주 추천 호텔" /></label>
+        <label class="field"><span>타이틀 EN</span><input id="sf_title_en" type="text" value="${escapeAttr(state.title_en)}" /></label>
+        <label class="field"><span>서브타이틀 KO</span><input id="sf_sub_ko" type="text" value="${escapeAttr(state.subtitle_ko)}" /></label>
+        <label class="field"><span>서브타이틀 EN</span><input id="sf_sub_en" type="text" value="${escapeAttr(state.subtitle_en)}" /></label>
+        <div class="form-grid">
+          <label class="field"><span>노출 여부</span><select id="sf_visible"><option value="on" ${state.visible ? "selected" : ""}>노출</option><option value="off" ${!state.visible ? "selected" : ""}>미노출</option></select></label>
+          <label class="field"><span>노출 시작일</span><input id="sf_ps" type="date" value="${escapeAttr(state.period_start)}" /></label>
+          <label class="field"><span>노출 종료일</span><input id="sf_pe" type="date" value="${escapeAttr(state.period_end)}" /></label>
+        </div>
+        <label class="field"><span>전체보기 버튼</span><select id="sf_va_use"><option value="on" ${state.viewall_use ? "selected" : ""}>사용</option><option value="off" ${!state.viewall_use ? "selected" : ""}>미사용</option></select></label>
+        ${
+          state.viewall_use
+            ? `<label class="field"><span>버튼명 KO <span style="color:#e74c3c">*</span></span><input id="sf_va_ko" type="text" value="${escapeAttr(state.viewall_label_ko)}" placeholder="전체보기" /></label>
+               <label class="field"><span>버튼명 EN</span><input id="sf_va_en" type="text" value="${escapeAttr(state.viewall_label_en)}" placeholder="View All" /></label>
+               <label class="field"><span>링크 URL <span style="color:#e74c3c">*</span></span><input id="sf_va_url" type="text" value="${escapeAttr(state.viewall_url)}" placeholder="예) /hotel 또는 https://..." /></label>`
+            : ""
+        }
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">② 카테고리 설정</h3>
+        <div class="wf-form-field">
+          <div style="font-size:11px;margin-bottom:4px">1뎁스 <span style="color:#e74c3c">*</span> (복수 선택)</div>
+          <div style="display:flex;gap:20px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" class="sf-cat" value="hotel" ${state.cat_1depth.includes("hotel") ? "checked" : ""}> Hotel</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" class="sf-cat" value="condo" ${state.cat_1depth.includes("condo") ? "checked" : ""}> Condo</label>
+          </div>
+        </div>
+        ${twoDepthBlock}
+        ${tabBlock}
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">③ 객실 선택 방식</h3>
+        <label class="field"><span>선택 방식 <span style="color:#e74c3c">*</span></span><select id="sf_mode"><option value="auto" ${state.room_mode === "auto" ? "selected" : ""}>자동 (정렬 기준 상위)</option><option value="manual" ${state.room_mode === "manual" ? "selected" : ""}>수동 (직접 선택)</option></select></label>
+        ${state.room_mode === "auto" ? autoBlock : manualBlock}
+      </div>
+
+      <div class="wizard-actions wizard-actions--sticky">
+        <a href="#/main-management" class="btn">목록</a>
+        <div class="wizard-actions-trailing">
+          <a href="#/main-management" class="btn">취소</a>
+          <button type="button" class="btn btn-primary" id="sf_save" style="background:#10b981;border-color:#10b981">${isEdit ? "저장" : "등록"}</button>
+        </div>
+      </div>
+      <p id="sf_err" class="error" style="min-height:20px"></p>
+      ${popup}
+    `;
+
+    // 리렌더 트리거 (카테고리·숙소·방식·전체보기 변경 시)
+    main.querySelectorAll(".sf-cat").forEach((c) => c.addEventListener("change", () => { persistBasics(); render(); }));
+    main.querySelectorAll(".sf-place").forEach((c) => c.addEventListener("change", () => { persistBasics(); render(); }));
+    document.getElementById("sf_mode")?.addEventListener("change", () => { persistBasics(); render(); });
+    document.getElementById("sf_va_use")?.addEventListener("change", () => { persistBasics(); render(); });
+
+    document.getElementById("sf_pick")?.addEventListener("click", () => { persistBasics(); state.popupOpen = true; render(); });
+    main.querySelectorAll(".sf-room-rm").forEach((b) => b.addEventListener("click", () => { persistBasics(); state.room_ids = state.room_ids.filter((x) => x !== b.getAttribute("data-id")); render(); }));
+
+    bindPopupEvents();
+
+    document.getElementById("sf_save")?.addEventListener("click", () => {
+      persistBasics();
+      const err = document.getElementById("sf_err");
+      if (!state.title_ko.trim()) { err.textContent = "타이틀 KO는 필수입니다."; return; }
+      if (!state.cat_1depth.length) { err.textContent = "1뎁스(Hotel/Condo)를 1개 이상 선택하세요."; return; }
+      if (state.viewall_use && (!state.viewall_label_ko.trim() || !state.viewall_url.trim())) { err.textContent = "전체보기 사용 시 버튼명 KO·URL은 필수입니다."; return; }
+      if (state.room_mode === "manual" && !state.room_ids.length) { err.textContent = "수동 선택 시 객실을 1개 이상 선택하세요."; return; }
+      const list = loadMainSection();
+      const idx = list.findIndex((s) => s.id === state.id);
+      const now = new Date().toISOString();
+      const rec = { ...state, updated_at: now };
+      delete rec.popupOpen;
+      if (idx >= 0) list[idx] = { ...list[idx], ...rec };
+      else { rec.created_at = now; list.push(rec); }
+      saveMainSection(list);
+      navigate("main-management");
+    });
+  }
+
+  function renderPickPopup() {
+    const cand = candidateRooms();
+    const byPlace = new Map();
+    cand.forEach((r) => {
+      if (!byPlace.has(r.place_id)) byPlace.set(r.place_id, []);
+      byPlace.get(r.place_id).push(r);
+    });
+    const groups = [...byPlace.entries()]
+      .map(([pid, rms]) => {
+        const pl = placeById.get(pid);
+        const rows = rms
+          .map((r) => {
+            const checked = state.room_ids.includes(r.id);
+            return `<label style="display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid #f0f0eb;${checked ? "background:#f0fdf4" : ""}"><input type="checkbox" class="sf-pick-room" value="${escapeAttr(r.id)}" ${checked ? "checked" : ""}> ${escapeHtml(roomLabel(r))}</label>`;
+          })
+          .join("");
+        return `<div style="font-size:11px;font-weight:700;color:#555;background:#f8f8f5;padding:5px 12px;border-bottom:1px solid #e8e8e2">${escapeHtml(pl?.place_name || "숙소")}</div>${rows}`;
+      })
+      .join("");
+    return `
+      <div style="position:fixed;inset:0;background:rgba(20,25,40,.55);display:flex;align-items:center;justify-content:center;z-index:100" id="sf_popup_dim">
+        <div style="background:#fff;border-radius:8px;width:520px;max-width:92vw;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.3)">
+          <div style="background:#1a1f2e;padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+            <span style="color:#fff;font-weight:700;font-size:13px">객실 선택</span>
+            <span style="color:rgba(255,255,255,.8);font-size:12px">선택: <strong style="color:#6ee7b7" id="sf_pick_count">${state.room_ids.length}</strong> / 10</span>
+          </div>
+          <div style="flex:1;overflow-y:auto">${groups || `<p class="muted" style="padding:16px">후보 객실이 없습니다. 카테고리·숙소를 먼저 선택하세요.</p>`}</div>
+          <div style="border-top:1px solid #e8e8e2;padding:8px 14px;display:flex;justify-content:flex-end;gap:8px;background:#fafaf8">
+            <button type="button" class="btn" id="sf_pick_cancel">취소</button>
+            <button type="button" class="btn btn-primary" id="sf_pick_apply" style="background:#10b981;border-color:#10b981">적용</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function bindPopupEvents() {
+    if (!state.popupOpen) return;
+    // 팝업 임시 선택 상태(적용 전까지 state 미반영)
+    let temp = [...state.room_ids];
+    const countEl = () => document.getElementById("sf_pick_count");
+    main.querySelectorAll(".sf-pick-room").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        const id = cb.value;
+        if (cb.checked) {
+          if (temp.length >= 10 && !temp.includes(id)) { cb.checked = false; alert("최대 10개까지 선택할 수 있습니다."); return; }
+          if (!temp.includes(id)) temp.push(id);
+        } else {
+          temp = temp.filter((x) => x !== id);
+        }
+        if (countEl()) countEl().textContent = String(temp.length);
+      });
+    });
+    document.getElementById("sf_pick_apply")?.addEventListener("click", () => {
+      state.room_ids = temp;
+      state.popupOpen = false;
+      render();
+    });
+    document.getElementById("sf_pick_cancel")?.addEventListener("click", () => { state.popupOpen = false; render(); });
+    document.getElementById("sf_popup_dim")?.addEventListener("click", (e) => { if (e.target.id === "sf_popup_dim") { state.popupOpen = false; render(); } });
+  }
+
+  render();
+}
+
 function boot() {
   window.addEventListener("hashchange", () => {
     routeWrap();
@@ -1363,6 +1950,27 @@ function route() {
 
   if (parts[0] === "margin-management") {
     renderMarginMaster(main);
+    return;
+  }
+
+  if (parts[0] === "main-management") {
+    if (parts[1] === "hero" && parts[2] === "new") {
+      renderHeroForm(main, null);
+      return;
+    }
+    if (parts[1] === "hero" && parts[2] === "edit" && parts[3]) {
+      renderHeroForm(main, parts[3]);
+      return;
+    }
+    if (parts[1] === "section" && parts[2] === "new") {
+      renderSectionForm(main, null);
+      return;
+    }
+    if (parts[1] === "section" && parts[2] === "edit" && parts[3]) {
+      renderSectionForm(main, parts[3]);
+      return;
+    }
+    renderMainManagement(main);
     return;
   }
 
