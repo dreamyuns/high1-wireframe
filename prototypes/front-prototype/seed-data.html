@@ -3,700 +3,388 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>High1 Seed Data</title>
+  <title>High1 Seed Data (v0.6)</title>
   <style>
     body { font-family: "Segoe UI", Arial, sans-serif; background: #f5f5f0; color: #1a1a1a; margin: 0; padding: 32px; }
     .wrap { max-width: 760px; margin: 0 auto; }
     h1 { font-size: 24px; margin-bottom: 4px; }
-    .subtitle { color: #6b6b6b; font-size: 14px; margin-bottom: 24px; }
-    .notice { background: #fefce8; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #92400e; margin-bottom: 28px; }
-
-    /* 섹션 */
-    .action-section { background: #fff; border: 1px solid #e2e2da; border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; }
-    .action-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6b6b6b; margin-bottom: 10px; }
-    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-
-    button { padding: 10px 20px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
-
-    /* 버튼 색상 */
-    .btn-master { background: #1a1f2e; color: #fff; }
-    .btn-master:hover { background: #252b3b; }
-    .btn-seed   { background: #374151; color: #fff; }
-    .btn-seed:hover { background: #4b5563; }
+    .subtitle { color: #6b6b6b; font-size: 14px; margin-bottom: 20px; }
+    .notice { background: #fefce8; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #92400e; margin-bottom: 20px; line-height: 1.6; }
+    .steps { background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #1e40af; margin-bottom: 24px; line-height: 1.7; }
+    .steps b { color: #1e3a8a; }
+    .card { background: #fff; border: 1px solid #e2e2da; border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; }
+    .card-title { font-size: 12px; font-weight: 700; color: #6b6b6b; margin-bottom: 10px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    button { padding: 12px 22px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .btn-primary { background: #7c3aed; color: #fff; font-size: 15px; }
+    .btn-primary:hover { background: #6d28d9; }
     .btn-backup { background: #0e7490; color: #fff; }
-    .btn-backup:hover { background: #0c6a82; }
-    .btn-restore { background: #fff; color: #0e7490; border: 2px solid #0e7490; padding: 8px 18px; }
-    .btn-restore:hover { background: #ecfeff; }
-    .btn-reset  { background: #c0392b; color: #fff; }
-    .btn-reset:hover { background: #a93226; }
-
-    /* 파일 인풋 숨김 */
+    .btn-restore { background: #fff; color: #0e7490; border: 2px solid #0e7490; padding: 10px 20px; }
+    .btn-reset { background: #c0392b; color: #fff; }
     #fileRestore { display: none; }
-
-    /* 결과 */
-    #results { display: flex; flex-direction: column; gap: 6px; margin-top: 20px; }
-    .result-row { padding: 10px 14px; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
-    .result-row code { font-size: 12px; background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; }
-    .seeded  { background: #f0fdf4; border: 1px solid #86efac; }
-    .skipped { background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; }
-    .error   { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
-    .info    { background: #eff6ff; border: 1px solid #93c5fd; color: #1e40af; }
-    .summary { margin-top: 8px; padding: 14px 18px; background: #fff; border-radius: 8px; border: 1px solid #e2e2da; font-size: 13px; }
-    .link-row { margin-top: 24px; font-size: 13px; }
-    .link-row a { color: #1a1f2e; font-weight: 700; }
+    #results { margin-top: 18px; display: flex; flex-direction: column; gap: 5px; }
+    .rr { padding: 8px 12px; border-radius: 7px; font-size: 12.5px; }
+    .ok { background: #f0fdf4; border: 1px solid #86efac; }
+    .er { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+    .summary { margin-top: 10px; padding: 14px 16px; background: #1a1f2e; color: #fff; border-radius: 8px; font-size: 13px; line-height: 1.7; }
+    .links { margin-top: 22px; font-size: 14px; }
+    .links a { display: inline-block; margin-right: 16px; color: #7c3aed; font-weight: 700; }
+    code { background: rgba(0,0,0,.06); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
   </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>High1 Seed Data</h1>
-  <p class="subtitle">프로토타입 더미 데이터 주입 스크립트 | 어드민 v0.5 · 프런트 v0.5 공용 localStorage</p>
+  <h1>High1 Seed Data <span style="font-size:14px;color:#7c3aed">v0.6</span></h1>
+  <p class="subtitle">프로토타입 더미 데이터 주입 — 어드민·프런트 공용 localStorage</p>
 
   <div class="notice">
-    ⚠️ localStorage는 같은 브라우저의 모든 로컬 파일이 공유합니다.
-    이 파일을 실행하면 <strong>admin-prototype</strong>와 <strong>front-prototype</strong> 양쪽에 반영됩니다.
+    ⚠️ 어드민(<code>admin-prototype</code>)과 프런트(<code>front-prototype</code>)는 <b>같은 브라우저 저장소(localStorage)</b>를 공유합니다.
+    이 페이지에서 한 번 주입하면 <b>양쪽 모두</b> 데이터가 채워집니다.
   </div>
 
-  <!-- 마스터 키 초기화 -->
-  <div class="action-section" style="border-color:#fde68a;background:#fefce8;">
-    <div class="action-section-title" style="color:#92400e;">공통관리 마스터 초기화</div>
-    <div class="btn-row">
-      <button class="btn-master" id="btnMaster">마스터 키 초기화</button>
-    </div>
-    <p style="margin-top:10px;font-size:12px;color:#92400e;">
-      공통관리 5개 키 + 어드민 시드 플래그 2개를 삭제합니다.<br>
-      어드민을 다시 열면 침대유형·객실유형·시설 등이 자동으로 재주입됩니다.<br>
-      숙소·객실·상품 데이터는 건드리지 않습니다.
-    </p>
+  <div class="steps">
+    <b>사용 방법 (개발사)</b><br>
+    1) 아래 <b>[전체 더미 주입]</b> 클릭 — 재고·요금 날짜는 <b>오늘 기준 +120일</b>로 자동 생성됩니다(언제 열어도 검색결과가 보임).<br>
+    2) <b>어드민</b> / <b>프런트</b> 페이지를 새로고침 → 숙소·객실·상품·이미지·요금 노출 확인.<br>
+    3) 데이터를 지우려면 [전체 초기화].
   </div>
 
-  <!-- 백업 / 복원 -->
-  <div class="action-section">
-    <div class="action-section-title">백업 / 복원</div>
-    <div class="btn-row">
-      <button class="btn-backup" id="btnBackup">백업 다운로드 (.json)</button>
-      <button class="btn-restore" id="btnRestoreBtn">복원 (파일 선택)</button>
-      <input type="file" id="fileRestore" accept=".json" />
+  <div class="card">
+    <div class="card-title">더미 데이터</div>
+    <div class="row">
+      <button class="btn-primary" id="btnSeed">✓ 전체 더미 주입 (숙소·객실·상품·공통관리·화면·마진)</button>
+      <button class="btn-reset" id="btnReset">전체 초기화</button>
     </div>
-    <p style="margin-top:10px;font-size:12px;color:#6b6b6b;">
-      백업: 현재 localStorage의 high1_ 키 전체를 JSON 파일로 저장합니다.<br>
-      복원: 저장한 JSON 파일을 불러와 덮어씁니다.
-    </p>
   </div>
 
-  <!-- 전체 씨드 (보조용) -->
-  <div class="action-section">
-    <div class="action-section-title">전체 씨드 주입 (보조용)</div>
-    <div class="btn-row">
-      <button class="btn-seed" id="btnSeed">누락 키만 주입 (안전)</button>
+  <div class="card">
+    <div class="card-title">백업 / 복원 (JSON)</div>
+    <div class="row">
+      <button class="btn-backup" id="btnBackup">백업 (JSON 다운로드)</button>
+      <button class="btn-restore" id="btnRestore">복원 (JSON 업로드)</button>
+      <input type="file" id="fileRestore" accept="application/json" />
     </div>
-    <p style="margin-top:10px;font-size:12px;color:#6b6b6b;">
-      숙소·객실·상품 3개 키 중 없는 것만 씨드 데이터로 채웁니다. 기존 데이터는 건드리지 않습니다.
-    </p>
-  </div>
-
-  <!-- 위험 구역 -->
-  <div class="action-section" style="border-color:#fca5a5;background:#fef2f2;">
-    <div class="action-section-title" style="color:#991b1b;">⚠️ 위험 구역 — 기존 데이터 전체 삭제</div>
-    <div class="btn-row">
-      <button class="btn-reset" id="btnReset">전체 초기화 후 재주입</button>
-    </div>
-    <p style="margin-top:10px;font-size:12px;color:#991b1b;">
-      숙소·객실·상품 3개 키를 삭제하고 씨드 데이터로 덮어씁니다.<br>
-      어드민에서 직접 입력한 숙소·객실·상품 데이터가 모두 사라집니다.
-    </p>
   </div>
 
   <div id="results"></div>
 
-  <div class="link-row">
-    →
-    <a href="index.html">프런트 v0.5</a> ·
-    <a href="../admin-prototype/index.html">어드민 v0.5</a>
+  <div class="links">
+    <a href="../admin-prototype/index.html" target="_blank">어드민 열기 →</a>
+    <a href="./index.html" target="_blank">프런트 열기 →</a>
   </div>
 </div>
 
 <script>
-/* ============================================================
-   유틸: SVG 플레이스홀더 이미지 (localStorage 용량 절약 위해 소형 SVG)
-   ============================================================ */
-function makePlaceholderImg(bgColor, label) {
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">'
-    + '<rect width="800" height="500" fill="' + bgColor + '"/>'
-    + '<text x="400" y="240" fill="#c49a6c" text-anchor="middle"'
-    + ' font-family="Arial,sans-serif" font-size="24" font-weight="bold">' + label + '</text>'
-    + '<text x="400" y="278" fill="rgba(255,255,255,0.45)" text-anchor="middle"'
-    + ' font-family="Arial,sans-serif" font-size="14">HIGH1 RESORT</text>'
-    + '</svg>';
+/* ═══════════════════════════════════════════════════════════
+   High1 Seed v0.6 — 데이터 모델 기준: 통합 개발 스펙 v1.0
+   저장 키:
+     high1_places_v1 / high1_rooms_v1 / high1_products_v1
+     high1_facility_categories_v1 / high1_facilities_v2
+     high1_room_master_room_type_v1 / high1_room_master_bed_type_v1
+     high1_margin_master_v1
+     high1_main_hero_v1 / high1_main_hero_cfg_v1 / high1_main_section_v1
+   ═══════════════════════════════════════════════════════════ */
+
+const KEYS = [
+  "high1_places_v1", "high1_rooms_v1", "high1_products_v1",
+  "high1_facility_categories_v1", "high1_facilities_v2",
+  "high1_room_master_room_type_v1", "high1_room_master_bed_type_v1",
+  "high1_margin_master_v1",
+  "high1_main_hero_v1", "high1_main_hero_cfg_v1", "high1_main_section_v1",
+];
+const NOW = new Date().toISOString();
+
+/* ── 날짜 유틸 (오늘 기준) ── */
+function ymd(d) { return d.toISOString().slice(0, 10); }
+function todayDate() { const d = new Date(); d.setHours(0,0,0,0); return d; }
+function addDays(base, n) { const d = new Date(base); d.setDate(d.getDate() + n); return d; }
+
+/* ── SVG placeholder 이미지 (data-URI, 자체완결) ── */
+function svgImg(label, c1, c2) {
+  const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600'>"
+    + "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>"
+    + "<stop offset='0' stop-color='" + c1 + "'/><stop offset='1' stop-color='" + c2 + "'/></linearGradient></defs>"
+    + "<rect width='800' height='600' fill='url(#g)'/>"
+    + "<text x='400' y='308' font-family='Segoe UI,Arial' font-size='46' font-weight='700' fill='rgba(255,255,255,.92)' text-anchor='middle'>" + label + "</text>"
+    + "</svg>";
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+const IMG_HOTEL = svgImg("HOTEL", "#3b4a6b", "#1a1f2e");
+const IMG_CONDO = svgImg("CONDO", "#4c5b8c", "#2b3550");
+const IMG_ROOM  = svgImg("ROOM",  "#7c8aa5", "#4a5670");
+const IMG_HERO1 = svgImg("High1 Resort — Winter", "#1e3a5f", "#0e1b2e");
+const IMG_HERO2 = svgImg("High1 Resort — Summer", "#2f6b4f", "#123524");
+
+/* ═══ 공통관리 — 시설 카테고리 / 시설 ═══ */
+/* 숙소시설 카테고리 12 (plc#####) */
+const PLACE_CAT_NAMES = ["수영장","식음료","주차","레저·스포츠","웰니스","비즈니스","키즈","편의시설","부대시설","로비·프런트","보안","교통"];
+/* 객실시설 카테고리 12 (rmc#####) */
+const ROOM_CAT_NAMES  = ["욕실","침구","냉난방","미디어","주방","인터넷","편의","안전","뷰","어메니티","전자기기","기타"];
+
+const catsPlace = PLACE_CAT_NAMES.map((name, i) => ({
+  id: "plcat-" + (i+1), domain: "PLACE", code: "plc" + String(i+1).padStart(5,"0"),
+  name, pictogram_meta: [], visible: true, updatedAt: NOW,
+}));
+const catsRoom = ROOM_CAT_NAMES.map((name, i) => ({
+  id: "rmcat-" + (i+1), domain: "ROOM", code: "rmc" + String(i+1).padStart(5,"0"),
+  name, pictogram_meta: [], visible: true, updatedAt: NOW,
+}));
+const CAT = {}; catsPlace.concat(catsRoom).forEach(c => CAT[c.name] = c.id);
+
+/* 숙소시설 10 (카테고리 매핑) */
+const facPlaceDefs = [
+  ["POOL_IN","실내수영장","수영장"], ["POOL_OUT","야외수영장","수영장"],
+  ["REST","레스토랑","식음료"], ["CAFE","카페","식음료"],
+  ["PARK","주차장","주차"], ["FIT","피트니스","레저·스포츠"],
+  ["SAUNA","사우나","웰니스"], ["BIZ","비즈니스센터","비즈니스"],
+  ["KIDS","키즈룸","키즈"], ["CVS","편의점","편의시설"],
+];
+const facPlace = facPlaceDefs.map(([code,name,cat],i) => ({
+  id: "facp-" + (i+1), code, name, category_id: CAT[cat], visible: true, updatedAt: NOW,
+}));
+/* 객실시설 10 (카테고리 매핑) */
+const facRoomDefs = [
+  ["SHOWER","샤워부스","욕실"], ["BATH","욕조","욕실"], ["BIDET","비데","욕실"],
+  ["AC","에어컨","냉난방"], ["TV","벽걸이TV","미디어"], ["FRIDGE","냉장고","주방"],
+  ["WIFI","무료와이파이","인터넷"], ["NOSMOKE","금연객실","편의"],
+  ["MTVIEW","마운틴뷰","뷰"], ["DRYER","헤어드라이어","어메니티"],
+];
+const facRoom = facRoomDefs.map(([code,name,cat],i) => ({
+  id: "facr-" + (i+1), code, name, category_id: CAT[cat], visible: true, updatedAt: NOW,
+}));
+const FAC_PLACE_IDS = facPlace.map(f => f.id);   // 10개
+const FAC_ROOM_IDS  = facRoom.map(f => f.id);    // 10개
+
+/* ═══ 공통관리 — 객실유형 / 침대유형 ═══ */
+const bedTypes = [
+  ["BT-001","킹"],["BT-002","퀸"],["BT-003","더블"],["BT-004","트윈"],["BT-005","싱글"],["BT-006","소파베드"],
+].map(([id,name]) => ({ id, code: id, name, visible: true, updatedAt: NOW }));
+const BT = {}; bedTypes.forEach(b => BT[b.name] = b.id);
+
+/* 객실유형: 객실명(상품)에 맞춰 — 숙소별 */
+const roomTypes = [
+  ["RT-001","스탠다드","place-h1"], ["RT-002","디럭스","place-h1"],
+  ["RT-003","디럭스","place-h2"],  ["RT-004","스위트","place-h2"],
+  ["RT-005","스탠다드","place-c1"], ["RT-006","패밀리","place-c1"],
+].map(([id,name,place_id]) => ({ id, code: id, name, place_id, visible: true, updatedAt: NOW }));
+
+/* ═══ 숙소 (3) ═══ */
+function place(id, code, name, name_en, category, sub_place, img, addr, addrEn) {
   return {
-    name: 'placeholder.svg',
-    size: svg.length,
-    type: 'image/svg+xml',
-    data_url: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg),
+    id, place_code: code, place_name: name, place_name_en: name_en,
+    category, sub_place, check_in_time: "15:00", check_out_time: "11:00",
+    visibility: "SHOW",
+    image_meta: [{ data_url: img }],                 // 대표 이미지 1장
+    facility_ids: FAC_PLACE_IDS.slice(0, 10),        // 시설 최대 10
+    featured_facility_ids: FAC_PLACE_IDS.slice(0, 5),// 대표 5
+    address: addr, address_en: addrEn,
+    location_detail: "<p>강원특별자치도 정선군 하이원리조트 내. 하이원 스키장·곤돌라 인접.</p>",
+    guide_html: "<p>체크인 15:00 / 체크아웃 11:00. 리조트 셔틀 운행.</p>",
+    guide_html_en: "<p>Check-in 15:00 / Check-out 11:00. Resort shuttle available.</p>",
+    policy_html: "<p>전 객실 금연. 반려동물 동반 불가. 미성년자 보호자 동반 필수.</p>",
+    policy_html_en: "<p>Non-smoking. No pets. Minors must be accompanied by a guardian.</p>",
+    extra_fee_notes: [                               // 시설 특이사항(추가요금 안내)
+      { en: "Extra bed: KRW 50,000 per night (paid on site)", zh: "加床：每晚 50,000 韩元（现场支付）" },
+      { en: "Extra person: KRW 30,000 per person (paid on site)", zh: "" },
+    ],
+    created_at: NOW, updated_at: NOW, updated_by: "seed v0.6",
   };
 }
-
-/* ============================================================
-   유틸: 인벤토리 생성 (2026-05-15 ~ 2026-08-31, 109일)
-   주말(금·토) 30% 할증
-   ============================================================ */
-function makeInventory(basePrice, stock, cutoff) {
-  const inv = [];
-  const d = new Date('2026-05-15');
-  const endStr = '2026-08-31';
-  while (true) {
-    const ymd = d.toISOString().slice(0, 10);
-    if (ymd > endStr) break;
-    const dow = d.getDay();           // 0=일, 6=토
-    const isWeekend = dow === 5 || dow === 6;  // 금·토
-    const price = Math.round(basePrice * (isWeekend ? 1.3 : 1.0) / 1000) * 1000;
-    inv.push({
-      date: ymd,
-      price: price,
-      stock: stock,
-      checkin_allowed: true,
-      min_stay_nights: 1,
-      max_stay_nights: 30,
-      cutoff_days_before_checkin: cutoff || 1,
-    });
-    d.setDate(d.getDate() + 1);
-  }
-  return inv;
-}
-
-/*
-   공통관리 마스터 데이터(침대유형·객실유형·시설 등)는
-   어드민 앱이 열릴 때 자동으로 초기화합니다.
-   seed-data.html은 숙소·객실·상품 데이터만 담당합니다.
-*/
-
-/* ============================================================
-   숙소 (Places)  — 호텔 3 + 콘도 3
-   ============================================================ */
 const PLACES = [
-  {
-    id: 'place-h1', place_code: 'PL-H001',
-    place_name: '그랜드 호텔 메인타워', place_name_en: 'Grand Hotel Main Tower',
-    category: 'HOTEL', sub_place: 'grand_main', visibility: 'SHOW',
-    check_in_time: '15:00', check_out_time: '11:00',
-    address: '강원도 정선군 고한읍 하이원길 265',
-    location_detail: '서울 청량리역 → KTX 이음 → 고한역 하차 → 리조트 셔틀버스 (약 20분)',
-    image_meta: [makePlaceholderImg('#1a1f2e', '그랜드 호텔 메인타워')],
-    facility_ids: ['fac-pool','fac-fitness','fac-restaurant','fac-bar','fac-parking','fac-spa','fac-ski','fac-concierge'],
-    featured_facility_ids: ['fac-pool','fac-ski','fac-spa','fac-restaurant','fac-fitness'],
-    guide_html: '<p>하이원 리조트의 대표 호텔로 스키장과 직접 연결됩니다. 모든 객실에서 백두대간 산악 파노라마 전망을 즐기실 수 있습니다.</p>',
-    policy_html: '<p><strong>체크인</strong> 15:00 / <strong>체크아웃</strong> 11:00</p><p>반려동물 동반 불가. 공공장소 및 객실 내 전 구역 금연.</p>',
-    updated_at: '2026-05-15T00:01:00.000Z', updated_by: 'seed',
-  },
-  {
-    id: 'place-h2', place_code: 'PL-H002',
-    place_name: '그랜드 호텔 컨벤션타워', place_name_en: 'Grand Hotel Convention Tower',
-    category: 'HOTEL', sub_place: 'grand_convention', visibility: 'SHOW',
-    check_in_time: '15:00', check_out_time: '11:00',
-    address: '강원도 정선군 고한읍 하이원길 265',
-    location_detail: '서울 청량리역 → KTX 이음 → 고한역 하차 → 리조트 셔틀버스 (약 20분)',
-    image_meta: [makePlaceholderImg('#2a1a1f', '그랜드 호텔 컨벤션타워')],
-    facility_ids: ['fac-fitness','fac-restaurant','fac-bar','fac-parking','fac-concierge','fac-ski'],
-    featured_facility_ids: ['fac-fitness','fac-restaurant','fac-bar','fac-ski'],
-    guide_html: '<p>비즈니스와 휴양을 동시에 즐길 수 있는 컨벤션 특화 호텔입니다.</p>',
-    policy_html: '<p><strong>체크인</strong> 15:00 / <strong>체크아웃</strong> 11:00</p><p>반려동물 동반 불가.</p>',
-    updated_at: '2026-05-15T00:02:00.000Z', updated_by: 'seed',
-  },
-  {
-    id: 'place-h3', place_code: 'PL-H003',
-    place_name: '팰리스 호텔', place_name_en: 'Palace Hotel',
-    category: 'HOTEL', sub_place: 'palace', visibility: 'SHOW',
-    check_in_time: '15:00', check_out_time: '12:00',
-    address: '강원도 정선군 고한읍 하이원길 265',
-    location_detail: '서울 청량리역 → KTX 이음 → 고한역 하차 → 리조트 셔틀버스 (약 20분)',
-    image_meta: [makePlaceholderImg('#1a2a1f', '팰리스 호텔')],
-    facility_ids: ['fac-pool','fac-restaurant','fac-spa','fac-concierge','fac-parking','fac-fitness'],
-    featured_facility_ids: ['fac-pool','fac-spa','fac-restaurant','fac-concierge'],
-    guide_html: '<p>프리미엄 스파와 풀을 갖춘 하이원 최고급 호텔입니다. 체크아웃은 12:00입니다.</p>',
-    policy_html: '<p><strong>체크인</strong> 15:00 / <strong>체크아웃</strong> 12:00</p><p>만 18세 미만 미동반 입실 불가.</p>',
-    updated_at: '2026-05-15T00:03:00.000Z', updated_by: 'seed',
-  },
-  {
-    id: 'place-c1', place_code: 'PL-C001',
-    place_name: '밸리 콘도', place_name_en: 'Valley Condo',
-    category: 'CONDO', sub_place: 'valley', visibility: 'SHOW',
-    check_in_time: '16:00', check_out_time: '10:00',
-    address: '강원도 정선군 고한읍 하이원길 265',
-    location_detail: '서울 청량리역 → KTX 이음 → 고한역 하차 → 리조트 셔틀버스 (약 15분)',
-    image_meta: [makePlaceholderImg('#1a1f2a', '밸리 콘도')],
-    facility_ids: ['fac-ski','fac-fitness','fac-parking','fac-restaurant'],
-    featured_facility_ids: ['fac-ski','fac-fitness','fac-restaurant'],
-    guide_html: '<p>스키장과 가장 가까운 밸리 지역 콘도입니다. 스키 시즌 최적의 위치를 자랑합니다.</p>',
-    policy_html: '<p><strong>체크인</strong> 16:00 / <strong>체크아웃</strong> 10:00</p><p>취사 가능. 소음 제한 22:00.</p>',
-    updated_at: '2026-05-15T00:04:00.000Z', updated_by: 'seed',
-  },
-  {
-    id: 'place-c2', place_code: 'PL-C002',
-    place_name: '힐 콘도', place_name_en: 'Hill Condo',
-    category: 'CONDO', sub_place: 'hill', visibility: 'SHOW',
-    check_in_time: '16:00', check_out_time: '10:00',
-    address: '강원도 정선군 고한읍 하이원길 265',
-    location_detail: '서울 청량리역 → KTX 이음 → 고한역 하차 → 리조트 셔틀버스 (약 18분)',
-    image_meta: [makePlaceholderImg('#251a2a', '힐 콘도')],
-    facility_ids: ['fac-fitness','fac-parking','fac-pool','fac-ski'],
-    featured_facility_ids: ['fac-fitness','fac-pool','fac-ski'],
-    guide_html: '<p>산 중턱에 위치한 힐 콘도입니다. 사계절 아름다운 전망을 즐기실 수 있습니다.</p>',
-    policy_html: '<p><strong>체크인</strong> 16:00 / <strong>체크아웃</strong> 10:00</p><p>취사 가능. 반려동물 소형견 동반 가능(사전 신청).</p>',
-    updated_at: '2026-05-15T00:05:00.000Z', updated_by: 'seed',
-  },
-  {
-    id: 'place-c3', place_code: 'PL-C003',
-    place_name: '마운틴 콘도', place_name_en: 'Mountain Condo',
-    category: 'CONDO', sub_place: 'mountain', visibility: 'SHOW',
-    check_in_time: '16:00', check_out_time: '10:00',
-    address: '강원도 정선군 고한읍 하이원길 265',
-    location_detail: '서울 청량리역 → KTX 이음 → 고한역 하차 → 리조트 셔틀버스 (약 25분)',
-    image_meta: [makePlaceholderImg('#2a201a', '마운틴 콘도')],
-    facility_ids: ['fac-ski','fac-parking','fac-fitness','fac-restaurant'],
-    featured_facility_ids: ['fac-ski','fac-fitness'],
-    guide_html: '<p>해발 1,340m 고지에 위치한 마운틴 콘도입니다. 사계절 청정 자연을 만끽하세요.</p>',
-    policy_html: '<p><strong>체크인</strong> 16:00 / <strong>체크아웃</strong> 10:00</p><p>취사 가능. 소음 제한 22:00.</p>',
-    updated_at: '2026-05-15T00:06:00.000Z', updated_by: 'seed',
-  },
+  place("place-h1","PL-000001","그랜드 호텔 메인타워","Grand Hotel Main Tower","HOTEL","grand_main", IMG_HOTEL,
+    "강원특별자치도 정선군 고한읍 하이원길 265", "265 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do"),
+  place("place-h2","PL-000002","팰리스 호텔","Palace Hotel","HOTEL","palace", IMG_HOTEL,
+    "강원특별자치도 정선군 고한읍 하이원길 300", "300 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do"),
+  place("place-c1","PL-000003","힐 콘도미니엄","Hill Condominium","CONDO","hill", IMG_CONDO,
+    "강원특별자치도 정선군 고한읍 하이원길 420", "420 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do"),
 ];
 
-/* ============================================================
-   객실 (Rooms) — 숙소별 2개 = 총 12개
-   ============================================================ */
-const ROOM_BASE = {
-  visibility: 'SHOW', image_meta: [],
-  policy_html: '<p>금연 객실입니다. 체크인 시 사진 신분증을 지참해 주세요.</p>',
-  guide_html: '<p>쾌적한 객실에서 편안한 휴식을 즐기세요. 불편 사항은 프런트(내선 0)로 연락 주시기 바랍니다.</p>',
-  extra_bed_enabled: false, extra_bed_max_count: 0, extra_bed_fee: 0, extra_bed_settlement: 'ON_SITE',
-  occupant_extra_charge_enabled: false, occupant_extra_charge_per_person: 0, occupant_extra_charge_settlement: 'AT_BOOKING',
-  updated_at: '2026-05-15T00:00:00.000Z', updated_by: 'seed',
-};
-
-const ROOMS = [
-  // ── 그랜드 호텔 메인타워 ──
-  { ...ROOM_BASE, id: 'room-h1-1', room_code: 'RM-0001', place_id: 'place-h1',
-    room_name: '디럭스 킹', room_type_ids: ['rt-deluxe'], trait_ids: ['trait-nonsmoking','trait-mountain-view'],
-    bed_rows: [{ bed_type_id: 'bed-king', count: 1 }],
-    standard_occupancy: 2, max_occupancy: 2, room_size_sqm: 35,
-    facility_ids: ['fac-bathtub','fac-ac','fac-tv','fac-fridge','fac-coffee'],
-    featured_facility_ids: ['fac-bathtub','fac-ac','fac-tv'],
-  },
-  { ...ROOM_BASE, id: 'room-h1-2', room_code: 'RM-0002', place_id: 'place-h1',
-    room_name: '주니어스위트', room_type_ids: ['rt-junior-suite'], trait_ids: ['trait-nonsmoking','trait-highfloor'],
-    bed_rows: [{ bed_type_id: 'bed-king', count: 1 }, { bed_type_id: 'bed-sofa', count: 1 }],
-    standard_occupancy: 2, max_occupancy: 3, room_size_sqm: 52,
-    facility_ids: ['fac-bathtub','fac-ac','fac-tv','fac-fridge','fac-balcony','fac-coffee'],
-    featured_facility_ids: ['fac-bathtub','fac-balcony','fac-coffee'],
-    occupant_extra_charge_enabled: true, occupant_extra_charge_per_person: 30000, occupant_extra_charge_settlement: 'AT_BOOKING',
-  },
-  // ── 그랜드 호텔 컨벤션타워 ──
-  { ...ROOM_BASE, id: 'room-h2-1', room_code: 'RM-0003', place_id: 'place-h2',
-    room_name: '스탠다드 트윈', room_type_ids: ['rt-standard'], trait_ids: ['trait-nonsmoking'],
-    bed_rows: [{ bed_type_id: 'bed-twin', count: 2 }],
-    standard_occupancy: 2, max_occupancy: 2, room_size_sqm: 28,
-    facility_ids: ['fac-ac','fac-tv','fac-fridge','fac-coffee'],
-    featured_facility_ids: ['fac-ac','fac-tv'],
-  },
-  { ...ROOM_BASE, id: 'room-h2-2', room_code: 'RM-0004', place_id: 'place-h2',
-    room_name: '디럭스 킹', room_type_ids: ['rt-deluxe'], trait_ids: ['trait-nonsmoking','trait-corner'],
-    bed_rows: [{ bed_type_id: 'bed-king', count: 1 }],
-    standard_occupancy: 2, max_occupancy: 3, room_size_sqm: 38,
-    facility_ids: ['fac-bathtub','fac-ac','fac-tv','fac-fridge','fac-coffee','fac-balcony'],
-    featured_facility_ids: ['fac-bathtub','fac-balcony','fac-coffee'],
-  },
-  // ── 팰리스 호텔 ──
-  { ...ROOM_BASE, id: 'room-h3-1', room_code: 'RM-0005', place_id: 'place-h3',
-    room_name: '디럭스 더블', room_type_ids: ['rt-deluxe'], trait_ids: ['trait-nonsmoking','trait-mountain-view'],
-    bed_rows: [{ bed_type_id: 'bed-double', count: 1 }],
-    standard_occupancy: 2, max_occupancy: 2, room_size_sqm: 32,
-    facility_ids: ['fac-bathtub','fac-ac','fac-tv','fac-fridge','fac-coffee'],
-    featured_facility_ids: ['fac-bathtub','fac-ac','fac-tv'],
-  },
-  { ...ROOM_BASE, id: 'room-h3-2', room_code: 'RM-0006', place_id: 'place-h3',
-    room_name: '스위트 킹', room_type_ids: ['rt-suite'], trait_ids: ['trait-nonsmoking','trait-highfloor','trait-mountain-view'],
-    bed_rows: [{ bed_type_id: 'bed-king', count: 1 }, { bed_type_id: 'bed-sofa', count: 1 }],
-    standard_occupancy: 2, max_occupancy: 4, room_size_sqm: 68,
-    facility_ids: ['fac-bathtub','fac-ac','fac-tv','fac-fridge','fac-balcony','fac-coffee'],
-    featured_facility_ids: ['fac-bathtub','fac-balcony','fac-coffee'],
-    extra_bed_enabled: true, extra_bed_max_count: 1, extra_bed_fee: 50000, extra_bed_settlement: 'ON_SITE',
-    occupant_extra_charge_enabled: true, occupant_extra_charge_per_person: 25000, occupant_extra_charge_settlement: 'AT_BOOKING',
-  },
-  // ── 밸리 콘도 ──
-  { ...ROOM_BASE, id: 'room-c1-1', room_code: 'RM-0007', place_id: 'place-c1',
-    room_name: '스탠다드 (2인)', room_type_ids: ['rt-standard'], trait_ids: ['trait-nonsmoking'],
-    bed_rows: [{ bed_type_id: 'bed-double', count: 1 }],
-    standard_occupancy: 2, max_occupancy: 4, room_size_sqm: 42,
-    facility_ids: ['fac-ac','fac-tv','fac-fridge','fac-coffee'],
-    featured_facility_ids: ['fac-ac','fac-tv','fac-fridge'],
-  },
-  { ...ROOM_BASE, id: 'room-c1-2', room_code: 'RM-0008', place_id: 'place-c1',
-    room_name: '디럭스 (4인)', room_type_ids: ['rt-deluxe'], trait_ids: ['trait-nonsmoking','trait-mountain-view'],
-    bed_rows: [{ bed_type_id: 'bed-king', count: 1 }, { bed_type_id: 'bed-twin', count: 1 }],
-    standard_occupancy: 2, max_occupancy: 4, room_size_sqm: 55,
-    facility_ids: ['fac-ac','fac-tv','fac-fridge','fac-balcony','fac-coffee'],
-    featured_facility_ids: ['fac-balcony','fac-fridge','fac-coffee'],
-    occupant_extra_charge_enabled: true, occupant_extra_charge_per_person: 20000, occupant_extra_charge_settlement: 'AT_BOOKING',
-  },
-  // ── 힐 콘도 ──
-  { ...ROOM_BASE, id: 'room-c2-1', room_code: 'RM-0009', place_id: 'place-c2',
-    room_name: '스탠다드 (2인)', room_type_ids: ['rt-standard'], trait_ids: ['trait-nonsmoking'],
-    bed_rows: [{ bed_type_id: 'bed-double', count: 1 }],
-    standard_occupancy: 2, max_occupancy: 4, room_size_sqm: 40,
-    facility_ids: ['fac-ac','fac-tv','fac-fridge','fac-coffee'],
-    featured_facility_ids: ['fac-ac','fac-tv','fac-fridge'],
-  },
-  { ...ROOM_BASE, id: 'room-c2-2', room_code: 'RM-0010', place_id: 'place-c2',
-    room_name: '디럭스 마운틴뷰', room_type_ids: ['rt-deluxe'], trait_ids: ['trait-nonsmoking','trait-mountain-view','trait-highfloor'],
-    bed_rows: [{ bed_type_id: 'bed-king', count: 1 }],
-    standard_occupancy: 2, max_occupancy: 4, room_size_sqm: 52,
-    facility_ids: ['fac-ac','fac-tv','fac-fridge','fac-balcony','fac-coffee'],
-    featured_facility_ids: ['fac-balcony','fac-fridge','fac-coffee'],
-  },
-  // ── 마운틴 콘도 ──
-  { ...ROOM_BASE, id: 'room-c3-1', room_code: 'RM-0011', place_id: 'place-c3',
-    room_name: '스탠다드 (2인)', room_type_ids: ['rt-standard'], trait_ids: ['trait-nonsmoking'],
-    bed_rows: [{ bed_type_id: 'bed-double', count: 1 }],
-    standard_occupancy: 2, max_occupancy: 4, room_size_sqm: 38,
-    facility_ids: ['fac-ac','fac-tv','fac-fridge'],
-    featured_facility_ids: ['fac-ac','fac-tv','fac-fridge'],
-  },
-  { ...ROOM_BASE, id: 'room-c3-2', room_code: 'RM-0012', place_id: 'place-c3',
-    room_name: '패밀리 (5인)', room_type_ids: ['rt-family'], trait_ids: ['trait-nonsmoking'],
-    bed_rows: [{ bed_type_id: 'bed-double', count: 1 }, { bed_type_id: 'bed-single', count: 2 }],
-    standard_occupancy: 3, max_occupancy: 5, room_size_sqm: 65,
-    facility_ids: ['fac-ac','fac-tv','fac-fridge','fac-balcony'],
-    featured_facility_ids: ['fac-balcony','fac-fridge','fac-ac'],
-    extra_bed_enabled: true, extra_bed_max_count: 2, extra_bed_fee: 20000, extra_bed_settlement: 'ON_SITE',
-  },
-];
-
-/* ============================================================
-   상품 (Products) — 숙소별 4~5개 = 총 27개
-   ============================================================ */
-const SALE_START = '2026-05-01';
-const SALE_END   = '2026-12-31';
-const TS         = '2026-05-15T00:00:00.000Z';
-
-function prod(id, code, roomId, type, name, desc, basePrice, stock, cancelType, cancelDays, cutoff) {
+/* ═══ 객실 (6) ═══ rm_typ_cd별 입금가는 RATE 참조 ═══ */
+const RATE = { STD:250000, DLX:350000, PST:500000, HST:280000, VST:280000 };
+function room(id, code, place_id, rm_typ_cd, name, name_en, room_type_id, beds, std, max, size) {
   return {
-    id, product_code: code, room_id: roomId, product_type: type,
-    name, description: desc,
-    package_inclusions_text: '', guide_policy_html: '',
-    visibility: 'Y',
-    sale_start_date: SALE_START, sale_end_date: SALE_END,
-    cancel_policy_type: cancelType,
-    cancel_free_days_before: cancelDays || 0,
-    inventory: makeInventory(basePrice, stock, cutoff || 1),
-    created_at: TS, updated_at: TS, updated_by: 'seed',
+    id, place_id, room_code: code, rm_typ_cd,
+    room_name: name, room_name_en: name_en,
+    room_type_id,
+    bed_rows: beds,                                   // 침대유형 랜덤 구성
+    facility_ids: FAC_ROOM_IDS.slice(0, 10),          // 시설 최대 10
+    featured_facility_ids: FAC_ROOM_IDS.slice(0, 5),  // 대표 5
+    room_size_sqm: size,
+    standard_occupancy: std, max_occupancy: max,
+    visibility: "SHOW",
+    guide_html_en: "<p>Free Wi-Fi. Mountain view. Non-smoking room.</p>", guide_html_zh: "",
+    policy_html_en: "<p>Check-out 11:00. Extra charges paid on site.</p>", policy_html_zh: "",
+    image_meta: [{ data_url: IMG_ROOM }],             // 대표 이미지 1장
+    inventory: [],                                    // 주입 시점 생성(오늘 기준)
+    created_at: NOW, updated_at: NOW, updated_by: "seed v0.6",
   };
 }
+const ROOMS = [
+  room("room-h1-1","RM-0001","place-h1","STD","스탠다드 트윈","Standard Twin","RT-001",
+    [{bed_type_id:BT["트윈"],count:2}], 2, 3, 26),
+  room("room-h1-2","RM-0002","place-h1","DLX","디럭스 킹","Deluxe King","RT-002",
+    [{bed_type_id:BT["킹"],count:1}], 2, 4, 33),
+  room("room-h2-1","RM-0003","place-h2","DLX","디럭스 더블","Deluxe Double","RT-003",
+    [{bed_type_id:BT["더블"],count:1},{bed_type_id:BT["싱글"],count:1}], 2, 4, 35),
+  room("room-h2-2","RM-0004","place-h2","PST","프레지덴셜 스위트","Presidential Suite","RT-004",
+    [{bed_type_id:BT["킹"],count:1},{bed_type_id:BT["소파베드"],count:1}], 2, 4, 60),
+  room("room-c1-1","RM-0005","place-c1","HST","힐 스탠다드","Hill Standard","RT-005",
+    [{bed_type_id:BT["퀸"],count:1}], 2, 4, 40),
+  room("room-c1-2","RM-0006","place-c1","VST","힐 패밀리","Hill Family","RT-006",
+    [{bed_type_id:BT["더블"],count:1},{bed_type_id:BT["싱글"],count:2}], 3, 5, 62),
+];
 
+/* ═══ 상품 (6, 객실당 1) ═══ */
+function product(id, code, room_id, name_en, desc_en, cancelType, freeDays) {
+  return {
+    id, product_code: code, room_id, pms_linked: true, product_type: "ROOM_ONLY",
+    name_en, name_zh: "",
+    description_en: desc_en, description_zh: "",
+    guide_policy_html_en: "<p>Includes room only. Check-in from 15:00. Cancellation per policy below.</p>",
+    guide_policy_html_zh: "",
+    visibility: "Y",
+    sale_start_date: "2026-01-01", sale_end_date: "2026-12-31",
+    cancel_policy_type: cancelType,                   // FREE_N_DAYS / NON_REFUNDABLE
+    cancel_free_days_before: freeDays,
+    inventory: [],                                    // 주입 시점 생성(예약조건+마진, 컷오프 2)
+    created_at: NOW, updated_at: NOW, updated_by: "seed v0.6",
+  };
+}
 const PRODUCTS = [
-  /* ── 그랜드 호텔 메인타워 (room-h1-1, room-h1-2) ── */
-  prod('prod-h1-1','PR-0001','room-h1-1','ROOM_ONLY',
-    '디럭스 킹 룸온리',
-    '킹사이즈 침대와 백두대간 산악 전망을 즐기는 디럭스 객실입니다.',
-    340000, 8, 'FREE_N_DAYS', 3, 1),
-
-  prod('prod-h1-2','PR-0002','room-h1-1','PACKAGE',
-    '디럭스 킹 조식포함',
-    '킹 객실 + 2인 조식 뷔페 포함 패키지. 레스토랑 이용 06:30~10:00.',
-    430000, 6, 'NON_REFUNDABLE', 0, 1),
-
-  prod('prod-h1-3','PR-0003','room-h1-1','ROOM_ONLY',
-    '디럭스 킹 얼리버드',
-    '7일 전 사전 예약 시 특별 할인 적용. 무료취소 7일 전까지.',
-    290000, 5, 'FREE_N_DAYS', 7, 2),
-
-  prod('prod-h1-4','PR-0004','room-h1-2','ROOM_ONLY',
-    '주니어스위트 룸온리',
-    '52㎡ 넓은 공간에 킹 + 소파베드, 발코니에서 산악 파노라마 전망.',
-    560000, 5, 'FREE_N_DAYS', 3, 1),
-
-  prod('prod-h1-5','PR-0005','room-h1-2','PACKAGE',
-    '주니어스위트 스파패키지',
-    '주니어스위트 + 스파 2인 이용권 + 조식 포함. 최고급 힐링 패키지.',
-    720000, 3, 'NON_REFUNDABLE', 0, 2),
-
-  /* ── 그랜드 호텔 컨벤션타워 (room-h2-1, room-h2-2) ── */
-  prod('prod-h2-1','PR-0006','room-h2-1','ROOM_ONLY',
-    '스탠다드 트윈 룸온리',
-    '트윈 침대 2개로 구성된 스탠다드 객실. 2인 여행에 최적.',
-    250000, 10, 'FREE_N_DAYS', 3, 1),
-
-  prod('prod-h2-2','PR-0007','room-h2-1','PACKAGE',
-    '스탠다드 트윈 조식포함',
-    '스탠다드 트윈 + 2인 조식 뷔페. 합리적인 가격의 조식 패키지.',
-    320000, 8, 'NON_REFUNDABLE', 0, 1),
-
-  prod('prod-h2-3','PR-0008','room-h2-2','ROOM_ONLY',
-    '디럭스 킹 코너룸',
-    '코너룸 위치의 디럭스 킹 객실. 탁 트인 산악 전망 제공.',
-    320000, 6, 'FREE_N_DAYS', 5, 1),
-
-  prod('prod-h2-4','PR-0009','room-h2-2','PACKAGE',
-    '디럭스 킹 조식패키지',
-    '디럭스 킹 코너룸 + 2인 조식 뷔페 포함. 여유로운 아침을 즐기세요.',
-    400000, 5, 'FREE_N_DAYS', 3, 1),
-
-  /* ── 팰리스 호텔 (room-h3-1, room-h3-2) ── */
-  prod('prod-h3-1','PR-0010','room-h3-1','ROOM_ONLY',
-    '디럭스 더블 룸온리',
-    '더블 침대의 아늑한 디럭스 객실. 팰리스 호텔의 프리미엄 서비스.',
-    380000, 8, 'FREE_N_DAYS', 3, 1),
-
-  prod('prod-h3-2','PR-0011','room-h3-1','PACKAGE',
-    '디럭스 더블 조식포함',
-    '디럭스 더블 + 2인 조식 뷔페 + 웰컴 드링크 포함.',
-    470000, 6, 'NON_REFUNDABLE', 0, 1),
-
-  prod('prod-h3-3','PR-0012','room-h3-1','ROOM_ONLY',
-    '디럭스 더블 얼리버드',
-    '7일 전 예약 시 최대 18% 할인. 조용한 팰리스 호텔을 합리적으로.',
-    310000, 4, 'FREE_N_DAYS', 7, 2),
-
-  prod('prod-h3-4','PR-0013','room-h3-2','ROOM_ONLY',
-    '스위트 킹 룸온리',
-    '68㎡ 프리미엄 스위트. 킹 + 소파베드, 발코니 전망, 턴다운 서비스.',
-    850000, 3, 'FREE_N_DAYS', 5, 2),
-
-  prod('prod-h3-5','PR-0014','room-h3-2','PACKAGE',
-    '스위트 킹 스파패키지',
-    '스위트 킹 + 스파 커플 코스 + 조식 + 웰컴 샴페인. 특별한 날을 위한 최상의 선택.',
-    1050000, 2, 'NON_REFUNDABLE', 0, 3),
-
-  /* ── 밸리 콘도 (room-c1-1, room-c1-2) ── */
-  prod('prod-c1-1','PR-0015','room-c1-1','ROOM_ONLY',
-    '밸리 스탠다드 룸온리',
-    '스키장 바로 옆 밸리 콘도 스탠다드 객실. 스키장 직접 연계.',
-    180000, 10, 'FREE_N_DAYS', 3, 1),
-
-  prod('prod-c1-2','PR-0016','room-c1-1','PACKAGE',
-    '밸리 스탠다드 스키패키지',
-    '스탠다드 객실 + 리프트권 2인 1일권 포함. 스키 시즌 최고의 선택.',
-    250000, 8, 'NON_REFUNDABLE', 0, 1),
-
-  prod('prod-c1-3','PR-0017','room-c1-2','ROOM_ONLY',
-    '밸리 디럭스 룸온리',
-    '4인 패밀리에 최적화된 디럭스 객실. 발코니에서 스키 슬로프 조망.',
-    240000, 8, 'FREE_N_DAYS', 3, 1),
-
-  prod('prod-c1-4','PR-0018','room-c1-2','PACKAGE',
-    '밸리 디럭스 스키패키지',
-    '디럭스 4인 객실 + 리프트권 2인 1일권 + 스키 장비 렌탈권.',
-    320000, 6, 'FREE_N_DAYS', 5, 2),
-
-  /* ── 힐 콘도 (room-c2-1, room-c2-2) ── */
-  prod('prod-c2-1','PR-0019','room-c2-1','ROOM_ONLY',
-    '힐 스탠다드 룸온리',
-    '산 중턱 아늑한 힐 콘도 스탠다드 객실. 사계절 자연 전망 제공.',
-    170000, 10, 'FREE_N_DAYS', 3, 1),
-
-  prod('prod-c2-2','PR-0020','room-c2-1','PACKAGE',
-    '힐 스탠다드 조식포함',
-    '스탠다드 객실 + 2인 조식 뷔페 포함. 편안한 아침과 함께하는 힐링.',
-    230000, 8, 'NON_REFUNDABLE', 0, 1),
-
-  prod('prod-c2-3','PR-0021','room-c2-2','ROOM_ONLY',
-    '힐 디럭스 마운틴뷰',
-    '고층 마운틴뷰 디럭스 객실. 발코니에서 백두대간 산맥을 한눈에.',
-    230000, 7, 'FREE_N_DAYS', 3, 1),
-
-  prod('prod-c2-4','PR-0022','room-c2-2','PACKAGE',
-    '힐 디럭스 스키패키지',
-    '마운틴뷰 디럭스 + 리프트권 2인 1일권 포함 패키지.',
-    310000, 5, 'FREE_N_DAYS', 5, 2),
-
-  /* ── 마운틴 콘도 (room-c3-1, room-c3-2) ── */
-  prod('prod-c3-1','PR-0023','room-c3-1','ROOM_ONLY',
-    '마운틴 스탠다드 룸온리',
-    '해발 1,340m 마운틴 콘도 스탠다드 객실. 청정 고지대의 신선한 공기.',
-    160000, 10, 'FREE_N_DAYS', 3, 1),
-
-  prod('prod-c3-2','PR-0024','room-c3-1','PACKAGE',
-    '마운틴 스탠다드 스키패키지',
-    '스탠다드 객실 + 리프트권 2인 1일권. 스키 후 고지대 자연 힐링.',
-    220000, 8, 'NON_REFUNDABLE', 0, 1),
-
-  prod('prod-c3-3','PR-0025','room-c3-1','ROOM_ONLY',
-    '마운틴 스탠다드 얼리버드',
-    '7일 전 사전 예약 특별가. 성수기 전 미리 예약하세요.',
-    140000, 5, 'FREE_N_DAYS', 7, 2),
-
-  prod('prod-c3-4','PR-0026','room-c3-2','ROOM_ONLY',
-    '마운틴 패밀리 룸온리',
-    '최대 5인 패밀리룸. 더블 + 싱글 2개, 가족 여행에 최적.',
-    280000, 6, 'FREE_N_DAYS', 3, 1),
-
-  prod('prod-c3-5','PR-0027','room-c3-2','PACKAGE',
-    '마운틴 패밀리 스키패키지',
-    '패밀리룸 + 리프트권 2인 1일권 + 스키 장비 렌탈. 가족 스키 여행 완성.',
-    370000, 5, 'FREE_N_DAYS', 5, 2),
+  product("prod-h1-1","PR-0001","room-h1-1","Standard Twin Room Only","2 single beds, mountain view. Ideal for 2 guests.","FREE_N_DAYS",3),
+  product("prod-h1-2","PR-0002","room-h1-2","Deluxe King Room Only","King bed with panoramic mountain view.","FREE_N_DAYS",3),
+  product("prod-h2-1","PR-0003","room-h2-1","Deluxe Double Room Only","Double + single bed. Great for small families.","NON_REFUNDABLE",0),
+  product("prod-h2-2","PR-0004","room-h2-2","Presidential Suite Room Only","60sqm suite with living area and premium amenities.","FREE_N_DAYS",5),
+  product("prod-c1-1","PR-0005","room-c1-1","Hill Standard Room Only","Cozy condominium room with queen bed.","FREE_N_DAYS",3),
+  product("prod-c1-2","PR-0006","room-c1-2","Hill Family Room Only","Spacious family room, up to 5 guests.","NON_REFUNDABLE",0),
 ];
 
-/* ============================================================
-   주입 로직
-   ============================================================ */
+/* ═══ 마진 마스터 — 전역 금액 30,000원 (사용 rm_typ_cd 전부) ═══ */
+const MARGIN_MASTER = {};
+["STD","DLX","PST","HST","VST"].forEach(t => { MARGIN_MASTER[t] = { type: "amount", value: "30000" }; });
 
-/* 숙소·객실·상품 3개 키 */
-const PLACE_SEED_DATA = [
-  { key: 'high1_places_v1',   label: '숙소 (6개)',           data: PLACES },
-  { key: 'high1_rooms_v1',    label: '객실 (12개)',          data: ROOMS },
-  { key: 'high1_products_v1', label: '상품+인벤토리 (27개)', data: PRODUCTS },
+/* ═══ 화면관리 — 히어로 2 + 추천 섹션 1 ═══ */
+const MAIN_HERO = [
+  { id:"hero-1", media_type:"image", pc_image:IMG_HERO1, subtitle_ko:"", subtitle_en:"Escape to the mountains",
+    title_ko:"", title_en:"High1 Resort\nWinter Getaway", cta_use:false, cta_url:"", cta_label_ko:"", cta_label_en:"",
+    period_start:"", period_end:"", force_off:false, order:0 },
+  { id:"hero-2", media_type:"image", pc_image:IMG_HERO2, subtitle_ko:"", subtitle_en:"Cool summer stay",
+    title_ko:"", title_en:"High1 Resort\nSummer Escape", cta_use:false, cta_url:"", cta_label_ko:"", cta_label_en:"",
+    period_start:"", period_end:"", force_off:false, order:1 },
+];
+const MAIN_HERO_CFG = { autoplay: true, interval_sec: 5 };
+const MAIN_SECTION = [
+  { id:"sec-1", title_ko:"추천 숙소", title_en:"Recommended Stays", subtitle_ko:"", subtitle_en:"Handpicked rooms for you",
+    visible:true, period_start:"", period_end:"", viewall_use:true, viewall_label_ko:"전체 보기", viewall_label_en:"View All",
+    viewall_url:"#/search", cat_1depth:["hotel","condo"], place_ids:[], tab_enabled:true,
+    room_mode:"auto", sort_type:"price", room_ids:[], order:0 },
 ];
 
-const ALL_SEED_DATA = PLACE_SEED_DATA;
-
-/* 공통: 누락 키만 주입 */
-function seedItems(items) {
-  return items.map(({ key, label, data }) => {
-    if (localStorage.getItem(key) !== null) {
-      return { key, label, status: 'skipped' };
+/* ═══ 인벤토리 생성 (오늘 ~ +120일) ═══ */
+function buildInventories() {
+  const t0 = todayDate();
+  const DAYS = 120;
+  ROOMS.forEach(r => {
+    const price = RATE[r.rm_typ_cd] || 300000;
+    const rows = [];
+    for (let i = 0; i <= DAYS; i++) {
+      const date = ymd(addDays(t0, i));
+      rows.push({ date, price, oper_cnt:30, rsv_cnt:0, avlb_cnt:30, stock:30, closed:false });
     }
-    try {
-      localStorage.setItem(key, JSON.stringify(data));
-      return { key, label, status: 'seeded', count: Array.isArray(data) ? data.length : 1 };
-    } catch (e) {
-      return { key, label, status: 'error', message: e.message };
+    r.inventory = rows;
+  });
+  PRODUCTS.forEach(p => {
+    // 판매기간을 오늘 기준으로 동적 설정 (시스템 시계 차이에도 항상 판매중)
+    p.sale_start_date = ymd(addDays(t0, -1));
+    p.sale_end_date = ymd(addDays(t0, DAYS + 30));
+    const rows = [];
+    for (let i = 0; i <= DAYS; i++) {
+      const date = ymd(addDays(t0, i));
+      rows.push({ date, min_stay_nights:1, max_stay_nights:30, cutoff_days_before_checkin:2,
+        margin_type:"amount", margin_value:"30000", margin_source:"master" });
     }
+    p.inventory = rows;
   });
 }
 
-function seedMissing() { return seedItems(ALL_SEED_DATA); }
+/* ═══ 주입 / 초기화 / 백업 / 복원 ═══ */
+function put(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+function log(msg, cls) {
+  const d = document.createElement("div"); d.className = "rr " + (cls || "ok"); d.textContent = msg;
+  document.getElementById("results").appendChild(d);
+}
+function clearResults() { document.getElementById("results").innerHTML = ""; }
 
-/* 공통관리 마스터 키 목록 (어드민이 자동시드하는 5개 + 시드 플래그 2개) */
-const MASTER_KEYS = [
-  'high1_room_master_bed_type_v1',
-  'high1_room_master_room_type_v1',
-  'high1_room_master_trait_v1',
-  'high1_facility_categories_v1',
-  'high1_facilities_v2',
-  'high1_room_facility_seed_done_v1',
-  'high1_place_facility_seed_done_v1',
-];
+function seedAll() {
+  clearResults();
+  try {
+    buildInventories();
+    put("high1_facility_categories_v1", catsPlace.concat(catsRoom));
+    put("high1_facilities_v2", facPlace.concat(facRoom));
+    put("high1_room_master_room_type_v1", roomTypes);
+    put("high1_room_master_bed_type_v1", bedTypes);
+    put("high1_places_v1", PLACES);
+    put("high1_rooms_v1", ROOMS);
+    put("high1_products_v1", PRODUCTS);
+    put("high1_margin_master_v1", MARGIN_MASTER);
+    put("high1_main_hero_v1", MAIN_HERO);
+    put("high1_main_hero_cfg_v1", MAIN_HERO_CFG);
+    put("high1_main_section_v1", MAIN_SECTION);
 
-function resetMasterKeys() {
-  const deleted = MASTER_KEYS.filter(k => localStorage.getItem(k) !== null);
-  deleted.forEach(k => localStorage.removeItem(k));
-  if (!deleted.length) {
-    return [{ key: '-', label: '삭제할 마스터 키 없음 (이미 비어 있음)', status: 'skipped' }];
+    log("숙소시설 카테고리 " + catsPlace.length + " / 객실시설 카테고리 " + catsRoom.length + " 주입");
+    log("숙소시설 " + facPlace.length + " / 객실시설 " + facRoom.length + " 주입 (카테고리 매핑)");
+    log("객실유형 " + roomTypes.length + " / 침대유형 " + bedTypes.length + " 주입");
+    log("숙소 " + PLACES.length + " (대표이미지 1장·시설10·대표5·추가요금안내) 주입");
+    log("객실 " + ROOMS.length + " (객실유형·침대·크기·대표이미지·시설10·대표5) 주입");
+    log("상품 " + PRODUCTS.length + " (설명·안내·정책·컷오프2) 주입");
+    log("재고·요금: 오늘~+120일 자동 생성 (재고 30·판매 ON) — room.inventory + product.inventory");
+    log("마진 마스터: 전역 금액 30,000원 주입");
+    log("메인 히어로 2 + 추천 섹션 1 주입");
+    const t = ymd(todayDate());
+    document.getElementById("results").insertAdjacentHTML("beforeend",
+      '<div class="summary">✅ 전체 더미 주입 완료 — 검색 기준일 <b>' + t + ' ~ ' + ymd(addDays(todayDate(),120)) +
+      '</b><br>어드민/프런트 페이지를 <b>새로고침</b>하면 데이터가 보입니다. (프런트 기본 검색: 오늘+7일 → 카드 노출)</div>');
+  } catch (e) {
+    log("오류: " + (e && e.message || e), "er");
   }
-  return deleted.map(k => ({ key: k, label: '초기화됨', status: 'seeded' }));
 }
 
-function resetAndSeed() {
-  ALL_SEED_DATA.forEach(({ key }) => localStorage.removeItem(key));
-  return seedMissing();
+function resetAll() {
+  if (!confirm("모든 더미 데이터를 삭제합니다. 계속할까요?")) return;
+  clearResults();
+  KEYS.forEach(k => localStorage.removeItem(k));
+  log("전체 초기화 완료 — " + KEYS.length + "개 키 삭제");
 }
 
-/* ── 백업 (JSON 다운로드) ── */
-function exportBackup() {
-  const backup = {};
-  Object.keys(localStorage)
-    .filter(k => k.startsWith('high1_'))
-    .forEach(k => { backup[k] = localStorage.getItem(k); });
-
-  if (!Object.keys(backup).length) {
-    renderResults([{ key: '-', label: '백업할 데이터 없음', status: 'error', message: 'high1_ 키가 존재하지 않습니다.' }]);
-    return;
-  }
-
-  const now = new Date();
-  const ts  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-  const filename = `high1_backup_${ts}.json`;
-
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
-
-  const keyCount = Object.keys(backup).length;
-  renderResults([{ key: filename, label: `백업 완료 (${keyCount}개 키)`, status: 'seeded', count: keyCount }]);
+function backup() {
+  const data = {};
+  KEYS.forEach(k => { const v = localStorage.getItem(k); if (v != null) data[k] = JSON.parse(v); });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "high1-seed-backup.json";
+  a.click();
+  clearResults(); log("백업 JSON 다운로드 완료");
 }
 
-/* ── 복원 (JSON 파일 업로드) ── */
-function importBackup(file) {
+function restore(file) {
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = () => {
     try {
-      const data = JSON.parse(e.target.result);
-      const keys = Object.keys(data).filter(k => k.startsWith('high1_'));
-      if (!keys.length) {
-        renderResults([{ key: '-', label: '유효한 high1_ 키 없음', status: 'error', message: '파일에 복원할 데이터가 없습니다.' }]);
-        return;
-      }
-      keys.forEach(k => localStorage.setItem(k, data[k]));
-      renderResults(keys.map(k => ({ key: k, label: '복원됨', status: 'seeded', count: 1 })));
-    } catch (err) {
-      renderResults([{ key: '-', label: '파일 파싱 실패', status: 'error', message: err.message }]);
-    }
+      const data = JSON.parse(reader.result);
+      clearResults();
+      Object.keys(data).forEach(k => { if (KEYS.includes(k)) { put(k, data[k]); log(k + " 복원"); } });
+      log("복원 완료 — 페이지 새로고침 필요");
+    } catch (e) { clearResults(); log("복원 실패: " + (e && e.message || e), "er"); }
   };
   reader.readAsText(file);
 }
 
-/* ── 결과 렌더링 ── */
-function renderResults(results) {
-  const div = document.getElementById('results');
-  const seeded  = results.filter(r => r.status === 'seeded');
-  const skipped = results.filter(r => r.status === 'skipped');
-  const errors  = results.filter(r => r.status === 'error');
-
-  const rows = results.map(r => {
-    if (r.status === 'seeded')
-      return `<div class="result-row seeded">✅ <code>${r.key}</code> — ${r.label}${r.count ? ` (${r.count}건)` : ''}</div>`;
-    if (r.status === 'skipped')
-      return `<div class="result-row skipped">⏭ <code>${r.key}</code> — ${r.label} (${r.note || '이미 존재, 건너뜀'})</div>`;
-    return `<div class="result-row error">❌ <code>${r.key}</code> — ${r.label}: ${r.message}</div>`;
-  }).join('');
-
-  const allSkipped = skipped.length === results.length;
-  const summary = `<div class="summary">
-    완료 ${seeded.length}건 · 건너뜀 ${skipped.length}건 · 오류 ${errors.length}건
-    ${errors.length ? '<br>⚠️ 오류: localStorage 용량을 확인해 주세요.' : ''}
-    ${allSkipped ? '<br>💡 모든 키가 이미 존재합니다.' : ''}
-  </div>`;
-
-  div.innerHTML = rows + summary;
-}
-
-/* ── 이벤트 바인딩 ── */
-document.getElementById('btnMaster').addEventListener('click', () => {
-  if (!confirm('공통관리 마스터 키 5개와 어드민 시드 플래그 2개를 삭제합니다.\n어드민을 다시 열면 자동으로 재주입됩니다.\n\n계속하시겠습니까?')) return;
-  renderResults(resetMasterKeys());
-});
-
-document.getElementById('btnSeed').addEventListener('click', () => {
-  renderResults(seedMissing());
-});
-
-document.getElementById('btnReset').addEventListener('click', () => {
-  if (confirm('⚠️ 숙소·객실·상품 3개 키를 삭제하고 씨드 데이터로 덮어씁니다.\n어드민에서 직접 입력한 숙소·객실·상품 데이터가 모두 사라집니다.\n\n계속하시겠습니까?')) {
-    renderResults(resetAndSeed());
-  }
-});
-
-document.getElementById('btnBackup').addEventListener('click', exportBackup);
-
-document.getElementById('btnRestoreBtn').addEventListener('click', () => {
-  document.getElementById('fileRestore').click();
-});
-
-document.getElementById('fileRestore').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  if (!confirm(`「${file.name}」 파일로 복원합니다.\n기존 localStorage 데이터를 덮어씁니다. 계속하시겠습니까?`)) return;
-  importBackup(file);
-  e.target.value = '';
-});
-
-/* 페이지 로드 시 숙소·객실·상품 키 현황 표시 (주입 없음) */
-(function showStatus() {
-  const check = ALL_SEED_DATA.map(({ key, label }) => {
-    const exists = localStorage.getItem(key) !== null;
-    return { key, label, status: exists ? 'seeded' : 'skipped', note: exists ? undefined : '데이터 없음' };
-  });
-  renderResults(check);
-})();
+document.getElementById("btnSeed").addEventListener("click", seedAll);
+document.getElementById("btnReset").addEventListener("click", resetAll);
+document.getElementById("btnBackup").addEventListener("click", backup);
+document.getElementById("btnRestore").addEventListener("click", () => document.getElementById("fileRestore").click());
+document.getElementById("fileRestore").addEventListener("change", (e) => { if (e.target.files[0]) restore(e.target.files[0]); });
 </script>
 </body>
 </html>
