@@ -59,7 +59,7 @@
           <!-- 객실 탭 구조 (기본정보 / 재고관리) -->
           <div style="display:flex;border-bottom:2px solid #d4d4cc;margin-bottom:12px">
             <div style="padding:6px 16px;font-size:12px;font-weight:700;color:#2c5282;border-bottom:2px solid #2c5282;margin-bottom:-2px;cursor:pointer">기본정보</div>
-            <div style="padding:6px 16px;font-size:12px;font-weight:400;color:#888;cursor:pointer">재고관리 <span class="wf-cn" style="font-size:9px">10</span></div>
+            <div style="padding:6px 16px;font-size:12px;font-weight:400;color:#888;cursor:pointer">재고·요금 <span class="wf-cn" style="font-size:9px">9</span></div>
           </div>
 
           <!-- 기본 정보 섹션 -->
@@ -81,18 +81,7 @@
             </div>
           </div>
 
-          <div class="wf-form-row">
-            <div class="wf-form-label">체크인 시간</div>
-            <div class="wf-form-field">
-              <div style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:13px;font-weight:600;color:#1a1f2e">15:00</span>
-                <span style="font-size:11px;color:#888">~</span>
-                <span style="font-size:13px;font-weight:600;color:#1a1f2e">11:00</span>
-                <span style="background:#e8eaf6;color:#3949ab;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px">B타입 고정</span>
-              </div>
-              <div class="wf-hint">PMS API 5 <code>BLKTIME_TYPE_CLS_NM</code> 값. 수정 불가. 숙소 단위 고정 정책.</div>
-            </div>
-          </div>
+          <!-- v0.6: 체크인 시간 필드 제거 — 체크인은 숙소 단위 정책이며 프로토타입 객실폼에 없음 -->
 
           <div class="wf-form-row">
             <div class="wf-form-label">객실유형 <span class="wf-form-req">*</span> <span class="wf-cn">2</span></div>
@@ -139,10 +128,10 @@
           </div>
 
           <div class="wf-form-row">
-            <div class="wf-form-label">객실명 <span style="color:#888;font-size:10px;font-weight:400">[선택]</span> <span class="wf-cn">4</span></div>
+            <div class="wf-form-label">객실명(EN) <span class="wf-form-req">*</span> <span class="wf-cn">4</span></div>
             <div class="wf-form-field">
-              <input class="wf-input" placeholder="미입력 시 PMS 제공 객실명 사용" value="Deluxe King" style="width:100%" />
-              <div class="wf-hint" style="margin-top:6px">PMS 동기화 시 RM_TYP_NM(객실명) 자동 입력. 필요 시 직접 수정(영어 필수·중국어 선택).</div>
+              <input class="wf-input" placeholder="PMS 수신 또는 직접 입력 (영문)" value="Deluxe King" style="width:100%" />
+              <div class="wf-hint" style="margin-top:6px">PMS 동기화 시 RM_TYP_NM(객실명) 자동 입력. 필요 시 직접 수정. <b>영문(EN) 필수 입력.</b> (외국인 전용 · 국문 미사용)</div>
             </div>
           </div>
 
@@ -169,13 +158,13 @@
           </div>
 
           <div class="wf-form-row">
-            <div class="wf-form-label">노출 여부 <span class="wf-cn">11</span></div>
+            <div class="wf-form-label">노출 여부 <span class="wf-cn">10</span></div>
             <div class="wf-form-field">
               <select class="wf-select" style="width:100%">
-                <option>SHOW(Y)</option>
-                <option selected>HIDE(N) ▾</option>
+                <option selected>SHOW(Y) — 노출 ▾</option>
+                <option>HIDE(N) — 비노출</option>
               </select>
-              <div class="wf-hint">기본값: HIDE(N). 설정 완료 후 SHOW(Y)로 변경. 객실유형은 저장 시 필수 유효성 검사 항목.</div>
+              <div class="wf-hint">기본값: SHOW(Y)(노출). 필요 시 HIDE(N)(비노출)로 변경. 객실유형은 저장 시 필수 유효성 검사 항목.</div>
             </div>
           </div>
 
@@ -247,87 +236,46 @@
           <!-- 카테고리 전환 병합 힌트 -->
           <div class="wf-hint">카테고리 전환 시 현재 체크 상태가 state에 자동 병합됩니다. 전환해도 선택값이 초기화되지 않습니다.</div>
 
-          <!-- 객실 안내·정책 섹션 -->
-          <div class="wf-section-head">객실 안내·정책 <span class="wf-cn">8</span></div>
+          <!-- 객실 정책·안내 섹션 -->
+          <div class="wf-section-head">객실 정책·안내 <span class="wf-cn">8</span></div>
 
+          <!-- v0.6: 국문 단일 3필드 → 정책/안내 각각 EN(필수)·ZH(선택) 2×2 필드로 교체. 객실소개(room_desc) 제거. -->
           <div class="wf-form-row">
-            <div class="wf-form-label">객실 소개</div>
+            <div class="wf-form-label">객실 정책(EN) <span class="wf-form-req">*</span></div>
             <div class="wf-form-field">
-              <textarea class="wf-textarea">A spacious room with a king-size bed and mountain view.</textarea>
-              <div class="wf-hint">관리자 직접 입력(영어 필수·중국어 선택). PMS RM_TYP_DESC 자동 매핑 없음. → 프런트: Room Detail 객실안내 섹션 '객실 소개' 표시.</div>
-            </div>
-          </div>
-
-          <div class="wf-form-row">
-            <div class="wf-form-label">객실 안내(HTML)</div>
-            <div class="wf-form-field">
-              <textarea class="wf-textarea" placeholder="e.g. Studio (1 double), bathroom, balcony"></textarea>
-              <div class="wf-hint">관리자 직접 입력. PMS RM_TYP_INFO 자동 매핑 없음.</div>
+              <textarea class="wf-textarea" placeholder="HTML or plain text">Non-smoking room.</textarea>
+              <div class="wf-hint"><b>영문(EN) 필수 입력.</b> 금연 안내 등 정책 텍스트. 이미지 붙여넣기 지원.</div>
             </div>
           </div>
 
           <div class="wf-form-row">
-            <div class="wf-form-label">객실 정책(HTML)</div>
+            <div class="wf-form-label">객실 정책(ZH) <span style="color:#888;font-size:10px;font-weight:400">[선택]</span></div>
             <div class="wf-form-field">
-              <textarea class="wf-textarea">Non-smoking room.</textarea>
-              <div class="wf-hint">이미지 붙여넣기 지원. 프런트에서 각각 별도 섹션으로 렌더링.</div>
+              <textarea class="wf-textarea" placeholder="中文（可选）"></textarea>
+              <div class="wf-hint">중문(ZH) 선택 입력. 미입력 시 프런트에서 영문(EN)으로 대체 표시.</div>
             </div>
           </div>
 
-          <!-- v0.2: 부가요금 설정 섹션 제거 → 숙소(S02-4 안내·정책)의 '추가요금 안내'로 이관.
-               결제 연동(인원추가요금·엑스트라베드 ON_SITE) 개념 폐기, 정보성 안내 텍스트로 전환. -->
-
-          <!-- 변경이력 (A안: 접이식 섹션) -->
-          <div style="margin-top:16px;border:1px solid #d8d8d0;border-radius:4px;overflow:hidden">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#f5f5f0;cursor:pointer">
-              <span style="font-size:11px;font-weight:600;color:#333">변경이력 <span class="wf-cn">9</span></span>
-              <span style="font-size:10px;color:#888">▲ 접기</span>
-            </div>
-            <div style="padding:10px 12px">
-              <table style="width:100%;border-collapse:collapse;font-size:10px">
-                <thead>
-                  <tr style="background:#f5f5f0">
-                    <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">변경일시</th>
-                    <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">변경자</th>
-                    <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">항목</th>
-                    <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">변경 전</th>
-                    <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">변경 후</th>
-                    <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">사유</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#555">2026-05-18 10:05</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#555">admin01</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px">노출여부</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px">HIDE</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;font-weight:600">SHOW</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#888">—</td>
-                  </tr>
-                  <tr style="background:#fafaf7">
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#555">2026-04-10 13:40</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#555">admin02</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px">최대인원(성인)</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px">3</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;font-weight:600">2</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#888">객실 구조 확인 후 조정</td>
-                  </tr>
-                  <tr>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#555">2026-03-05 09:00</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#555">admin01</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px">객실명</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px">디럭스 더블</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;font-weight:600">디럭스 킹</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#888">침대 교체 반영</td>
-                  </tr>
-                </tbody>
-              </table>
+          <div class="wf-form-row">
+            <div class="wf-form-label">객실 안내(EN) <span class="wf-form-req">*</span></div>
+            <div class="wf-form-field">
+              <textarea class="wf-textarea" placeholder="HTML or plain text (e.g. Studio (1 double), bathroom, balcony)"></textarea>
+              <div class="wf-hint"><b>영문(EN) 필수 입력.</b> 관리자 직접 입력. PMS RM_TYP_INFO 자동 매핑 없음.</div>
             </div>
           </div>
 
-          <!-- 하단 버튼 -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:14px;border-top:1px solid #e0e0da">
-            <span class="wf-btn" style="border-color:#10b981;color:#10b981">복사하기 <span class="wf-cn">12</span></span>
+          <div class="wf-form-row">
+            <div class="wf-form-label">객실 안내(ZH) <span style="color:#888;font-size:10px;font-weight:400">[선택]</span></div>
+            <div class="wf-form-field">
+              <textarea class="wf-textarea" placeholder="中文（可选）"></textarea>
+              <div class="wf-hint">중문(ZH) 선택 입력. 미입력 시 프런트에서 영문(EN)으로 대체 표시.</div>
+            </div>
+          </div>
+
+          <!-- v0.6: 변경이력(A안 접이식) 섹션 제거 — 프로토타입 객실폼에 없음 -->
+
+          <!-- 하단 버튼 (v0.6: 복사하기 버튼 제거 — 프로토타입에 없음) -->
+          <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:10px;padding-top:14px;border-top:1px solid #e0e0da">
             <div style="display:flex;gap:8px">
               <span class="wf-btn">취소</span>
               <span class="wf-btn wf-btn-primary">저장</span>
@@ -436,73 +384,39 @@
       <div class="ann-item">
         <div class="cn">8</div>
         <div class="ann-body">
-          <div class="ann-title">안내·정책 필드</div>
+          <div class="ann-title">객실 정책·안내 필드 (EN 필수 / ZH 선택)</div>
           <div class="ann-desc">
-            <strong>객실 소개(room_desc)</strong>: 관리자 직접 입력. PMS RM_TYP_DESC 자동 매핑 없음.<br>
+            <strong>객실 정책(policy_html)</strong>: 금연 안내 등 정책 텍스트. 자유 입력. 비어있으면 해당 섹션 미표시.<br>
             <strong>객실 안내(guide_html)</strong>: 관리자 직접 입력. PMS RM_TYP_INFO 자동 매핑 없음.<br>
-            <strong>객실 정책(policy_html)</strong>: 금연 안내 등 정책 텍스트. 자유 입력. 비어있으면 해당 섹션 미표시.
+            각 항목은 <b>영문(EN, 필수)·중문(ZH, 선택) 2개 입력칸</b>으로 구성. 국문(KO) 입력칸은 없음(외국인 전용). 중문 미입력 시 프런트에서 영문으로 대체 표시.<br>
+            <strong>v0.6:</strong> 기존 '객실 소개(room_desc)' 필드 제거(프로토타입 미보유). 국문 단일 입력 → EN/ZH 2×2 구조로 교체.
           </div>
-          <div class="ann-front">→ room_desc: Room Detail 객실안내 섹션 '객실 소개' / → guide_html: Room Detail ③ 객실안내 섹션 / → policy_html: Room Detail ② 객실정책 섹션 상단</div>
+          <div class="ann-front">→ policy_html: Room Detail 객실정책 섹션 / → guide_html: Room Detail 객실안내 섹션 (중문 접속 시 ZH, 없으면 EN 표시)</div>
         </div>
       </div>
-
-      <!-- v0.2: CN9 부가요금 토글 주석 제거 → 부가요금 섹션이 숙소(S02-4)로 이관됨 -->
 
       <div class="ann-item">
         <div class="cn">9</div>
         <div class="ann-body">
-          <div class="ann-title">변경이력 (A안 — 접이식 섹션)</div>
+          <div class="ann-title">재고·요금 탭</div>
           <div class="ann-desc">
-            수정 화면 하단에 위치한 접이식(아코디언) 섹션. 기본 상태는 펼쳐짐. 헤더 클릭 시 접기/펼치기 토글.<br>
-            <strong>이력 기록 조건</strong>: [저장] 성공 시 아래 항목 중 변경이 있는 경우에만 새 이력 행 생성.
+            객실 상세 화면은 <strong>기본정보</strong> / <strong>재고·요금</strong> 두 탭으로 구성된다.<br>
+            재고·요금 탭: 재고(총운영/예약/잔여)·요금(입금가)은 <strong>PMS 동기화로 채워지는 조회 전용</strong> 데이터. API 4 재고 3값 + 판매 ON/OFF(강제 마감, CLSE_YN) 관리.<br>
+            상품(S06-B/C)에서는 읽기전용으로만 참조. <strong>재고·요금 동기화 버튼 위치는 이 탭(S04-INV)으로 일원화</strong>.
           </div>
-          <div class="ann-rule">
-            기록 대상 항목: 객실명, 기준/최대 인원, 노출여부. (v0.2: 부가요금 이관으로 엑스트라베드 항목 제거)<br>
-            이력 컬럼: 변경일시 / 변경자 / 항목 / 변경 전 / 변경 후 / 사유(선택입력).<br>
-            신규 등록 시 이력 없음 ("이력이 없습니다" 문구 표시). 최신 이력이 상단.
-          </div>
+          <div class="ann-front">→ 재고·요금 탭 상세 기획: S04-INV(별도 파일)</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">10</div>
         <div class="ann-body">
-          <div class="ann-title">재고관리 탭</div>
-          <div class="ann-desc">
-            객실 상세 화면은 <strong>기본정보</strong> / <strong>재고관리</strong> 두 탭으로 구성된다.<br>
-            재고관리 탭: PMS연동 객실은 API 4 <code>RSV_CNT</code>를 기준으로 사용가능 객실 수 표시(읽기전용). 수기관리 객실은 총 재고를 직접 입력하고, 예약 수 차감 후 사용가능 수를 표시.<br>
-            두 모드 모두 <strong>재고 수정 UI의 위치는 이 탭으로 통일</strong>. S06-B/C(상품상세)에서는 읽기전용으로만 표시.
-          </div>
-          <div class="ann-front">→ 재고관리 탭 상세 기획: S04-INV(별도 파일, 향후 작성 예정)</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="cn">11</div>
-        <div class="ann-body">
           <div class="ann-title">노출 여부</div>
           <div class="ann-desc">
-            항상 SHOW(Y) / HIDE(N) select 노출. <strong>기본값: HIDE(N)</strong> (신규 등록 시 비노출로 시작).<br>
+            항상 SHOW(Y) / HIDE(N) select 노출. <strong>기본값: SHOW(Y)(노출)</strong>.<br>
             객실유형 필수는 저장 시 유효성 검사로 처리 → 노출여부 필드에 disabled 없음.
           </div>
           <div class="ann-rule">노출 Cascade: 객실 HIDE → 연결 상품 전체 강제 N(🔒 배지) + S06-A 경고 박스 표시. 상세: policy-decisions.html 섹션 12.</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="cn">12</div>
-        <div class="ann-body">
-          <div class="ann-title">복사하기</div>
-          <div class="ann-desc">
-            <strong>반드시 1회 저장된 데이터만 복사 가능.</strong> 수정 화면에서만 표시 (신규 등록 화면 미노출).<br>
-            클릭 시 <strong>새 탭/창</strong>으로 이동. 아래 항목을 pre-fill한 신규 등록 폼 열림.<br>
-            저장 전까지 새 데이터 생성 안 됨. 새 폼 상단에 "(복사 — RM-####)" 출처 표시.
-          </div>
-          <div class="ann-rule">
-            복사 포함: 객실특징, 침대구성, 객실명, 인원·크기, 객실시설, 객실소개, 객실안내, 객실정책<br>
-            복사 제외: 객실코드(자동채번), 숙소(관리자 선택), 객실유형(숙소 선택 후 관리자 선택), 노출여부(기본 HIDE), 이미지<br>
-            상세 정책: policy-decisions.html 복사 기능 섹션 참조.
-          </div>
         </div>
       </div>
 
@@ -510,107 +424,7 @@
 
   </div><!-- /two-col -->
 
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- 복사 모드 — 새 탭 열림 상태 (variant)          -->
-  <!-- ══════════════════════════════════════════════ -->
-  <div class="sec-title" style="margin-top:48px">
-    <span class="sec-badge">S04</span>
-    복사 모드 — 새 탭 열림 상태
-    <span style="font-size:12px;font-weight:400;color:#888">— [복사하기] 클릭 후 새 탭으로 열리는 신규 등록 폼</span>
-  </div>
-  <div class="sec-sub">기존 객실의 데이터를 pre-fill한 상태. 저장 전까지 새 데이터 생성 안 됨. 숙소·객실유형은 미포함이므로 관리자가 직접 선택해야 함.</div>
-
-  <div class="two-col">
-    <div class="wf">
-      <div class="wf-gnb">
-        <span class="wf-gnb-logo">high1</span>
-        <span class="wf-gnb-item on">숙소관리</span>
-        <span class="wf-gnb-item">티켓관리</span>
-        <span class="wf-gnb-item">투어관리</span>
-        <span class="wf-gnb-item">예약관리</span>
-        <span class="wf-gnb-item">공통관리</span>
-      </div>
-      <div class="wf-body">
-        <div class="wf-lnb">
-          <div class="wf-lnb-g">숙소관리</div>
-          <div class="wf-lnb-item">숙소목록</div>
-          <div class="wf-lnb-item on">객실목록</div>
-          <div class="wf-lnb-item">상품목록</div>
-        </div>
-        <div class="wf-main">
-          <!-- 복사 출처 배너 -->
-          <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:4px;padding:7px 12px;font-size:11px;color:#166534;margin-bottom:12px">
-            📋 <strong>복사 모드</strong> — RM-0001 (디럭스 킹) 기준으로 pre-fill됨. 숙소·객실유형을 먼저 선택하세요.
-            <span class="wf-cn" style="font-size:9px">A</span>
-          </div>
-          <div class="wf-page-title">객실 등록 (복사)</div>
-
-          <!-- 기본 정보 -->
-          <div class="wf-section-head">기본 정보</div>
-          <div class="wf-form-row">
-            <div class="wf-form-label">객실코드</div>
-            <div class="wf-form-field"><input class="wf-input-ro" value="RM-0002 (자동)" readonly /></div>
-          </div>
-          <div class="wf-form-row">
-            <div class="wf-form-label">숙소 <span class="wf-form-req">*</span></div>
-            <div class="wf-form-field">
-              <select class="wf-select" style="width:100%"><option>숙소를 선택하세요 ▾</option></select>
-              <div class="wf-hint" style="color:#b45309">필수 — 복사 미포함 항목. 직접 선택해주세요.</div>
-            </div>
-          </div>
-          <div class="wf-form-row">
-            <div class="wf-form-label">객실유형 <span class="wf-form-req">*</span></div>
-            <div class="wf-form-field">
-              <div style="color:#aaa;font-size:11px;padding:6px 0">숙소 선택 후 표시됩니다.</div>
-              <div class="wf-hint" style="color:#b45309">필수 — 복사 미포함 항목. 숙소 선택 후 직접 선택해주세요.</div>
-            </div>
-          </div>
-          <div class="wf-form-row">
-            <div class="wf-form-label">객실특징</div>
-            <div class="wf-form-field">
-              <div>
-                <span class="wf-chip wf-chip-on" style="background:#f0fdf4;border-color:#86efac">금연</span>
-                <span class="wf-chip wf-chip-on" style="background:#f0fdf4;border-color:#86efac">마운틴뷰</span>
-              </div>
-              <div class="wf-hint" style="color:#059669">복사됨 (변경 가능)</div>
-            </div>
-          </div>
-          <div class="wf-form-row">
-            <div class="wf-form-label">객실명</div>
-            <div class="wf-form-field">
-              <input class="wf-input" value="디럭스 킹" style="background:#f0fdf4" />
-              <div class="wf-hint" style="color:#059669">복사됨 (변경 가능)</div>
-            </div>
-          </div>
-          <!-- 하단 버튼 -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:14px;border-top:1px solid #e0e0da">
-            <span class="wf-btn" style="border-color:#10b981;color:#10b981;opacity:.3;cursor:not-allowed">복사하기</span>
-            <div style="display:flex;gap:8px">
-              <span class="wf-btn">취소</span>
-              <span class="wf-btn wf-btn-primary">저장</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ann">
-      <h3>복사 모드 주석</h3>
-      <div class="ann-item">
-        <div class="cn">A</div>
-        <div class="ann-body">
-          <div class="ann-title">복사 출처 배너</div>
-          <div class="ann-desc">
-            복사 모드임을 명확히 표시. 출처 객실명(코드) 안내.<br>
-            복사 포함 항목: 하늘초록 배경으로 강조 표시.<br>
-            복사 미포함(숙소·객실유형): 경고 힌트로 직접 선택 유도.<br>
-            복사하기 버튼: 신규 등록 폼이므로 비활성 처리.
-          </div>
-          <div class="ann-rule">숙소·객실유형 미선택 상태에서 저장 클릭 시 유효성 검사 실패 → 저장 불가 (기존 CN2 규칙 동일).</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- v0.6: 복사 모드(variant) 섹션 전면 제거 — 복사 기능이 프로토타입에 없음 -->
 
 </div><!-- /page -->
 </body>

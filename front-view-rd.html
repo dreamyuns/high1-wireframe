@@ -90,7 +90,7 @@
   <div class="sec-title">
     <span class="sec-badge">REF-4</span>
     Room Detail 모달 데이터 매핑
-    <span style="font-size:12px;font-weight:400;color:#888">— 객실·상품 상세 모달 UI 각 요소의 데이터 출처</span>
+    <span style="font-size:12px;font-weight:400;color:#888">— 객실·상품 상세 모달 UI 각 요소의 데이터 출처 · 기준: front-prototype v0.6 · 2026-07-08</span>
   </div>
 
   <div class="legend">
@@ -99,7 +99,15 @@
     <div class="legend-item"><div class="legend-dot" style="background:#e8edff;border:1px solid #99a"></div> localStorage 키</div>
     <div class="legend-item"><div class="legend-dot" style="background:#ecfeff;border:1px solid #a5f3fc"></div> 프런트 노출 위치</div>
     <div class="legend-item"><div class="legend-dot" style="background:#fefce8;border:1px solid #fde68a"></div> 비즈니스 규칙</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#f0f9ff;border:1px solid #bae6fd"></div> 엑스트라베드 관련</div>
+  </div>
+
+  <!-- 공통 전제 (섹션 전체 적용) -->
+  <div style="background:#fff;border:1px solid #e8e8e2;border-left:3px solid #6366f1;border-radius:6px;padding:12px 16px;margin-bottom:24px;font-size:11px;color:#444;line-height:1.7">
+    <div style="font-weight:700;color:#1a1f2e;margin-bottom:6px">공통 전제 — 이 모달 전체에 적용</div>
+    · <strong>localStorage 키</strong>: 객실 <code>high1_rooms_v1</code> · 상품 <code>high1_products_v1</code> · 시설 <code>high1_facilities_v2</code> · 시설카테고리 <code>high1_facility_categories_v1</code> · 침대유형 <code>high1_room_master_bed_type_v1</code> · 객실유형 <code>high1_room_master_room_type_v1</code><br>
+    · <strong>다국어</strong>: 외국인 전용, 국문 미사용. 이름 필드는 <strong>영어(EN, 필수)/중국어(ZH, 선택)</strong> 두 벌(<code>_en</code>·<code>_zh</code>), 중국어 없으면 영어로 대체. 상품안내·객실정책·객실안내 등 긴 글도 <code>_en</code>/<code>_zh</code>로 저장합니다.<br>
+    · <strong>폐기된 항목</strong>: 객실특징(trait) · 엑스트라베드(extra_bed) · 객실 추가요금(extra_charges)은 이 모달에서 제거되었습니다. 추가요금은 <strong>숙소 단위 extra_fee_notes(정책 레이어 · REF-3 소관)</strong>로 옮겨졌습니다.<br>
+    · <span style="color:#92400e">※ 프로토타입 후속 반영: 이름 필드 일부 경로는 아직 옛 KO/EN 방식이라, 목표형(EN/ZH)으로 표기하고 안내를 답니다.</span>
   </div>
 
   <div class="fv-two-col">
@@ -151,74 +159,68 @@
                 <span class="val">더블베드 1개, 트윈베드 1개</span>
               </li>
               <li>
-                <span class="lb">객실특징</span>
-                <span class="val">커플룸 · 뷰룸</span>
-              </li>
-              <li>
                 <span class="lb">인원</span>
                 <span class="val">기준 2명 / 최대 4명</span>
                 <span class="wf-cn">5</span>
               </li>
               <li>
-                <span class="lb">면적</span>
+                <span class="lb">크기</span>
                 <span class="val">38 ㎡</span>
-              </li>
-              <li style="background:#f0f9ff;border-radius:3px;padding:3px 4px;margin-top:4px">
-                <span class="lb" style="color:#0c4a6e">엑스트라베드</span>
-                <span class="val" style="color:#0c4a6e">추가 가능 (최대 1개)</span>
-                <span class="wf-cn">6</span>
               </li>
             </ul>
 
-            <!-- Section Nav ⑦ -->
+            <!-- Section Nav ⑥ (데이터 있는 섹션만 생성) -->
             <div style="display:flex;align-items:center;gap:4px;margin-bottom:8px">
               <div class="ft-rd-section-nav" style="margin-bottom:0;flex:1">
-                <button class="ft-rd-section-btn on">상품 안내</button>
-                <button class="ft-rd-section-btn">정책</button>
-                <button class="ft-rd-section-btn">객실 시설</button>
+                <button class="ft-rd-section-btn on">상품안내/정책</button>
+                <button class="ft-rd-section-btn">객실정책</button>
+                <button class="ft-rd-section-btn">객실안내</button>
+                <button class="ft-rd-section-btn">객실시설정보</button>
               </div>
-              <span class="wf-cn">7</span>
+              <span class="wf-cn">6</span>
             </div>
 
-            <!-- 상품 안내 HTML ⑧ -->
+            <!-- 상품안내/정책 HTML ⑦ -->
             <div style="position:relative;padding-right:24px">
               <div class="ft-rd-content-block">
-                체크인 당일 시그니처 위스키 1병이 제공됩니다.<br>
-                · 컨벤션타워 10F 라운지에서 수령<br>
-                · 17시 ~ 20시 수령 가능
+                <strong>상품안내/정책</strong><br>
+                체크인 당일 조식 2인이 포함됩니다.<br>
+                · 컨벤션타워 2F 레스토랑<br>
+                · 07시 ~ 10시 이용 가능
+              </div>
+              <span class="wf-cn" style="position:absolute;top:4px;right:0">7</span>
+            </div>
+
+            <!-- 객실정책 HTML ⑧ -->
+            <div style="position:relative;padding-right:24px">
+              <div class="ft-rd-content-block">
+                <strong>객실정책</strong><br>
+                금연 객실 · 반려동물 동반 불가
               </div>
               <span class="wf-cn" style="position:absolute;top:4px;right:0">8</span>
             </div>
 
-            <!-- 추가 요금 (extra_charges) ⑨ + 엑스트라베드 요금 ⑩ -->
+            <!-- 객실안내 HTML ⑨ -->
             <div style="position:relative;padding-right:24px">
-              <div class="ft-rd-extra-block">
-                <strong>추가 요금</strong><br>
-                추가 인원 1인 · ₩20,000/박
+              <div class="ft-rd-content-block">
+                <strong>객실안내</strong><br>
+                고층 뷰 객실 · 무료 Wi-Fi 제공
               </div>
               <span class="wf-cn" style="position:absolute;top:4px;right:0">9</span>
             </div>
 
-            <div style="position:relative;padding-right:24px">
-              <div class="ft-rd-extrabed-block">
-                <strong>엑스트라베드</strong><br>
-                1개 추가 가능 · ₩50,000/박 (최대 인원 초과 불가)
-              </div>
-              <span class="wf-cn" style="position:absolute;top:4px;right:0">10</span>
-            </div>
-
-            <!-- 객실 시설 ⑪⑫ -->
+            <!-- 객실시설정보 ⑩⑪ -->
             <div style="position:relative;padding-right:24px">
               <div class="ft-rd-fac-group">
                 <div style="display:flex;align-items:center;gap:4px">
                   <div class="ft-rd-fac-group-title" style="flex:1">욕실</div>
-                  <span class="wf-cn">11</span>
+                  <span class="wf-cn">10</span>
                 </div>
                 <div class="ft-rd-fac-chips">
                   <span class="ft-rd-fac-chip">욕조</span>
                   <span class="ft-rd-fac-chip">샤워부스</span>
                   <span class="ft-rd-fac-chip">비데</span>
-                  <span class="wf-cn">12</span>
+                  <span class="wf-cn">11</span>
                 </div>
               </div>
               <div class="ft-rd-fac-group">
@@ -245,15 +247,15 @@
 
     <!-- ── 주석 패널 ── -->
     <div class="fv-ann">
-      <h3>Room Detail 모달 주석 (callout ①~⑫)</h3>
+      <h3>Room Detail 모달 주석 (callout ①~⑪)</h3>
 
       <div class="fv-ann-item">
         <div class="cn">1</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">모달 헤더 — 객실명</div>
-          <div class="fv-ann-desc">모달 상단 헤더 1행에 객실명을 크고 굵게 표시.</div>
+          <div class="fv-ann-desc">모달 맨 위 1행에 객실명을 크고 굵게 표시. (객실명이 없으면 객실코드로 대체)</div>
           <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실명</div>
-          <div class="fv-ann-ls">h1_rooms[].room_name</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].room_name_en/_zh (없으면 room_code)</div>
           <div class="fv-ann-front">모달 헤더 1행 (흰색, 굵게)</div>
         </div>
       </div>
@@ -263,8 +265,8 @@
         <div class="fv-ann-body">
           <div class="fv-ann-title">모달 헤더 — 상품명</div>
           <div class="fv-ann-desc">헤더 2행에 상품명을 보통 굵기로 표시.</div>
-          <div class="fv-ann-admin">어드민 S04 상품 등록 · 상품명</div>
-          <div class="fv-ann-ls">h1_products[].name</div>
+          <div class="fv-ann-admin">어드민 S06 상품 등록 · 상품명</div>
+          <div class="fv-ann-ls">high1_products_v1[].name_en/_zh</div>
           <div class="fv-ann-front">모달 헤더 2행 (연한 색, 보통 굵기)</div>
         </div>
       </div>
@@ -273,115 +275,104 @@
         <div class="cn">3</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">갤러리 이미지</div>
-          <div class="fv-ann-desc">좌측 갤러리에 객실 이미지를 메인 1장 + 썸네일 행으로 표시. 썸네일 클릭 시 메인 이미지 전환.</div>
-          <div class="fv-ann-admin">어드민 S03 객실 등록 · 이미지 등록 (images 배열)</div>
-          <div class="fv-ann-ls">h1_rooms[].images[]{data_url}</div>
-          <div class="fv-ann-front">좌측 갤러리 (메인 + 썸네일 행)</div>
+          <div class="fv-ann-desc">왼쪽 갤러리에 객실 이미지를 격자(그리드)로 최대 5장까지 표시. 이미지가 없으면 "No Image".</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 이미지 등록</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].image_meta[]{data_url}</div>
+          <div class="fv-ann-front">왼쪽 갤러리 (그리드, 최대 5장)</div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">4</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">Information — 객실유형 · 침대유형 · 객실특징</div>
-          <div class="fv-ann-desc">공통마스터에서 코드를 이름으로 변환하여 표시. 복수 선택 시 " · "으로 구분.</div>
-          <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실유형 / 침대유형 / 객실특징 선택<br>어드민 S09-A/B 객실유형관리 (마스터 등록)</div>
+          <div class="fv-ann-title">Information — 객실유형 · 침대유형</div>
+          <div class="fv-ann-desc">공통마스터에서 코드를 이름으로 바꿔 표시합니다. 침대는 "{침대유형} {개수}개" 형식으로 나열.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실유형 / 침대유형·개수<br>어드민 S09 객실유형관리 (마스터 등록)</div>
           <div class="fv-ann-ls">
-            h1_rooms[].room_type_id → h1_room_types[].name<br>
-            h1_rooms[].bed_types[]{type,count} → h1_bed_types[].name<br>
-            h1_rooms[].trait_ids[] → h1_room_traits[].name
+            high1_rooms_v1[].room_type_id → high1_room_master_room_type_v1[].name<br>
+            high1_rooms_v1[].bed_rows[]{bed_type_id, count} → high1_room_master_bed_type_v1[].name_en/_zh
           </div>
-          <div class="fv-ann-front">Information 목록 · 객실유형 / 침대유형 / 객실특징 행</div>
+          <div class="fv-ann-front">Information 목록 · 객실유형 / 침대유형 행</div>
+          <div class="fv-ann-rule">객실특징(trait)은 폐기되어 표시하지 않습니다.</div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">5</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">Information — 인원 · 면적</div>
-          <div class="fv-ann-desc">기준 인원 / 최대 인원 / 면적(㎡) 표시.</div>
-          <div class="fv-ann-admin">어드민 S03 객실 등록 · 기준인원 / 최대인원 / 면적(㎡)</div>
-          <div class="fv-ann-ls">h1_rooms[].standard_occupancy · h1_rooms[].max_occupancy · h1_rooms[].area_sqm</div>
-          <div class="fv-ann-front">Information 목록 · 인원 행 (기준 N명 / 최대 N명) / 면적 행</div>
+          <div class="fv-ann-title">Information — 인원 · 크기</div>
+          <div class="fv-ann-desc">기준 인원 / 최대 인원과 객실 크기(㎡)를 표시.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 기준인원 / 최대인원 / 객실크기(㎡)</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].standard_occupancy · max_occupancy · <strong>room_size_sqm</strong></div>
+          <div class="fv-ann-front">Information 목록 · 인원 행(기준 N명 / 최대 N명) / 크기 행</div>
+          <div class="fv-ann-rule">필드명은 area_sqm가 아니라 room_size_sqm입니다.</div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">6</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">Information — 엑스트라베드 가능 여부</div>
-          <div class="fv-ann-desc">객실에 엑스트라베드 추가 가능 여부와 최대 개수를 표시. 불가 시 해당 행 미표시.</div>
-          <div class="fv-ann-admin">어드민 S03 객실 등록 · 엑스트라베드 허용 여부 / 최대 수량</div>
-          <div class="fv-ann-ls">h1_rooms[].extra_bed_allowed (boolean) · h1_rooms[].extra_bed_max</div>
-          <div class="fv-ann-front">Information 목록 · 엑스트라베드 행 (허용 시만 표시)</div>
+          <div class="fv-ann-title">섹션 네비 — 상품안내/정책 · 객실정책 · 객실안내 · 객실시설정보</div>
+          <div class="fv-ann-desc">Information 아래 섹션 전환 버튼. 버튼을 누르면 아래 해당 섹션으로 스크롤합니다. <strong>데이터가 있는 섹션만</strong> 버튼과 내용이 생성됩니다(내용 없으면 탭 자체가 안 나옴).</div>
+          <div class="fv-ann-admin">S06 상품 등록(상품안내/정책) · S03 객실 등록(객실정책·객실안내·시설)</div>
+          <div class="fv-ann-ls">product.guide_policy_html · room.policy_html · room.guide_html · room.facility_ids</div>
+          <div class="fv-ann-front">섹션 탭 버튼 (상품안내/정책 / 객실정책 / 객실안내 / 객실시설정보)</div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">7</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">섹션 네비 — 상품안내 / 정책 / 객실시설</div>
-          <div class="fv-ann-desc">Information 아래 섹션 전환 버튼. 각 탭 클릭 시 해당 데이터를 아래 콘텐츠 영역에 렌더링.</div>
-          <div class="fv-ann-admin">어드민 S04 상품 등록 (상품안내·정책) / S03 객실 등록 (시설)</div>
-          <div class="fv-ann-ls">h1_products[].guide_policy_html · h1_rooms[].facility_ids</div>
-          <div class="fv-ann-front">섹션 탭 버튼 (상품안내 / 정책 / 객실시설)</div>
+          <div class="fv-ann-title">상품안내/정책 HTML</div>
+          <div class="fv-ann-desc">상품안내/정책 섹션에 서식 있는 글(HTML)로 표시. 포함 항목·이용 조건·주의사항 등 상세 안내.</div>
+          <div class="fv-ann-admin">어드민 S06 상품 등록 · 안내/정책 HTML 입력</div>
+          <div class="fv-ann-ls">high1_products_v1[].guide_policy_html_en/_zh</div>
+          <div class="fv-ann-front">상품안내/정책 섹션 내용</div>
+          <div class="fv-ann-rule">XSS 주의(외부에서 넣은 나쁜 코드가 실행될 위험). 실서비스 배포 시 새니타이저(위험 코드 제거기) 필수.</div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">8</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">상품 안내 HTML</div>
-          <div class="fv-ann-desc">상품안내 탭에 innerHTML로 렌더링. 포함 항목·이용 조건·주의사항 등 상세 안내.</div>
-          <div class="fv-ann-admin">어드민 S04 상품 등록 · 안내/정책 HTML textarea</div>
-          <div class="fv-ann-ls">h1_products[].guide_policy_html</div>
-          <div class="fv-ann-front">상품안내 섹션 콘텐츠 (innerHTML)</div>
-          <div class="fv-ann-rule">XSS 주의. 실서비스 배포 시 새니타이저 필수 적용.</div>
+          <div class="fv-ann-title">객실정책 HTML</div>
+          <div class="fv-ann-desc">객실 단위의 정책 안내를 서식 있는 글로 표시. 비어 있으면 이 섹션은 만들어지지 않습니다.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실정책 HTML 입력</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].policy_html_en/_zh</div>
+          <div class="fv-ann-front">객실정책 섹션 내용</div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">9</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">추가 요금 (extra_charges)</div>
-          <div class="fv-ann-desc">정책 섹션에 추가 인원 등 추가 요금 항목을 노란 블록으로 강조 표시. 항목이 없으면 미표시.</div>
-          <div class="fv-ann-admin">어드민 S03 객실 등록 · 추가 요금 설정 (label / 단가 / 단위)</div>
-          <div class="fv-ann-ls">h1_rooms[].extra_charges[]{label, amount_per_unit, unit}</div>
-          <div class="fv-ann-front">정책 섹션 추가 요금 블록 (노란 배경)</div>
+          <div class="fv-ann-title">객실안내 HTML</div>
+          <div class="fv-ann-desc">객실 단위의 안내 문구를 서식 있는 글로 표시. 비어 있으면 이 섹션은 만들어지지 않습니다.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실안내 HTML 입력</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].guide_html_en/_zh</div>
+          <div class="fv-ann-front">객실안내 섹션 내용</div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">10</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">엑스트라베드 요금</div>
-          <div class="fv-ann-desc">엑스트라베드 허용 객실에 한해 추가 요금과 제한 조건을 파란 블록으로 표시. 최대 인원(max_occupancy) 초과 불가 조건 명시.</div>
-          <div class="fv-ann-admin">어드민 S03 객실 등록 · 엑스트라베드 허용 / 요금 / 최대 수량</div>
-          <div class="fv-ann-ls">h1_rooms[].extra_bed_allowed · h1_rooms[].extra_bed_price · h1_rooms[].extra_bed_max</div>
-          <div class="fv-ann-front">정책 섹션 엑스트라베드 요금 블록 (파란 배경, 허용 시만 표시)</div>
-          <div class="fv-ann-rule">엑스트라베드 추가 시에도 max_occupancy를 초과할 수 없음. 예약 시 검증 필요.</div>
+          <div class="fv-ann-title">객실시설 카테고리 헤더 (ROOM)</div>
+          <div class="fv-ann-desc">객실시설정보 섹션의 그룹 헤더. ROOM 도메인(객실별 시설) 카테고리명을 사용하며, PLACE 도메인(숙소 전체 시설) 카테고리와 별개입니다.</div>
+          <div class="fv-ann-admin">어드민 S07 카테고리 관리 · 카테고리명 (ROOM 도메인)</div>
+          <div class="fv-ann-ls">high1_facility_categories_v1[].name (domain = "ROOM")</div>
+          <div class="fv-ann-front">객실시설정보 섹션 그룹 헤더 텍스트</div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">11</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">객실 시설 카테고리 헤더 (ROOM)</div>
-          <div class="fv-ann-desc">객실시설 섹션의 그룹 헤더. ROOM 도메인 카테고리명(plain string) 사용. PLACE 도메인 카테고리와 별개입니다.</div>
-          <div class="fv-ann-admin">어드민 S07-A/B 카테고리 관리 · 카테고리명 (ROOM 도메인, rmc##### 코드)</div>
-          <div class="fv-ann-ls">h1_facility_categories[].name (where domain = "ROOM")</div>
-          <div class="fv-ann-front">객실시설 섹션 그룹 헤더 텍스트</div>
-        </div>
-      </div>
-
-      <div class="fv-ann-item">
-        <div class="cn">12</div>
-        <div class="fv-ann-body">
-          <div class="fv-ann-title">객실 시설 항목명 (ROOM)</div>
-          <div class="fv-ann-desc">카테고리 그룹 내 시설명 칩. 객실에 적용된 ROOM 도메인 시설(facility_ids)만 카테고리별로 그룹화하여 표시.</div>
-          <div class="fv-ann-admin">S08-A 시설 목록 / S08-B 시설 등록 · 시설명 (ROOM) / S03 객실 등록 · 시설 선택</div>
-          <div class="fv-ann-ls">h1_rooms[].facility_ids → h1_facilities[].name (ROOM 도메인)</div>
-          <div class="fv-ann-front">객실시설 섹션 카테고리 그룹 내 시설명 칩</div>
+          <div class="fv-ann-title">객실시설 항목명 (ROOM)</div>
+          <div class="fv-ann-desc">카테고리 그룹 안의 시설명 칩. 객실에 적용된 ROOM 도메인 시설(facility_ids)만 카테고리별로 묶어 표시합니다.</div>
+          <div class="fv-ann-admin">S08 시설 관리 · 시설명 (ROOM) / S03 객실 등록 · 시설 선택</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].facility_ids → high1_facilities_v2[].name_en/_zh (ROOM 도메인)</div>
+          <div class="fv-ann-front">객실시설정보 섹션 카테고리 그룹 내 시설명 칩</div>
         </div>
       </div>
 

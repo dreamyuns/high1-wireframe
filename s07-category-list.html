@@ -70,20 +70,16 @@
               <tr>
                 <th>카테고리코드 <span class="wf-cn">2</span></th>
                 <th>카테고리명 <span class="wf-cn">3</span></th>
-                <th>도메인</th>
-                <th>시설 수 <span class="wf-cn">4</span></th>
                 <th>노출</th>
                 <th>수정일시</th>
-                <th>수정/삭제 <span class="wf-cn">5</span></th>
+                <th>수정/삭제 <span class="wf-cn">4</span></th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>plc00001</td>
-                <td>편의시설</td>
-                <td>PLACE</td>
-                <td>4</td>
-                <td><span class="wf-badge bg-y">Y</span></td>
+                <td>Amenities</td>
+                <td><span class="wf-badge bg-y">노출</span></td>
                 <td>2026-05-19</td>
                 <td>
                   <button class="wf-btn wf-btn-sm">수정</button>
@@ -92,10 +88,8 @@
               </tr>
               <tr>
                 <td>plc00002</td>
-                <td>식음료</td>
-                <td>PLACE</td>
-                <td>4</td>
-                <td><span class="wf-badge bg-y">Y</span></td>
+                <td>Food &amp; Beverage</td>
+                <td><span class="wf-badge bg-y">노출</span></td>
                 <td>2026-05-19</td>
                 <td>
                   <button class="wf-btn wf-btn-sm">수정</button>
@@ -104,10 +98,8 @@
               </tr>
               <tr>
                 <td>plc00003</td>
-                <td>레저·스포츠</td>
-                <td>PLACE</td>
-                <td>4</td>
-                <td><span class="wf-badge bg-y">Y</span></td>
+                <td>Leisure &amp; Sports</td>
+                <td><span class="wf-badge bg-y">노출</span></td>
                 <td>2026-05-19</td>
                 <td>
                   <button class="wf-btn wf-btn-sm">수정</button>
@@ -142,25 +134,19 @@
       </div>
 
       <div class="ann-item">
-        <div class="ann-title"><span class="cn">3</span> 카테고리명 (plain string)</div>
+        <div class="ann-title"><span class="cn">3</span> 카테고리명 (EN 필수 · ZH 선택)</div>
         <div class="ann-body">
-          <div class="ann-desc">한국어 단일 문자열. { ko, en } 다국어 객체 아님. 실서비스에서 다국어 구조로 전환 예정.</div>
-          <div class="ann-front">→ 프런트: 숙소 레이어 > 안내정보 탭 시설 그룹 헤더 / Room Detail ④ 객실시설정보 그룹 헤더</div>
+          <div class="ann-desc">목록에는 영문(EN) 이름이 보인다. 영문은 필수, 중문(ZH)은 선택이며 국문은 사용하지 않는다(외국인 전용 사이트). 이름을 바꾸면 프런트 표시명도 바로 바뀐다.</div>
+          <div class="ann-front">→ 프런트: 숙소 레이어 &gt; 안내정보 탭 시설 그룹 헤더 / Room Detail ④ 객실시설정보 그룹 헤더</div>
+          <div class="ann-rule">프로토타입 후속 반영 예정: 현재 프로토타입은 명칭이 국문 + 영문(선택) 구조. 정책 목표(EN 필수 · ZH 선택)를 화면기획서에 선반영한 것.</div>
         </div>
       </div>
 
       <div class="ann-item">
-        <div class="ann-title"><span class="cn">4</span> 시설 수</div>
-        <div class="ann-body">
-          <div class="ann-desc">해당 카테고리에 속한 시설 마스터 개수. 카테고리 삭제 시 속한 시설이 있으면 삭제 제한 필요(실서비스 정의 사항).</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="ann-title"><span class="cn">5</span> 수정·삭제</div>
+        <div class="ann-title"><span class="cn">4</span> 수정·삭제</div>
         <div class="ann-body">
           <div class="ann-desc">수정: 카테고리 등록·수정 폼(S07-B)으로 이동. 삭제: 확인 다이얼로그 후 삭제.</div>
-          <div class="ann-rule">시설이 존재하는 카테고리 삭제 시 해당 시설의 category_id가 무효화됨. 실서비스에서 삭제 제한 정책 필요.</div>
+          <div class="ann-rule">해당 카테고리에 연결된 시설이 1개 이상이면 삭제 불가(알럿 후 중단). 먼저 시설을 삭제하거나 다른 카테고리로 옮겨야 한다. (프로토타입 동일 동작)</div>
         </div>
       </div>
 

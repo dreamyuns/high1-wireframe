@@ -271,8 +271,8 @@
 
               <div style="margin:10px 0 6px;padding-top:8px;border-top:1px dashed #e5e5e5;font-size:9px;color:#999;font-weight:600">예약조건 (변경은 S06-B 벌크)</div>
               <div class="ep-row">
-                <span class="ep-label">체크인허용</span>
-                <input class="wf-input" style="width:50px;background:#f5f5f0;color:#555" value="Y" readonly />
+                <span class="ep-label">판매 ON/OFF</span>
+                <input class="wf-input" style="width:50px;background:#f5f5f0;color:#555" value="ON" readonly />
               </div>
               <div class="ep-row">
                 <span class="ep-label">최소박</span>
@@ -447,7 +447,7 @@
         <div class="ann-body">
           <div class="ann-title">날짜 상세 패널 (읽기전용)</div>
           <div class="ann-desc">
-            달력 셀 클릭 시 우측 패널에 해당 날짜의 입금가·판매가·재고·체크인허용·최소박·최대박·컷오프를 <strong>읽기전용으로 표시만</strong> 한다. 입력·저장·삭제 없음.
+            달력 셀 클릭 시 우측 패널에 해당 날짜의 입금가·판매가·재고·판매 ON/OFF·최소박·최대박·컷오프를 <strong>읽기전용으로 표시만</strong> 한다. 입력·저장·삭제 없음. (판매 ON/OFF·재고·요금은 S04-INV 관리)
           </div>
           <div class="ann-rule">예약조건 변경은 목록형(S06-B) 구간 일괄(벌크) 적용에서 수행. 달력형은 현황 조회 전용.</div>
         </div>
@@ -504,7 +504,7 @@
           <div class="ann-title">조회 전용 패널 안내</div>
           <div class="ann-desc">
             달력형 상세 패널은 <strong>조회 전용</strong>이다. 패널 [저장]·[취소]·[이 날짜 삭제] 버튼은 <strong>모두 제거</strong>되었다.<br>
-            예약조건(체크인허용·최소/최대박·컷오프) 변경은 목록형(S06-B) 구간 일괄(벌크) 적용에서만 수행한다.
+            예약조건(최소/최대박·컷오프) 변경은 목록형(S06-B) 구간 일괄(벌크) 적용에서만 수행한다. 판매 ON/OFF·재고·요금은 S04-INV 관리.
           </div>
         </div>
       </div>

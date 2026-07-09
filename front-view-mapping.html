@@ -114,7 +114,7 @@
   <a class="page-nav-back" href="index.html">← 목록</a>
   <span class="page-nav-sep">|</span>
   <span class="page-nav-title">REF-2 — 브릿지 페이지 데이터 매핑</span>
-  <span class="page-nav-route">front-prototype_v0.4 · #/bridge/:type</span>
+  <span class="page-nav-route">front-prototype v0.6 · #/bridge/:category</span>
   <div class="page-nav-nav">
     <a class="page-nav-pager" href="data-mapping.html">← 이전</a>
     <a class="page-nav-pager" href="front-view-layer.html">다음 →</a>
@@ -126,7 +126,7 @@
   <div class="sec-title">
     <span class="sec-badge">REF-2</span>
     브릿지 페이지 데이터 매핑
-    <span style="font-size:12px;font-weight:400;color:#888">— 어드민 입력 → localStorage → 프런트 노출</span>
+    <span style="font-size:12px;font-weight:400;color:#888">— 어드민 입력 → localStorage → 프런트 노출 · 기준: front-prototype v0.6 · 2026-07-08</span>
   </div>
 
   <!-- HOTEL / CONDO 타입 설명 -->
@@ -134,12 +134,12 @@
     <div class="type-card type-card-hotel">
       <div class="type-card-title">HOTEL — 호텔 타입</div>
       <div class="type-card-desc">GNB "Hotel" 탭 클릭 시 이 타입에 해당하는 숙소 목록이 Place 탭으로 표시됩니다.<br>어드민 S02-1 Step1에서 <strong>1차 분류 = Hotel</strong>로 등록한 숙소.</div>
-      <div class="type-card-ls">h1_places[].category = "HOTEL"</div>
+      <div class="type-card-ls">high1_places_v1[].category = "HOTEL"</div>
     </div>
     <div class="type-card type-card-condo">
       <div class="type-card-title">CONDO — 콘도 타입</div>
       <div class="type-card-desc">GNB "Condo" 탭 클릭 시 이 타입에 해당하는 숙소 목록이 Place 탭으로 표시됩니다.<br>어드민 S02-1 Step1에서 <strong>1차 분류 = Condo</strong>로 등록한 숙소.</div>
-      <div class="type-card-ls">h1_places[].category = "CONDO"</div>
+      <div class="type-card-ls">high1_places_v1[].category = "CONDO"</div>
     </div>
   </div>
 
@@ -150,6 +150,15 @@
     <div class="legend-item"><div class="legend-dot" style="background:#e8edff;border:1px solid #99a"></div> localStorage 키</div>
     <div class="legend-item"><div class="legend-dot" style="background:#ecfeff;border:1px solid #a5f3fc"></div> 프런트 노출 위치</div>
     <div class="legend-item"><div class="legend-dot" style="background:#fefce8;border:1px solid #fde68a"></div> 비즈니스 규칙</div>
+  </div>
+
+  <!-- 공통 전제 (섹션 전체 적용) -->
+  <div style="background:#fff;border:1px solid #e8e8e2;border-left:3px solid #6366f1;border-radius:6px;padding:12px 16px;margin-bottom:24px;font-size:11px;color:#444;line-height:1.7">
+    <div style="font-weight:700;color:#1a1f2e;margin-bottom:6px">공통 전제 — 이 화면 전체에 적용</div>
+    · <strong>localStorage 키(값을 저장해 두는 브라우저 저장소의 이름표)</strong>: 숙소 <code>high1_places_v1</code> · 객실 <code>high1_rooms_v1</code> · 상품 <code>high1_products_v1</code> · 시설 <code>high1_facilities_v2</code> · 시설카테고리 <code>high1_facility_categories_v1</code> · 침대유형 <code>high1_room_master_bed_type_v1</code> · 객실유형 <code>high1_room_master_room_type_v1</code><br>
+    · <strong>다국어</strong>: 외국인 전용 사이트로 국문(KO)은 쓰지 않습니다. 모든 이름 필드는 <strong>영어(EN, 필수) / 중국어(ZH, 선택)</strong> 두 벌로 저장하며, 중국어가 없으면 영어로 대체 표시합니다. 필드 이름은 <code>_en</code>·<code>_zh</code>를 붙입니다 (예: <code>place_name_en</code>·<code>place_name_zh</code>).<br>
+    · <strong>데이터가 오는 두 곳(이원 구조)</strong>: 재고·요금·판매마감은 <strong>객실(S04-INV / room.inventory)</strong>에서, 마진·예약조건(취소·컷오프 등)은 <strong>상품(S06-B / product.inventory)</strong>에서 각각 가져와 합쳐 계산합니다.<br>
+    · <span style="color:#92400e">※ 프로토타입 후속 반영: 현재 프런트 프로토타입 일부 경로는 아직 옛 KO/EN 토글 방식이라, 이 문서는 목표형(EN/ZH)으로 표기하고 해당 부분에 안내를 답니다.</span>
   </div>
 
   <div class="fv-two-col">
@@ -225,32 +234,46 @@
               <span class="wf-cn" style="position:absolute;top:0;right:0">6</span>
             </div>
           </div>
-          <!-- 숙소 소개 — description 있을 때만 노출 -->
-          <div style="position:relative;margin-top:10px;padding-top:10px;border-top:1px solid #f0f0ea;padding-right:24px">
-            <div style="font-size:10px;color:#888;line-height:1.6">강원랜드 스키장과 인접한 그랜드 호텔 컨벤션타워입니다. 레저·휴식·비즈니스를 한 공간에서 즐기실 수 있습니다.</div>
-            <span class="wf-cn" style="position:absolute;top:10px;right:0">15</span>
-          </div>
+          <!-- 숙소 소개(description)는 폐기되어 노출하지 않습니다. -->
         </div>
 
-        <!-- Rooms 섹션: 날짜 피커 ⑦ -->
+        <!-- Rooms 섹션: 검색바 ⑦ -->
         <div class="ft-rooms-header">
           <span class="ft-rooms-title">Rooms</span>
-          <div class="ft-date-row">
-            <div class="ft-date-box">
-              <div class="ft-date-label-sm">CHECK-IN</div>
-              <div>2026-06-09</div>
-            </div>
-            <div class="ft-date-box">
-              <div class="ft-date-label-sm">CHECK-OUT</div>
-              <div>2026-06-10</div>
-            </div>
-            <button class="ft-search-btn">Search</button>
-            <span class="wf-cn">7</span>
-          </div>
         </div>
 
-        <!-- 상품 카드 목록 -->
-        <div class="ft-room-list">
+        <!-- 공용 검색바 ⑦ (듀얼 캘린더 + 객실별 인원) -->
+        <div style="position:relative;padding:10px 16px;background:#f5f5f2">
+          <div style="background:#1a1f2e;border-radius:8px;padding:10px 14px;display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
+            <div style="flex:1;min-width:150px">
+              <div style="color:rgba(255,255,255,.6);font-size:8px;margin-bottom:3px">일정 (체크인 → 체크아웃)</div>
+              <div style="background:#fff;border-radius:5px;padding:6px 9px;font-size:10px">📅 2026-07-15 → 2026-07-17</div>
+            </div>
+            <div style="flex:0 0 auto;min-width:120px">
+              <div style="color:rgba(255,255,255,.6);font-size:8px;margin-bottom:3px">인원 · 객실</div>
+              <div style="background:#fff;border-radius:5px;padding:6px 9px;font-size:10px">👥 총 4명 · 2객실 ▾</div>
+            </div>
+            <button style="background:#7c3aed;color:#fff;border:none;border-radius:5px;padding:8px 18px;font-size:10px;font-weight:700">검색</button>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:14px;right:6px">7</span>
+        </div>
+
+        <!-- 좌측 룸타입 필터 + 상품 카드 목록 (필터는 룸타입 정도로 간소화) -->
+        <div style="display:flex;gap:0;background:#f5f5f2">
+          <aside style="flex:0 0 120px;width:120px;padding:12px 8px 12px 16px">
+            <div style="border:1px solid #ececec;border-radius:8px;background:#fff;padding:10px 9px;position:relative">
+              <div style="font-size:9px;font-weight:700;color:#1a1f2e;margin-bottom:6px">룸타입</div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px">
+                <span style="background:#1a1f2e;color:#fff;border-radius:12px;font-size:8px;padding:3px 9px">전체</span>
+                <span style="background:#f0f0ec;color:#555;border-radius:12px;font-size:8px;padding:3px 9px">스탠다드</span>
+                <span style="background:#f0f0ec;color:#555;border-radius:12px;font-size:8px;padding:3px 9px">슈페리어</span>
+              </div>
+              <span class="wf-cn" style="position:absolute;top:6px;right:6px">15</span>
+            </div>
+          </aside>
+
+          <!-- 상품 카드 목록 -->
+        <div class="ft-room-list" style="flex:1;min-width:0">
 
           <!-- 카드 1 — 무료취소 가능, 요금 표시 -->
           <div class="ft-pc">
@@ -263,17 +286,17 @@
             <!-- 정보 영역 -->
             <div class="ft-pc-content">
               <div>
-                <span class="ft-pc-sub">하이원컨벤션타워</span>
+                <span class="ft-pc-sub">그랜드 호텔 컨벤션타워</span>
                 <span class="wf-cn" style="margin-left:4px">8</span>
               </div>
               <div class="ft-pc-room-name">베스트슬립 슈페리어 더블베드</div>
               <div style="display:flex;align-items:center;gap:4px">
-                <div class="ft-pc-product-name" style="margin-bottom:0">시그니처 위스키 메인 패키지</div>
+                <div class="ft-pc-product-name" style="margin-bottom:0">디럭스 더블 (조식 포함)</div>
                 <span class="wf-cn">9</span>
               </div>
               <div style="margin-top:6px"></div>
               <div style="display:flex;align-items:center;gap:4px">
-                <div class="ft-pc-bed" style="margin-bottom:0">침대: 더블베드 1개, 트윈베드 1개 &nbsp;·&nbsp; 기준 2명 / 최대 4명</div>
+                <div class="ft-pc-bed" style="margin-bottom:0">📐 38㎡ &nbsp;·&nbsp; 🛏 더블베드 1개, 트윈베드 1개 &nbsp;·&nbsp; 👥 기준 2명 / 최대 4명</div>
                 <span class="wf-cn">10</span>
               </div>
               <div style="margin-top:5px"></div>
@@ -287,26 +310,23 @@
                 <span class="wf-cn">11</span>
               </div>
               <div style="margin-top:5px"></div>
-              <div style="display:flex;align-items:center;gap:4px">
-                <div class="ft-pc-cancel" style="margin-bottom:0">2026-05-31까지 무료취소 가능</div>
-                <span class="wf-cn">12</span>
-              </div>
-              <div style="margin-top:6px"></div>
               <div style="display:flex;align-items:flex-start;gap:4px">
-                <div class="ft-pc-desc" style="flex:1">시그니처 위스키?<br>· 컨벤션타워 10F 라운지에서 사용<br>· 17시 ~ 20시 사용가능</div>
-                <span class="wf-cn" style="margin-top:2px;flex-shrink:0">14</span>
+                <div class="ft-pc-cancel" style="margin-bottom:0;color:#c49a6c;background:#fdf6e9;border-radius:3px;padding:3px 7px;flex:1">⚠ 인원추가요금이 발생할 수 있습니다.</div>
+                <span class="wf-cn" style="flex-shrink:0">14</span>
               </div>
             </div>
             <!-- 가격 패널 -->
             <div class="ft-pc-panel">
-              <div class="ft-pc-member">MEMBER RATE</div>
+              <button class="ft-pc-rd-btn" style="margin-top:0">Room Detail →</button>
               <div style="display:flex;align-items:center;gap:4px">
-                <div class="ft-pc-price">KRW 409,200</div>
+                <div class="ft-pc-cancel" style="margin-bottom:0">2026-07-13 23:59까지 무료취소 가능</div>
+                <span class="wf-cn">12</span>
+              </div>
+              <div class="ft-pc-member" style="margin-top:6px">MEMBER RATE / 회원가</div>
+              <div style="display:flex;align-items:center;gap:4px">
+                <div class="ft-pc-price">₩409,200</div>
                 <span class="wf-cn">13</span>
               </div>
-              <div class="ft-pc-charges">Additional charges may apply</div>
-              <button class="ft-pc-rd-btn">Room Detail →</button>
-              <button class="ft-pc-select-btn">Select Rooms</button>
             </div>
           </div>
 
@@ -318,44 +338,42 @@
               <div class="ft-pc-arrow" style="right:4px">›</div>
             </div>
             <div class="ft-pc-content">
-              <div><span class="ft-pc-sub">하이원컨벤션타워</span></div>
+              <div><span class="ft-pc-sub">그랜드 호텔 컨벤션타워</span></div>
               <div class="ft-pc-room-name">스탠다드 트윈룸</div>
-              <div class="ft-pc-product-name">조식 포함 패키지</div>
-              <div class="ft-pc-bed">침대: 트윈베드 2개 &nbsp;·&nbsp; 기준 2명 / 최대 2명</div>
+              <div class="ft-pc-product-name">스탠다드 트윈 (룸만)</div>
+              <div class="ft-pc-bed">📐 26㎡ &nbsp;·&nbsp; 🛏 트윈베드 2개 &nbsp;·&nbsp; 👥 기준 2명 / 최대 2명</div>
               <div class="ft-pc-chips">
                 <span class="ft-pc-chip">암막커튼</span>
-                <span class="ft-pc-chip">킹 베드</span>
                 <span class="ft-pc-chip">비데</span>
+                <span class="ft-pc-chip">금연객실</span>
               </div>
-              <div class="ft-pc-cancel-na">취소/환불불가</div>
-              <div class="ft-pc-desc">트윈 침대 2개로 구성된 스탠다드 객실, 2인 여행에 최적.</div>
             </div>
             <div class="ft-pc-panel">
-              <div class="ft-pc-member">MEMBER RATE</div>
-              <div class="ft-pc-price">KRW 320,000</div>
-              <div class="ft-pc-charges">Additional charges may apply</div>
-              <button class="ft-pc-rd-btn">Room Detail →</button>
-              <button class="ft-pc-select-btn">Select Rooms</button>
+              <button class="ft-pc-rd-btn" style="margin-top:0">Room Detail →</button>
+              <div class="ft-pc-cancel-na" style="margin-top:4px">취소 및 환불불가</div>
+              <div class="ft-pc-member" style="margin-top:6px">MEMBER RATE / 회원가</div>
+              <div class="ft-pc-price">₩320,000</div>
             </div>
           </div>
 
         </div><!-- /ft-room-list -->
+        </div><!-- /flex(필터+목록) -->
 
       </div><!-- /front-sim -->
     </div>
 
     <!-- ── 주석 패널 ── -->
     <div class="fv-ann">
-      <h3>브릿지 페이지 주석 (callout ①~⑭)</h3>
+      <h3>브릿지 페이지 주석 (callout ①~⑮)</h3>
 
       <div class="fv-ann-item">
         <div class="cn">1</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">숙소 선택 탭</div>
-          <div class="fv-ann-desc">GNB 탭에서 선택한 type(HOTEL/CONDO)에 해당하는 숙소 목록을 탭으로 나열. 탭 클릭 시 해당 숙소 데이터로 전환.</div>
+          <div class="fv-ann-desc">위쪽 메뉴에서 고른 종류(HOTEL=호텔 / CONDO=콘도)에 해당하는 숙소들을 탭으로 늘어놓습니다. 탭을 누르면 그 숙소 화면으로 바뀝니다.</div>
           <div class="fv-ann-admin">어드민 S02-1 Step1 · 숙소명 / 1차 분류</div>
-          <div class="fv-ann-ls">h1_places[].place_name · h1_places[].category</div>
-          <div class="fv-ann-front">탭 텍스트 = place_name, HOTEL/CONDO 기준 필터</div>
+          <div class="fv-ann-ls">high1_places_v1[].place_name_en · place_name_zh · category</div>
+          <div class="fv-ann-front">탭 글자 = 숙소명(EN, 없으면 대체), HOTEL/CONDO로 걸러 표시</div>
         </div>
       </div>
 
@@ -363,9 +381,9 @@
         <div class="cn">2</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">Hero 이미지 슬라이더</div>
-          <div class="fv-ann-desc">숙소 이미지 배열을 슬라이더로 표시. ← → 버튼으로 순환. 이미지가 없으면 placeholder 표시.</div>
-          <div class="fv-ann-admin">어드민 S02-3 Step3 · 이미지 등록 (images 배열)</div>
-          <div class="fv-ann-ls">h1_places[].images[].data_url</div>
+          <div class="fv-ann-desc">숙소 이미지들을 큰 배경으로 넘겨 보여줍니다. ← → 버튼으로 넘기며, 이미지가 없으면 회색 자리표시가 나옵니다.</div>
+          <div class="fv-ann-admin">어드민 S02-3 Step3 · 이미지 등록</div>
+          <div class="fv-ann-ls">high1_places_v1[].image_meta[].data_url</div>
           <div class="fv-ann-front">Hero 배경 이미지 슬라이더</div>
         </div>
       </div>
@@ -374,10 +392,10 @@
         <div class="cn">3</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">Hero Overlay — 숙소명 · 2차 분류명</div>
-          <div class="fv-ann-desc">Hero 이미지 위 어두운 overlay에 숙소명(상단)과 2차 분류명(하단)을 표시. "숙소 안내 보기" 버튼 클릭 시 장소 레이어 오픈.</div>
+          <div class="fv-ann-desc">Hero 이미지 위 어두운 덮개에 숙소명(위)과 2차 분류명(아래)을 표시. "숙소 안내 보기" 버튼을 누르면 오른쪽에서 안내 레이어가 열립니다.</div>
           <div class="fv-ann-admin">어드민 S02-1 Step1 · 숙소명 / 2차(건물·단지)</div>
-          <div class="fv-ann-ls">h1_places[].place_name · h1_places[].sub_place</div>
-          <div class="fv-ann-front">Hero overlay 1행(숙소명) / 2행(2차 분류명 — subLabel 함수로 가공)</div>
+          <div class="fv-ann-ls">high1_places_v1[].place_name_en/_zh · high1_places_v1[].sub_place</div>
+          <div class="fv-ann-front">Hero 덮개 1행(숙소명) / 2행(2차 분류명 — subLabel 함수로 이름 변환)</div>
         </div>
       </div>
 
@@ -385,12 +403,12 @@
         <div class="cn">4</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">Sticky Nav 탭 동작</div>
-          <div class="fv-ann-desc">탭별 동작이 다르게 작동합니다.</div>
+          <div class="fv-ann-desc">탭마다 동작이 다릅니다.</div>
           <div class="fv-ann-front">
-            Overview / Rooms → 해당 섹션으로 페이지 내 스크롤<br>
-            안내(detail) / 정책(policies) / 위치(location) → 우측에서 장소 레이어 슬라이드인 팝업 (REF-3 참조)
+            Overview / Rooms → 같은 페이지 안에서 해당 위치로 스크롤 이동<br>
+            안내(detail) / 정책(policies) / 위치(location) → 오른쪽에서 안내 레이어가 미끄러져 들어옴 (REF-3 참조)
           </div>
-          <div class="fv-ann-rule">레이어 탭 데이터 출처: 안내→guide_html, 정책→policy_html, 위치→location_detail</div>
+          <div class="fv-ann-rule">레이어 탭 데이터 출처: 안내→guide_html, 정책→policy_html, 위치→location_detail (모두 EN/ZH)</div>
         </div>
       </div>
 
@@ -398,10 +416,10 @@
         <div class="cn">5</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">Overview — 체크인 · 체크아웃 시각</div>
-          <div class="fv-ann-desc">Overview 섹션 좌측에 기본 체크인/아웃 시각 표시. HH:MM 형식.</div>
+          <div class="fv-ann-desc">Overview 왼쪽에 기본 체크인/체크아웃 시각을 표시합니다. (예: 오후 3시 / 오전 11시)</div>
           <div class="fv-ann-admin">어드민 S02-1 Step1 · 체크인(기본) / 체크아웃(기본)</div>
-          <div class="fv-ann-ls">h1_places[].check_in · h1_places[].check_out</div>
-          <div class="fv-ann-front">Overview 섹션 좌측 정보 패널</div>
+          <div class="fv-ann-ls">high1_places_v1[].check_in_time · high1_places_v1[].check_out_time</div>
+          <div class="fv-ann-front">Overview 왼쪽 정보 패널</div>
         </div>
       </div>
 
@@ -409,34 +427,39 @@
         <div class="cn">6</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">Overview — 대표 시설 칩 (PLACE)</div>
-          <div class="fv-ann-desc">Overview 섹션 우측에 대표 시설을 칩(chip) 형태로 나열. ★ 대표로 설정된 시설만 표시. 최대 10개.</div>
-          <div class="fv-ann-admin">어드민 S02-5 Step5 · ★ 대표 시설 선택 (PLACE 도메인)</div>
-          <div class="fv-ann-ls">h1_places[].featured_facility_ids → h1_facilities[].name</div>
-          <div class="fv-ann-front">Overview 대표시설 칩 나열 (최대 10개)</div>
-          <div class="fv-ann-rule">facility_ids의 부분집합. 최대 10개 초과 시 어드민 저장 차단.</div>
+          <div class="fv-ann-desc">Overview 오른쪽에 대표 시설을 알약 모양 칩으로 늘어놓습니다. ★ 대표로 지정한 시설만 나옵니다.</div>
+          <div class="fv-ann-admin">어드민 S02-5 Step5 · ★ 대표 시설 선택 (PLACE 도메인 = 숙소 전체 시설)</div>
+          <div class="fv-ann-ls">high1_places_v1[].featured_facility_ids → high1_facilities_v2[].name_en/_zh</div>
+          <div class="fv-ann-front">Overview 대표시설 칩 나열</div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">7</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">날짜 피커 — CHECK-IN / CHECK-OUT</div>
-          <div class="fv-ann-desc">체크인·아웃 날짜 입력 후 Search 클릭 시 evaluateProductForStay()가 각 상품의 재고·요금 상태를 계산하여 카드에 반영.</div>
-          <div class="fv-ann-admin">어드민 S05-A/B · 재고·요금 등록 (날짜별 inventory)</div>
-          <div class="fv-ann-ls">h1_products[].inventory[YYYY-MM-DD].{price, stock, sale_closed}</div>
-          <div class="fv-ann-front">날짜 미선택 → "날짜를 선택하세요" / 선택 후 → 요금 or 상태 메시지</div>
-          <div class="fv-ann-rule">evaluateProductForStay 판단 순서: need_dates → sale_out → no_inv → closed → cutoff → soldout → ok</div>
+          <div class="fv-ann-title">검색바 — 일정(듀얼 캘린더) + 인원·객실</div>
+          <div class="fv-ann-desc">메인·검색결과·브릿지에서 똑같이 쓰는 공용 검색바입니다.<br>· 일정: 두 달치 달력 2개가 함께 열려 체크인·체크아웃을 자유롭게 고릅니다 (1박 고정 아님).<br>· 인원·객실: 객실을 추가/삭제하고 객실마다 성인·아동 수를 정합니다.<br>· 팝오버 바깥을 누르면 닫히고, 검색을 누르면 결과를 계산합니다.</div>
+          <div class="fv-ann-admin">재고·요금 = S04-INV(객실) / 마진·예약조건 = S06-B(상품)</div>
+          <div class="fv-ann-ls">
+            재고·요금·마감: high1_rooms_v1[].inventory[YYYY-MM-DD].{price, avlb_cnt, closed}<br>
+            예약조건·마진: high1_products_v1[].inventory[YYYY-MM-DD].{checkin_allowed, cutoff_days_before_checkin, margin_type, margin_value}
+          </div>
+          <div class="fv-ann-front">날짜 미선택 → 안내 문구 / 선택 후 → 각 카드에 요금 또는 상태 메시지</div>
+          <div class="fv-ann-rule">
+            evaluateProductForStay 판단 순서: need_dates → sale_out → no_inv → <strong>closed(판매 OFF · CLSE_YN)</strong> → cutoff → <strong>soldout(잔여재고 AVLB_RM_CNT ≤ 0)</strong> → ok<br>
+            재고 3값: AVLB_RM_CNT(잔여 · sold out 기준) / OPER_RM_CNT(총 운영) / RSV_CNT(예약된 수)
+          </div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">8</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">2차 분류 뱃지 (건물·단지명)</div>
-          <div class="fv-ann-desc">상품 카드 최상단에 소속 건물·단지명을 작은 뱃지로 표시. subLabel() 함수를 통해 category + sub_place 조합으로 가공.</div>
-          <div class="fv-ann-admin">어드민 S02-1 Step1 · 2차(건물·단지) 드롭다운</div>
-          <div class="fv-ann-ls">h1_places[].sub_place (예: "Grand Convention")</div>
-          <div class="fv-ann-front">카드 최상단 뱃지 텍스트 (예: 하이원컨벤션타워)</div>
+          <div class="fv-ann-title">숙소명 뱃지</div>
+          <div class="fv-ann-desc">상품 카드 맨 위에 이 상품이 속한 <strong>숙소명(place_name)</strong>을 작은 뱃지로 표시합니다. (2차 분류명이 아니라 숙소명입니다.)</div>
+          <div class="fv-ann-admin">어드민 S02-1 Step1 · 숙소명</div>
+          <div class="fv-ann-ls">high1_places_v1[].place_name_en/_zh</div>
+          <div class="fv-ann-front">카드 맨 위 뱃지 텍스트 = 숙소명</div>
         </div>
       </div>
 
@@ -444,21 +467,22 @@
         <div class="cn">9</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">객실명 + 상품명</div>
-          <div class="fv-ann-desc">객실명(작게)과 상품명(크고 굵게) 2줄로 표시. 같은 객실에 여러 상품이 있으면 상품마다 별도 카드로 출력.</div>
-          <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실명 / S04 상품 등록 · 상품명</div>
-          <div class="fv-ann-ls">h1_rooms[].room_name · h1_products[].name</div>
+          <div class="fv-ann-desc">객실명(작게)과 상품명(크고 굵게)을 2줄로 표시. 같은 객실에 상품이 여러 개면 상품마다 카드가 따로 나옵니다.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실명 / S06 상품 등록 · 상품명</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].room_name_en/_zh · high1_products_v1[].name_en/_zh</div>
           <div class="fv-ann-front">카드 1행(객실명 — 연한 색) / 2행(상품명 — 굵게)</div>
+          <div class="fv-ann-rule">상품유형은 ROOM_ONLY(객실만) 하나로 운영합니다. (PACKAGE 없음)</div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">10</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">침대 정보 + 인원</div>
-          <div class="fv-ann-desc">침대는 "{침대유형} {개수}개" 형식으로 복수 나열. 인원은 기준/최대로 표시.</div>
-          <div class="fv-ann-admin">어드민 S03 객실 등록 · 침대유형 / 기준인원 / 최대인원</div>
-          <div class="fv-ann-ls">h1_rooms[].bed_types[]{type,count} · h1_rooms[].standard_occupancy · h1_rooms[].max_occupancy</div>
-          <div class="fv-ann-front">카드 침대 행: "침대: {유형} {N}개, …  ·  기준 N명 / 최대 N명"</div>
+          <div class="fv-ann-title">정보 라인 — 크기 · 침대 · 인원</div>
+          <div class="fv-ann-desc">📐 객실크기(㎡) · 🛏 침대("{침대유형} {개수}개" 나열) · 👥 인원(기준/최대)을 표시합니다.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실크기 / 침대유형·개수 / 기준인원 / 최대인원</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].room_size_sqm · high1_rooms_v1[].bed_rows[]{bed_type_id, count} → high1_room_master_bed_type_v1[].name_en/_zh · standard_occupancy · max_occupancy</div>
+          <div class="fv-ann-front">카드 정보 행: "📐 N㎡ · 🛏 {유형} {N}개 · 👥 기준 N명 / 최대 N명"</div>
         </div>
       </div>
 
@@ -466,9 +490,9 @@
         <div class="cn">11</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">객실 대표 시설 칩 (ROOM)</div>
-          <div class="fv-ann-desc">객실에 설정된 대표 시설을 칩으로 나열. PLACE 도메인 시설(숙소 전체 시설)과 별개로, ROOM 도메인 시설(객실별 시설)에서 대표로 선택된 항목.</div>
+          <div class="fv-ann-desc">객실에 지정한 대표 시설을 칩으로 나열. 숙소 전체 시설(PLACE 도메인)과 별개로, 객실별 시설(ROOM 도메인)에서 대표로 고른 항목입니다.</div>
           <div class="fv-ann-admin">어드민 S03 객실 등록 · 시설 선택 (ROOM 도메인, 대표 설정)</div>
-          <div class="fv-ann-ls">h1_rooms[].featured_facility_ids → h1_facilities[].name (ROOM 도메인)</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].featured_facility_ids → high1_facilities_v2[].name_en/_zh (ROOM 도메인)</div>
           <div class="fv-ann-front">카드 시설 칩 행</div>
         </div>
       </div>
@@ -476,50 +500,50 @@
       <div class="fv-ann-item">
         <div class="cn">12</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">취소정책 표시 (날짜 계산)</div>
-          <div class="fv-ann-desc">상품의 취소 정책에서 무료 취소 가능 일수를 읽어 아래 로직으로 표시합니다.</div>
+          <div class="fv-ann-title">취소정책 표시 (2가지 상태)</div>
+          <div class="fv-ann-desc">상품의 취소 정책에 따라 2가지로만 표시합니다.</div>
           <div class="fv-ann-admin">어드민 S06-A 취소정책 → cancel_policy_type / cancel_free_days_before</div>
-          <div class="fv-ann-ls">h1_products_v1[].cancel_policy_type · h1_products_v1[].cancel_free_days_before</div>
+          <div class="fv-ann-ls">high1_products_v1[].cancel_policy_type · high1_products_v1[].cancel_free_days_before</div>
           <div class="fv-ann-front">
-            blockDate = check_in_date − N일 &nbsp;(이 날부터 취소 차단)<br>
-            lastFreeDate = check_in_date − N − 1일 &nbsp;(무료취소 마지막 날)<br>
-            today &lt; blockDate → "{lastFreeDate} 23:59까지 무료취소 가능" (파란 텍스트)<br>
-            today ≥ blockDate → "취소 및 환불불가" (빨간 텍스트)
+            ① FREE_N_DAYS(무료취소 N일 전): today &lt; (체크인 − N)일 → "{체크인 − N − 1}일 23:59까지 무료취소 가능" (금색/파란 텍스트)<br>
+            ② NON_REFUNDABLE(환불불가) 또는 무료취소 기간 지남 → "취소 및 환불불가" (빨간 텍스트)
           </div>
-          <div class="fv-ann-rule">cancelSummaryLine() 함수가 판단. 날짜 미선택 시 미표시.</div>
-        </div>
-      </div>
-
-      <div class="fv-ann-item">
-        <div class="cn">15</div>
-        <div class="fv-ann-body">
-          <div class="fv-ann-title">Overview — 숙소 소개 (description)</div>
-          <div class="fv-ann-desc">Overview 섹션 하단에 숙소 소개 문구를 표시. 비어있으면 해당 영역 미노출.</div>
-          <div class="fv-ann-admin">어드민 S02-1 Step1 · 숙소 소개 textarea</div>
-          <div class="fv-ann-ls">h1_places[].description (plain text)</div>
-          <div class="fv-ann-front">Overview 섹션 하단 — 체크인/시설 아래 구분선 이후 소개 문구 1단락</div>
+          <div class="fv-ann-rule">cancelSummaryLine() 함수가 판단. 날짜 미선택 시 미표시. 카드에서는 가격 패널에 표시됩니다.</div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">13</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">판매가 (evaluateProductForStay)</div>
-          <div class="fv-ann-desc">체크인·아웃 날짜 기준 전체 박 합산 요금. 상태에 따라 요금 또는 메시지 표시.</div>
-          <div class="fv-ann-admin">어드민 S05-A/B · 날짜별 판매가(price) 등록</div>
-          <div class="fv-ann-ls">h1_products[].inventory[날짜].price (1박 단가 합산)</div>
-          <div class="fv-ann-front">ok → "MEMBER RATE + KRW 금액" / 그 외 → 상태 메시지 (매진/운영중단 등)</div>
+          <div class="fv-ann-title">판매가 — MEMBER RATE / 회원가</div>
+          <div class="fv-ann-desc">체크인~체크아웃 각 박의 판매가를 더한 합계입니다. 예약 가능(ok)일 때만 금액이 나오고, 그 외에는 상태 메시지가 나옵니다.</div>
+          <div class="fv-ann-admin">입금가(원가) = S04-INV(객실) · 마진 = S06-B(상품)</div>
+          <div class="fv-ann-ls">판매가 = high1_rooms_v1[].inventory[날짜].price(입금가) + 마진(high1_products_v1[].inventory[날짜].margin_type/value)</div>
+          <div class="fv-ann-front">ok → "MEMBER RATE / 회원가 + ₩금액" / 그 외 → 상태 메시지(판매 기간 외·예약마감 등)</div>
+          <div class="fv-ann-rule">판매가 = 입금가 + 마진, 소수점 버림(floor). computeSellPriceFront() 함수. 고객에게는 입금가(원가)를 노출하지 않습니다.</div>
         </div>
       </div>
 
       <div class="fv-ann-item">
         <div class="cn">14</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">상품 설명 (description)</div>
-          <div class="fv-ann-desc">상품 카드 하단 회색 박스에 상품 설명 텍스트 표시. 비어있으면 박스 미출력.</div>
-          <div class="fv-ann-admin">어드민 S04 상품 등록 · 상품 설명 textarea</div>
-          <div class="fv-ann-ls">h1_products[].description (plain text)</div>
-          <div class="fv-ann-front">카드 하단 회색 박스 (설명이 없으면 미표시)</div>
+          <div class="fv-ann-title">인원추가요금 안내 (조건부)</div>
+          <div class="fv-ann-desc">검색한 인원이 객실 기준 인원보다 많을 때만 "인원추가요금이 발생할 수 있습니다"를 표시합니다. 기준 인원 이하이면 나오지 않습니다.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 기준인원(standard_occupancy)</div>
+          <div class="fv-ann-ls">조건: 검색 객실 중 최대 인원(reqMax) &gt; high1_rooms_v1[].standard_occupancy</div>
+          <div class="fv-ann-front">카드 안내 문구 (조건 충족 시에만 노출)</div>
+          <div class="fv-ann-rule">실제 추가요금 정책·금액은 상품 카드가 아니라 상세/정책 레이어에서 안내합니다. (숙소 단위 extra_fee_notes · REF-3 소관)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">15</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">좌측 룸타입 필터 (간소화)</div>
+          <div class="fv-ann-desc">Rooms 목록 왼쪽에 룸타입 필터가 있습니다. 카테고리 맥락은 유지하지 않고 룸타입 정도로만 간소화했습니다. (검색결과 화면에는 정렬·숙소 필터도 함께 있음)</div>
+          <div class="fv-ann-admin">어드민 S09 객실유형관리 · 객실유형 마스터</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].room_type_id → high1_room_master_room_type_v1[].name</div>
+          <div class="fv-ann-front">Rooms 목록 좌측 룸타입 필터 (전체 / 개별 룸타입 토글)</div>
         </div>
       </div>
 

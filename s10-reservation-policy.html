@@ -294,7 +294,7 @@ body { padding-left:200px;box-sizing:border-box }
     <tr><th style="width:35%">항목</th><th>소스</th><th>비고</th></tr>
     <tr><td>날짜별 요금 (DAILYPRICE)</td><td>PMS API 8 DAILYPRICE</td><td>입금가 기준. 최대 3행 표시, 초과 시 [더 보기 ▼] 드롭다운. 날짜 + 요금 형식.</td></tr>
     <tr><td>입금가 합계</td><td>DAILYPRICE 합산</td><td><strong>관리자 전용</strong> 노출. 고객 미표시. 보라색 배지 표기.</td></tr>
-    <tr><td>마진</td><td>우리 DB (S11 마스터 또는 상품 개별)</td><td>마진율 또는 정액. 입금가 대비 퍼센트 병기. 관리자 전용.</td></tr>
+    <tr><td>마진</td><td>우리 DB · S11 마스터(RM_TYP_CD) 또는 일자별(S06-B)</td><td>마진율 또는 정액(일자별 합산). 입금가 대비 퍼센트 병기. 관리자 전용.</td></tr>
     <tr><td>할인 <span class="tbd-box" style="display:inline;padding:1px 5px;font-size:10px;margin:0 0 0 4px">TBD</span></td><td>—</td><td>정책 미확정. 자리 예약만. 확정 후 계산식 반영 예정.</td></tr>
     <tr><td>판매가</td><td>우리 DB</td><td>고객 결제금액 = 입금가 합계 + 마진 − 할인.</td></tr>
   </table>
@@ -371,7 +371,7 @@ body { padding-left:200px;box-sizing:border-box }
     <tr><td>부분취소 정의</td><td>위약금이 발생하는 <strong>전체 취소</strong>. 일부 박수만 선택 취소는 해당 없음.</td></tr>
     <tr><td>PMS 연동 — 위약금 계산</td><td>위약금율 = API 10 <code>DLFT_APLY_AMT</code> ÷ <code>SELL_AMT</code>(입금가)<br>고객 청구 위약금 = 위약금율 × 우리 DB 판매가<br>PMS 납부 = <code>DLFT_APLY_AMT</code> 원금 그대로. 차액(마진 비례분) 우리 수취.<br><em style="font-size:11px;color:#888">※ API 10 필드명 오타 주의: DLFT_APLY_AMT (DFLT 아님)</em></td></tr>
     <tr><td>위약금 소수점 처리</td><td><strong>소수점 첫째자리 반올림</strong>. 예: 36,666.6원 → 36,667원.<br><span style="color:#888;font-size:12px">※ 마진 계산의 버림(floor)과 별도 규칙</span></td></tr>
-    <tr><td>수기 관리 상품</td><td>S06-A에서 관리자가 직접 설정한 7구간 취소정책 기준 적용. 위약금 계산은 간단 운영.</td></tr>
+    <tr><td>수기 관리 상품</td><td>S06-A에서 관리자가 설정한 <strong>단순 2택</strong>(무료취소 N일 전 / 환불불가) 기준 적용. 무료취소 = 위약금 0 / 환불불가 = 100%. 7구간 미사용.</td></tr>
     <tr><td>노쇼 위약금</td><td>100%. 환불 의무 없음.</td></tr>
     <tr><td>취소정책 수기 변경</td><td>PMS 연동 상품의 취소정책(API 9 데이터)은 변경 불가. 수정이 필요한 경우 해당 상품을 수기 관리 모드로 전환하여 S06-A에서 직접 설정. <strong>단, 전환 시 재고·요금도 수기 관리로 전환됨.</strong></td></tr>
     <tr><td>쿠폰 환불 정책</td><td>쿠폰 기능 미도입. 도입 시 별도 정책 수립.</td></tr>
@@ -572,7 +572,7 @@ body { padding-left:200px;box-sizing:border-box }
     <tr><th style="width:35%">Field</th><th>Source</th><th>Notes</th></tr>
     <tr><td>Daily Rate Breakdown (DAILYPRICE)</td><td>PMS API 8 DAILYPRICE</td><td>Cost price basis. Max 3 rows, overflow via [Show More ▼] dropdown. Date + amount format.</td></tr>
     <tr><td>Cost Price Total</td><td>DAILYPRICE sum</td><td><strong>Admin only</strong>. Not shown to customers. Purple badge label.</td></tr>
-    <tr><td>Margin</td><td>Our DB (S11 master or per-product)</td><td>Rate or fixed amount. Percentage vs. cost price shown alongside. Admin only.</td></tr>
+    <tr><td>Margin</td><td>Our DB · S11 master (RM_TYP_CD) or per-date (S06-B)</td><td>Rate or fixed amount (summed per date). Percentage vs. cost price shown alongside. Admin only.</td></tr>
     <tr><td>Discount <span class="tbd-box" style="display:inline;padding:1px 5px;font-size:10px;margin:0 0 0 4px">TBD</span></td><td>—</td><td>Policy not yet finalized. Placeholder only. Formula to be added upon confirmation.</td></tr>
     <tr><td>Selling Price</td><td>Our DB</td><td>Customer charge = Cost Total + Margin − Discount.</td></tr>
   </table>
@@ -649,7 +649,7 @@ body { padding-left:200px;box-sizing:border-box }
     <tr><td>Partial cancellation definition</td><td>Full cancellation with penalty applied. Partial-night cancellation is not supported.</td></tr>
     <tr><td>PMS-linked — Penalty calculation</td><td>Penalty rate = API 10 <code>DLFT_APLY_AMT</code> ÷ <code>SELL_AMT</code> (cost price)<br>Customer penalty = penalty rate × our DB selling price<br>PMS payment = <code>DLFT_APLY_AMT</code> as-is. Difference (margin portion) retained by us.<br><em style="font-size:11px;color:#888">※ Note: API 10 field name typo — DLFT_APLY_AMT (not DFLT)</em></td></tr>
     <tr><td>Penalty decimal handling</td><td><strong>Round to 1 decimal place</strong>. e.g. 36,666.6 KRW → 36,667 KRW.<br><span style="color:#888;font-size:12px">※ Separate rule from margin calculation (floor)</span></td></tr>
-    <tr><td>Manual products</td><td>Based on 7-tier policy set directly in S06-A. Simple penalty operation.</td></tr>
+    <tr><td>Manual products</td><td>Based on the <strong>simple 2-option</strong> policy set in S06-A (free cancel N days before / non-refundable). Free = 0 penalty / Non-refundable = 100%. 7-tier not used.</td></tr>
     <tr><td>No-show penalty</td><td>100%. No refund obligation.</td></tr>
     <tr><td>Manual cancellation policy change</td><td>PMS-linked product cancellation policy (API 9 data) cannot be changed. If modification needed, switch product to manual mode and set directly in S06-A. <strong>Note: switching also changes inventory &amp; rates to manual management.</strong></td></tr>
     <tr><td>Coupon refund policy</td><td>Coupon not yet implemented. Separate policy to be established upon introduction.</td></tr>

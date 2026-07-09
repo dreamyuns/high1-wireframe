@@ -52,10 +52,9 @@
             <span class="wf-badge" style="font-size:11px;margin-left:8px;">S09-A</span>
           </div>
 
-          <!-- 탭바 -->
+          <!-- 탭바 (v0.6: 객실특징 탭 폐기 — 객실유형/침대유형 2탭) -->
           <div class="wf-tab-bar">
             <span class="wf-tab on">객실유형 <span class="wf-cn">1</span></span>
-            <span class="wf-tab">객실특징</span>
             <span class="wf-tab">침대유형</span>
           </div>
 
@@ -143,21 +142,21 @@
       <h3>화면 주석</h3>
 
       <div class="ann-item">
-        <div class="ann-title"><span class="cn">1</span> 3탭 구조 — 각 탭 독립 등록 폼</div>
+        <div class="ann-title"><span class="cn">1</span> 2탭 구조 — 각 탭 독립 등록 폼</div>
         <div class="ann-body">
-          <div class="ann-desc">객실유형/객실특징/침대유형 독립 CRUD. 각 탭의 [+ 등록] 버튼은 전용 등록 폼으로 이동.<br>
+          <div class="ann-desc">객실유형/침대유형 독립 CRUD. 각 탭의 [+ 등록] 버튼은 전용 등록 폼으로 이동.<br>
             · 객실유형: s09-roomtype-form.html (숙소 선택 필수)<br>
-            · 객실특징: s09-roomfeature-form.html<br>
             · 침대유형: s09-bedtype-form.html
           </div>
-          <div class="ann-rule">RM-MST-01: 3탭 구조. 각 탭 독립 CRUD. 등록·수정은 각 전용 폼 사용.</div>
+          <div class="ann-rule">RM-MST-01: 2탭 구조(객실유형·침대유형). 각 탭 독립 CRUD. 등록·수정은 각 전용 폼 사용.</div>
+          <div class="ann-warn">v0.6: <b>객실특징(RoomFeature) 탭 전면 폐기</b> — 정책서 10절. 객실은 객실유형·침대 구성만 관리.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="ann-title"><span class="cn">2</span> 코드</div>
         <div class="ann-body">
-          <div class="ann-desc">객실유형: RT-###, 객실특징: TR-###, 침대유형: BT-### 형식. 시스템 전체 고유 자동 채번. 수정 불가. 내부 식별자.</div>
+          <div class="ann-desc">객실유형: RT-###, 침대유형: BT-### 형식. 시스템 전체 고유 자동 채번. 수정 불가. 내부 식별자.</div>
         </div>
       </div>
 
@@ -165,7 +164,7 @@
         <div class="ann-title"><span class="cn">3</span> 이름</div>
         <div class="ann-body">
           <div class="ann-desc">plain string(한국어). 객실유형 이름은 숙소 간 중복 허용 (코드로 구분). 침대유형 이름은 프런트에 직접 노출됨.</div>
-          <div class="ann-front">→ 객실유형·특징: 객실 등록 폼 칩 선택지 (현재 프런트 미노출) / → 침대유형 이름: 상품 카드 '침대: 킹 1개' 텍스트 / Room Detail 침대 정보</div>
+          <div class="ann-front">→ 객실유형: 객실 등록 폼 선택지 (카드 미노출·필터 전용) / → 침대유형 이름: 상품 카드 '침대: 킹 1개' 텍스트 / Room Detail 침대 정보</div>
         </div>
       </div>
 
@@ -192,97 +191,11 @@
     </div><!-- /ann -->
   </div><!-- /two-col -->
 
-  <!-- ── 객실특징 탭 ── -->
-  <div class="sec-title" style="margin-top:40px;">
-    <span class="sec-badge" style="background:#14b8a6;">탭 2</span>
-    객실특징 탭 활성화 상태
-  </div>
-  <div class="two-col">
-    <div class="wf">
-      <div class="wf-gnb">
-        <span class="wf-gnb-logo">high1</span>
-        <span class="wf-gnb-item on">공통관리</span>
-      </div>
-      <div class="wf-body">
-        <div class="wf-lnb">
-          <div class="wf-lnb-g">공통관리</div>
-          <div class="wf-lnb-item">카테고리관리</div>
-          <div class="wf-lnb-item">시설관리</div>
-          <div class="wf-lnb-item on">객실유형관리</div>
-        </div>
-        <div class="wf-main">
-          <div class="wf-tab-bar">
-            <span class="wf-tab">객실유형</span>
-            <span class="wf-tab on">객실특징</span>
-            <span class="wf-tab">침대유형</span>
-          </div>
-          <div class="wf-toolbar" style="margin-bottom:10px;">
-            <span style="font-size:11px;color:#888;">총 5개</span>
-            <a href="s09-roomfeature-form.html"><button class="wf-btn wf-btn-primary">+ 등록</button></a>
-          </div>
-          <table class="wf-table">
-            <thead>
-              <tr>
-                <th>코드</th>
-                <th>이름</th>
-                <th>노출</th>
-                <th>수정일시</th>
-                <th>수정/삭제</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>TR-001</td><td>커플룸</td>
-                <td><span class="wf-badge bg-y">Y</span></td>
-                <td>2026-05-15</td>
-                <td><button class="wf-btn wf-btn-sm">수정</button> <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button></td>
-              </tr>
-              <tr>
-                <td>TR-002</td><td>온돌룸</td>
-                <td><span class="wf-badge bg-y">Y</span></td>
-                <td>2026-05-15</td>
-                <td><button class="wf-btn wf-btn-sm">수정</button> <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button></td>
-              </tr>
-              <tr>
-                <td>TR-003</td><td>가족실</td>
-                <td><span class="wf-badge bg-y">Y</span></td>
-                <td>2026-05-15</td>
-                <td><button class="wf-btn wf-btn-sm">수정</button> <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button></td>
-              </tr>
-              <tr>
-                <td>TR-004</td><td>뷰룸</td>
-                <td><span class="wf-badge bg-y">Y</span></td>
-                <td>2026-05-15</td>
-                <td><button class="wf-btn wf-btn-sm">수정</button> <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button></td>
-              </tr>
-              <tr>
-                <td>TR-005</td><td>테라스룸</td>
-                <td><span class="wf-badge bg-n">N</span></td>
-                <td>2026-05-15</td>
-                <td><button class="wf-btn wf-btn-sm">수정</button> <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div class="ann">
-      <h3>객실특징 탭 주석</h3>
-      <div class="ann-item">
-        <div class="cn" style="background:#14b8a6;">i</div>
-        <div class="ann-body">
-          <div class="ann-title">객실특징 (RoomFeature)</div>
-          <div class="ann-desc">코드 체계: TR-###. 커플룸·온돌룸·가족실·뷰룸·테라스룸 등 특징을 분류하는 마스터. 객실 등록 폼에서 칩(chip) 형태로 다중 선택 가능.</div>
-          <div class="ann-rule">현재 프런트(v0.4)에서는 직접 노출 없음. 실서비스 필터·검색 기능 확장 시 활용 예정.</div>
-          <div class="ann-front">→ 객실 등록 폼 > 객실특징 칩 선택지 (room_feature_ids)</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- ── 객실특징 탭 폐기 (v0.6, 정책서 10절) — 섹션 제거됨 ── -->
 
   <!-- ── 침대유형 탭 ── -->
   <div class="sec-title" style="margin-top:40px;">
-    <span class="sec-badge" style="background:#f59e0b;color:#1a1f2e;">탭 3</span>
+    <span class="sec-badge" style="background:#f59e0b;color:#1a1f2e;">탭 2</span>
     침대유형 탭 활성화 상태
     <span style="font-size:12px;font-weight:400;color:#e74c3c;margin-left:8px;">※ 이름이 프런트에 직접 노출됨 — 변경 시 즉시 반영</span>
   </div>
@@ -302,7 +215,6 @@
         <div class="wf-main">
           <div class="wf-tab-bar">
             <span class="wf-tab">객실유형</span>
-            <span class="wf-tab">객실특징</span>
             <span class="wf-tab on">침대유형</span>
           </div>
           <div class="wf-toolbar" style="margin-bottom:10px;">

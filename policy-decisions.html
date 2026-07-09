@@ -375,12 +375,14 @@ body { padding-left:200px; box-sizing:border-box; }
       <div class="pd-section-title"><span class="badge">05</span> 마진 계산 규칙</div>
       <div class="pd-body">
         <div class="pd-item">
-          <div class="pd-item-title">2단계 계층 구조 <span class="pd-status confirmed">확정</span></div>
+          <div class="pd-item-title">2단계 계층 구조 — 일자별 마진 <span class="pd-status confirmed">v0.9.6 변경</span></div>
           <div class="pd-desc">
-            <strong>1단계 — 시설 마진 마스터 (S11):</strong> Place 단위 기본 마진. 개별 마진 미설정 상품에 자동 적용.<br>
-            <strong>2단계 — 상품 개별 마진 (S06-A):</strong> 개별 설정 시 마스터 오버라이드. 미설정 시 마스터 상속.
+            마진은 <strong>일자(날짜)별</strong>로 관리한다. 요금 동기화(입금가 갱신)와 <strong>독립</strong> 운영되어 마진은 보존되고 판매가만 재계산된다.<br>
+            <strong>1단계 — 객실 타입 마진 마스터 (공통관리 &gt; 마진관리):</strong> 객실 타입(RM_TYP_CD) 단위 기본 마진. 각 상품의 <strong>일자별 마진 디폴트</strong>로 주입. 마스터 미설정 시 전역 기본(마진금액 30,000).<br>
+            <strong>2단계 — 상품 일자별 마진 (S06 재고·요금 탭):</strong> 관리자가 날짜별 마진율/금액을 개별 조정(오버라이드). 미조정 일자는 마스터 상속.
           </div>
-          <div class="pd-rule">마스터 변경 시 상속 중인 상품 판매가 즉시 재계산. 이력 관리 필수 (변경일시·변경자·변경 전/후).</div>
+          <div class="pd-rule">마스터 변경 시 <strong>개별 조정하지 않은(상속) 일자</strong>의 판매가는 즉시 최신 마스터로 재계산. <strong>개별 조정한 일자만</strong> 유지. 이력 관리 필수.</div>
+          <div class="pd-warn">v0.9.6: 기존 "시설(Place) 단위 마스터 + 상품 단위 개별" → <strong>"객실 타입 마스터 + 상품 일자별"</strong>로 재정의 (프로토타입 반영).</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">계산 공식</div>
@@ -448,8 +450,8 @@ body { padding-left:200px; box-sizing:border-box; }
                 </tr>
                 <tr>
                   <td><strong>수기관리 상품</strong></td>
-                  <td>어드민 직접 입력</td>
-                  <td>동적 구간 입력 UI (N일 전 + 위약금율%, 노쇼 고정). 구간 수 자유.</td>
+                  <td>어드민 직접 선택</td>
+                  <td><strong>단순 2택</strong>: 무료취소 N일 전(FREE_N_DAYS) / 환불불가(NON_REFUNDABLE). 7구간·동적 구간 미사용.</td>
                 </tr>
               </tbody>
             </table>
@@ -474,11 +476,11 @@ body { padding-left:200px; box-sizing:border-box; }
           </div>
         </div>
         <div class="pd-item">
-          <div class="pd-item-title">취소정책 단순화 방향 검토</div>
-          <div class="pd-warn">
-            <strong>개발업체 공지 필요 — 사업부 내부 논의 중 (미확정)</strong><br>
-            사업부에서 취소정책 단순화를 검토 중. <strong>0%(무료취소)</strong> 또는 <strong>100%(환불불가)</strong> 두 가지 방향 논의 예정.<br>
-            PMS API 9는 7구간 취소정책을 제공하나, 단순 정책 운영 선호. 확정 시 본 섹션 업데이트 및 개발업체 공지 예정.
+          <div class="pd-item-title">수기 상품 취소정책 단순화 <span class="pd-status confirmed">확정 (2026-07-08)</span></div>
+          <div class="pd-rule">
+            <strong>수기관리 상품 = 단순 2택 확정.</strong> 무료취소 N일 전(FREE_N_DAYS) / 환불불가(NON_REFUNDABLE) 중 선택. 기존 7구간·동적 구간 직접 입력 방식은 폐기.<br>
+            무료취소 유형 선택 시 "무료취소 가능 일수(N)"를 함께 지정. 무료 구간 0% / 이후·환불불가 100%.<br>
+            ※ <strong>PMS 연동 상품</strong>은 위 API 9 7구간을 그대로 읽기 전용 표시(어드민 수정 불가) — 이번 단순화는 수기 상품에만 적용.
           </div>
         </div>
       </div>
@@ -612,9 +614,8 @@ body { padding-left:200px; box-sizing:border-box; }
               <tr><td>상품유형 (ROOM_ONLY/PACKAGE)</td><td>수정</td><td><span class="lock-text">🔒 잠금</span></td></tr>
               <tr><td>연결 객실</td><td>수정</td><td><span class="lock-text">🔒 잠금</span></td></tr>
               <tr><td>상품명 (국문/영문)</td><td>수정</td><td>수정 <span class="hist-badge">이력</span></td></tr>
-              <tr><td>판매 기간 / 최소·최대 박수</td><td>수정</td><td>수정 <span class="hist-badge">이력</span></td></tr>
-              <tr><td>마진 설정</td><td>수정</td><td>수정 <span class="hist-badge">이력</span></td></tr>
-              <tr><td>취소정책 (수기 모드)</td><td>수정</td><td>수정 <span class="hist-badge">이력</span></td></tr>
+              <tr><td>판매 기간 / 투숙 가능 기간</td><td>수정</td><td>수정 <span class="hist-badge">이력</span></td></tr>
+              <tr><td>취소정책 (수기 모드, 2택)</td><td>수정</td><td>수정 <span class="hist-badge">이력</span></td></tr>
               <tr><td>취소정책 (PMS 모드)</td><td colspan="2" style="text-align:center"><span class="fixed-text">PMS 읽기 전용 — 항상 잠금</span></td></tr>
               <tr><td>노출 여부</td><td>수정</td><td>수정 <span class="hist-badge">이력</span></td></tr>
             </tbody>
@@ -622,21 +623,23 @@ body { padding-left:200px; box-sizing:border-box; }
           <div class="pd-warn">연결 객실 변경이 필요한 경우(예: 리노베이션으로 대체): 기존 상품 OFF 후 신규 상품으로 등록.</div>
         </div>
         <div class="pd-item">
-          <div class="pd-item-title">재고·요금 S06-B/C 편집 범위 <span class="pd-status confirmed">v0.9.5 변경</span></div>
+          <div class="pd-item-title">재고·요금 S06-B/C 편집 범위 <span class="pd-status confirmed">v0.9.7 변경</span></div>
           <div class="pd-desc">
-            전 상품 PMS 연동 운영 전제. S06-B/C(상품 인벤토리)에서 <strong>재고·요금·날짜는 읽기전용(조회만)</strong>, <strong>예약조건만 구간 일괄(벌크)로 편집</strong>한다.
-            개별 날짜 인라인 편집·날짜 추가·행 삭제는 제공하지 않는다(날짜는 PMS 연동으로만 생성).
+            전 상품 PMS 연동 운영 전제. S06-B/C(상품 인벤토리)에서 <strong>입금가·재고·날짜·판매상태는 읽기전용(조회만)</strong>, <strong>마진(일자별)과 예약조건은 행(날짜)별 직접 편집 + 구간 일괄(벌크)</strong>로 편집한다.
+            판매가는 입금가+마진으로 자동 계산된다. 날짜 추가·삭제는 없다(날짜는 PMS 연동으로만 생성).
           </div>
           <table class="pd-table" style="margin-top:8px">
             <thead><tr><th>필드</th><th>S06-B/C</th><th>관리 위치</th></tr></thead>
             <tbody>
-              <tr><td>입금가 · 판매가</td><td>🔒 읽기전용</td><td>요금 동기화 = S04-INV(객실 타입), API 3</td></tr>
+              <tr><td>입금가</td><td>🔒 읽기전용</td><td>요금 동기화 = S04-INV(객실 타입), API 3</td></tr>
               <tr><td>재고(사용가능 객실수)</td><td>🔒 읽기전용</td><td>S04-INV / PMS API 4 AVLB_RM_CNT</td></tr>
-              <tr><td>날짜(인벤토리 행)</td><td>🔒 읽기전용 (추가·삭제 없음)</td><td>PMS 연동 수신</td></tr>
-              <tr><td>예약조건(체크인허용·최소/최대박·컷오프)</td><td>✅ 구간 일괄(벌크) 편집</td><td>S06-B 목록형 벌크 패널</td></tr>
+              <tr><td>판매가</td><td>🔒 자동계산(읽기)</td><td>입금가 + 마진 (floor)</td></tr>
+              <tr><td>날짜(인벤토리 행) · 판매상태</td><td>🔒 읽기전용 (추가·삭제 없음)</td><td>PMS 연동 수신 / S04-INV 판매 ON/OFF</td></tr>
+              <tr><td>마진(유형·값, 개별/상속)</td><td>✅ 행(날짜)별 편집 + 구간 벌크</td><td>S06-B 마진 컬럼 · 벌크 패널</td></tr>
+              <tr><td>예약조건(최소/최대박·컷오프)</td><td>✅ 행(날짜)별 편집 + 구간 벌크</td><td>S06-B 목록형</td></tr>
             </tbody>
           </table>
-          <div class="pd-rule">S06-C 달력형 = 순수 조회 뷰(예약조건 편집도 S06-B에서). S06에서 [요금 동기화] 버튼 제거 → 요금 갱신 창구는 S04-INV로 일원화.</div>
+          <div class="pd-rule">S06-C 달력형 = 순수 조회 뷰(마진·예약조건 편집은 S06-B 목록형에서). S06에서 [요금 동기화] 버튼 제거 → 요금 갱신 창구는 S04-INV로 일원화.</div>
         </div>
       </div>
     </div>
@@ -686,18 +689,18 @@ body { padding-left:200px; box-sizing:border-box; }
               </tr>
               <tr>
                 <td>상품상세 S06-A</td>
-                <td>상품명 · 판매기간 · 최소/최대 박수 · 마진 · 취소정책(수기) · 노출여부</td>
+                <td>상품명 · 판매기간 · 투숙 가능 기간 · 취소정책(수기 2택) · 노출여부</td>
                 <td>변경이력 탭 추가</td>
               </tr>
               <tr>
                 <td>재고·요금 S06-B/C</td>
-                <td>날짜별: 입금가 · 재고 · 판매상태</td>
+                <td>날짜별: 마진 유형·값 · 예약조건(최소/최대박·컷오프) <span style="color:#888">(입금가·재고 변경은 PMS 동기화 로그 별도)</span></td>
                 <td>[이력 보기] 버튼 → 날짜 필터 모달</td>
               </tr>
               <tr>
-                <td>마진관리 S11-B</td>
-                <td>마진 유형 · 마진값</td>
-                <td>하단 이력 테이블 (기존 기획 유지)</td>
+                <td>마진관리 S11</td>
+                <td>마진 유형 · 마진값 (RM_TYP_CD별)</td>
+                <td>단일 화면 저장 시 이력 기록</td>
               </tr>
             </tbody>
           </table>
@@ -1089,11 +1092,10 @@ body { padding-left:200px; box-sizing:border-box; }
             </div>
           </li>
           <li>
-            <span class="pending-num">미결-5</span>
+            <span class="pending-num" style="background:#dcfce7;color:#166534">해결</span>
             <div>
-              <strong>취소정책 단순화 방향 — 사업부 내부 논의 중</strong><br>
-              현재 PMS API 9는 7구간 취소정책을 제공하나, 사업부에서 단순화 검토 중.<br>
-              후보 방향: <strong>0% (무료취소)</strong> 또는 <strong>100% (환불불가)</strong> 두 가지. 확정 시 섹션 06 업데이트 및 개발사 공지 예정.
+              <strong>취소정책 단순화 — 확정 (2026-07-08)</strong><br>
+              <strong>수기 상품 = 단순 2택</strong>(무료취소 N일 전 / 환불불가) 확정. PMS 연동 상품은 API 9 7구간 읽기전용 유지. 섹션 06 반영 완료.
             </div>
           </li>
           <li>
@@ -1101,7 +1103,7 @@ body { padding-left:200px; box-sizing:border-box; }
             <div>
               <strong>SELL_ITM_AMT 부가세 포함 여부 — PMS 업체 확인 대기</strong><br>
               API 3/5 <code>SELL_ITM_AMT</code>가 부가세(10%) 포함 금액인지, 세금 별도 금액인지 미확인.<br>
-              이이 대리 이메일 회신 대기 중 (2026-05-26 회의 확인 요청). 세금 별도 시 프런트 가격 표시 로직 변경 필요.
+              High1 담당자 이메일 회신 대기 중 (2026-05-26 회의 확인 요청). 세금 별도 시 프런트 가격 표시 로직 변경 필요.
             </div>
           </li>
         </ul>
@@ -1293,12 +1295,14 @@ body { padding-left:200px; box-sizing:border-box; }
       <div class="pd-section-title"><span class="badge">05</span> Margin Calculation Rules</div>
       <div class="pd-body">
         <div class="pd-item">
-          <div class="pd-item-title">Two-Tier Hierarchy <span class="pd-status confirmed">Confirmed</span></div>
+          <div class="pd-item-title">Two-Tier Hierarchy — Per-Date Margin <span class="pd-status confirmed">Changed in v0.9.6</span></div>
           <div class="pd-desc">
-            <strong>Tier 1 — Property Margin Master (S11):</strong> Default margin per Place. Auto-applied to products without individual margin.<br>
-            <strong>Tier 2 — Product Individual Margin (S06-A):</strong> Overrides master when set. Inherits master when not set.
+            Margin is managed <strong>per date</strong>, operating <strong>independently</strong> of rate sync (base-price updates) — margins are preserved and only sell prices recalculate.<br>
+            <strong>Tier 1 — Room-Type Margin Master (Common &gt; Margin Mgmt):</strong> Default margin per room type (RM_TYP_CD), injected as each product's <strong>per-date margin default</strong>. Falls back to global default (amount 30,000) if unset.<br>
+            <strong>Tier 2 — Product Per-Date Margin (S06 Stock·Rate tab):</strong> Operator overrides margin rate/amount by date; unedited dates inherit the master.
           </div>
-          <div class="pd-rule">Changing the master immediately recalculates sell prices for all inheriting products. Change history required (timestamp, operator, before/after values).</div>
+          <div class="pd-rule">On master change, <strong>inherited (unedited) dates</strong> recalculate to the latest master; <strong>only manually edited dates</strong> are retained. Change history required.</div>
+          <div class="pd-warn">v0.9.6: Redefined from "Property-level master + product-level individual" to <strong>"Room-type master + product per-date"</strong> (prototype reflection).</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">Calculation Formula</div>
@@ -1366,8 +1370,8 @@ body { padding-left:200px; box-sizing:border-box; }
                 </tr>
                 <tr>
                   <td><strong>Manual</strong></td>
-                  <td>Admin (direct input)</td>
-                  <td>Dynamic tier UI (N days before + penalty %, no-show row fixed). Variable number of tiers.</td>
+                  <td>Admin (direct select)</td>
+                  <td><strong>Simple 2-option</strong>: Free cancel N days before (FREE_N_DAYS) / Non-refundable (NON_REFUNDABLE). 7-tier / dynamic tiers not used.</td>
                 </tr>
               </tbody>
             </table>
@@ -1392,11 +1396,11 @@ body { padding-left:200px; box-sizing:border-box; }
           </div>
         </div>
         <div class="pd-item">
-          <div class="pd-item-title">Cancellation Policy Simplification Review</div>
-          <div class="pd-warn">
-            <strong>Notify development vendor — Under internal business review (not yet confirmed)</strong><br>
-            The business team is reviewing simplification of cancellation policy: <strong>0% (free cancellation)</strong> or <strong>100% (non-refundable)</strong>.<br>
-            PMS API 9 provides 7-tier policy, but simpler policy operation is preferred. Section will be updated upon confirmation.
+          <div class="pd-item-title">Manual Product Cancellation Simplification <span class="pd-status confirmed">Confirmed (2026-07-08)</span></div>
+          <div class="pd-rule">
+            <strong>Manual products = simple 2-option, confirmed.</strong> Choose Free cancel N days before (FREE_N_DAYS) / Non-refundable (NON_REFUNDABLE). The former 7-tier / dynamic-tier direct input is discontinued.<br>
+            When Free-cancel is chosen, also specify the "free-cancellation days (N)". Free window 0% / after &amp; non-refundable 100%.<br>
+            ※ <strong>PMS-linked products</strong> still show the API 9 7-tier policy read-only (no admin editing) — this simplification applies to manual products only.
           </div>
         </div>
       </div>
@@ -1530,9 +1534,8 @@ body { padding-left:200px; box-sizing:border-box; }
               <tr><td>Product Type (ROOM_ONLY / PACKAGE)</td><td>Editable</td><td><span class="lock-text">🔒 Locked</span></td></tr>
               <tr><td>Linked Room</td><td>Editable</td><td><span class="lock-text">🔒 Locked</span></td></tr>
               <tr><td>Product Name (KO/EN)</td><td>Editable</td><td>Editable <span class="hist-badge">logged</span></td></tr>
-              <tr><td>Sale Period / Min·Max Nights</td><td>Editable</td><td>Editable <span class="hist-badge">logged</span></td></tr>
-              <tr><td>Margin Setting</td><td>Editable</td><td>Editable <span class="hist-badge">logged</span></td></tr>
-              <tr><td>Cancellation Policy (Manual mode)</td><td>Editable</td><td>Editable <span class="hist-badge">logged</span></td></tr>
+              <tr><td>Sale Period / Stay Period</td><td>Editable</td><td>Editable <span class="hist-badge">logged</span></td></tr>
+              <tr><td>Cancellation Policy (Manual mode, 2-option)</td><td>Editable</td><td>Editable <span class="hist-badge">logged</span></td></tr>
               <tr><td>Cancellation Policy (PMS mode)</td><td colspan="2" style="text-align:center"><span class="fixed-text">PMS read-only — always locked</span></td></tr>
               <tr><td>Visibility</td><td>Editable</td><td>Editable <span class="hist-badge">logged</span></td></tr>
             </tbody>
@@ -1540,18 +1543,20 @@ body { padding-left:200px; box-sizing:border-box; }
           <div class="pd-warn">To change the linked room (e.g., room renovation): deactivate the existing product and register a new one.</div>
         </div>
         <div class="pd-item">
-          <div class="pd-item-title">Stock &amp; Rate S06-B/C Edit Scope <span class="pd-status confirmed">Changed in v0.9.5</span></div>
+          <div class="pd-item-title">Stock &amp; Rate S06-B/C Edit Scope <span class="pd-status confirmed">Changed in v0.9.7</span></div>
           <div class="pd-desc">
-            All products run in PMS-integrated mode. In S06-B/C (product inventory), <strong>stock, rate and dates are read-only (view only)</strong>;
-            only <strong>booking conditions are edited in bulk by date range</strong>. No per-date inline edit, no date add/delete (dates come only from PMS sync).
+            All products run in PMS-integrated mode. In S06-B/C (product inventory), <strong>base price, stock, dates and sale status are read-only (view only)</strong>;
+            <strong>margin (per-date) and booking conditions are edited per row (per date) plus in bulk by range</strong>. Sale price is auto-calculated as base price + margin. No date add/delete (dates come only from PMS sync).
           </div>
           <table class="pd-table" style="margin-top:8px">
             <thead><tr><th>Field</th><th>S06-B/C</th><th>Managed at</th></tr></thead>
             <tbody>
-              <tr><td>Base Price · Sale Price</td><td>🔒 Read-only</td><td>Rate sync = S04-INV (room type), API 3</td></tr>
+              <tr><td>Base Price</td><td>🔒 Read-only</td><td>Rate sync = S04-INV (room type), API 3</td></tr>
               <tr><td>Stock (available rooms)</td><td>🔒 Read-only</td><td>S04-INV / PMS API 4 AVLB_RM_CNT</td></tr>
-              <tr><td>Date (inventory row)</td><td>🔒 Read-only (no add/delete)</td><td>Received via PMS sync</td></tr>
-              <tr><td>Booking conditions (check-in allowed, min/max nights, cutoff)</td><td>✅ Bulk edit by range</td><td>S06-B list bulk panel</td></tr>
+              <tr><td>Sale Price</td><td>🔒 Auto-calculated (read)</td><td>Base price + margin (floor)</td></tr>
+              <tr><td>Date (inventory row) · Sale status</td><td>🔒 Read-only (no add/delete)</td><td>PMS sync / S04-INV sale ON/OFF</td></tr>
+              <tr><td>Margin (type·value, own/inherited)</td><td>✅ Per-row edit + bulk by range</td><td>S06-B margin column · bulk panel</td></tr>
+              <tr><td>Booking conditions (min/max nights, cutoff)</td><td>✅ Per-row edit + bulk by range</td><td>S06-B list</td></tr>
             </tbody>
           </table>
         </div>
@@ -1603,18 +1608,18 @@ body { padding-left:200px; box-sizing:border-box; }
               </tr>
               <tr>
                 <td>Product Detail S06-A</td>
-                <td>Name · Sale Period · Nights · Margin · Cancel Policy · Visibility</td>
+                <td>Name · Sale Period · Stay Period · Cancel Policy (manual, 2-option) · Visibility</td>
                 <td>Add "Change History" tab</td>
               </tr>
               <tr>
                 <td>Stock &amp; Rate S06-B/C</td>
-                <td>Per-date: Base Price · Stock · Sale Status</td>
+                <td>Per-date: Margin type·value · Booking conditions (min/max nights, cutoff) <span style="color:#888">(base price·stock changes logged separately in PMS sync log)</span></td>
                 <td>[View History] button → date filter modal</td>
               </tr>
               <tr>
-                <td>Margin Management S11-B</td>
-                <td>Margin Type · Margin Value</td>
-                <td>History table at page bottom</td>
+                <td>Margin Management S11</td>
+                <td>Margin Type · Margin Value (per RM_TYP_CD)</td>
+                <td>Logged on save (single screen)</td>
               </tr>
             </tbody>
           </table>
@@ -1897,11 +1902,10 @@ body { padding-left:200px; box-sizing:border-box; }
             </div>
           </li>
           <li>
-            <span class="pending-num">TBD-5</span>
+            <span class="pending-num" style="background:#dcfce7;color:#166534">Resolved</span>
             <div>
-              <strong>Cancellation Policy Simplification — Internal Business Discussion</strong><br>
-              PMS API 9 provides a 7-tier cancellation policy, but the business team is reviewing simplification.<br>
-              Candidates: <strong>0% (free cancellation)</strong> or <strong>100% (non-refundable)</strong>. Section 06 and developer notification to be updated upon confirmation.
+              <strong>Cancellation Policy Simplification — Confirmed (2026-07-08)</strong><br>
+              <strong>Manual products = simple 2-option</strong> (free cancel N days before / non-refundable), confirmed. PMS-linked products keep the API 9 7-tier read-only display. Reflected in Section 06.
             </div>
           </li>
           <li>
@@ -1909,7 +1913,7 @@ body { padding-left:200px; box-sizing:border-box; }
             <div>
               <strong>SELL_ITM_AMT VAT Inclusion — Awaiting PMS Vendor Confirmation</strong><br>
               Unclear whether API 3/5 <code>SELL_ITM_AMT</code> is VAT-inclusive (10%) or VAT-exclusive.<br>
-              Awaiting email reply from PMS contact (Lee, Deputy — confirmed request on 2026-05-26). VAT-exclusive would require front-end price display logic changes.
+              Awaiting email reply from the High1 PMS contact (confirmed request on 2026-05-26). VAT-exclusive would require front-end price display logic changes.
             </div>
           </li>
         </ul>

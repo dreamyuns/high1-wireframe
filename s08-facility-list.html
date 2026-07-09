@@ -70,8 +70,8 @@
               <tr>
                 <th>시설코드 <span class="wf-cn">2</span></th>
                 <th>시설명 <span class="wf-cn">3</span></th>
-                <th>카테고리 <span class="wf-cn">4</span></th>
-                <th>도메인</th>
+                <th>카테고리코드</th>
+                <th>카테고리명 <span class="wf-cn">4</span></th>
                 <th>노출</th>
                 <th>수정일시</th>
                 <th>수정/삭제 <span class="wf-cn">5</span></th>
@@ -80,10 +80,10 @@
             <tbody>
               <tr>
                 <td>PARKING</td>
-                <td>주차장</td>
-                <td>편의시설</td>
-                <td>PLACE</td>
-                <td><span class="wf-badge bg-y">Y</span></td>
+                <td>Parking</td>
+                <td>plc00001</td>
+                <td>Amenities</td>
+                <td><span class="wf-badge bg-y">노출</span></td>
                 <td>2026-05-19</td>
                 <td>
                   <button class="wf-btn wf-btn-sm">수정</button>
@@ -92,10 +92,10 @@
               </tr>
               <tr>
                 <td>RESTAURANT</td>
-                <td>레스토랑</td>
-                <td>식음료</td>
-                <td>PLACE</td>
-                <td><span class="wf-badge bg-y">Y</span></td>
+                <td>Restaurant</td>
+                <td>plc00002</td>
+                <td>Food &amp; Beverage</td>
+                <td><span class="wf-badge bg-y">노출</span></td>
                 <td>2026-05-19</td>
                 <td>
                   <button class="wf-btn wf-btn-sm">수정</button>
@@ -104,10 +104,10 @@
               </tr>
               <tr>
                 <td>POOL</td>
-                <td>수영장</td>
-                <td>레저·스포츠</td>
-                <td>PLACE</td>
-                <td><span class="wf-badge bg-y">Y</span></td>
+                <td>Swimming Pool</td>
+                <td>plc00003</td>
+                <td>Leisure &amp; Sports</td>
+                <td><span class="wf-badge bg-y">노출</span></td>
                 <td>2026-05-19</td>
                 <td>
                   <button class="wf-btn wf-btn-sm">수정</button>
@@ -142,17 +142,18 @@
       </div>
 
       <div class="ann-item">
-        <div class="ann-title"><span class="cn">3</span> 시설명 (plain string)</div>
+        <div class="ann-title"><span class="cn">3</span> 시설명 (EN 필수 · ZH 선택)</div>
         <div class="ann-body">
-          <div class="ann-desc">한국어 단일 문자열. 다국어 { ko, en } 객체 아님. 실서비스에서 다국어 전환 예정.</div>
+          <div class="ann-desc">목록에는 영문(EN) 이름이 보인다. 영문은 필수, 중문(ZH)은 선택이며 국문은 사용하지 않는다(외국인 전용 사이트).</div>
           <div class="ann-front">→ 프런트: 숙소 레이어 시설 목록 항목명 / 상품 카드 시설 칩 텍스트 / Room Detail 시설 목록</div>
+          <div class="ann-rule">프로토타입 후속 반영 예정: 현재 프로토타입은 명칭이 국문 + 영문(선택) 구조. 정책 목표(EN 필수 · ZH 선택)를 화면기획서에 선반영한 것.</div>
         </div>
       </div>
 
       <div class="ann-item">
-        <div class="ann-title"><span class="cn">4</span> 카테고리 연결</div>
+        <div class="ann-title"><span class="cn">4</span> 카테고리 (코드 · 명)</div>
         <div class="ann-body">
-          <div class="ann-desc">시설이 속한 카테고리. 도메인 일치 카테고리만 선택 가능. 카테고리 헤더로 그룹핑하여 프런트에 표시됨.</div>
+          <div class="ann-desc">시설이 속한 카테고리를 코드와 이름 두 컬럼으로 함께 보여준다. 진입 경로 도메인(PLACE/ROOM)과 일치하는 카테고리에 속한 시설만 목록에 표시된다. 도메인 컬럼은 없다(경로로 이미 구분).</div>
           <div class="ann-front">→ 프런트: 시설 카테고리명이 그룹 헤더로 사용됨.</div>
         </div>
       </div>

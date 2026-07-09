@@ -68,7 +68,8 @@
   </div>
   <div class="sec-sub">
     티켓 상품의 날짜 방식(오픈/날짜지정), 날짜별 한도·입금가, 커트오프를 설정한다. 상품 마스터는 탭1(S14-B).<br>
-    기준: 티켓 쿠폰 연동 정책서 v0.2 · 11.3절 / 인수인계 문서 S14-B
+    <b>현재는 오픈형 우선 운영</b>이며, 날짜지정형은 기능만 유지(현재 미사용)한다.<br>
+    기준: 티켓 쿠폰 연동 정책서 v0.5 · 4.3절 · 11.4절 · 12.3절 / 인수인계 문서 S14-B
   </div>
 
   <div class="two-col">
@@ -112,10 +113,10 @@
 
           <!-- 공통정책 블록 -->
           <div class="sec-policy">
-            <span class="ref">기준: v0.2 11.3절 · 마진(CLAUDE.md)</span><br>
-            · <b>오픈형</b>: 날짜 미지정, 사용기간 내 자유 사용(달력 숨김). <b>날짜지정형</b>: 이용일 선택 구매(달력 노출).<br>
-            · 달력은 <b>사용기간만큼 월 단위 노출</b>. 셀에 <b>판매가(대인 기준) + 한도</b> 표기.<br>
-            · 날짜별 <b>입금가 조정</b> 가능(숙소 S06 방식). 판매가 = 입금가 + 마진(S14-B 고정). 미설정 날짜는 기본 입금가 상속.<br>
+            <span class="ref">기준: v0.5 4.3절 · 11.4절 · 12.3절 · 마진(S11 쿠폰ID 단위)</span><br>
+            · <b>오픈형 우선 운영(현재 방식)</b>: 날짜 미지정, 사용기간 내 자유 사용(달력 숨김). <b>날짜지정형</b>은 <b>기능만 유지(현재 미사용)</b> — 이용일 선택 구매(달력 노출).<br>
+            · <b>날짜 유효성 체크 없음</b>: 사용기간(스펙 use_start/end)은 <b>표시용으로만</b> 사용. 실제 날짜 검증 로직 미구현(하이원 응답코드 DBER31/32 미발생).<br>
+            · (날짜지정형 기능 시) 달력은 <b>사용기간만큼 월 단위 노출</b>. 셀에 <b>판매가(대인 기준) + 한도</b> 표기. 날짜별 <b>입금가 조정</b> 가능(숙소 S06 방식). 판매가 = 입금가 + 마진(S11 쿠폰ID 단위 고정). 미설정 날짜는 기본 입금가 상속.<br>
             · 한도 — ∞ / 숫자(잔여 0 자동 매진) / 0(직접 매진). 커트오프 미설정 시 당일 자정까지.
           </div>
 
@@ -130,17 +131,17 @@
           </div>
 
           <div class="radio-row">
-            <span><span class="radio-dot"></span>오픈형 <span style="color:#888;font-size:10px;">(사용기간 내 자유 사용)</span></span>
-            <span><span class="radio-dot on"></span>날짜지정형 <span style="color:#888;font-size:10px;">(이용일 선택 구매)</span></span>
+            <span><span class="radio-dot on"></span>오픈형 <span style="color:#888;font-size:10px;">(사용기간 내 자유 사용 · 우선 운영)</span></span>
+            <span><span class="radio-dot"></span>날짜지정형 <span style="color:#888;font-size:10px;">(이용일 선택 구매 · 기능 유지, 현재 미사용)</span></span>
           </div>
 
           <!-- 오픈형 안내 -->
           <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:8px 12px;font-size:11px;color:#166534;margin-bottom:12px;">
-            <b>오픈형 선택 시</b> — 아래 달력 영역은 숨겨지고 커트오프만 노출됩니다. 가격은 S14-B 기본 입금가·판매가 적용. <span style="color:#888;">(현재 와이어프레임은 날짜지정형 선택 상태)</span> <span class="wf-cn">4</span>
+            <b>오픈형 선택 시(현재 기본)</b> — 아래 달력 영역은 숨겨지고 커트오프만 노출됩니다. 가격은 S14-B 기본 입금가·판매가 적용. <span style="color:#888;">아래 날짜지정형 달력 영역은 기능 유지를 위해 함께 보여드리는 것으로, 현재 운영에서는 사용하지 않습니다.</span> <span class="wf-cn">4</span>
           </div>
 
           <!-- 날짜지정형: 달력 (2개월, 판매가+한도) -->
-          <div class="wf-section-head tk">날짜별 입금가·한도 설정 <span style="font-weight:400;color:#888;font-size:11px;">(날짜지정형 전용 · 사용기간 7~8월)</span> <span class="wf-cn">5</span></div>
+          <div class="wf-section-head tk">날짜별 입금가·한도 설정 <span style="font-weight:400;color:#888;font-size:11px;">(날짜지정형 전용 기능 · 현재 미사용 · 사용기간 7~8월)</span> <span class="wf-cn">5</span></div>
           <div class="date-cal-wrap">
 
             <!-- 2개월 달력 -->
@@ -249,7 +250,7 @@
                 <span class="lv">소인</span><input class="mini-in" value="42,000" style="width:70px;" />
                 <span style="color:#888;">→ 판매가</span> <span class="sell">46,200</span>
               </div>
-              <div class="wf-hint" style="margin-top:2px;margin-bottom:10px;">판매가 = 입금가 + 마진(10%, S14-B). 자동 계산.</div>
+              <div class="wf-hint" style="margin-top:2px;margin-bottom:10px;">판매가 = 입금가 + 마진(S11 쿠폰ID 단위 고정). 자동 계산.</div>
 
               <!-- 한도 -->
               <div style="font-size:10px;color:#9d174d;font-weight:700;margin-bottom:6px;border-top:1px solid #f3e0e9;padding-top:8px;">한도</div>
@@ -305,6 +306,7 @@
         <div class="ann-body">
           <div class="ann-title">날짜 방식</div>
           <div class="ann-desc"><b>오픈형</b>: 날짜 미지정, 사용기간 내 자유 사용. <b>날짜지정형</b>: 고객이 이용일 선택 후 구매, 날짜별 한도·입금가 적용.</div>
+          <div class="ann-rule">현재는 <b>오픈형 우선 운영</b>이라 기본값이 오픈형이다. 날짜지정형은 기능만 남겨두고 지금은 쓰지 않는다.</div>
         </div>
       </div>
 
@@ -313,7 +315,7 @@
         <div class="ann-body">
           <div class="ann-title">상품 정보 노출 (카테고리·사용기간)</div>
           <div class="ann-desc">탭1에서 선택한 <b>카테고리·사용기간만</b> 간결 표시(편집 불가). <b>연결 스펙 미선택 시 각 값은 <code>-</code></b>로 표시.</div>
-          <div class="ann-rule">사용기간(스펙)이 달력의 입력 가능 범위가 됨. 기간 외 날짜는 '기간외' 비활성.</div>
+          <div class="ann-rule">사용기간(스펙의 use_start/end)은 <b>표시용으로만</b> 사용한다. 실제 날짜 유효성 검증은 하지 않는다(하이원 응답코드 DBER31/32 미발생). 날짜지정형 달력 기능을 쓸 때는 이 기간이 화면상 입력 범위로 보이며, 기간 외 날짜는 '기간외'로 표시된다.</div>
         </div>
       </div>
 
@@ -328,8 +330,8 @@
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">5</span>
         <div class="ann-body">
-          <div class="ann-title">날짜별 입금가·한도 — 사용기간 기준 노출</div>
-          <div class="ann-desc">달력은 <b>사용기간만큼 월 단위 노출</b>(7/10~8/30 → 7·8월). 셀에 <b>판매가(대인 기준) + 한도</b> 표기. 기간 외 날짜는 비활성.</div>
+          <div class="ann-title">날짜별 입금가·한도 — 사용기간 기준 노출 (날짜지정형 기능 · 현재 미사용)</div>
+          <div class="ann-desc">이 달력 영역은 <b>날짜지정형 전용 기능</b>으로, 오픈형 우선 운영인 현재는 사용하지 않는다(기능만 유지). 날짜지정형을 쓸 때는 달력이 <b>사용기간만큼 월 단위 노출</b>(7/10~8/30 → 7·8월)되고, 셀에 <b>판매가(대인 기준) + 한도</b>가 표기되며, 기간 외 날짜는 비활성으로 보인다.</div>
           <div class="ann-rule">입금가를 조정한 날짜는 색상(노랑)으로 구분. 미조정 날짜는 S14-B 기본 입금가 상속. 한도: ∞ / 숫자(잔여 0 자동매진) / 0(직접 매진).</div>
           <div class="ann-front">→ 프런트: 날짜 선택 캘린더의 날짜별 가격·잔여/매진 표시</div>
         </div>
@@ -348,7 +350,7 @@
         <div class="ann-body">
           <div class="ann-title">날짜 입금가·한도 편집 패널</div>
           <div class="ann-desc">선택 날짜의 <b>레벨별 입금가</b>를 입력(미입력 시 기본값 상속) → 판매가 자동 계산(입금가 + 마진). 한도(∞/숫자/0)도 함께 설정. [적용] → state 반영, 하단 [저장]에서 최종 기록.</div>
-          <div class="ann-rule">판매가 = 입금가 + 마진(S14-B 고정 마진율). 마진은 날짜 무관 상품 고정. 날짜별로 바뀌는 건 입금가(숙소 S06 방식).</div>
+          <div class="ann-rule">판매가 = 입금가 + 마진(S11 마진관리 티켓 탭에서 쿠폰ID 단위로 관리하는 고정 마진). 마진은 날짜 무관 고정. 날짜별로 바뀌는 건 입금가(숙소 S06 방식).</div>
         </div>
       </div>
 
@@ -374,7 +376,8 @@
         <div class="ann-body">
           <div class="ann-title">저장</div>
           <div class="ann-desc">날짜 방식·날짜별 입금가/한도·커트오프를 상품에 저장. 탭1(마스터)과 같은 상품의 날짜 영역만 기록.</div>
-          <div class="ann-rule">★미결: 티켓 입금가는 본래 스펙(High1 납부 원가) 고정값. 날짜별 입금가 조정의 정책적 의미(실제 납부액 관계)는 대화창1 확인 대상. / 날짜지정형 한도 미설정 날짜 기본값(∞ vs 판매불가)도 미결.</div>
+          <div class="ann-rule">현재 운영은 오픈형이라 저장 시 날짜별 입금가·한도는 사용되지 않고, 커트오프와 날짜 방식만 실제 반영된다.</div>
+          <div class="ann-rule">★미결(신규-1): 날짜별 입금가 조정 ↔ 실제 High1 납부액 관계는 하이원 확인 대상(대화창1). 날짜지정형 재사용 시 검토.</div>
         </div>
       </div>
 

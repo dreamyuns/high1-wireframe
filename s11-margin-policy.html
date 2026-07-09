@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>S11 — 마진관리 정책 초안 | High1 Admin Wireframe</title>
+<title>S11 — 마진관리 정책 | High1 Admin Wireframe</title>
 <link rel="stylesheet" href="wf-styles.css" />
 <style>
-.draft-banner{background:#fef3c7;border:2px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:12px;font-weight:600;color:#92400e}
+.draft-banner{background:#f0fdf4;border:2px solid #86efac;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:12px;font-weight:600;color:#166534}
 .tbd-box{background:#fff9e6;border:1px solid #f5c842;border-radius:4px;padding:8px 12px;margin:8px 0;font-size:12px}
 .tbd-label{font-weight:700;color:#b45309;margin-right:6px}
 .ok-box{background:#f0fdf4;border:1px solid #86efac;border-radius:4px;padding:8px 12px;margin:8px 0;font-size:12px}
@@ -39,8 +39,8 @@ code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:11px;font-fa
 <nav class="page-nav">
   <a class="page-nav-back" href="index.html">← 목록으로</a>
   <span class="page-nav-sep">|</span>
-  <span class="page-nav-title">S11 — 마진관리 정책 초안</span>
-  <span class="page-nav-route">#/margin-management</span>
+  <span class="page-nav-title">S11 — 마진관리 정책</span>
+  <span class="page-nav-route">#/margin-management · 공통관리 하위</span>
   <div class="page-nav-nav">
     <a class="page-nav-pager" href="pms-integration-guide.html">← 이전</a>
   </div>
@@ -50,8 +50,8 @@ code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:11px;font-fa
 
   <div class="sec-title">
     <span class="sec-badge">S11</span>
-    마진관리 정책 초안
-    <span style="font-size:12px;font-weight:400;color:#888">— #/margin-management · 공통관리 하위 신규 메뉴</span>
+    마진관리 정책
+    <span style="font-size:12px;font-weight:400;color:#888">— #/margin-management · 공통관리 하위 메뉴</span>
   </div>
 
   <div class="two-col">
@@ -59,8 +59,8 @@ code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:11px;font-fa
     <div class="wf" style="font-size:12px;line-height:1.6">
 
       <div class="draft-banner">
-        📋 초안 (DRAFT) — 마진관리 화면의 정책 및 기능 범위를 사전 정의합니다.
-        실제 와이어프레임(UI 목업)은 S06-A 마진 섹션과 함께 다음 작업 세션에서 작성합니다.
+        ✅ 확정 반영본 (프로토타입 v0.6 기준) — 마진관리 화면(S11 단일 인라인 편집)과 일자별 마진(S06-B) 정책을 정의합니다.
+        마진 마스터는 <strong>공통관리 하위 · 객실 타입(RM_TYP_CD)별</strong>이며, 실제 화면은 <a href="s11-a-margin-list.html" style="color:#166534;font-weight:700">S11 마진관리</a> · <a href="s06-inventory-list.html" style="color:#166534;font-weight:700">S06-B 재고·요금</a> 참조.
       </div>
 
       <!-- 1. 용어 정의 -->
@@ -68,24 +68,29 @@ code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:11px;font-fa
       <table>
         <tr><th>용어</th><th>정의</th><th>출처</th></tr>
         <tr>
-          <td><strong>기준가</strong></td>
-          <td>마진 적용 전 원래 가격</td>
-          <td>PMS 연동: SELL_ITM_AMT (API 4/5)<br/>수기 관리: 어드민 직접 입력가</td>
+          <td><strong>입금가</strong></td>
+          <td>마진 적용 전 원가. 고객에게 노출하지 않음.</td>
+          <td>PMS 연동: SELL_ITM_AMT (<strong>API 3</strong> — 요금의 유일한 소스)<br/>수기 관리: 어드민 직접 입력가</td>
         </tr>
         <tr>
-          <td><strong>실판매가</strong></td>
-          <td>마진 적용 후 고객에게 실제 청구되는 금액.<br/>프런트 노출가·SELL_AMT(API 6) 기준.</td>
-          <td>기준가 + 마진 계산 결과 (소수점 버림)</td>
+          <td><strong>판매가</strong></td>
+          <td>입금가에 마진을 적용한 후 고객에게 청구되는 금액.<br/>프런트 노출가 기준.</td>
+          <td>입금가 + 마진 계산 결과 (소수점 버림)</td>
         </tr>
         <tr>
-          <td><strong>시설 마진 마스터</strong></td>
-          <td>숙소(Place) 단위로 설정하는 기본 마진.<br/>개별 마진 미설정 상품에 자동 적용.</td>
-          <td>S11-A/B 화면에서 관리</td>
+          <td><strong>마진 마스터</strong></td>
+          <td>공통관리에서 <strong>객실 타입(RM_TYP_CD) 단위</strong>로 설정하는 기본 마진(디폴트).<br/>일자별 마진을 개별 설정하지 않은 날짜에 자동 상속.</td>
+          <td>S11 마진관리 화면에서 관리</td>
         </tr>
         <tr>
-          <td><strong>상품 개별 마진</strong></td>
-          <td>상품별 독립 마진 설정.<br/>설정 시 시설 마진 마스터를 오버라이드.</td>
-          <td>S06-A 마진 섹션에서 관리</td>
+          <td><strong>일자별 마진</strong></td>
+          <td>날짜(재고·요금 행)별 독립 마진.<br/>개별 설정 시 마스터를 오버라이드(개별), 미설정 시 마스터 상속(상속).</td>
+          <td>S06-B 재고·요금 탭에서 관리</td>
+        </tr>
+        <tr>
+          <td><strong>전역 디폴트</strong></td>
+          <td>마진 마스터에도 값이 없을 때 적용하는 최종 기본값.</td>
+          <td><strong>마진금액 30,000원</strong> (DEFAULT_DAILY_MARGIN)</td>
         </tr>
       </table>
 
@@ -95,8 +100,8 @@ code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:11px;font-fa
       <p style="margin:0 0 6px"><strong>입력 방식 — 마진율(%) 또는 마진금액(정액) 중 하나 선택</strong></p>
 
       <div class="formula-box">
-        마진율 적용:  실판매가 = floor( 기준가 × (1 + 마진율 ÷ 100) )<br/>
-        마진금액 적용: 실판매가 = 기준가 + 마진금액
+        마진율 적용:  판매가 = floor( 입금가 × (1 + 마진율 ÷ 100) )<br/>
+        마진금액 적용: 판매가 = 입금가 + floor(마진금액)
       </div>
 
       <table>
@@ -113,140 +118,121 @@ code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:11px;font-fa
         <tr>
           <td>허용 범위</td>
           <td><strong>-49% ~ +100%</strong></td>
-          <td>음수 허용 (하한 TBD — 아래 참조)</td>
+          <td>음수 허용 · <strong>하한 없음(제한하지 않음, 확정)</strong></td>
         </tr>
         <tr>
           <td>음수 의미</td>
-          <td>할인 (기준가 대비 % 인하)</td>
+          <td>할인 (입금가 대비 % 인하)</td>
           <td>할인 (정액 차감)</td>
         </tr>
         <tr>
           <td>양수 의미</td>
-          <td>마크업 (기준가 대비 % 인상)</td>
+          <td>마크업 (입금가 대비 % 인상)</td>
           <td>마크업 (정액 가산)</td>
         </tr>
         <tr>
           <td>소수점 처리</td>
-          <td colspan="2">계산 결과 소수점 발생 시 <strong>무조건 버림(floor)</strong> → 정수로 노출</td>
+          <td colspan="2">계산 결과 소수점 발생 시 <strong>무조건 버림(floor)</strong> → 정수로 노출. 판매가 최소 0.</td>
         </tr>
       </table>
 
       <div class="ok-box">
         <span class="ok-label">계산 예시 (마진율)</span>
-        기준가 100,000원 / 마진율 +10% → 실판매가 110,000원<br/>
-        기준가 100,000원 / 마진율 -20% → 실판매가 80,000원<br/>
-        기준가 33,333원 / 마진율 +10% → 33,333 × 1.1 = 36,666.3 → 실판매가 <strong>36,666원</strong> (소수점 버림)
-      </div>
-
-      <div class="tbd-box">
-        <span class="tbd-label">TBD-1 · 마진금액 하한선</span>
-        마진금액이 음수이고 절댓값이 기준가를 초과하면 실판매가가 0 이하가 됩니다.
-        실판매가 최솟값(예: 1,000원)을 설정할지 결정 필요합니다.
+        입금가 100,000원 / 마진율 +10% → 판매가 110,000원<br/>
+        입금가 100,000원 / 마진율 -20% → 판매가 80,000원<br/>
+        입금가 33,333원 / 마진율 +10% → 33,333 × 1.1 = 36,666.3 → 판매가 <strong>36,666원</strong> (소수점 버림)
       </div>
 
       <!-- 3. 2단계 마진 계층 -->
       <div class="wf-section-head sec">3. 2단계 마진 계층 구조</div>
 
       <table>
-        <tr><th>단계</th><th>설정 위치</th><th>적용 범위</th><th>변경 즉시 반영</th></tr>
+        <tr><th>단계</th><th>설정 위치</th><th>단위</th><th>적용 범위</th></tr>
         <tr>
-          <td><span class="badge-master">1단계</span> 시설 마진 마스터</td>
-          <td>S11-A/B 마진관리</td>
-          <td>해당 시설의 개별 마진 미설정 상품 전체</td>
-          <td>✅ 즉시</td>
+          <td><span class="badge-master">1단계</span> 마진 마스터</td>
+          <td>S11 마진관리 (공통관리)</td>
+          <td><strong>객실 타입(RM_TYP_CD)</strong></td>
+          <td>해당 타입의 일자별 마진 <strong>디폴트</strong>로 주입</td>
         </tr>
         <tr>
-          <td><span class="badge-custom">2단계</span> 상품 개별 마진</td>
-          <td>S06-A 마진 섹션</td>
-          <td>해당 상품만</td>
-          <td>✅ 즉시</td>
+          <td><span class="badge-custom">2단계</span> 일자별 마진</td>
+          <td>S06-B 재고·요금 (상품)</td>
+          <td><strong>날짜(행)</strong></td>
+          <td>해당 날짜만 (개별/상속)</td>
         </tr>
       </table>
 
       <div class="ok-box">
         <span class="ok-label">적용 우선순위</span>
-        상품 개별 마진 설정 시 → 상품 개별 마진 사용 (마스터 무시)<br/>
-        상품 개별 마진 미설정 시 → 시설 마진 마스터 자동 상속<br/>
-        시설 마진 마스터도 없을 경우 → 마진 0 (기준가 = 실판매가)
+        일자별 마진을 <strong>개별</strong> 설정 → 그 값 사용 (마스터 무시)<br/>
+        일자별 마진 <strong>상속</strong>(유형 '없음') → 마진 마스터(RM_TYP_CD) 값 상속<br/>
+        마진 마스터도 없을 경우 → <strong>전역 디폴트(마진금액 30,000원)</strong>
       </div>
 
       <div class="warn-box">
         <span class="warn-label">이력 관리 필수</span>
-        아래 두 가지 이력을 반드시 기록합니다.
+        아래 이력을 반드시 기록합니다.
         <ul style="margin:5px 0 0 16px;padding:0">
-          <li>시설 마진 마스터 변경 이력: 변경일시 · 변경자 · 변경 전/후 값</li>
-          <li>상품 개별 마진 설정 이력: 개별 설정 ON/OFF 전환 시점 · 변경 전/후 값</li>
+          <li>마진 마스터 변경 이력: 변경일시 · 변경자 · 변경 전/후 값 (RM_TYP_CD 단위)</li>
+          <li>일자별 마진 변경 이력: 개별 설정/해제(상속 복귀) 시점 · 변경 전/후 값</li>
         </ul>
-        "개별 마진 해제 → 마스터 복귀" 시점도 이력에 포함해야 실판매가 변동 원인을 추적 가능합니다.
+        "개별 마진 해제 → 마스터 상속 복귀" 시점도 이력에 포함해야 판매가 변동 원인을 추적 가능합니다.
       </div>
 
-      <!-- 4. 화면 구성 계획 -->
-      <div class="wf-section-head sec">4. 화면 구성 계획</div>
+      <!-- 4. 화면 구성 -->
+      <div class="wf-section-head sec">4. 화면 구성</div>
 
       <div class="screen-plan">
         <div class="screen-box">
-          <div class="screen-box-title">S11-A 마진 목록</div>
+          <div class="screen-box-title">S11 마진관리 (단일 화면)</div>
           <div>#/margin-management</div>
-          <div style="margin-top:3px;color:#666">시설별 기본 마진 목록 · 탭: 숙소 / 티켓 / 투어(확장 예정)</div>
+          <div style="margin-top:3px;color:#666">객실 타입(RM_TYP_CD)별 마진 <strong>인라인 편집 테이블</strong> + <strong>일괄 적용 바</strong> + [마진 마스터 저장]. 숙소/티켓(카테고리) 탭 통합. <em>(구 S11-A 목록 + S11-B 상세폼 2화면 → 단일 화면으로 통합, S11-B 폐기)</em></div>
         </div>
         <div class="screen-box">
-          <div class="screen-box-title">S11-B 마진 설정</div>
-          <div>#/margin-management/:placeId</div>
-          <div style="margin-top:3px;color:#666">시설 기본 마진 등록·수정 · 변경 이력</div>
+          <div class="screen-box-title">S06-B 재고·요금 — 일자별 마진</div>
+          <div>#/products/edit/:id (탭2 목록형)</div>
+          <div style="margin-top:3px;color:#666">날짜(행)별 마진 유형·값 <strong>직접 편집</strong>(개별/상속 배지) + 구간 벌크. 판매가 자동 계산 표시.</div>
         </div>
         <div class="screen-box" style="grid-column:1/-1">
-          <div class="screen-box-title">S06-A 수정 — 마진 섹션 추가</div>
-          <div>상품 등록·수정 화면에 마진 설정 섹션 삽입</div>
-          <div style="margin-top:3px;color:#666">마스터 상속 / 개별 설정 토글 · 실판매가 미리보기</div>
+          <div class="screen-box-title">S06-A 상품 마스터 — 마진 섹션 없음</div>
+          <div>상품 등록·수정 탭1</div>
+          <div style="margin-top:3px;color:#666">상품 개별 마진 섹션은 <strong>없음</strong>. 마진은 마스터(S11)와 일자별(S06-B)로 관리. <em>(이전 계획의 'S06-A 마진 섹션'은 폐기)</em></div>
         </div>
       </div>
 
-      <!-- 5. S11-A 목록 화면 정의 -->
-      <div class="wf-section-head sec">5. S11-A 마진 목록 기능 정의</div>
+      <!-- 5. S11 마진관리 화면 정의 -->
+      <div class="wf-section-head sec">5. S11 마진관리 화면 기능 정의</div>
 
-      <p style="margin:0 0 3px;font-weight:600">목록 컬럼</p>
+      <p style="margin:0 0 3px;font-weight:600">테이블 컬럼 (행 = 객실 타입 RM_TYP_CD)</p>
       <table>
         <tr><th>컬럼</th><th>내용</th></tr>
-        <tr><td>시설명</td><td>숙소명 (예: 메인타워, 컨벤션타워)</td></tr>
-        <tr><td>마진 유형</td><td>마진율 / 마진금액 배지 표시</td></tr>
-        <tr><td>마진값</td><td>+10% · -5,000원 형태</td></tr>
-        <tr><td>적용 상품 수</td><td>마스터 마진 적용 중인 상품 수 (개별 설정 상품 제외)</td></tr>
-        <tr><td>최종 변경일시</td><td>마진 마스터 최근 변경 일시</td></tr>
-        <tr><td>수정 버튼</td><td>S11-B 이동</td></tr>
+        <tr><td>RM_TYP_CD</td><td>객실 타입 코드 (행 단위 기준 키)</td></tr>
+        <tr><td>숙소명 / 객실명</td><td>참고 표시 (마진은 타입 단위로 관리)</td></tr>
+        <tr><td>마진 유형</td><td>전역 디폴트 / 마진금액 / 마진율% (select, 인라인)</td></tr>
+        <tr><td>마진 값</td><td>유형이 '전역 디폴트'면 입력 비활성</td></tr>
+        <tr><td>판매가 예시</td><td>입금가 300,000 기준 실시간 미리보기</td></tr>
       </table>
+      <p style="margin:6px 0 0;color:#666">상단 <strong>일괄 적용 바</strong>: 숙소 필터 · 유형 · 값 → [전체 적용]. 최종 반영은 [마진 마스터 저장].</p>
 
-      <!-- 6. S06-A 마진 섹션 UI 계획 -->
-      <div class="wf-section-head sec">6. S06-A 마진 섹션 UI 계획</div>
+      <!-- 6. S06-B 일자별 마진 UI -->
+      <div class="wf-section-head sec">6. S06-B 일자별 마진 UI</div>
 
       <div class="ui-mock">
-        <div class="ui-mock-title">마진 설정 섹션 (와이어프레임 미리보기)</div>
+        <div class="ui-mock-title">재고·요금 목록형 · 마진 컬럼 (행별 편집)</div>
 
-        <div class="radio-row">
-          <span class="radio-dot radio-dot-on"></span>
-          <span>시설 기본 마진 사용</span>
-          <span style="color:#3a5f9e;margin-left:8px">← 메인타워 기본 마진: +10% (율)</span>
-        </div>
-        <div class="radio-row">
-          <span class="radio-dot"></span>
-          <span style="color:#aaa">상품 마진 직접 설정</span>
-        </div>
-
-        <div style="margin-top:10px;padding-top:8px;border-top:1px dashed #d4d4cc;color:#888;font-size:11px">
-          ↓ 상품 마진 직접 설정 선택 시 펼쳐짐
-        </div>
         <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
-          <span class="wf-chip wf-chip-on" style="font-size:10px">마진율 (%)</span>
-          <span class="wf-chip" style="font-size:10px">마진금액 (원)</span>
-        </div>
-        <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
-          <input class="wf-input" style="width:80px" placeholder="-49~100" value="15" />
-          <span>%</span>
+          <span style="color:#888;font-size:10px">유형</span>
+          <span class="wf-chip" style="font-size:10px">없음(상속)</span>
+          <span class="wf-chip wf-chip-on" style="font-size:10px">마진금액</span>
+          <span class="wf-chip" style="font-size:10px">마진율%</span>
+          <input class="wf-input" style="width:70px" value="34000" />
+          <span style="font-size:9px;color:#b45309;font-weight:700">개별</span>
         </div>
 
         <div style="margin-top:10px;padding:8px;background:#f0f4ff;border:1px solid #b8c8f0;border-radius:4px;font-size:11px">
-          실판매가 미리보기: 기준가 100,000원 기준 →
-          <strong style="color:#3a5f9e">115,000원</strong>
-          <span style="color:#888;margin-left:6px">(PMS 연동 상품은 날짜별 기준가에 따라 실판매가가 달라집니다)</span>
+          판매가 자동 계산: 입금가 340,000 + 마진금액 34,000 →
+          <strong style="color:#3a5f9e">374,000원</strong>
+          <span style="color:#888;margin-left:6px">('없음' 선택 시 마스터(S11) 상속 → 미설정이면 전역 30,000원)</span>
         </div>
       </div>
 
@@ -254,34 +240,34 @@ code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:11px;font-fa
       <div class="wf-section-head sec">7. SELL_AMT 처리 (API 6)</div>
 
       <div class="ok-box">
-        <span class="ok-label">결정 · A안</span>
-        PMS 예약 요청(API 6) 시 <code>SELL_AMT</code> = <strong>실판매가</strong> (마진 적용 후 고객 청구 금액).<br/>
-        PMS에 실제 고객 결제 금액을 전달하며, 정산 기준도 실판매가를 따릅니다.
+        <span class="ok-label">확정</span>
+        PMS 예약 요청(API 6) 시 <code>SELL_AMT</code> = <strong>입금가</strong> (PMS 원가, 마진 미포함).<br/>
+        마진은 우리 쪽 수취분이며, PMS에는 원가만 전달합니다.
       </div>
-      <div class="tbd-box">
-        <span class="tbd-label">TBD-2 · PMS 정산 방식 확인</span>
-        하이원 PMS 담당자에게 SELL_AMT 기준 정산 방식 확인 필요.
-        (pms-vendor-questions.md 질문 목록 참조)
+      <div class="ok-box">
+        <span class="ok-label">환불·위약금 계산</span>
+        환불 예정액 = <strong>우리 DB 판매가 − API 10 DLFT_APLY_AMT</strong><br/>
+        위약금율 = DLFT_APLY_AMT ÷ SELL_AMT(입금가) · 고객 청구 위약금 = 위약금율 × 판매가 (소수점 첫째자리 반올림)<br/>
+        PMS 납부 = DLFT_APLY_AMT 원금 그대로 · 차액(마진 비례분)은 우리 수취. <span style="color:#888">※ API 10 실제 필드명 오타: <strong>DLFT</strong>_APLY_AMT (DFLT 아님)</span>
       </div>
 
       <!-- 8. 확장 계획 -->
-      <div class="wf-section-head sec">8. 확장 계획 (추후)</div>
+      <div class="wf-section-head sec">8. 마진 마스터 대상 (탭)</div>
       <table>
-        <tr><th>단계</th><th>대상</th><th>비고</th></tr>
-        <tr><td>1단계 (현재)</td><td>숙소(Place) 마진 마스터</td><td>S11-A/B 구현</td></tr>
-        <tr><td>2단계</td><td>티켓 마진 마스터</td><td>S11-A 탭 추가</td></tr>
-        <tr><td>3단계</td><td>투어 마진 마스터</td><td>S11-A 탭 추가</td></tr>
+        <tr><th>탭</th><th>대상</th><th>마진 단위</th></tr>
+        <tr><td>숙소</td><td>숙소 상품</td><td>객실 타입(RM_TYP_CD)</td></tr>
+        <tr><td>티켓</td><td>티켓 상품</td><td>카테고리(1뎁스)</td></tr>
+        <tr><td>투어 (추후)</td><td>투어 상품</td><td>확장 예정</td></tr>
       </table>
+      <p style="margin:6px 0 0;color:#666">S11 마진관리 = 숙소/티켓 탭 통합 운영. 티켓 개별 마진은 S14-B에서 관리.</p>
 
-      <!-- 9. 다음 단계 -->
-      <div class="wf-section-head sec">9. 다음 단계</div>
-      <ol style="margin:0 0 0 16px;padding:0;font-size:12px;line-height:1.8">
-        <li>마진금액 하한선 결정 (TBD-1)</li>
-        <li>S11-A/B 와이어프레임 작성</li>
-        <li>S06-A 마진 섹션 추가 (기획서 수정)</li>
-        <li>GNB/LNB 공통관리에 마진관리 메뉴 추가 (index.html 카드 추가)</li>
-        <li>프로토타입(admin-prototype-v0.4) 마진 UI 추가</li>
-      </ol>
+      <!-- 9. 확인 필요 -->
+      <div class="wf-section-head sec">9. 확인 필요 (대화창 1 · 사업부 정책서 동기화)</div>
+      <div class="tbd-box">
+        <span class="tbd-label">FLAG-1 · 마진 계층 단위</span>
+        본 문서·프로토타입은 마진 마스터를 <strong>객실 타입(RM_TYP_CD) 단위</strong> + 일자별(S06-B)로 정의합니다.
+        <code>CLAUDE.md</code> 마진 계층 기술은 "시설(Place) 단위 마스터 + S06-A 상품 개별"로 되어 있어 <strong>단위·위치가 상이</strong>합니다. <code>context/사업부-정책서.md</code> 동기화가 필요합니다.
+      </div>
 
     </div>
     <!-- /wf -->
@@ -307,22 +293,21 @@ code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:11px;font-fa
         <div class="ann-body">
           <div class="ann-title">소수점 버림(floor) 처리</div>
           <div class="ann-desc">
-            실판매가 계산 시 Math.floor() 적용.
+            판매가 계산 시 Math.floor() 적용.
             반올림(round) 아님에 주의합니다.
             33,333 × 1.1 = 36,666.3 → 36,666원 (버림)
           </div>
-          <div class="ann-rule">BIZ-MAR-01: 실판매가 = Math.floor(기준가 × (1 + 마진율/100))</div>
+          <div class="ann-rule">BIZ-MAR-01: 판매가 = Math.floor(입금가 × (1 + 마진율/100)) 또는 입금가 + Math.floor(마진금액)</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">3</div>
         <div class="ann-body">
-          <div class="ann-title">PMS 연동 상품 미리보기</div>
+          <div class="ann-title">일자별 판매가 (PMS 연동)</div>
           <div class="ann-desc">
-            PMS 연동 상품은 날짜별로 기준가가 다르므로,
-            S06-A 마진 섹션의 실판매가 미리보기는 예시 금액으로 표시합니다.
-            실제 날짜별 실판매가는 S06-B/C 인벤토리 화면에서 확인합니다.
+            PMS 연동 상품은 날짜별로 입금가가 다르므로, 판매가도 날짜별로 계산됩니다.
+            S06-B 재고·요금 탭에서 각 날짜 행의 판매가를 실시간으로 확인합니다.
           </div>
         </div>
       </div>
@@ -330,10 +315,10 @@ code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:11px;font-fa
       <div class="ann-item">
         <div class="cn">4</div>
         <div class="ann-body">
-          <div class="ann-title">개별 마진 해제 시</div>
+          <div class="ann-title">개별 마진 해제 시 (상속 복귀)</div>
           <div class="ann-desc">
-            상품에서 개별 마진을 해제하면 시설 마스터로 즉시 복귀됩니다.
-            이 전환 시점을 이력으로 기록해야 실판매가 변동 원인 추적이 가능합니다.
+            일자별 마진 유형을 '없음'으로 바꾸면 마진 마스터(RM_TYP_CD)로 즉시 상속 복귀됩니다.
+            이 전환 시점을 이력으로 기록해야 판매가 변동 원인 추적이 가능합니다.
           </div>
           <div class="ann-rule">BIZ-MAR-02: 마진 설정 변경 시 변경일시·변경자·변경 전/후 값 필수 기록</div>
         </div>
@@ -344,7 +329,7 @@ code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:11px;font-fa
         <div class="ann-body">
           <div class="ann-title">LNB 위치 — 공통관리</div>
           <div class="ann-desc">
-            마진관리는 숙소·티켓·투어에 걸친 공통 기능이므로 공통관리 LNB 하위에 위치합니다.<br/>
+            마진관리는 숙소·티켓·투어에 걸친 공통 기능이므로 공통관리 하위에 위치합니다.<br/>
             LNB 공통관리: 카테고리관리 / 시설관리 / 객실유형관리 / <strong>마진관리</strong>
           </div>
         </div>
@@ -353,12 +338,12 @@ code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:11px;font-fa
       <div class="ann-item">
         <div class="cn">6</div>
         <div class="ann-body">
-          <div class="ann-title">마진 0 처리</div>
+          <div class="ann-title">전역 디폴트 (마진 0 아님)</div>
           <div class="ann-desc">
-            시설 마진 마스터가 설정되지 않은 경우 마진 0으로 처리합니다.
-            이 경우 기준가 = 실판매가가 됩니다.
-            마진 미설정 시 경고 표시는 불필요합니다.
+            마진 마스터가 설정되지 않아도 마진 0이 아니라 <strong>전역 디폴트(마진금액 30,000원)</strong>가 적용됩니다.
+            즉 어떤 날짜든 최소한 전역 디폴트 마진이 얹혀 판매가가 계산됩니다.
           </div>
+          <div class="ann-rule">DEFAULT_DAILY_MARGIN = { type:"amount", value:30000 }</div>
         </div>
       </div>
 

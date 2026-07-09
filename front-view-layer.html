@@ -178,8 +178,8 @@
             <span class="wf-cn" style="position:absolute;top:20px;right:0">6</span>
             <div style="display:flex;align-items:center;gap:4px">
               <div style="font-size:9px;color:#555;line-height:1.6;flex:1">
-                강원도 정선군 고한읍 고한리 424 · 하이원 리조트 내<br>
-                <span style="color:#888">Gohan-ri 424, Gohan-eup, Jeongseon-gun, Gangwon-do</span>
+                Gohan-ri 424, Gohan-eup, Jeongseon-gun, Gangwon-do, Republic of Korea <span style="color:#aaa">(EN·필수)</span><br>
+                <span style="color:#888">江原道旌善郡古汗邑古汗里424, High1 리조트 내 (ZH·선택 — 없으면 EN 표시)</span>
               </div>
               <span class="wf-cn" style="flex-shrink:0">7</span>
             </div>
@@ -199,11 +199,11 @@
           <div class="fv-ann-title">레이어 탭 — 안내 / 정책 / 위치</div>
           <div class="fv-ann-desc">브릿지 페이지 Sticky Nav에서 탭 클릭 시 해당 탭이 활성화된 상태로 레이어가 슬라이드인됩니다. 탭별 렌더링 데이터가 다릅니다.</div>
           <div class="fv-ann-admin">어드민 S02-4 Step4 (안내·정책) / S02-2 Step2 (위치)</div>
-          <div class="fv-ann-ls">h1_places[].guide_html · h1_places[].policy_html · h1_places[].location_detail</div>
+          <div class="fv-ann-ls">high1_places_v1[].guide_html_en/_zh · high1_places_v1[].policy_html_en/_zh · high1_places_v1[].location_detail</div>
           <div class="fv-ann-front">
             안내(detail) → guide_html + 숙소 시설 목록<br>
-            정책(policies) → policy_html<br>
-            위치(location) → location_detail + 주소
+            정책(policy) → policy_html + 추가요금<br>
+            위치(location) → 주소 + location_detail
           </div>
         </div>
       </div>
@@ -212,11 +212,11 @@
         <div class="cn">2</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">안내 HTML (guide_html)</div>
-          <div class="fv-ann-desc">안내 탭 상단에 innerHTML로 렌더링됩니다. HTML 마크업 그대로 출력.</div>
-          <div class="fv-ann-admin">어드민 S02-4 Step4 · 안내 HTML textarea (이미지 붙여넣기 지원)</div>
-          <div class="fv-ann-ls">h1_places[].guide_html</div>
+          <div class="fv-ann-desc">안내 탭 상단에 innerHTML로 화면에 나타납니다. HTML 마크업 그대로 출력. 외국인 전용 사이트라 국문은 쓰지 않고 EN(필수)/ZH(선택)로 입력합니다. 중국어(ZH)로 보는 고객에게는 ZH가 있으면 ZH, 없으면 EN이 표시됩니다.</div>
+          <div class="fv-ann-admin">어드민 S02-4 Step4 · 안내 HTML textarea EN(필수)/ZH(선택) (이미지 붙여넣기 지원)</div>
+          <div class="fv-ann-ls">high1_places_v1[].guide_html_en (필수) · guide_html_zh (선택)</div>
           <div class="fv-ann-front">안내 탭 상단 안내 블록 (innerHTML)</div>
-          <div class="fv-ann-rule">XSS 주의. 실서비스 배포 시 DOMPurify 등 새니타이저 필수 적용.</div>
+          <div class="fv-ann-rule">XSS 주의. 실서비스 배포 시 DOMPurify 등 새니타이저(위험 코드 걸러주는 도구) 필수 적용.<br>※ 프런트 프로토타입은 아직 KO/EN 토글(guide_html/guide_html_en)로 동작 — 목표(EN/ZH)는 프로토타입 후속 반영 예정.</div>
         </div>
       </div>
 
@@ -225,10 +225,10 @@
         <div class="fv-ann-body">
           <div class="fv-ann-title">시설 카테고리 그룹 헤더 (PLACE)</div>
           <div class="fv-ann-desc">안내 탭 시설 목록의 그룹 헤더. 공통마스터의 PLACE 도메인 카테고리명이 그대로 표시됩니다.</div>
-          <div class="fv-ann-admin">어드민 S07-A 카테고리 목록 / S07-B 카테고리 등록·수정 · 카테고리명 (PLACE 도메인)</div>
-          <div class="fv-ann-ls">h1_facility_categories[].name (where domain = "PLACE")</div>
-          <div class="fv-ann-front">안내 탭 시설 목록 그룹 헤더 텍스트</div>
-          <div class="fv-ann-rule">카테고리명 변경 즉시 프런트 헤더도 변경됨. plain string (한국어 단일 문자열).</div>
+          <div class="fv-ann-admin">어드민 S07-A 카테고리 목록 / S07-B 카테고리 등록·수정 · 카테고리명 EN(필수)/ZH(선택) (PLACE 도메인)</div>
+          <div class="fv-ann-ls">high1_facility_categories_v1[].name_en (필수) · name_zh (선택) (domain = "PLACE")</div>
+          <div class="fv-ann-front">안내 탭 시설 목록 그룹 헤더 텍스트 (ZH 접속 시 name_zh, 없으면 name_en)</div>
+          <div class="fv-ann-rule">카테고리명을 바꾸면 프런트 헤더도 곧바로 바뀝니다. 외국인 전용이라 국문은 쓰지 않습니다.<br>※ 프런트 프로토타입은 아직 KO/EN(name/name_en)으로 동작 — EN/ZH는 프로토타입 후속 반영 예정.</div>
         </div>
       </div>
 
@@ -237,9 +237,9 @@
         <div class="fv-ann-body">
           <div class="fv-ann-title">시설 항목명 (PLACE)</div>
           <div class="fv-ann-desc">각 카테고리 그룹 하위에 해당 카테고리에 속한 시설명을 칩으로 나열. 숙소에 적용(체크)된 시설(facility_ids)만 표시.</div>
-          <div class="fv-ann-admin">S08-A 시설 목록 / S08-B 시설 등록 · 시설명 (PLACE) / S02-5 Step5 · 시설 체크박스 선택</div>
-          <div class="fv-ann-ls">h1_places[].facility_ids → h1_facilities[].name (PLACE 도메인)</div>
-          <div class="fv-ann-front">안내 탭 카테고리 그룹 내 시설명 칩</div>
+          <div class="fv-ann-admin">S08-A 시설 목록 / S08-B 시설 등록 · 시설명 EN(필수)/ZH(선택) (PLACE) / S02-5 Step5 · 시설 체크박스 선택</div>
+          <div class="fv-ann-ls">high1_places_v1[].facility_ids → high1_facilities_v2[].name_en (필수) / name_zh (선택) (PLACE 도메인)</div>
+          <div class="fv-ann-front">안내 탭 카테고리 그룹 내 시설명 칩 (ZH 접속 시 name_zh, 없으면 name_en)<br>※ 프런트 프로토타입은 아직 KO/EN(name/name_en)으로 동작 — 후속 반영 예정.</div>
         </div>
       </div>
 
@@ -247,11 +247,11 @@
         <div class="cn">5</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">정책 (policy_html)</div>
-          <div class="fv-ann-desc">정책 탭에 innerHTML로 렌더링. 취소·환불 정책 및 기타 이용 규칙 등을 HTML로 직접 입력.</div>
-          <div class="fv-ann-admin">어드민 S02-4 Step4 · 정책 HTML textarea</div>
-          <div class="fv-ann-ls">h1_places[].policy_html</div>
-          <div class="fv-ann-front">정책 탭 콘텐츠 (innerHTML)</div>
-          <div class="fv-ann-rule">XSS 주의. 실서비스 배포 시 새니타이저 필수 적용.</div>
+          <div class="fv-ann-desc">정책 탭에 innerHTML로 화면에 나타납니다. 취소·환불 정책 및 기타 이용 규칙 등을 HTML로 직접 입력. 국문은 쓰지 않고 EN(필수)/ZH(선택)로 입력합니다.</div>
+          <div class="fv-ann-admin">어드민 S02-4 Step4 · 정책 HTML textarea EN(필수)/ZH(선택)</div>
+          <div class="fv-ann-ls">high1_places_v1[].policy_html_en (필수) · policy_html_zh (선택)</div>
+          <div class="fv-ann-front">정책 탭 콘텐츠 (innerHTML, ZH 접속 시 policy_html_zh, 없으면 policy_html_en)</div>
+          <div class="fv-ann-rule">XSS 주의. 실서비스 배포 시 새니타이저 필수 적용.<br>※ 프런트 프로토타입은 아직 KO/EN(policy_html/policy_html_en)으로 동작 — 후속 반영 예정.</div>
         </div>
       </div>
 
@@ -259,9 +259,9 @@
         <div class="cn">6</div>
         <div class="fv-ann-body">
           <div class="fv-ann-title">위치 HTML (location_detail)</div>
-          <div class="fv-ann-desc">위치 탭에 innerHTML로 렌더링. 지도 이미지·오시는 길·안내 문구 등을 HTML로 직접 입력. 이미지 클립보드 붙여넣기 지원.</div>
+          <div class="fv-ann-desc">위치 탭에 innerHTML로 화면에 나타납니다. 지도 이미지·오시는 길·안내 문구 등을 HTML로 직접 입력. 이미지 클립보드 붙여넣기 지원. 이 필드는 지도·이미지 위주라 언어 구분 없이 하나로 씁니다(EN/ZH 미분리 — 단일 예외).</div>
           <div class="fv-ann-admin">어드민 S02-2 Step2 · 위치 상세 HTML textarea (이미지 붙여넣기 지원)</div>
-          <div class="fv-ann-ls">h1_places[].location_detail</div>
+          <div class="fv-ann-ls">high1_places_v1[].location_detail (언어중립 단일 필드)</div>
           <div class="fv-ann-front">위치 탭 콘텐츠 (innerHTML)</div>
         </div>
       </div>
@@ -269,11 +269,11 @@
       <div class="fv-ann-item">
         <div class="cn">7</div>
         <div class="fv-ann-body">
-          <div class="fv-ann-title">주소 (국문 · 영문)</div>
-          <div class="fv-ann-desc">위치 HTML 하단에 국문/영문 주소를 텍스트로 별도 표시. 언어 설정(KO/EN)에 따라 전환.</div>
-          <div class="fv-ann-admin">어드민 S02-2 Step2 · 주소(국문) / 주소(영문)</div>
-          <div class="fv-ann-ls">h1_places[].address · h1_places[].address_en</div>
-          <div class="fv-ann-front">위치 탭 하단 주소 텍스트 (lang에 따라 address / address_en 전환)</div>
+          <div class="fv-ann-title">주소 (Address) — EN 필수 / ZH 선택</div>
+          <div class="fv-ann-desc">위치 HTML 하단에 주소를 텍스트로 별도 표시. 외국인 전용 사이트라 국문은 쓰지 않습니다. EN(영어)이 필수이며, 중국어(ZH)로 보는 고객에게는 ZH가 있으면 ZH, 없으면 EN이 표시됩니다.</div>
+          <div class="fv-ann-admin">어드민 S02-2 Step2 · 주소 EN(필수) / 주소 ZH(선택)</div>
+          <div class="fv-ann-ls">high1_places_v1[].address_en (필수) · address_zh (선택)</div>
+          <div class="fv-ann-front">위치 탭 하단 주소 텍스트 (ZH 접속 시 address_zh, 없으면 address_en)<br>※ 프런트 프로토타입은 아직 KO/EN(address/address_en)으로 동작 — 후속 반영 예정.</div>
         </div>
       </div>
 
@@ -289,7 +289,7 @@
             중국어(ZH)로 보는 고객에게는 ZH 값이, 없으면 EN 값이 표시됩니다. 입력된 줄이 하나도 없으면 이 블록 자체가 숨겨집니다.
           </div>
           <div class="fv-ann-admin">어드민 S02-4 Step4 · 추가요금 안내 (extra_fee_notes 행 목록)</div>
-          <div class="fv-ann-ls">h1_places[].extra_fee_notes[] { en(필수), zh(선택) }</div>
+          <div class="fv-ann-ls">high1_places_v1[].extra_fee_notes[] { en(필수), zh(선택) }</div>
           <div class="fv-ann-front">정책 탭 '추가요금' 블록 · 각 항목을 • 목록으로 렌더링 (빈 배열이면 블록 미표시)</div>
         </div>
       </div>

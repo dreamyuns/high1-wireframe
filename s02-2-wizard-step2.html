@@ -69,34 +69,28 @@
           <div class="wf-section-head">주소</div>
 
           <div class="wf-form-row">
-            <div class="wf-form-label">주소(국문) <span class="wf-cn">1</span></div>
+            <div class="wf-form-label">주소(영문) <span class="wf-form-req">*</span> <span class="wf-cn">1</span></div>
             <div class="wf-form-field">
-              <textarea class="wf-textarea">서울시 강남구 테헤란로 123</textarea>
-              <div class="wf-hint">도로명 주소 권장</div>
+              <textarea class="wf-textarea">123 Teheran-ro, Gangnam-gu, Seoul</textarea>
+              <div class="wf-hint">영문(EN) 필수 입력. 미입력 시 저장 불가. 도로명 주소 권장.</div>
             </div>
           </div>
 
           <div class="wf-form-row">
-            <div class="wf-form-label">주소(영문) <span class="wf-cn">2</span></div>
+            <div class="wf-form-label">주소(중문) <span class="wf-cn">2</span></div>
             <div class="wf-form-field">
-              <textarea class="wf-textarea">123 Teheran-ro, Gangnam-gu, Seoul</textarea>
+              <textarea class="wf-textarea">首尔市江南区德黑兰路123</textarea>
+              <div class="wf-hint">중문(ZH) 선택 입력. 미입력 시 영문(EN) 주소가 대체 표시됨. (한국어 입력칸 없음)</div>
             </div>
           </div>
 
           <div class="wf-section-head">위치 상세</div>
 
           <div class="wf-form-row">
-            <div class="wf-form-label">위치 상세(국문) <span class="wf-cn">3</span></div>
+            <div class="wf-form-label">위치 상세 <span class="wf-cn">3</span></div>
             <div class="wf-form-field">
               <textarea class="wf-textarea" style="min-height:80px">(위치 안내 문구, 이미지 붙여넣기 가능)</textarea>
-              <div class="wf-hint">지도 이미지를 Ctrl+V로 붙여넣기 가능. Data URL로 저장되므로 용량 주의.</div>
-            </div>
-          </div>
-
-          <div class="wf-form-row">
-            <div class="wf-form-label">위치 상세(영문) <span class="wf-cn">4</span></div>
-            <div class="wf-form-field">
-              <textarea class="wf-textarea" style="min-height:80px">(Location detail in English)</textarea>
+              <div class="wf-hint">언어중립 단일 필드(다국어 아님). 지도 이미지를 Ctrl+V로 붙여넣기 가능. Data URL로 저장되므로 용량 주의.</div>
             </div>
           </div>
 
@@ -120,11 +114,11 @@
       <div class="ann-item">
         <div class="cn">1</div>
         <div class="ann-body">
-          <div class="ann-title">주소(국문)</div>
+          <div class="ann-title">주소(영문 EN 필수)</div>
           <div class="ann-desc">
-            숙소의 국문 도로명 주소를 plain text로 입력한다. 도로명 주소 입력을 권장하며, 지번 주소도 허용한다.
-            프런트 영문 모드에서 영문 주소가 없을 경우 이 국문 주소가 대체 표시될 수 있으므로 정확하게 입력한다.
-            줄바꿈이 가능한 textarea이나 단순 한 줄 주소를 권장한다.
+            숙소의 영문 주소를 입력한다. <strong>필수 입력</strong>이며 미입력 시 저장이 막힌다.
+            도로명 주소 입력을 권장하며, 줄바꿈이 가능한 textarea이나 단순 한 줄 주소를 권장한다.
+            한국어(KO) 입력칸은 없다 (외국인 전용 사이트).
           </div>
           <div class="ann-front">→ 프런트: 숙소 레이어 > 장소정보 탭 주소 텍스트</div>
         </div>
@@ -133,39 +127,26 @@
       <div class="ann-item">
         <div class="cn">2</div>
         <div class="ann-body">
-          <div class="ann-title">주소(영문)</div>
+          <div class="ann-title">주소(중문 ZH 선택)</div>
           <div class="ann-desc">
-            숙소의 영문 주소를 입력한다. 현재 선택 입력이며, 미입력 시 프런트 영문 모드에서 국문 주소가 대체 표시될 수 있다.
-            영문 주소는 외국인 고객 또는 영문 서비스 확장 시 필수 항목으로 격상될 수 있으므로, 가능하면 입력을 권장한다.
-            실서비스 전 필수 여부 정책 최종 확정 필요.
+            숙소의 중문 주소를 입력한다. 선택 입력이며, 미입력 시 프런트 중문 모드에서 영문(EN) 주소가 대체 표시된다.
           </div>
-          <div class="ann-rule">영문 주소는 현재 선택 입력. 실서비스에서 필수 여부 재정의 필요.</div>
+          <div class="ann-rule">중문 주소는 선택 입력. 미입력 시 EN으로 대체.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">3</div>
         <div class="ann-body">
-          <div class="ann-title">위치 상세(국문)</div>
+          <div class="ann-title">위치 상세 (언어중립 단일 필드)</div>
           <div class="ann-desc">
-            숙소 위치에 대한 상세 안내 문구를 입력하는 영역이다. 텍스트 외에도 지도 스크린샷이나 위치 이미지를 Ctrl+V로 붙여넣기할 수 있으며, 붙여넣기된 이미지는 Data URL 형태로 저장된다.
+            숙소 위치에 대한 상세 안내 문구를 입력하는 영역이다. <strong>다국어(EN/ZH)로 나누지 않는 언어중립 단일 필드</strong>이다 (지도·약도 등 언어와 무관한 내용 위주라 예외).<br>
+            텍스트 외에도 지도 스크린샷이나 위치 이미지를 Ctrl+V로 붙여넣기할 수 있으며, 붙여넣기된 이미지는 Data URL 형태로 저장된다.
             이미지를 포함하면 저장 데이터 용량이 크게 증가할 수 있으므로, 이미지 크기를 최소화하거나 별도 이미지 업로드 방식(Step 3) 활용을 권장한다.
             이 필드의 내용은 프런트 숙소 레이어 장소정보 탭의 위치 상세 영역에 그대로 렌더링된다.
           </div>
           <div class="ann-front">→ 프런트: 숙소 레이어 > 장소정보 탭 위치 상세 영역 렌더</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="cn">4</div>
-        <div class="ann-body">
-          <div class="ann-title">위치 상세(영문)</div>
-          <div class="ann-desc">
-            국문 위치 상세와 동일한 구조로 영문 내용을 입력하는 영역이다. 이미지 붙여넣기(Data URL)를 동일하게 지원하므로 용량 급증 가능성을 사용자에게 안내해야 한다.
-            영문 미입력 시 프런트 영문 모드에서 국문 위치 상세 내용이 그대로 표시될 수 있다.
-            실서비스에서 다국어 지원 수준에 따라 이 필드의 활용 방식이 달라질 수 있으므로 정책 확정 후 개발 반영 필요.
-          </div>
-          <div class="ann-rule">이미지 붙여넣기(Data URL) 지원이지만 저장 용량 급증 가능. 사용자에게 안내 필요.</div>
+          <div class="ann-rule">저장 필드: location_detail (단일). EN/ZH 변형 필드 없음.</div>
         </div>
       </div>
 

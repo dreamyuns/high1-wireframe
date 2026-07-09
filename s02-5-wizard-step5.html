@@ -126,6 +126,20 @@
           <!-- 카테고리 전환 병합 힌트 -->
           <div class="wf-hint">카테고리 전환 시 현재 체크 상태가 state에 자동 병합됩니다. 전환해도 선택값이 초기화되지 않습니다.</div>
 
+          <!-- 시설 특이사항 (category_facility_text) -->
+          <div class="wf-section-head" style="margin-top:16px">시설 특이사항 (category_facility_text) <span class="wf-cn">6</span></div>
+          <div class="wf-hint" style="margin-bottom:8px">체크박스로 고른 시설 목록과 별개로, 영업시간·유료 여부 등을 <b>문장으로</b> 적을 때 사용합니다. 마스터 시설과 겹치면 비워 두어도 됩니다.</div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-field" style="width:100%">
+              <div style="font-size:10px;color:#888;margin-bottom:3px">EN <span class="wf-form-req">*</span></div>
+              <textarea class="wf-textarea" style="min-height:60px;width:100%">Pool 09:00–21:00 on weekdays / extended hours on weekends</textarea>
+              <div style="font-size:10px;color:#bbb;margin:6px 0 3px">ZH (선택)</div>
+              <textarea class="wf-textarea" style="min-height:60px;width:100%">选填 · 未填写时显示英文</textarea>
+              <div class="wf-hint">영문(EN) 필수 · 중문(ZH) 선택. 중문 미입력 시 영문이 대체 표시됨. (한국어 입력칸 없음)</div>
+            </div>
+          </div>
+
           <!-- 하단 버튼 -->
           <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #e0e0da">
             <span class="wf-btn">취소</span>
@@ -198,6 +212,20 @@
             전체 카테고리에 걸친 최종 적용 시설 목록이며, 저장 시 이 목록 기준으로 facility_ids · featured_facility_ids가 기록된다.
           </div>
           <div class="ann-front">→ facility_ids: 숙소 레이어 안내정보 탭 시설 목록 / → featured_facility_ids: Overview 대표 시설 칩</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">6</div>
+        <div class="ann-body">
+          <div class="ann-title">시설 특이사항 (category_facility_text — EN 필수 / ZH 선택)</div>
+          <div class="ann-desc">
+            체크박스로 고른 시설 목록과 별개로, 영업시간·유료 여부 등 시설의 세부 안내를 <strong>문장으로</strong> 자유롭게 적는 영역이다 (예: "수영장 주중 09:00~21:00 / 주말 연장").<br>
+            영문(EN)은 <strong>필수</strong>, 중문(ZH)은 선택이다. 중문 미입력 시 프런트 중문 모드에서 영문이 대체 표시된다. (한국어 입력칸 없음)<br>
+            마스터 시설(체크박스 목록)과 내용이 겹치면 비워 두어도 된다.
+          </div>
+          <div class="ann-front">→ 프런트: 숙소 레이어 > 안내정보 탭 시설 목록 하단 특이사항 문단</div>
+          <div class="ann-rule">저장 필드: category_facility_text(EN) · category_facility_text_zh(ZH). 프로토타입 후속 반영: 현재 프로토타입은 category_facility_text(국문)+category_facility_text_en 구조. EN 필수·ZH 선택으로 교체 필요.</div>
         </div>
       </div>
 

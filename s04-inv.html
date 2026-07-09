@@ -3,18 +3,15 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>S04-INV — 객실 재고 관리 | High1 Admin Wireframe</title>
+<title>S04-INV — 재고·요금 관리 | High1 Admin Wireframe</title>
 <link rel="stylesheet" href="wf-styles.css" />
 <style>
-.inv-avlb { color:#166534; font-weight:700; }
+.inv-avlb { color:#1a6fb8; font-weight:700; }
 .inv-zero  { color:#dc2626; font-weight:700; }
-.inv-oper  { color:#1a4fa0; }
+.inv-oper  { color:#555; }
 .inv-rsv   { color:#555; }
 .row-soldout { background:#fff5f5; }
 .row-closed  { background:#fffbea; }
-.bulk-panel { background:#f8f8f4; border:1px solid #d0d0c8; border-radius:6px; padding:12px 14px; margin-bottom:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end; }
-.bp-item { display:flex; flex-direction:column; gap:3px; }
-.bp-label { font-size:10px; color:#555; font-weight:600; }
 </style>
 </head>
 <body>
@@ -22,8 +19,8 @@
 <nav class="page-nav">
   <a class="page-nav-back" href="index.html">← 목록으로</a>
   <span class="page-nav-sep">|</span>
-  <span class="page-nav-title">객실 재고 관리</span>
-  <span class="page-nav-route">#/rooms/inventory/:id</span>
+  <span class="page-nav-title">재고·요금 관리 (S04-INV)</span>
+  <span class="page-nav-route">객실 등록·수정(S04) &gt; 재고·요금 탭 · 객실 타입(RM_TYP_CD) 단위</span>
   <div class="page-nav-nav">
     <a class="page-nav-pager" href="s04-room-form.html">← 이전</a>
     <a class="page-nav-pager" href="s05-product-list.html">다음 →</a>
@@ -34,8 +31,8 @@
 
   <div class="sec-title">
     <span class="sec-badge">S04-INV</span>
-    객실 재고·요금 관리
-    <span style="font-size:12px;font-weight:400;color:#888">— #/rooms/inventory/:id · 객실 타입(RM_TYP_CD) 단위</span>
+    재고·요금 관리
+    <span style="font-size:12px;font-weight:400;color:#888">— 객실 등록·수정(S04)의 [재고·요금] 탭 · 객실 타입(RM_TYP_CD) 단위 · PMS 조회 전용</span>
   </div>
 
   <div class="two-col">
@@ -66,226 +63,107 @@
         <!-- 메인 콘텐츠 -->
         <div class="wf-main">
 
-          <!-- 페이지 타이틀 -->
-          <div class="wf-toolbar">
+          <!-- 탭 (객실 기본정보 / 재고·요금) -->
+          <div class="wf-tab-bar">
+            <span class="wf-tab">객실 기본정보</span>
+            <span class="wf-tab on">재고·요금 <span class="wf-cn">1</span></span>
+          </div>
+
+          <!-- 페이지 타이틀 + 동기화 버튼 (1개) -->
+          <div class="wf-toolbar" style="margin-top:10px">
             <div>
               <div class="wf-page-title" style="margin-bottom:2px">
-                재고·요금 관리
-                <span style="font-size:11px;font-weight:400;color:#888;margin-left:6px">Deluxe King (RM-0001 · RM_TYP_CD: STD)</span>
+                재고·요금 (PMS 동기화 · 객실 타입 단위)
               </div>
-              <div style="font-size:10px;color:#888">그랜드 호텔 — 메인타워 · 객실 타입(RM_TYP_CD): STD</div>
+              <div style="font-size:10px;color:#888">디럭스 킹 (RM-0001) · 그랜드 호텔 메인타워 · 객실 타입(RM_TYP_CD): <b>STD</b></div>
             </div>
             <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
-              <span class="wf-btn wf-btn-primary" style="font-size:11px">↻ 재고 동기화 <span class="wf-cn" style="font-size:9px">1</span></span>
-              <span class="wf-btn wf-btn-primary" style="font-size:11px">↻ 요금 동기화 <span class="wf-cn" style="font-size:9px">7</span></span>
-              <span style="font-size:9px;color:#888">마지막: 2026-05-27 09:14</span>
+              <span class="wf-btn wf-btn-primary" style="font-size:11px">↻ 이 객실 재고·요금 동기화 <span class="wf-cn" style="font-size:9px">2</span></span>
+              <span style="font-size:9px;color:#888">마지막: 2026-07-01 09:14</span>
             </div>
           </div>
 
-          <!-- PMS연동 안내 배너 -->
-          <div style="display:flex;align-items:center;gap:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:7px 12px;font-size:11px;color:#1a4fa0;margin-bottom:6px">
-            <span style="font-weight:600">PMS연동 모드</span>
-            <span style="color:#555">— 재고(AVLB_RM_CNT, API 4)·요금(입금가 API 3)을 <b>객실 타입(RM_TYP_CD) 단위</b>로 관리. 판매가 = 입금가 + 마진(S11).</span>
-          </div>
-          <!-- v0.2: 재고·요금 관리 주체 = 객실 타입 / 상품(S06-B/C)은 요금 읽기전용 -->
-          <div style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:7px 12px;font-size:11px;color:#166534;margin-bottom:10px">
-            <span>ℹ️ 재고·요금 관리 주체는 <b>이 화면(객실 타입 단위)</b>입니다. 상품(S06-B/C)에서는 요금이 <b>읽기전용</b>으로 표시됩니다.</span>
+          <!-- PMS 조회전용 안내 -->
+          <div style="display:flex;align-items:center;gap:8px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:7px 12px;font-size:11px;color:#1a4fa0;margin-bottom:8px">
+            <span style="font-weight:600">PMS 조회 전용</span>
+            <span style="color:#555">— 재고(총운영/예약/잔여, API 4)·요금(입금가, API 3)은 <b>동기화로 채워지는 조회 전용</b> 데이터. 상품(S06)에서도 읽기전용으로 참조.</span>
           </div>
 
-          <!-- 일괄 적용 패널 -->
-          <div class="wf-section-head" style="margin-bottom:6px">일괄 적용 <span class="wf-cn" style="font-size:9px">2</span></div>
-          <div class="bulk-panel">
-            <div class="bp-item">
-              <div class="bp-label">날짜 범위</div>
-              <div style="display:flex;align-items:center;gap:4px">
-                <input class="wf-input" style="width:95px" value="2026-06-01" />
-                <span style="font-size:10px;color:#888">~</span>
-                <input class="wf-input" style="width:95px" value="2026-06-30" />
-              </div>
-            </div>
-            <div class="bp-item">
-              <div class="bp-label">입금가</div>
-              <input class="wf-input" style="width:80px" value="340,000" />
-            </div>
-            <div class="bp-item">
-              <div class="bp-label">총 재고(OPER)</div>
-              <input class="wf-input" style="width:55px" value="16" />
-            </div>
-            <div class="bp-item">
-              <div class="bp-label">컷오프(일)</div>
-              <input class="wf-input" style="width:45px" value="1" />
-            </div>
-            <div class="bp-item">
-              <div class="bp-label">최소박</div>
-              <input class="wf-input" style="width:40px" value="1" />
-            </div>
-            <div class="bp-item">
-              <div class="bp-label">최대박</div>
-              <input class="wf-input" style="width:40px" value="7" />
-            </div>
-            <div class="bp-item">
-              <div class="bp-label">&nbsp;</div>
-              <span class="wf-btn" style="background:#2e7d32;color:#fff;font-size:11px">일괄 적용</span>
-            </div>
+          <!-- 판매 ON/OFF 주의 배너 + 저장 버튼 -->
+          <div style="background:#fef9c3;border:1px solid #f59e0b;border-radius:4px;padding:8px 12px;font-size:11px;color:#7a5c00;margin-bottom:8px">
+            ⚠️ <b>주의</b> — 판매 ON/OFF 변경은 <b>[판매 ON/OFF 저장]</b>을 눌러야 반영됩니다. 마감(OFF) 처리 시 <b>해당 일자 예약이 즉시 차단</b>되며, 이 객실에 연결된 <b>모든 상품</b>에 적용됩니다. <span class="wf-cn">3</span>
           </div>
-
-          <!-- 재고 범례 + 행 추가 버튼 -->
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px">
             <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:#555">
               <span><span class="inv-avlb">잔여</span> = AVLB_RM_CNT ★ sold out 기준</span>
-              <span><span class="inv-oper">총 운영</span> = OPER_RM_CNT</span>
-              <span><span class="inv-rsv">예약됨</span> = RSV_CNT</span>
-              <span style="display:flex;align-items:center;gap:3px">
-                <span style="width:9px;height:9px;background:#fff5f5;border:1px solid #fecaca;border-radius:2px;display:inline-block"></span> sold out
-              </span>
+              <span><span class="inv-oper">총재고</span> = OPER_RM_CNT</span>
+              <span><span class="inv-rsv">예약</span> = RSV_CNT</span>
             </div>
-            <span class="wf-btn" style="font-size:11px;flex-shrink:0">+ 행 추가 <span class="wf-cn" style="font-size:8px">6</span></span>
+            <span class="wf-btn wf-btn-primary" style="font-size:11px;flex-shrink:0">판매 ON/OFF 저장 <span class="wf-cn" style="font-size:9px">4</span></span>
           </div>
 
-          <!-- 데일리 재고 목록 -->
+          <!-- 데일리 재고·요금 목록 -->
           <div style="overflow-x:auto">
             <table class="wf-table">
               <thead>
                 <tr>
-                  <th>날짜</th>
-                  <th style="width:28px">요일</th>
-                  <th>
-                    <span class="wf-tip" data-tip="AVLB_RM_CNT — 사용 가능 객실 수. 0이면 프런트 sold out.">잔여 ★</span>
-                  </th>
-                  <th>
-                    <span class="wf-tip" data-tip="OPER_RM_CNT — 총 운영 객실 수.">총운영</span>
-                  </th>
-                  <th>
-                    <span class="wf-tip" data-tip="RSV_CNT — 예약된(점유된) 수. 잔여 재고가 아님.">예약됨</span>
-                  </th>
-                  <th>입금가 <span class="wf-cn" style="font-size:8px">8</span></th>
-                  <th>판매가</th>
-                  <th>컷오프</th>
-                  <th>최소박</th>
-                  <th>최대박</th>
-                  <th>PMS 마감 <span class="wf-cn" style="font-size:8px">4</span></th>
-                  <th>수정 <span class="wf-cn" style="font-size:8px">5</span></th>
+                  <th>날짜(체크인)</th>
+                  <th>입금가 <span class="wf-cn" style="font-size:8px">6</span></th>
+                  <th>총재고</th>
+                  <th>예약</th>
+                  <th>잔여 ★</th>
+                  <th>판매상태 <span class="wf-cn" style="font-size:8px">5</span></th>
+                  <th>판매 ON/OFF <span class="wf-cn" style="font-size:8px">7</span></th>
                 </tr>
               </thead>
               <tbody>
-                <!-- 신규 추가된 빈 행 예시 (+ 행 추가 클릭 시 최상단 삽입) -->
-                <tr style="background:#fffef0;border-bottom:1px dashed #c0c0ba">
-                  <td><input class="wf-input" style="width:90px" placeholder="날짜" /></td>
-                  <td style="color:#bbb;font-size:10px">—</td>
-                  <td style="color:#bbb">—</td>
-                  <td><input class="wf-input" style="width:40px" placeholder="" /></td>
-                  <td style="color:#bbb">—</td>
-                  <td><input class="wf-input" style="width:75px" placeholder="입금가" /></td>
-                  <td style="color:#bbb;font-size:10px">—</td>
-                  <td><input class="wf-input" style="width:35px" placeholder="" /></td>
-                  <td><input class="wf-input" style="width:35px" placeholder="" /></td>
-                  <td><input class="wf-input" style="width:35px" placeholder="" /></td>
-                  <td style="color:#bbb">—</td>
-                  <td>
-                    <span class="wf-btn wf-btn-sm" style="background:#1a1f2e;color:#fff;font-size:10px">저장</span>
-                    <span class="wf-btn wf-btn-sm" style="font-size:10px">삭제</span>
-                  </td>
-                </tr>
-                <!-- 정상 -->
+                <!-- 판매중 -->
                 <tr>
-                  <td>2026-06-01</td>
-                  <td style="color:#888;font-size:10px">월</td>
-                  <td><span class="inv-avlb">8</span></td>
-                  <td><span class="inv-oper">16</span></td>
-                  <td><span class="inv-rsv">8</span></td>
-                  <td>340,000</td>
-                  <td style="color:#555">367,000</td>
-                  <td>1일</td><td>1박</td><td>7박</td>
-                  <td><span class="wf-badge" style="background:#dcfce7;color:#166534;font-size:9px">정상</span></td>
-                  <td><span class="wf-btn wf-btn-sm">수정</span></td>
+                  <td>2026-07-01</td>
+                  <td style="color:#555">250,000</td>
+                  <td class="inv-oper" style="text-align:center">30</td>
+                  <td class="inv-rsv" style="text-align:center">4</td>
+                  <td class="inv-avlb" style="text-align:center">26</td>
+                  <td><span style="color:#166534;font-weight:600">판매중</span></td>
+                  <td style="text-align:center"><input type="checkbox" checked /></td>
                 </tr>
                 <tr>
-                  <td>2026-06-02</td>
-                  <td style="color:#888;font-size:10px">화</td>
-                  <td><span class="inv-avlb">12</span></td>
-                  <td><span class="inv-oper">16</span></td>
-                  <td><span class="inv-rsv">4</span></td>
-                  <td>340,000</td>
-                  <td style="color:#555">367,000</td>
-                  <td>1일</td><td>1박</td><td>7박</td>
-                  <td><span class="wf-badge" style="background:#dcfce7;color:#166534;font-size:9px">정상</span></td>
-                  <td><span class="wf-btn wf-btn-sm">수정</span></td>
+                  <td>2026-07-02</td>
+                  <td style="color:#555">250,000</td>
+                  <td class="inv-oper" style="text-align:center">30</td>
+                  <td class="inv-rsv" style="text-align:center">10</td>
+                  <td class="inv-avlb" style="text-align:center">20</td>
+                  <td><span style="color:#166534;font-weight:600">판매중</span></td>
+                  <td style="text-align:center"><input type="checkbox" checked /></td>
                 </tr>
-                <!-- sold out -->
+                <!-- SOLD OUT (잔여 0) -->
                 <tr class="row-soldout">
-                  <td>2026-06-07</td>
-                  <td style="color:#dc2626;font-size:10px">일</td>
-                  <td><span class="inv-zero">0</span></td>
-                  <td><span class="inv-oper">16</span></td>
-                  <td><span class="inv-rsv">16</span></td>
-                  <td>380,000</td>
-                  <td style="color:#555">407,000</td>
-                  <td>1일</td><td>1박</td><td>7박</td>
-                  <td>
-                    <span class="wf-badge" style="background:#dcfce7;color:#166534;font-size:9px">정상</span>
-                    <div style="font-size:9px;color:#dc2626;margin-top:2px">Sold out <span class="wf-cn" style="font-size:8px">3</span></div>
-                  </td>
-                  <td><span class="wf-btn wf-btn-sm">수정</span></td>
+                  <td>2026-07-05</td>
+                  <td style="color:#555">280,000</td>
+                  <td class="inv-oper" style="text-align:center">30</td>
+                  <td class="inv-rsv" style="text-align:center">30</td>
+                  <td class="inv-zero" style="text-align:center">0</td>
+                  <td><span style="color:#e74c3c;font-weight:600">SOLD OUT</span></td>
+                  <td style="text-align:center"><input type="checkbox" checked /></td>
                 </tr>
-                <!-- PMS 마감(CLSE_YN=Y) -->
+                <!-- 강제 마감(closed=true) -->
                 <tr class="row-closed">
-                  <td>2026-06-14</td>
-                  <td style="color:#888;font-size:10px">일</td>
-                  <td><span class="inv-avlb">3</span></td>
-                  <td><span class="inv-oper">16</span></td>
-                  <td><span class="inv-rsv">13</span></td>
-                  <td>380,000</td>
-                  <td style="color:#555">407,000</td>
-                  <td>1일</td><td>1박</td><td>7박</td>
-                  <td>
-                    <span class="wf-tip" data-tip="CLSE_YN = Y. PMS에서 마감 처리된 날짜입니다. 체크인 불가(checkin_allowed=false)." style="background:#fef3c7;color:#92400e;font-size:9px;padding:1px 5px;border-radius:3px;border:1px solid #fde68a;display:inline-block">PMS 마감 ⚠️</span>
-                  </td>
-                  <td><span class="wf-btn wf-btn-sm">수정</span></td>
+                  <td>2026-07-14</td>
+                  <td style="color:#555">280,000</td>
+                  <td class="inv-oper" style="text-align:center">30</td>
+                  <td class="inv-rsv" style="text-align:center">13</td>
+                  <td class="inv-avlb" style="text-align:center">17</td>
+                  <td><span style="color:#b45309;font-weight:600">마감(강제)</span></td>
+                  <td style="text-align:center"><input type="checkbox" /></td>
                 </tr>
-                <!-- 이하 날짜 -->
                 <tr>
-                  <td style="color:#aaa;font-size:10px;padding:6px 8px" colspan="12">… 이하 날짜 (스크롤)</td>
+                  <td style="color:#aaa;font-size:10px;padding:6px 8px" colspan="7">… 이하 날짜 (동기화 범위 전체 · 스크롤)</td>
                 </tr>
               </tbody>
             </table>
           </div>
-
-          <!-- 행 수정 인라인 패널 (예시 - 2026-06-07) -->
-          <div style="margin-top:12px;padding:10px 12px;background:#f0f5ff;border:1px solid #c3dafe;border-radius:5px">
-            <div style="font-size:11px;font-weight:700;color:#1a1f2e;margin-bottom:6px">행 수정 — 2026-06-07 <span class="wf-cn" style="font-size:8px">5</span></div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">
-              <div class="bp-item">
-                <div class="bp-label">입금가</div>
-                <input class="wf-input" style="width:80px" value="380,000" />
-              </div>
-              <div class="bp-item">
-                <div class="bp-label">판매가 (자동)</div>
-                <input class="wf-input wf-input-ro" style="width:80px;background:#f5f5f0" value="407,000" readonly />
-              </div>
-              <div class="bp-item">
-                <div class="bp-label">잔여 (수동 보정)</div>
-                <input class="wf-input" style="width:55px" value="0" />
-                <span style="font-size:9px;color:#888">PMS: 0</span>
-              </div>
-              <div class="bp-item">
-                <div class="bp-label">총 운영</div>
-                <input class="wf-input" style="width:55px" value="16" />
-              </div>
-              <div class="bp-item">
-                <div class="bp-label">컷오프(일)</div>
-                <input class="wf-input" style="width:45px" value="1" />
-              </div>
-              <div class="bp-item">
-                <div class="bp-label">최소박</div>
-                <input class="wf-input" style="width:40px" value="1" />
-              </div>
-              <div class="bp-item">
-                <div class="bp-label">최대박</div>
-                <input class="wf-input" style="width:40px" value="7" />
-              </div>
-              <span class="wf-btn" style="background:#1a1f2e;color:#fff;font-size:11px">저장</span>
-              <span class="wf-btn" style="font-size:11px">취소</span>
-            </div>
+          <div class="wf-hint" style="margin-top:6px">
+            재고 3값(총운영/예약/잔여, PMS API 4) + 입금가(API 3). <b>예약조건(최소/최대박·컷오프)은 상품(S06)에서 관리</b>, <b>판매가·마진은 프런트 노출 계산(마진 마스터 S11)</b>. 이 화면에는 노출하지 않습니다.
           </div>
 
         </div><!-- /wf-main -->
@@ -294,64 +172,52 @@
 
     <!-- ── 주석 패널 ── -->
     <div class="ann">
-      <h3>화면 주석 — S04-INV 재고 관리</h3>
+      <h3>화면 주석 — S04-INV 재고·요금 관리</h3>
 
       <div class="ann-item">
         <div class="cn">1</div>
         <div class="ann-body">
-          <div class="ann-title">[재고 동기화] 버튼 (API 4)</div>
-          <div class="ann-desc">
-            <strong>[PMS연동 모드]</strong>: 상품 등록 후 최초 1회 [재고 동기화] 수동 버튼 클릭 필수 → 이후 배치 자동 업데이트로 AVLB_RM_CNT / OPER_RM_CNT / RSV_CNT 갱신. 배치 실패 시 수동 버튼으로 fallback. 마지막 동기화 시각 표시.<br>
-            API 4 요청: <code>SRCH_FROM_DT</code> / <code>SRCH_TO_DT</code> (현재 표시 범위 기준).<br>
-            <strong>[수기 모드]</strong>: API 4 호출 없음. OPER_RM_CNT(총 운영 객실수) 관리자 직접 입력. [재고 동기화] 버튼 미표시.<br>
-            <strong>요금 동기화(API 3)는 별도 버튼(⑦)</strong> — 재고 동기화와 분리 운영.
-          </div>
-          <div class="ann-rule">API 4 SELL_ITM_AMT 무시 확정 (하이원 2026-05-27). 재고 3값(AVLB_RM_CNT·OPER_RM_CNT·RSV_CNT)만 사용.</div>
+          <div class="ann-title">위치 — 객실(S04) 내 [재고·요금] 탭</div>
+          <div class="ann-desc">재고·요금은 객실 등록·수정(S04) 화면의 <b>[재고·요금] 탭</b>으로 진입한다. <b>객실 타입(RM_TYP_CD) 단위</b>로 관리되며, 같은 타입을 참조하는 모든 상품(S06)이 이 재고·요금을 공유·읽기전용 참조한다.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">2</div>
         <div class="ann-body">
-          <div class="ann-title">일괄 적용 패널</div>
+          <div class="ann-title">[재고·요금 동기화] 버튼 (1개 · 재고+요금 함께)</div>
           <div class="ann-desc">
-            날짜 범위 + 총재고·컷오프·최소박·최대박 지정 후 [일괄 적용] → 범위 내 전체 행에 동일한 값 적용.
+            클릭 시 PMS에서 <b>재고(API 4)와 요금(입금가, API 3)을 한 번에</b> 동기화한다(버튼 1개로 통합). 상품 등록 후 <b>최초 1회 수동 필수</b> → 이후 배치 자동 업데이트, 배치 실패 시 fallback. 마지막 동기화 시각 표시.<br>
+            신규 객실은 <b>저장 후</b> 동기화 가능. 재동기화 시 <b>기존 강제 마감(판매 OFF) 상태는 보존</b>된다.
           </div>
+          <div class="ann-rule">동기화 범위(프로토타입): 2026-07-01 ~ 08-31, 재고 30. 입금가 = RM_TYP_CD별. API 4 SELL_ITM_AMT 무시(하이원 확인) — 재고 3값만 사용.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">3</div>
         <div class="ann-body">
-          <div class="ann-title">Sold out 행 (AVLB_RM_CNT = 0)</div>
-          <div class="ann-desc">
-            잔여 재고 0인 날짜: 행 분홍 + "Sold out" 표시.<br>
-            프런트: 해당 날짜 체크인 상품 예약 불가.
-          </div>
-          <div class="ann-front">→ 프런트: 상품 카드 / 달력 해당 날짜 "SOLD OUT" 배지 또는 비활성.</div>
+          <div class="ann-title">판매 ON/OFF 주의 배너</div>
+          <div class="ann-desc">판매 ON/OFF는 <b>즉시 반영되지 않고</b> [판매 ON/OFF 저장] 클릭 시 일괄 반영된다(민감 항목). 마감(OFF) 시 해당 일자 예약이 즉시 차단되고, <b>이 객실에 연결된 모든 상품</b>에 적용됨을 경고.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">4</div>
         <div class="ann-body">
-          <div class="ann-title">PMS 마감 (API 5 CLSE_YN = Y)</div>
-          <div class="ann-desc">
-            CLSE_YN=Y: 노란 "PMS 마감 ⚠️" 배지. 체크인 불가(checkin_allowed=false).<br>
-            재고가 남아있어도 PMS 마감이 우선. 배지 호버 시 상세 툴팁.
-          </div>
-          <div class="ann-rule">CLSE_YN 조회: API 5 (S06-A/B/C 진입 시). S04-INV에서는 참고 표시.</div>
+          <div class="ann-title">[판매 ON/OFF 저장] 버튼</div>
+          <div class="ann-desc">체크박스로 변경한 일자별 판매 ON/OFF를 저장한다. 저장 전 <b>확인 팝업</b>("강제 마감 N건 · 연결 상품 전체 차단, 진행할까요?"). 저장 시 변경이력 기록.</div>
+          <div class="ann-front">→ 프런트: OFF(마감) 일자는 예약 불가, 재고 0은 자동 SOLD OUT.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">5</div>
         <div class="ann-body">
-          <div class="ann-title">행 인라인 수정</div>
+          <div class="ann-title">판매상태 (자동 판정)</div>
           <div class="ann-desc">
-            [수정] 클릭 → 해당 날짜 아래 인라인 편집 패널 펼침.<br>
-            PMS연동 모드: AVLB_RM_CNT 참고 표시 + 수동 보정 입력 가능.<br>
-            저장 시 변경이력 기록 (일시·변경자·변경 전/후).
+            <b>SOLD OUT</b>: 잔여(AVLB) = 0 (분홍 행) · <b>마감(강제)</b>: 판매 OFF(closed=true, 노랑 행) · <b>판매중</b>: 그 외.<br>
+            재고가 남아있어도 판매 OFF가 우선(강제 마감).
           </div>
         </div>
       </div>
@@ -359,37 +225,29 @@
       <div class="ann-item">
         <div class="cn">6</div>
         <div class="ann-body">
-          <div class="ann-title">[+ 행 추가] 버튼</div>
-          <div class="ann-desc">
-            버튼 클릭 → 테이블 맨 위에 전 컬럼 빈(null) 행 삽입. 날짜 포함 모든 필드 인라인 직접 입력.<br>
-            [저장] 클릭 시 날짜 기준 정렬. [삭제] 클릭 시 행 제거.<br>
-            PMS연동 모드에서도 수동 행 추가 가능 (이후 [재고 동기화]로 덮어쓸 수 있음).
-          </div>
+          <div class="ann-title">입금가 (조회 전용)</div>
+          <div class="ann-desc">호텔 납부 원가. PMS API 3 동기화로 채워지는 <b>조회 전용</b>. <b>판매가·마진은 이 화면에 노출하지 않는다</b> — 판매가는 프런트 노출 시 마진(마진 마스터 S11)을 더해 계산.</div>
+          <div class="ann-rule">SELL_AMT(예약 API 6)는 입금가(원가)로 전송. 마진 미포함.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">7</div>
         <div class="ann-body">
-          <div class="ann-title">[요금 동기화] 버튼 (API 3) — v0.2 추가</div>
-          <div class="ann-desc">
-            <strong>v0.2:</strong> 재고·요금을 <b>객실 타입(RM_TYP_CD) 단위</b>로 함께 관리. 요금(입금가)은 API 3(SELL_ITM_AMT)에서 동기화.<br>
-            [요금 동기화] 클릭 → 날짜별 입금가 갱신. 재고 동기화(API 4)와 <b>버튼 분리</b>. 확인 팝업 후 실행.
-          </div>
-          <div class="ann-rule">요금 관리 주체 = 이 화면(객실 타입 단위). 상품(S06-B/C)에서는 요금 읽기전용 표시(후속 반영 예정).</div>
+          <div class="ann-title">판매 ON/OFF (체크박스)</div>
+          <div class="ann-desc">체크=판매중(ON), 해제=강제 마감(OFF, closed=true). CLSE_YN 개념. 기존 '체크인허용'을 대체. 변경 후 [판매 ON/OFF 저장] 필요.</div>
         </div>
       </div>
 
       <div class="ann-item">
-        <div class="cn">8</div>
+        <div class="cn" style="background:#7c3aed">✎</div>
         <div class="ann-body">
-          <div class="ann-title">입금가 / 판매가 (날짜별) — v0.2 추가</div>
-          <div class="ann-desc">
-            <b>입금가</b>: 호텔 납부 원가. PMS 연동 시 API 3 동기화 / 수기 시 직접 입력.<br>
-            <b>판매가</b>: 입금가 + 마진(S11 객실 타입 기본 마진 또는 상품 개별 마진). 자동 계산, 읽기전용(회색).
+          <div class="ann-title">이 화면에서 제외된 항목 (v0.6)</div>
+          <div class="ann-rule">
+            · <b>판매가·마진</b> → 제외 (판매가는 프런트 계산, 마진은 마진 마스터 S11)<br>
+            · <b>컷오프·최소박·최대박(예약조건)</b> → 제외, <b>상품(S06)에서 관리</b><br>
+            · 일괄 적용 패널·행 추가·인라인 수정 → 제거 (재고·요금은 동기화 조회 전용)
           </div>
-          <div class="ann-front">→ 프런트: 판매가만 노출(입금가 미노출). 날짜별 차등 요금 반영.</div>
-          <div class="ann-rule">마진은 S11(객실 타입 단위), 소수점 버림(floor). 판매가 = 입금가 + 마진금액(권장) 또는 입금가 × (1+마진율).</div>
         </div>
       </div>
 

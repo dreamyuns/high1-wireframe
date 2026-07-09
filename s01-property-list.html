@@ -57,7 +57,7 @@
           <div class="wf-toolbar">
             <div class="wf-page-title" style="margin-bottom:0">숙소 목록</div>
             <div>
-              <span class="wf-btn wf-btn-primary">+ 숙소 등록</span> <span class="wf-cn">3</span>
+              <span class="wf-btn wf-btn-primary">PMS 동기화 / 갱신</span> <span class="wf-cn">3</span>
             </div>
           </div>
 
@@ -159,12 +159,13 @@
       <div class="ann-item">
         <div class="cn">3</div>
         <div class="ann-body">
-          <div class="ann-title">숙소 등록 버튼</div>
+          <div class="ann-title">PMS 동기화 / 갱신 버튼</div>
           <div class="ann-desc">
-            클릭 시 숙소 등록·수정 5단계 마법사의 첫 번째 단계(S02-1)로 이동한다. 라우트는 #/places/new.
-            신규 숙소 등록 흐름의 유일한 진입점이며, 목록 우상단에 항상 고정 노출된다.
-            등록 완료 후 저장하면 목록으로 복귀하고, 새 숙소가 최상단에 위치한다.
+            <strong>신규 숙소는 PMS 동기화로만 생성</strong>된다(수동 신규 등록 없음). 클릭 시 PMS(API 1/2 시설·채널 및 숙소 정보)에서 숙소를 불러와 목록에 주입·갱신한다.<br>
+            상품 등록 전 <strong>최초 1회 필수</strong>. 재동기화 시 PMS 수신 필드(숙소명·분류·체크인/아웃 등)는 갱신하되, <strong>관리자 보완 필드(영문명·주소·안내·정책·시설·이미지 등)는 보존</strong>한다.<br>
+            개별 숙소의 보완 항목 편집은 목록 행의 <strong>[수정]</strong> → S02 숙소 등록·수정 마법사에서 수행한다.
           </div>
+          <div class="ann-rule">프로토타입은 PMS 연동을 더미 데이터로 시뮬레이션. 실서비스는 PMS API 연동.</div>
         </div>
       </div>
 

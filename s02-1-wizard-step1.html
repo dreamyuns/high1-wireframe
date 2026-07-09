@@ -100,17 +100,18 @@
           </div>
 
           <div class="wf-form-row">
-            <div class="wf-form-label">숙소명(국문) <span class="wf-form-req">*</span> <span class="wf-cn">5</span></div>
+            <div class="wf-form-label">숙소명(영문) <span class="wf-form-req">*</span> <span class="wf-cn">5</span></div>
             <div class="wf-form-field">
-              <input class="wf-input" value="그랜드 호텔 메인타워" />
+              <input class="wf-input" value="Grand Hotel Main Tower" />
+              <div class="wf-hint">영문(EN) 필수 입력. 미입력 시 저장 불가.</div>
             </div>
           </div>
 
           <div class="wf-form-row">
-            <div class="wf-form-label">숙소명(영문)</div>
+            <div class="wf-form-label">숙소명(중문)</div>
             <div class="wf-form-field">
-              <input class="wf-input" value="Grand Hotel Main Tower" />
-              <div class="wf-hint">영문 미입력 시 국문명이 대체 표시됨</div>
+              <input class="wf-input" value="高一大酒店主楼" />
+              <div class="wf-hint">중문(ZH) 선택 입력. 미입력 시 영문(EN)명이 대체 표시됨. (한국어 입력칸 없음 — 외국인 전용 사이트)</div>
             </div>
           </div>
 
@@ -127,71 +128,14 @@
           </div>
 
           <div class="wf-form-row">
-            <div class="wf-form-label">숙소 소개 <span class="wf-cn">10</span></div>
-            <div class="wf-form-field">
-              <textarea class="wf-textarea" style="height:60px" placeholder="예: 강원랜드 스키장과 인접한 그랜드 호텔 메인타워입니다."></textarea>
-              <div class="wf-hint">프런트 Overview 섹션에 숙소 소개 문구로 노출. 선택 입력.</div>
-            </div>
-          </div>
-
-          <div class="wf-form-row">
-            <div class="wf-form-label">체크인 시각 <span class="wf-cn">7</span></div>
+            <div class="wf-form-label">체크인 / 체크아웃 시각 <span class="wf-cn">7</span></div>
             <div class="wf-form-field">
               <div style="display:flex;align-items:center;gap:8px">
-                <span style="font-size:13px;font-weight:600;color:#1a1f2e">15:00</span>
+                <input class="wf-input" type="time" value="15:00" style="width:110px" />
                 <span style="font-size:11px;color:#888">~</span>
-                <span style="font-size:13px;font-weight:600;color:#1a1f2e">11:00</span>
-                <span style="background:#e8eaf6;color:#3949ab;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:4px">B타입 고정</span>
+                <input class="wf-input" type="time" value="11:00" style="width:110px" />
               </div>
-              <div class="wf-hint">PMS API 5 <code>BLKTIME_TYPE_CLS_NM</code> 값 자동 표시. 수정 불가. TIME_CD = B타입으로 고정 운영.</div>
-            </div>
-          </div>
-
-          <!-- 변경이력 (A안: 접이식 섹션) -->
-          <div style="margin-top:16px;border:1px solid #d8d8d0;border-radius:4px;overflow:hidden">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#f5f5f0;cursor:pointer">
-              <span style="font-size:11px;font-weight:600;color:#333">변경이력 <span class="wf-cn">11</span></span>
-              <span style="font-size:10px;color:#888">▲ 접기</span>
-            </div>
-            <div style="padding:10px 12px">
-              <table style="width:100%;border-collapse:collapse;font-size:10px">
-                <thead>
-                  <tr style="background:#f5f5f0">
-                    <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">변경일시</th>
-                    <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">변경자</th>
-                    <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">항목</th>
-                    <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">변경 전</th>
-                    <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">변경 후</th>
-                    <th style="border:1px solid #ddd;padding:4px 6px;text-align:left;font-weight:600">사유</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#555">2026-05-20 14:32</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#555">admin01</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px">노출여부</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px">HIDE</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;font-weight:600">SHOW</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#888">—</td>
-                  </tr>
-                  <tr style="background:#fafaf7">
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#555">2026-04-15 09:10</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#555">admin02</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px">체크인시각</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px">14:00</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;font-weight:600">15:00</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#888">운영팀 요청</td>
-                  </tr>
-                  <tr>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#555">2026-03-01 11:00</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#555">admin01</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px">숙소명(국문)</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px">그랜드 호텔 본관</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;font-weight:600">그랜드 호텔 메인타워</td>
-                    <td style="border:1px solid #ddd;padding:4px 6px;color:#888">브랜딩 개편</td>
-                  </tr>
-                </tbody>
-              </table>
+              <div class="wf-hint">체크인·체크아웃 시각을 직접 입력한다. 기본값 15:00 / 11:00. 관리자가 자유롭게 수정 가능.</div>
             </div>
           </div>
 
@@ -267,13 +211,14 @@
       <div class="ann-item">
         <div class="cn">5</div>
         <div class="ann-body">
-          <div class="ann-title">숙소명 (place_name / place_name_en)</div>
+          <div class="ann-title">숙소명 (영문 EN 필수 / 중문 ZH 선택)</div>
           <div class="ann-desc">
-            국문명은 필수 입력이며 영문명은 선택이다. 영문명을 입력하지 않으면 프런트 영문 모드에서 국문명이 대체 표시된다.
-            국문명은 숙소 선택 탭의 버튼 텍스트와 히어로 오버레이 대형 헤딩으로 사용된다.
+            영문(EN)명은 <strong>필수 입력</strong>이며, 미입력 시 저장이 막힌다. 중문(ZH)명은 선택이며, 입력하지 않으면 프런트 중문 모드에서 영문명이 대체 표시된다.<br>
+            한국어(KO) 입력칸은 없다 (외국인 전용 사이트). 영문명은 숙소 선택 탭의 버튼 텍스트와 히어로 오버레이 대형 헤딩으로 사용된다.<br>
             공백 전후 트림 처리 권장.
           </div>
           <div class="ann-front">→ 프런트: 숙소 선택 탭 버튼 텍스트 / 히어로 오버레이 대형 헤딩 텍스트</div>
+          <div class="ann-rule">프로토타입 후속 반영: 현재 프로토타입은 국문(place_name)+영문(place_name_en) 구조. 정책 목표(EN 필수·ZH 선택)에 맞춰 화면기획서에 선반영함. 프로토타입 필드 교체 필요.</div>
         </div>
       </div>
 
@@ -293,13 +238,13 @@
       <div class="ann-item">
         <div class="cn">7</div>
         <div class="ann-body">
-          <div class="ann-title">체크인·체크아웃 시각</div>
+          <div class="ann-title">체크인·체크아웃 시각 (편집형)</div>
           <div class="ann-desc">
-            TIME_CD = B타입으로 고정 운영. 관리자 입력 불가, 수정 불가.<br>
-            PMS API 5 <code>BLKTIME_TYPE_CLS_NM</code> 값을 자동으로 표시. 현재 값: "B타입: 15:00 ~ 11:00".<br>
-            프런트 브릿지 페이지 Overview 섹션에 체크인/체크아웃 시각으로 직접 노출된다.
+            체크인·체크아웃 시각을 관리자가 직접 입력한다 (시간 입력칸 2개). 기본값은 체크인 15:00 / 체크아웃 11:00이며, 필요 시 자유롭게 수정할 수 있다.<br>
+            입력한 값은 프런트 브릿지 페이지 Overview 섹션에 체크인/체크아웃 시각으로 직접 노출된다.
           </div>
           <div class="ann-front">→ 프런트: 브릿지 페이지 Overview 섹션 체크인/체크아웃 시각 값</div>
+          <div class="ann-rule">TIME_CD = B타입 단일 운영이라 시간대 구분은 없으나, 시각 값 자체는 관리자가 직접 편집한다 (PMS 자동 표시·읽기전용 아님).</div>
         </div>
       </div>
 
@@ -326,33 +271,6 @@
             미저장 변경사항을 모두 파기하고 숙소 목록(#/places)으로 이동. 신규 등록 중이면 작성한 모든 내용이 사라짐.
           </div>
           <div class="ann-rule">이탈 전 "저장하지 않은 내용이 있습니다. 나가시겠습니까?" 확인 다이얼로그 표시 권장.</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="cn">10</div>
-        <div class="ann-body">
-          <div class="ann-title">숙소 소개 (description)</div>
-          <div class="ann-desc">
-            숙소를 소개하는 한 줄~단락 문구. 선택 입력. 비어있으면 프런트 Overview에서 해당 영역 미표시.
-          </div>
-          <div class="ann-front">→ 프런트: 브릿지 페이지 Overview 섹션 숙소 소개 문구 영역</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="cn">11</div>
-        <div class="ann-body">
-          <div class="ann-title">변경이력 (A안 — 접이식 섹션)</div>
-          <div class="ann-desc">
-            수정 화면 하단에 위치한 접이식(아코디언) 섹션. 기본 상태는 펼쳐짐. 헤더 클릭 시 접기/펼치기 토글.<br>
-            <strong>이력 기록 조건</strong>: [저장] 성공 시 아래 항목 중 변경이 있는 경우에만 새 이력 행 생성.
-          </div>
-          <div class="ann-rule">
-            기록 대상 항목: 숙소명(국문), 노출여부. (체크인·체크아웃 시각은 PMS API 5 고정값, 이력 기록 제외.)<br>
-            이력 컬럼: 변경일시 / 변경자 / 항목 / 변경 전 / 변경 후 / 사유(선택입력).<br>
-            신규 등록 시 이력 없음 ("이력이 없습니다" 문구 표시). 최신 이력이 상단.
-          </div>
         </div>
       </div>
 

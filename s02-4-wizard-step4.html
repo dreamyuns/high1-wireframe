@@ -66,39 +66,45 @@
           </div>
 
           <!-- 숙소 안내 (guide_html) -->
-          <div class="wf-section-head">숙소 안내 (guide_html)</div>
+          <div class="wf-section-head">숙소 안내 (guide_html) <span class="wf-cn">1</span></div>
 
           <div class="wf-form-row">
             <div class="wf-form-field" style="width:100%">
-              <div style="display:flex;align-items:flex-start;gap:8px">
-                <textarea class="wf-textarea" style="min-height:100px;flex:1">(숙소 안내 HTML — 체크인 절차, 시설 이용 안내 등)</textarea>
-                <span class="wf-cn">1</span>
-              </div>
-              <div class="wf-hint">HTML 형식. 이미지 Ctrl+V 붙여넣기 지원 (Data URL 저장). 저장 용량 주의.</div>
+              <div style="font-size:10px;color:#888;margin-bottom:3px">EN <span class="wf-form-req">*</span></div>
+              <textarea class="wf-textarea" style="min-height:90px;width:100%">(Guide HTML — check-in procedure, facility usage, etc.)</textarea>
+              <div style="font-size:10px;color:#bbb;margin:6px 0 3px">ZH (선택)</div>
+              <textarea class="wf-textarea" style="min-height:90px;width:100%">(选填 · 未填写时显示英文)</textarea>
+              <div class="wf-hint">영문(EN) 필수 · 중문(ZH) 선택. HTML 형식. 이미지 Ctrl+V 붙여넣기 지원 (Data URL 저장). 저장 용량 주의.</div>
             </div>
           </div>
 
           <!-- 정책 안내 (policy_html) -->
-          <div class="wf-section-head">정책 안내 (policy_html)</div>
+          <div class="wf-section-head">정책 안내 (policy_html) <span class="wf-cn">2</span></div>
 
           <div class="wf-form-row">
             <div class="wf-form-field" style="width:100%">
-              <div style="display:flex;align-items:flex-start;gap:8px">
-                <textarea class="wf-textarea" style="min-height:100px;flex:1">(정책 안내 HTML — 취소·환불 정책, 반려동물, 흡연 등)</textarea>
-                <span class="wf-cn">2</span>
-              </div>
-              <div class="wf-hint">HTML 형식. 이미지 붙여넣기 지원.</div>
+              <div style="font-size:10px;color:#888;margin-bottom:3px">EN <span class="wf-form-req">*</span></div>
+              <textarea class="wf-textarea" style="min-height:90px;width:100%">(Policy HTML — cancellation·refund, pets, smoking, etc.)</textarea>
+              <div style="font-size:10px;color:#bbb;margin:6px 0 3px">ZH (선택)</div>
+              <textarea class="wf-textarea" style="min-height:90px;width:100%">(选填 · 未填写时显示英文)</textarea>
+              <div class="wf-hint">영문(EN) 필수 · 중문(ZH) 선택. HTML 형식. 이미지 붙여넣기 지원.</div>
             </div>
+          </div>
+
+          <!-- AI 번역 버튼 -->
+          <div style="display:flex;align-items:center;gap:8px;margin:12px 0">
+            <span class="wf-btn">AI 번역 (미입력 EN/ZH 자동 채움)</span>
+            <span class="wf-cn">3</span>
           </div>
 
           <!-- 이미지 붙여넣기 용량 경고 -->
           <div style="display:flex;align-items:flex-start;gap:8px;margin-top:14px">
             <div class="wf-alert" style="flex:1">⚠ HTML 필드에 이미지를 붙여넣으면 Data URL로 저장되어 용량이 급증합니다. 외부 이미지 URL 사용을 권장합니다.</div>
-            <span class="wf-cn">3</span>
+            <span class="wf-cn">4</span>
           </div>
 
           <!-- 추가요금 안내 (v0.2 신설 — 객실 부가요금에서 이관) -->
-          <div class="wf-section-head">추가요금 안내 (extra_fee_notes) <span class="wf-cn">4</span></div>
+          <div class="wf-section-head">추가요금 안내 (extra_fee_notes) <span class="wf-cn">5</span></div>
 
           <div class="wf-hint" style="margin-bottom:8px">결제와 무관한 <b>정보 노출용 안내 텍스트</b>입니다. 한 줄에 하나씩 자유롭게 입력하며, 프런트 정책정보 탭 하단 '추가요금' 블록에 그대로 표시됩니다.</div>
 
@@ -154,31 +160,49 @@
       <div class="ann-item">
         <div class="cn">1</div>
         <div class="ann-body">
-          <div class="ann-title">숙소 안내 HTML (guide_html)</div>
+          <div class="ann-title">숙소 안내 HTML (guide_html — EN 필수 / ZH 선택)</div>
           <div class="ann-desc">
             숙소의 체크인·체크아웃 절차, 주요 시설 이용 안내, 주의 사항 등을 HTML로 입력한다.
+            영문(EN)은 <strong>필수</strong>, 중문(ZH)은 선택이다. 중문 미입력 시 프런트 중문 모드에서 영문이 대체 표시된다. (한국어 입력칸 없음)<br>
             이미지 Ctrl+V 붙여넣기 시 Data URL(base64) 형식으로 저장된다.
             현재 UI는 단순 textarea이나 실서비스에서 WYSIWYG 에디터로 교체 예정이다.
           </div>
           <div class="ann-front">→ 프런트: 숙소 레이어 > 안내정보(Guide) 탭 상단 HTML 렌더링</div>
+          <div class="ann-rule">저장 필드: guide_html(EN) · guide_html_zh(ZH). 프로토타입 후속 반영: 현재 프로토타입은 guide_html(국문)+guide_html_en 구조. EN 필수·ZH 선택으로 교체 필요.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">2</div>
         <div class="ann-body">
-          <div class="ann-title">정책 안내 HTML (policy_html)</div>
+          <div class="ann-title">정책 안내 HTML (policy_html — EN 필수 / ZH 선택)</div>
           <div class="ann-desc">
             취소·환불 정책, 반려동물·흡연 정책, 체크인 시간 외 조기/지연 입실 정책 등을 입력한다.
+            영문(EN)은 <strong>필수</strong>, 중문(ZH)은 선택이다. 중문 미입력 시 영문이 대체 표시된다.<br>
             guide_html과 분리된 별도 탭으로 프런트에 표시되므로 정책과 안내 내용을 명확히 구분하여 입력한다.
             HTML 형식을 지원하며 이미지 붙여넣기도 가능하다.
           </div>
           <div class="ann-front">→ 프런트: 숙소 레이어 > 정책정보(Policy) 탭 HTML 렌더링</div>
+          <div class="ann-rule">저장 필드: policy_html(EN) · policy_html_zh(ZH). 프로토타입 후속 반영: 현재 policy_html(국문)+policy_html_en 구조. EN 필수·ZH 선택으로 교체 필요.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">AI 번역 버튼 (미입력 EN/ZH 자동 채움)</div>
+          <div class="ann-desc">
+            버튼을 누르면 숙소 안내·정책 안내·추가요금 안내의 <strong>비어 있는 다국어 칸을 자동으로 채운다.</strong>
+            영문(EN)이 있고 중문(ZH)이 비어 있으면 중문을, 반대의 경우 영문을 자동 번역해 넣는다.
+            이미 입력된 칸은 덮어쓰지 않는다.<br>
+            프로토타입은 미입력 칸을 원문 그대로 복사하는 더미 동작이며, 실서비스에서 번역 API로 교체 예정이다.
+          </div>
+          <div class="ann-rule">저장 전 항상 EN 필수값을 재검증한다. AI 번역으로도 EN이 채워지지 않으면 저장 불가.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
         <div class="ann-body">
           <div class="ann-title">이미지 붙여넣기 용량 경고</div>
           <div class="ann-desc">
@@ -191,7 +215,7 @@
       </div>
 
       <div class="ann-item">
-        <div class="cn">4</div>
+        <div class="cn">5</div>
         <div class="ann-body">
           <div class="ann-title">추가요금 안내 (extra_fee_notes) — v0.2 신설</div>
           <div class="ann-desc">
