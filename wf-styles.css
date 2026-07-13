@@ -41,7 +41,8 @@ a{color:inherit;text-decoration:none}
 .wf-lnb-g{padding:10px 14px 4px;color:rgba(255,255,255,.3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
 .wf-lnb-item{padding:8px 16px;color:rgba(255,255,255,.5);font-size:11px;cursor:pointer}
 .wf-lnb-item.on{background:rgba(255,255,255,.1);color:#fff;font-weight:700;border-left:2px solid #c49a6c}
-.wf-main{flex:1;padding:20px;background:#f8f8f5}
+/* min-width:0 → 패널이 컬럼 폭에 맞게 축소(넓은 표에 밀리지 않음), overflow-x:auto → 넓은 표는 패널 안에서 가로 스크롤(오른쪽 잘림 방지) */
+.wf-main{flex:1;padding:20px;background:#f8f8f5;min-width:0;overflow-x:auto}
 .wf-page-title{font-size:15px;font-weight:700;color:#1a1f2e;margin-bottom:16px}
 
 /* ── WF Components ── */
