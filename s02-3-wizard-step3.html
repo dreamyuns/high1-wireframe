@@ -102,6 +102,9 @@
             <span class="wf-cn">3</span>
           </div>
           <div class="wf-hint">파일당 최대 2MB. 초과 시 해당 파일 거부 + 파일명 포함 오류 메시지 표시.</div>
+          <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:4px;padding:7px 10px;font-size:10px;color:#3730a3;line-height:1.6;margin-top:6px">
+            <b>이미지 저장 방식(정책서 §14)</b>: 업로드 시 <b>자동 축소 후 스토리지 업로드 → URL만 저장</b>(base64 인라인 저장 금지). 프로토타입=Cloudinary 무인증 업로드 / 실서비스=서버 서명(signed) 업로드. 저장 공간 부족 시 알럿.
+          </div>
 
           <!-- Quota 경고 -->
           <div style="display:flex;align-items:flex-start;gap:8px;margin-top:14px;margin-bottom:14px">

@@ -34,7 +34,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>High1 Seed Data <span style="font-size:14px;color:#7c3aed">v0.6</span></h1>
+  <h1>High1 Seed Data <span style="font-size:14px;color:#7c3aed">v0.7 (티켓 포함)</span></h1>
   <p class="subtitle">프로토타입 더미 데이터 주입 — 어드민·프런트 공용 localStorage</p>
 
   <div class="notice">
@@ -52,7 +52,7 @@
   <div class="card">
     <div class="card-title">더미 데이터</div>
     <div class="row">
-      <button class="btn-primary" id="btnSeed">✓ 전체 더미 주입 (숙소·객실·상품·공통관리·화면·마진)</button>
+      <button class="btn-primary" id="btnSeed">✓ 전체 더미 주입 (숙소·객실·상품·공통·화면·마진 + 티켓)</button>
       <button class="btn-reset" id="btnReset">전체 초기화</button>
     </div>
   </div>
@@ -91,6 +91,9 @@ const KEYS = [
   "high1_room_master_room_type_v1", "high1_room_master_bed_type_v1",
   "high1_margin_master_v1",
   "high1_main_hero_v1", "high1_main_hero_cfg_v1", "high1_main_section_v1",
+  // 티켓 도메인
+  "high1_ticket_categories_v1", "high1_coupon_specs_v1", "high1_ticket_products_v1",
+  "high1_ticket_margin_master_v1", "high1_ticket_upload_history_v1", "high1_ticket_seed_ver",
 ];
 const NOW = new Date().toISOString();
 
@@ -161,12 +164,11 @@ const bedTypes = [
 ].map(([id,name]) => ({ id, code: id, name, visible: true, updatedAt: NOW }));
 const BT = {}; bedTypes.forEach(b => BT[b.name] = b.id);
 
-/* 객실유형: 객실명(상품)에 맞춰 — 숙소별 */
+/* 객실유형 (타입 단위 — 여러 객실이 공유) */
 const roomTypes = [
-  ["RT-001","스탠다드","place-h1"], ["RT-002","디럭스","place-h1"],
-  ["RT-003","디럭스","place-h2"],  ["RT-004","스위트","place-h2"],
-  ["RT-005","스탠다드","place-c1"], ["RT-006","패밀리","place-c1"],
-].map(([id,name,place_id]) => ({ id, code: id, name, place_id, visible: true, updatedAt: NOW }));
+  ["RT-STD","스탠다드"], ["RT-SUP","슈페리어"], ["RT-DLX","디럭스"],
+  ["RT-STE","스위트"], ["RT-TWN","트윈"], ["RT-FAM","패밀리"],
+].map(([id,name]) => ({ id, code: id, name, place_id: "", visible: true, updatedAt: NOW }));
 
 /* ═══ 숙소 (3) ═══ */
 function place(id, code, name, name_en, category, sub_place, img, addr, addrEn) {
@@ -191,16 +193,26 @@ function place(id, code, name, name_en, category, sub_place, img, addr, addrEn) 
   };
 }
 const PLACES = [
-  place("place-h1","PL-000001","그랜드 호텔 메인타워","Grand Hotel Main Tower","HOTEL","grand_main", IMG_HOTEL,
+  place("place-h1","PL-000001","하이원팰리스","High1 Palace","HOTEL","palace", IMG_HOTEL,
     "강원특별자치도 정선군 고한읍 하이원길 265", "265 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do"),
-  place("place-h2","PL-000002","팰리스 호텔","Palace Hotel","HOTEL","palace", IMG_HOTEL,
+  place("place-h2","PL-000002","컨벤션타워","Convention Tower","HOTEL","convention", IMG_HOTEL,
     "강원특별자치도 정선군 고한읍 하이원길 300", "300 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do"),
-  place("place-c1","PL-000003","힐 콘도미니엄","Hill Condominium","CONDO","hill", IMG_CONDO,
+  place("place-c1","PL-000003","마운틴콘도","Mountain Condo","CONDO","mountain", IMG_CONDO,
+    "강원특별자치도 정선군 고한읍 하이원길 380", "380 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do"),
+  place("place-c2","PL-000004","밸리콘도","Valley Condo","CONDO","valley", IMG_CONDO,
+    "강원특별자치도 정선군 고한읍 하이원길 400", "400 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do"),
+  place("place-c3","PL-000005","힐콘도","Hill Condo","CONDO","hill", IMG_CONDO,
     "강원특별자치도 정선군 고한읍 하이원길 420", "420 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do"),
 ];
 
 /* ═══ 객실 (6) ═══ rm_typ_cd별 입금가는 RATE 참조 ═══ */
-const RATE = { STD:250000, DLX:350000, PST:500000, HST:280000, VST:280000 };
+const RATE = {
+  STD:220000, DLX:330000, STE:520000,        // 하이원팰리스
+  CVD:300000, CVT:240000,                      // 컨벤션타워
+  MST:200000, MFM:300000,                      // 마운틴콘도
+  VST:190000, VFM:290000,                      // 밸리콘도
+  HST:210000, HDX:320000, HFM:340000,          // 힐콘도
+};
 function room(id, code, place_id, rm_typ_cd, name, name_en, room_type_id, beds, std, max, size) {
   return {
     id, place_id, room_code: code, rm_typ_cd,
@@ -220,18 +232,35 @@ function room(id, code, place_id, rm_typ_cd, name, name_en, room_type_id, beds, 
   };
 }
 const ROOMS = [
-  room("room-h1-1","RM-0001","place-h1","STD","스탠다드 트윈","Standard Twin","RT-001",
+  // 하이원팰리스 (place-h1)
+  room("room-h1-1","RM-0001","place-h1","STD","스탠다드 트윈","Standard Twin","RT-TWN",
     [{bed_type_id:BT["트윈"],count:2}], 2, 3, 26),
-  room("room-h1-2","RM-0002","place-h1","DLX","디럭스 킹","Deluxe King","RT-002",
+  room("room-h1-2","RM-0002","place-h1","DLX","디럭스 킹","Deluxe King","RT-DLX",
     [{bed_type_id:BT["킹"],count:1}], 2, 4, 33),
-  room("room-h2-1","RM-0003","place-h2","DLX","디럭스 더블","Deluxe Double","RT-003",
+  room("room-h1-3","RM-0007","place-h1","STE","팰리스 스위트","Palace Suite","RT-STE",
+    [{bed_type_id:BT["킹"],count:1},{bed_type_id:BT["소파베드"],count:1}], 2, 4, 62),
+  // 컨벤션타워 (place-h2)
+  room("room-h2-1","RM-0003","place-h2","CVD","컨벤션 디럭스","Convention Deluxe","RT-DLX",
     [{bed_type_id:BT["더블"],count:1},{bed_type_id:BT["싱글"],count:1}], 2, 4, 35),
-  room("room-h2-2","RM-0004","place-h2","PST","프레지덴셜 스위트","Presidential Suite","RT-004",
-    [{bed_type_id:BT["킹"],count:1},{bed_type_id:BT["소파베드"],count:1}], 2, 4, 60),
-  room("room-c1-1","RM-0005","place-c1","HST","힐 스탠다드","Hill Standard","RT-005",
+  room("room-h2-2","RM-0008","place-h2","CVT","컨벤션 트윈","Convention Twin","RT-TWN",
+    [{bed_type_id:BT["트윈"],count:2}], 2, 3, 28),
+  // 마운틴콘도 (place-c1)
+  room("room-c1-1","RM-0004","place-c1","MST","마운틴 스탠다드","Mountain Standard","RT-STD",
     [{bed_type_id:BT["퀸"],count:1}], 2, 4, 40),
-  room("room-c1-2","RM-0006","place-c1","VST","힐 패밀리","Hill Family","RT-006",
+  room("room-c1-2","RM-0009","place-c1","MFM","마운틴 패밀리","Mountain Family","RT-FAM",
     [{bed_type_id:BT["더블"],count:1},{bed_type_id:BT["싱글"],count:2}], 3, 5, 62),
+  // 밸리콘도 (place-c2)
+  room("room-c2-1","RM-0005","place-c2","VST","밸리 스탠다드","Valley Standard","RT-STD",
+    [{bed_type_id:BT["퀸"],count:1}], 2, 4, 38),
+  room("room-c2-2","RM-0010","place-c2","VFM","밸리 패밀리","Valley Family","RT-FAM",
+    [{bed_type_id:BT["더블"],count:1},{bed_type_id:BT["싱글"],count:2}], 3, 6, 66),
+  // 힐콘도 (place-c3)
+  room("room-c3-1","RM-0006","place-c3","HST","힐 스탠다드","Hill Standard","RT-STD",
+    [{bed_type_id:BT["퀸"],count:1}], 2, 4, 40),
+  room("room-c3-2","RM-0011","place-c3","HDX","힐 디럭스","Hill Deluxe","RT-DLX",
+    [{bed_type_id:BT["킹"],count:1}], 2, 4, 45),
+  room("room-c3-3","RM-0012","place-c3","HFM","힐 패밀리","Hill Family","RT-FAM",
+    [{bed_type_id:BT["더블"],count:1},{bed_type_id:BT["싱글"],count:2}], 3, 6, 70),
 ];
 
 /* ═══ 상품 (6, 객실당 1) ═══ */
@@ -251,17 +280,28 @@ function product(id, code, room_id, name_en, desc_en, cancelType, freeDays) {
   };
 }
 const PRODUCTS = [
+  // 하이원팰리스
   product("prod-h1-1","PR-0001","room-h1-1","Standard Twin Room Only","2 single beds, mountain view. Ideal for 2 guests.","FREE_N_DAYS",3),
   product("prod-h1-2","PR-0002","room-h1-2","Deluxe King Room Only","King bed with panoramic mountain view.","FREE_N_DAYS",3),
-  product("prod-h2-1","PR-0003","room-h2-1","Deluxe Double Room Only","Double + single bed. Great for small families.","NON_REFUNDABLE",0),
-  product("prod-h2-2","PR-0004","room-h2-2","Presidential Suite Room Only","60sqm suite with living area and premium amenities.","FREE_N_DAYS",5),
-  product("prod-c1-1","PR-0005","room-c1-1","Hill Standard Room Only","Cozy condominium room with queen bed.","FREE_N_DAYS",3),
-  product("prod-c1-2","PR-0006","room-c1-2","Hill Family Room Only","Spacious family room, up to 5 guests.","NON_REFUNDABLE",0),
+  product("prod-h1-3","PR-0007","room-h1-3","Palace Suite Room Only","62sqm suite with living area and premium amenities.","FREE_N_DAYS",5),
+  // 컨벤션타워
+  product("prod-h2-1","PR-0003","room-h2-1","Convention Deluxe Room Only","Double + single bed. Great for small families.","NON_REFUNDABLE",0),
+  product("prod-h2-2","PR-0008","room-h2-2","Convention Twin Room Only","2 single beds near the convention center.","FREE_N_DAYS",3),
+  // 마운틴콘도
+  product("prod-c1-1","PR-0004","room-c1-1","Mountain Standard Room Only","Cozy condo with queen bed and mountain view.","FREE_N_DAYS",3),
+  product("prod-c1-2","PR-0009","room-c1-2","Mountain Family Room Only","Spacious family room, up to 5 guests.","NON_REFUNDABLE",0),
+  // 밸리콘도
+  product("prod-c2-1","PR-0005","room-c2-1","Valley Standard Room Only","Value condo room with queen bed.","FREE_N_DAYS",3),
+  product("prod-c2-2","PR-0010","room-c2-2","Valley Family Room Only","Large family room, up to 6 guests.","NON_REFUNDABLE",0),
+  // 힐콘도
+  product("prod-c3-1","PR-0006","room-c3-1","Hill Standard Room Only","Cozy condominium room with queen bed.","FREE_N_DAYS",3),
+  product("prod-c3-2","PR-0011","room-c3-2","Hill Deluxe Room Only","Deluxe condo room with king bed.","FREE_N_DAYS",3),
+  product("prod-c3-3","PR-0012","room-c3-3","Hill Family Room Only","Spacious family room, up to 6 guests.","NON_REFUNDABLE",0),
 ];
 
 /* ═══ 마진 마스터 — 전역 금액 30,000원 (사용 rm_typ_cd 전부) ═══ */
 const MARGIN_MASTER = {};
-["STD","DLX","PST","HST","VST"].forEach(t => { MARGIN_MASTER[t] = { type: "amount", value: "30000" }; });
+[...new Set(ROOMS.map(r => r.rm_typ_cd))].forEach(t => { MARGIN_MASTER[t] = { type: "amount", value: "30000" }; });
 
 /* ═══ 화면관리 — 히어로 2 + 추천 섹션 1 ═══ */
 const MAIN_HERO = [
@@ -278,7 +318,78 @@ const MAIN_SECTION = [
     visible:true, period_start:"", period_end:"", viewall_use:true, viewall_label_ko:"전체 보기", viewall_label_en:"View All",
     viewall_url:"#/search", cat_1depth:["hotel","condo"], place_ids:[], tab_enabled:true,
     room_mode:"auto", sort_type:"price", room_ids:[], order:0 },
+  // 티켓 전용 추천 섹션
+  { id:"sec_ticket_demo", type:"ticket", title_ko:"인기 티켓", title_en:"Popular Tickets",
+    subtitle_ko:"워터파크·스키 추천 상품", subtitle_en:"Water Park & Ski picks",
+    visible:true, period_start:"", period_end:"", viewall_use:true, viewall_label_ko:"전체 보기", viewall_label_en:"View All",
+    ticket_mode:"auto", ticket_sort:"price", ticket_cats:[], ticket_product_ids:[], order:90 },
 ];
+
+/* ═══ 티켓 도메인 더미 (TICKET_SEED_VER=12 기준) ═══ */
+const TICKET_ADDR = "265, High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do, Korea";
+function tkCatC(label, color, ov) {
+  return {
+    hero_image_meta: [{ data_url: svgImg(label, color, "#1a1f2e") }],
+    overview_en: ov, overview_zh: "",
+    detail_html_en: "<h3>" + label + "</h3><p>" + label + " 상세 소개(프로토타입 더미). 카테고리/컨텐츠 관리(S17)에서 이미지·텍스트로 구성합니다.</p>",
+    detail_html_zh: "",
+    guide_html_en: "<ul><li>Show the issued 12-digit coupon barcode at the on-site POS/KIOSK.</li><li>Open ticket — free entry within the valid period.</li><li>One coupon per person.</li></ul>",
+    guide_html_zh: "",
+    policy_html_en: "<ul><li>Full refund if unused before the valid end date; otherwise no refund.</li><li>No refund after on-site use.</li></ul>",
+    policy_html_zh: "",
+    address_en: TICKET_ADDR, address_zh: "",
+  };
+}
+const TICKET_CATEGORIES = [
+  Object.assign({ id:"tc_waterpark", code:"TC-001", name_ko:"워터파크", name_en:"Water Park", name_zh:"水上乐园", parent_id:null, order:1 }, tkCatC("Water Park","#38bdf8","High1 Water World — indoor/outdoor water park. Open-type tickets.")),
+  { id:"tc_ski", code:"TC-002", name_ko:"스키", name_en:"Ski", name_zh:"滑雪", parent_id:null, order:2, hero_image_meta:[{ data_url: svgImg("Ski","#6366f1","#1a1f2e") }] },
+  Object.assign({ id:"tc_ski_lift", code:"TC-003", name_ko:"리프트권", name_en:"Lift Pass", name_zh:"缆车票", parent_id:"tc_ski", order:1 }, tkCatC("Ski Lift Pass","#6366f1","High1 ski lift pass. 4-hour / 7-hour / day.")),
+  Object.assign({ id:"tc_ski_rental", code:"TC-004", name_ko:"장비렌탈", name_en:"Equipment Rental", name_zh:"器材租赁", parent_id:"tc_ski", order:2 }, tkCatC("Ski Equipment Rental","#8b5cf6","Ski/board equipment rental.")),
+  Object.assign({ id:"tc_meal", code:"TC-005", name_ko:"식사권", name_en:"Meal Voucher", name_zh:"餐券", parent_id:null, order:3 }, tkCatC("Meal Voucher","#f59e0b","Resort dining meal vouchers.")),
+  Object.assign({ id:"tc_gondola", code:"TC-006", name_ko:"곤돌라", name_en:"Gondola", name_zh:"观光缆车", parent_id:null, order:4 }, tkCatC("Gondola","#10b981","Sightseeing gondola round-trip.")),
+];
+const TICKET_SPECS = [];
+function tkAdd(cid, pass, cat, ptype, base, a, c, us, ue) {
+  TICKET_SPECS.push(
+    { id:"s_"+cid+"1", coupon_id:cid, pass_name:pass, category:cat, product_type:ptype, level:1, level_name:"대인", coupon_name:base+"(대인)", price:a, discount_target:"", use_start_date:us, use_end_date:ue, active:true },
+    { id:"s_"+cid+"2", coupon_id:cid, pass_name:pass, category:cat, product_type:ptype, level:2, level_name:"소인", coupon_name:base+"(소인)", price:c, discount_target:"", use_start_date:us, use_end_date:ue, active:true }
+  );
+}
+const WW_S="2026-07-10", WW_E="2026-08-30", SKI_S="2026-12-01", SKI_E="2027-02-28";
+tkAdd("DBO","OAT_26성수기_얼리_워터월드(플레이스토리)","워터파크","","워터월드 종일권_성수기",40000,35000,WW_S,WW_E);
+tkAdd("DBR","OAT_26성수기_얼리_워터월드(티브리지)","워터파크","","워터월드 종일권_성수기",40000,35000,WW_S,WW_E);
+tkAdd("DBT","OAT_26성수기_얼리_워터월드(스마트인피니)","워터파크","","워터월드 종일권_성수기",40000,35000,WW_S,WW_E);
+tkAdd("DBQ","OAT_26성수기_워터월드_4시간권","워터파크","","워터월드 4시간권",30000,26000,WW_S,WW_E);
+tkAdd("DBW","OAT_26성수기_워터월드_7시간권","워터파크","","워터월드 7시간권",36000,31000,WW_S,WW_E);
+tkAdd("SVC","OAT_26시즌_스키리프트_4시간권","스키","리프트권","스키 리프트 4시간권",45000,34000,SKI_S,SKI_E);
+tkAdd("SVZ","OAT_26시즌_스키리프트_7시간권","스키","리프트권","스키 리프트 7시간권",55000,40000,SKI_S,SKI_E);
+tkAdd("SVA","OAT_26시즌_스키리프트_종일권","스키","리프트권","스키 리프트 종일권",65000,48000,SKI_S,SKI_E);
+tkAdd("RSA","OAT_26시즌_장비렌탈_4시간권","스키","장비렌탈","스키 장비렌탈 4시간권",25000,20000,SKI_S,SKI_E);
+tkAdd("RSC","OAT_26시즌_장비렌탈_7시간권","스키","장비렌탈","스키 장비렌탈 7시간권",30000,24000,SKI_S,SKI_E);
+tkAdd("RSF","OAT_26시즌_장비렌탈_종일권","스키","장비렌탈","스키 장비렌탈 종일권",38000,30000,SKI_S,SKI_E);
+// 곤돌라 왕복권 — 성인(대인) 전용 (아동 레벨 없음)
+TICKET_SPECS.push({ id:"s_GDO1", coupon_id:"GDO", pass_name:"OAT_곤돌라_왕복권", category:"곤돌라", product_type:"", level:1, level_name:"대인", coupon_name:"곤돌라 왕복권(대인)", price:18000, discount_target:"", use_start_date:"2026-07-01", use_end_date:"2026-12-31", active:true });
+const TICKET_MARGIN = {
+  categories: {
+    "워터파크": { type:"amount", value:"4000" },
+    "스키>리프트권": { type:"rate", value:"10" },
+    "스키>장비렌탈": { type:"amount", value:"3000" },
+    "곤돌라": { type:"amount", value:"2000" },
+  },
+  overrides: { DBQ: { type:"amount", value:"3000" } },
+};
+function tkImg(label, color) { return { thumb_meta: [{ data_url: svgImg(label, color, "#1a1f2e") }] }; }
+function tkMk(o) { return Object.assign({ id:"p_"+o.product_code, visibility:"Y", date_mode:"open", cancel_policy:[{base:"3plus",penalty:0},{base:"today",penalty:100}], created_at:NOW, updated_at:NOW }, o); }
+function buildTicketProducts() {
+  const S1 = ymd(addDays(todayDate(),-1)), S2 = ymd(addDays(todayDate(),240)); // 판매기간: 항상 판매중
+  return [
+    tkMk({ product_code:"PR-T0001", name_en:"Water World Day Pass (Peak/Early)", name_zh:"水世界一日通票（旺季/早鸟）", category_1:"워터파크", category_2:"", spec_coupon_id:"DBO", sale_start_date:S1, sale_end_date:S2, cutoff:{n:1,unit:"day",time:"23:59"}, ...tkImg("Water World Day Pass","#38bdf8") }),
+    tkMk({ product_code:"PR-T0002", name_en:"Water World 4-Hour Pass", name_zh:"水世界4小时票", category_1:"워터파크", category_2:"", spec_coupon_id:"DBQ", sale_start_date:S1, sale_end_date:S2, cutoff:{n:0,unit:"hour",time:"23:59"}, ...tkImg("Water World 4-Hour","#0ea5e9") }),
+    tkMk({ product_code:"PR-T0003", name_en:"Ski Lift Day Pass", name_zh:"滑雪缆车一日券", category_1:"스키", category_2:"리프트권", spec_coupon_id:"SVA", sale_start_date:S1, sale_end_date:S2, cutoff:{n:1,unit:"day",time:"18:00"}, ...tkImg("Ski Lift Day Pass","#6366f1") }),
+    tkMk({ product_code:"PR-T0004", name_en:"Ski Equipment Rental (Day)", name_zh:"滑雪装备租赁（全日）", category_1:"스키", category_2:"장비렌탈", spec_coupon_id:"RSF", sale_start_date:S1, sale_end_date:S2, cutoff:{n:1,unit:"day",time:"18:00"}, ...tkImg("Ski Equipment Rental","#8b5cf6") }),
+    tkMk({ product_code:"PR-T0005", name_en:"Gondola Round Trip", name_zh:"观光缆车往返", category_1:"곤돌라", category_2:"", spec_coupon_id:"GDO", sale_start_date:S1, sale_end_date:S2, cutoff:{n:0,unit:"hour",time:"23:59"}, ...tkImg("Gondola Round Trip","#10b981") }),
+  ];
+}
 
 /* ═══ 인벤토리 생성 (오늘 ~ +120일) ═══ */
 function buildInventories() {
@@ -330,6 +441,13 @@ function seedAll() {
     put("high1_main_hero_v1", MAIN_HERO);
     put("high1_main_hero_cfg_v1", MAIN_HERO_CFG);
     put("high1_main_section_v1", MAIN_SECTION);
+    // 티켓 도메인
+    put("high1_ticket_categories_v1", TICKET_CATEGORIES);
+    put("high1_coupon_specs_v1", TICKET_SPECS);
+    put("high1_ticket_margin_master_v1", TICKET_MARGIN);
+    put("high1_ticket_products_v1", buildTicketProducts());
+    put("high1_ticket_upload_history_v1", []);
+    localStorage.setItem("high1_ticket_seed_ver", "12");
 
     log("숙소시설 카테고리 " + catsPlace.length + " / 객실시설 카테고리 " + catsRoom.length + " 주입");
     log("숙소시설 " + facPlace.length + " / 객실시설 " + facRoom.length + " 주입 (카테고리 매핑)");
@@ -339,7 +457,9 @@ function seedAll() {
     log("상품 " + PRODUCTS.length + " (설명·안내·정책·컷오프2) 주입");
     log("재고·요금: 오늘~+120일 자동 생성 (재고 30·판매 ON) — room.inventory + product.inventory");
     log("마진 마스터: 전역 금액 30,000원 주입");
-    log("메인 히어로 2 + 추천 섹션 1 주입");
+    log("메인 히어로 2 + 추천 섹션 2(숙소·티켓) 주입");
+    log("티켓 카테고리 " + TICKET_CATEGORIES.length + " / 쿠폰스펙 " + TICKET_SPECS.length + "행 / 상품 5(곤돌라=성인전용) 주입");
+    log("티켓 마진: 카테고리 마스터 4 + 오버라이드 1 (DBQ) 주입 (seed ver 12)");
     const t = ymd(todayDate());
     document.getElementById("results").insertAdjacentHTML("beforeend",
       '<div class="summary">✅ 전체 더미 주입 완료 — 검색 기준일 <b>' + t + ' ~ ' + ymd(addDays(todayDate(),120)) +

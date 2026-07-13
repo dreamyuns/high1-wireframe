@@ -21,6 +21,15 @@ const STORAGE_MAIN_HERO = "high1_main_hero_v1"; // 화면관리 > 메인관리 �
 const STORAGE_MAIN_HERO_CFG = "high1_main_hero_cfg_v1"; // 히어로 전역 설정(자동슬라이드·주기)
 const STORAGE_MAIN_SECTION = "high1_main_section_v1"; // 추천 섹션
 
+/* ── 티켓 도메인 (Phase 1: S17 카테고리 · S13 스펙 · S14 상품) ── */
+const STORAGE_TICKET_CATEGORIES = "high1_ticket_categories_v1"; // S17 티켓 카테고리(최대 2뎁스)
+const STORAGE_COUPON_SPECS = "high1_coupon_specs_v1"; // S13 쿠폰 스펙(쿠폰ID+레벨 행)
+const STORAGE_TICKET_PRODUCTS = "high1_ticket_products_v1"; // S14 티켓 상품
+const STORAGE_TICKET_MARGIN_MASTER = "high1_ticket_margin_master_v1"; // S11 티켓 탭 마진(쿠폰ID 단위) — 신규-4 제안 키
+const STORAGE_TICKET_UPLOAD_HISTORY = "high1_ticket_upload_history_v1"; // S13 탭B 업로드 이력
+const STORAGE_TICKET_SEED_VER = "high1_ticket_seed_ver"; // 더미 시드 버전 마커 (값 바뀌면 재주입)
+const TICKET_SEED_VER = 12; // 더미 갱신 시 +1 → 카테고리·스펙·마진·상품 재주입(이력 제외)
+
 /** 객실 부가요금 반영 기준 — 프런트 정책 노출은 모드와 무관하게 동일하게 표시 */
 const ROOM_CHARGE_SETTLEMENT = {
   AT_BOOKING: "AT_BOOKING",
@@ -1252,12 +1261,121 @@ function setActiveNav() {
       (target === "products" && path.startsWith("products")) ||
       (target === "room-masters" && path.startsWith("room-masters")) ||
       (target === "margin-management" && path.startsWith("margin-management")) ||
-      (target === "main-management" && path.startsWith("main-management"));
+      (target === "main-management" && path.startsWith("main-management")) ||
+      (target === "coupon-specs" && path.startsWith("coupon-specs")) ||
+      (target === "ticket-products" && path.startsWith("ticket-products")) ||
+      (target === "ticket-categories" && path.startsWith("ticket-categories"));
     el.classList.toggle("active", on);
   });
 }
 
+/* ── 상단 GNB + 컨텍스트 LNB (개발사 어드민 구조) ── */
+const NAV_SECTIONS = [
+  {
+    id: "stay", label: "숙소관리", match: ["places", "rooms", "products"],
+    lnb: [
+      { label: "숙소관리", route: "places" },
+      { label: "객실관리", route: "rooms" },
+      { label: "상품관리", route: "products" },
+    ],
+  },
+  {
+    id: "ticket", label: "티켓관리", match: ["ticket-categories", "coupon-specs", "ticket-products"],
+    lnb: [
+      { label: "카테고리/컨텐츠 관리", route: "ticket-categories" },
+      { label: "쿠폰 스펙 관리", route: "coupon-specs" },
+      { label: "티켓 상품", route: "ticket-products" },
+    ],
+  },
+  { id: "tour", label: "투어관리", mock: true, match: ["tours"], lnb: [], placeholder: "tours" },
+  { id: "booking", label: "예약관리", match: ["reservations", "ticket-orders"], lnb: [], placeholder: "reservations" },
+  {
+    id: "screen", label: "화면관리", match: ["main-management"],
+    lnb: [{ label: "메인관리", route: "main-management" }],
+  },
+  {
+    id: "common", label: "공통관리", match: ["categories", "facilities", "room-masters", "margin-management"],
+    lnb: [
+      { head: "숙소 카테고리·시설" },
+      { label: "숙소시설관리", route: "categories/place", sub: true },
+      { label: "객실시설관리", route: "categories/room", sub: true },
+      { label: "숙소 시설", route: "facilities/place", sub: true },
+      { label: "객실 시설", route: "facilities/room", sub: true },
+      { label: "객실유형관리", route: "room-masters", sub: true },
+      { head: "마진" },
+      { label: "마진관리", route: "margin-management" },
+    ],
+  },
+];
+
+function sectionForPath(path) {
+  for (const s of NAV_SECTIONS) {
+    if (s.match.some((m) => path === m || path.startsWith(m + "/"))) return s;
+  }
+  return NAV_SECTIONS[0];
+}
+function firstRouteOf(section) {
+  const item = (section.lnb || []).find((i) => i.route);
+  return item ? item.route : section.placeholder || "places";
+}
+
+/** 상단 GNB + 좌측 LNB를 현재 라우트 기준으로 렌더 (routeWrap마다 호출) */
+function renderChrome() {
+  const { path } = parseHash();
+  const active = sectionForPath(path);
+
+  const gnb = document.getElementById("gnb");
+  if (gnb) {
+    gnb.innerHTML = NAV_SECTIONS.map(
+      (s) => `<button type="button" class="gnb-item ${s.id === active.id ? "active" : ""}" data-section="${s.id}">${escapeHtml(s.label)}${s.mock ? `<span class="gnb-mock">MOCK</span>` : ""}</button>`
+    ).join("");
+    gnb.querySelectorAll(".gnb-item").forEach((btn) => btn.addEventListener("click", () => {
+      const s = NAV_SECTIONS.find((x) => x.id === btn.getAttribute("data-section"));
+      if (s) navigate(firstRouteOf(s));
+    }));
+  }
+
+  const lnb = document.getElementById("lnb");
+  if (lnb) {
+    let html = `<div class="lnb-title">${escapeHtml(active.label)}${active.mock ? `<span class="gnb-mock">MOCK</span>` : ""}</div>`;
+    if (!(active.lnb && active.lnb.length)) {
+      html += `<div class="lnb-empty">준비 중입니다 (MOCK).</div>`;
+    } else {
+      let headSeen = false;
+      active.lnb.forEach((i) => {
+        if (i.head) { html += `<div class="nav-group-subtitle ${headSeen ? "nav-head-div" : ""}">${escapeHtml(i.head)}</div>`; headSeen = true; return; }
+        const on = navRouteMatch(i.route, path);
+        html += `<button type="button" class="nav-link ${i.sub ? "nav-link-sub" : ""} ${on ? "active" : ""}" data-route="${escapeAttr(i.route)}">${escapeHtml(i.label)}</button>`;
+      });
+    }
+    lnb.innerHTML = html;
+    lnb.querySelectorAll(".nav-link[data-route]").forEach((btn) => btn.addEventListener("click", () => navigate(btn.getAttribute("data-route"))));
+  }
+}
+
+/** 미구현(MOCK) 섹션 안내 화면 */
+function renderComingSoon(main, label, mock) {
+  main.innerHTML = `
+    <h2 class="page-title">${escapeHtml(label)}${mock ? ` <span class="badge" style="background:#fef3c7;color:#92610e">MOCK</span>` : ""}</h2>
+    <div class="card"><div class="empty"><strong>준비 중입니다.</strong> 이 메뉴는 아직 프로토타입에 구현되지 않았습니다${mock ? " (MOCK)" : ""}.</div></div>`;
+}
+
+let _marginTab = "lodging"; // 마진관리 탭 상태 (lodging | ticket)
 function renderMarginMaster(main) {
+  main.innerHTML = `
+    <h2 class="page-title">마진관리 <span style="font-size:12px;font-weight:400;color:#888">— 공통관리 · 숙소(객실 타입별) · 티켓(카테고리 마스터+쿠폰ID 오버라이드)</span></h2>
+    <div class="room-master-tabs">
+      <a class="room-master-tab ${_marginTab === "lodging" ? "active" : ""}" href="javascript:void(0)" data-mtab="lodging">숙소</a>
+      <a class="room-master-tab ${_marginTab === "ticket" ? "active" : ""}" href="javascript:void(0)" data-mtab="ticket">티켓</a>
+    </div>
+    <div id="mm-body"></div>`;
+  main.querySelectorAll("[data-mtab]").forEach((el) => el.addEventListener("click", () => { _marginTab = el.getAttribute("data-mtab"); renderMarginMaster(main); }));
+  const body = main.querySelector("#mm-body");
+  if (_marginTab === "ticket") renderTicketMarginPanel(body);
+  else renderLodgingMarginPanel(body);
+}
+
+function renderLodgingMarginPanel(main) {
   const rooms = loadRooms();
   const places = loadPlaces();
   const placeById = new Map(places.map((p) => [p.id, p]));
@@ -1302,7 +1420,6 @@ function renderMarginMaster(main) {
     : `<tr><td colspan="6" class="muted" style="padding:12px">객실이 없습니다. 객실관리에서 [PMS 객실 동기화] 후 이용하세요.</td></tr>`;
 
   main.innerHTML = `
-    <h2 class="page-title">마진관리 <span style="font-size:12px;font-weight:400;color:#888">— 공통관리 · 객실 타입(RM_TYP_CD)별 마진 디폴트</span></h2>
     <p class="page-desc">여기서 설정한 마진이 상품 재고·요금의 <strong>일자별 마진 디폴트</strong>로 주입됩니다. 날짜별 개별 조정은 상품(S06) 재고·요금 탭에서 합니다. 전역 기본 디폴트: 마진금액 ${DEFAULT_DAILY_MARGIN.value}원.</p>
     <div class="card">
       <div class="product-bulk-bar" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
@@ -1387,6 +1504,125 @@ function renderMarginMaster(main) {
   });
 }
 
+/* ── S11 티켓 마진 탭 — 카테고리 마스터 + 쿠폰ID 오버라이드 (정책 v0.11 §11) ── */
+function renderTicketMarginPanel(main) {
+  const W = loadTicketMarginMaster(); // 작업 사본 { categories, overrides }
+  const groups = Array.from(groupCouponSpecs(loadCouponSpecs()).values());
+  const cats = loadTicketCategories();
+  const tops = cats.filter((c) => !c.parent_id).sort((a, b) => (a.order || 0) - (b.order || 0));
+  const catOpts = [{ v: "", label: "전체" }];
+  tops.forEach((t) => {
+    catOpts.push({ v: t.name_ko, label: t.name_ko });
+    cats.filter((c) => c.parent_id === t.id).sort((a, b) => (a.order || 0) - (b.order || 0)).forEach((s) => catOpts.push({ v: `${t.name_ko}>${s.name_ko}`, label: `${t.name_ko} > ${s.name_ko}` }));
+  });
+  const resolveW = (cid, cat1, cat2) => {
+    const ov = W.overrides[cid];
+    if (isMarginEntry(ov)) return { type: ov.type, value: String(ov.value ?? ""), source: "override" };
+    const k2 = cat1 && cat2 ? `${cat1}>${cat2}` : "";
+    if (k2 && isMarginEntry(W.categories[k2])) return { type: W.categories[k2].type, value: String(W.categories[k2].value ?? ""), source: "cat2" };
+    if (cat1 && isMarginEntry(W.categories[cat1])) return { type: W.categories[cat1].type, value: String(W.categories[cat1].value ?? ""), source: "cat1" };
+    return { type: DEFAULT_TICKET_MARGIN.type, value: DEFAULT_TICKET_MARGIN.value, source: "default" };
+  };
+  const effLabel = (m) => m.source === "default"
+    ? `전역 디폴트(${Number(DEFAULT_TICKET_MARGIN.value).toLocaleString()}원)`
+    : (m.type === "rate" ? `${m.value}%` : `${Number(m.value || 0).toLocaleString()}원`);
+  const previewLevels = (g, m) => g.rows.map((r) => {
+    const sell = computeSellPrice(Number(r.price) || 0, m.type, m.value);
+    return `${escapeHtml(r.level_name)} ${Number(r.price).toLocaleString()}→${sell.toLocaleString()}`;
+  }).join("<br>");
+
+  function draw() {
+    groups.sort((a, b) => (a.category || "").localeCompare(b.category || "") || (a.product_type || "").localeCompare(b.product_type || "") || a.coupon_id.localeCompare(b.coupon_id));
+    const rowsHtml = groups.length ? groups.map((g) => {
+      const cid = g.coupon_id, cat1 = g.category || "", cat2 = g.product_type || "";
+      const isOv = isMarginEntry(W.overrides[cid]);
+      const eff = resolveW(cid, cat1, cat2);
+      const catLabel = cat2 ? `${cat1} > ${cat2}` : (cat1 || "-");
+      const typeCell = isOv
+        ? `<select class="tm-type" data-cid="${escapeAttr(cid)}" style="width:110px"><option value="amount" ${eff.type === "amount" ? "selected" : ""}>마진금액</option><option value="rate" ${eff.type === "rate" ? "selected" : ""}>마진율%</option></select>`
+        : `<span class="badge" style="background:#f0f0ea;color:#888">${eff.source === "default" ? "전역 디폴트" : (eff.type === "rate" ? "마진율%" : "마진금액") + "(마스터)"}</span>`;
+      const valCell = isOv
+        ? `<input class="tm-value" data-cid="${escapeAttr(cid)}" type="text" inputmode="numeric" value="${escapeAttr(eff.value)}" style="width:80px">`
+        : `<span style="color:#888">${eff.source === "default" ? "—" : effLabel(eff)}</span>`;
+      return `<tr data-cid="${escapeAttr(cid)}">
+        <td><span class="badge" style="background:#fde8e8;color:#c0392b">${escapeHtml(cid)}</span></td>
+        <td style="font-size:11px;color:#666">${escapeHtml(catLabel)}</td>
+        <td>${escapeHtml(g.pass_name || "")}</td>
+        <td><span class="badge" style="background:${isOv ? "#dcfce7;color:#166534" : "#e8e8e2;color:#666"}">${isOv ? "개별" : "상속"}</span></td>
+        <td>${typeCell}</td>
+        <td>${valCell}</td>
+        <td style="font-size:10px;font-weight:600;color:${isOv ? "#1a6fb8" : "#999"}">${previewLevels(g, eff)}</td>
+        <td><button type="button" class="btn btn-sm tm-toggle" data-cid="${escapeAttr(cid)}">${isOv ? "상속으로" : "개별설정"}</button></td>
+      </tr>`;
+    }).join("") : `<tr><td colspan="8" class="muted" style="padding:12px">쿠폰 스펙이 없습니다. 쿠폰 스펙 관리(S13)에서 등록 후 이용하세요.</td></tr>`;
+
+    main.innerHTML = `
+      <p class="page-desc" style="margin-top:0">티켓 마진은 <strong>카테고리 마스터 + 쿠폰ID 오버라이드</strong>로 관리합니다. 상단에서 카테고리 마스터를 정하면 그 범위 쿠폰ID가 <strong>상속</strong>하고, 특정 쿠폰ID만 <strong>개별설정</strong>으로 덮어씁니다.</p>
+      <div class="card" style="background:#f0f5ff;border-color:#c7d2fe;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;color:#3730a3;margin-bottom:4px">마진 적용 우선순위</div>
+        <div style="font-size:12px;color:#444;line-height:1.7">① <strong>쿠폰ID 개별</strong> ▸ ② <strong>2뎁스(상품유형) 마스터</strong> ▸ ③ <strong>1뎁스(카테고리) 마스터</strong> ▸ ④ <strong>전역 디폴트(마진금액 ${Number(DEFAULT_TICKET_MARGIN.value).toLocaleString()}원)</strong></div>
+      </div>
+      <div class="card">
+        <div class="product-bulk-bar" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
+          <span class="product-bulk-title" style="width:100%;margin-bottom:2px">카테고리 마스터 마진 설정</span>
+          <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888">카테고리
+            <select id="tm_cat" style="width:200px">${catOpts.map((o) => `<option value="${escapeAttr(o.v)}">${escapeHtml(o.label)}</option>`).join("")}</select></label>
+          <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888">마진 유형
+            <select id="tm_type" style="width:120px"><option value="">전역 디폴트</option><option value="amount">마진금액</option><option value="rate">마진율%</option></select></label>
+          <label style="display:flex;flex-direction:column;gap:2px;font-size:10px;color:#888">마진 값
+            <input id="tm_val" type="text" inputmode="numeric" style="width:90px"></label>
+          <button type="button" class="btn" id="tm_apply" style="height:34px">카테고리 마스터 적용</button>
+          <span style="flex:1"></span>
+          <button type="button" class="btn btn-primary" id="tm_save" style="height:34px">쿠폰ID 마진 저장</button>
+        </div>
+        <p class="field-hint" style="margin-top:8px">카테고리(전체/1뎁스/2뎁스)로 범위를 좁혀 유형·값 지정 → [카테고리 마스터 적용]으로 그 범위 <strong>'상속' 행에 반영</strong>. '개별' 행은 영향 없음. 유형 '전역 디폴트' 선택 시 해당 카테고리 마스터 삭제(→전역 디폴트 상속). 반드시 <strong>[쿠폰ID 마진 저장]</strong>을 눌러야 최종 반영.</p>
+        <div class="product-inv-wrap" style="margin-top:10px"><table class="room-list-table">
+          <thead><tr><th>쿠폰ID</th><th>카테고리</th><th>이용권명</th><th>상속·개별</th><th>마진 유형</th><th>마진 값</th><th>판매가 예시(레벨별)</th><th>개별</th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table></div>
+        <p class="field-hint" style="margin-top:8px">마진율 -49~+100 정수, 마진금액 정액. 소수점 버림(floor). 한 쿠폰ID의 <strong>모든 레벨에 동일 마진</strong> 적용.</p>
+      </div>`;
+
+    // 개별 토글
+    main.querySelectorAll(".tm-toggle").forEach((b) => b.addEventListener("click", () => {
+      const cid = b.getAttribute("data-cid");
+      if (isMarginEntry(W.overrides[cid])) { delete W.overrides[cid]; }
+      else { const g = groups.find((x) => x.coupon_id === cid); const eff = resolveW(cid, g.category || "", g.product_type || ""); W.overrides[cid] = { type: eff.type === "rate" ? "rate" : "amount", value: eff.value }; }
+      draw();
+    }));
+    // 오버라이드 행 편집
+    main.querySelectorAll(".tm-type").forEach((sel) => sel.addEventListener("change", () => {
+      const cid = sel.getAttribute("data-cid");
+      W.overrides[cid] = { type: sel.value, value: (W.overrides[cid] && W.overrides[cid].value) || "" };
+      draw();
+    }));
+    main.querySelectorAll(".tm-value").forEach((inp) => inp.addEventListener("input", () => {
+      const cid = inp.getAttribute("data-cid");
+      W.overrides[cid] = { type: (W.overrides[cid] && W.overrides[cid].type) || "amount", value: inp.value.trim() };
+      const tr = inp.closest("tr"); const g = groups.find((x) => x.coupon_id === cid);
+      tr.querySelector("td:nth-child(7)").innerHTML = previewLevels(g, W.overrides[cid]);
+    }));
+    // 카테고리 마스터 적용
+    main.querySelector("#tm_apply").addEventListener("click", () => {
+      const key = main.querySelector("#tm_cat").value;
+      const type = main.querySelector("#tm_type").value;
+      const val = String(main.querySelector("#tm_val").value || "").trim();
+      const applyKey = (k) => { if (!type) delete W.categories[k]; else W.categories[k] = { type, value: val }; };
+      if (key === "") catOpts.filter((o) => o.v).forEach((o) => applyKey(o.v));
+      else applyKey(key);
+      draw();
+    });
+    main.querySelector("#tm_save").addEventListener("click", () => {
+      const nCat = Object.keys(W.categories).filter((k) => isMarginEntry(W.categories[k])).length;
+      const nOv = Object.keys(W.overrides).filter((k) => isMarginEntry(W.overrides[k])).length;
+      if (!confirm(`티켓 마진을 저장하시겠습니까?\n\n· 카테고리 마스터 ${nCat}건\n· 개별(오버라이드) ${nOv}건\n\n저장 시 프런트 판매가에 즉시 반영됩니다.`)) return;
+      saveTicketMarginMaster(W);
+      alert(`✅ 티켓 마진이 저장되었습니다.\n\n· 카테고리 마스터 ${nCat}건\n· 개별(오버라이드) ${nOv}건\n반영 완료.`);
+    });
+  }
+  draw();
+}
+
 function sortLabel(t) {
   return t === "az" ? "A-Z" : t === "za" ? "Z-A" : t === "popular" ? "인기순" : "가격순(낮은순)";
 }
@@ -1430,23 +1666,30 @@ function renderMainManagement(main) {
         .slice()
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
         .map((s) => {
-          const cat = (s.cat_1depth || []).map((c) => (c === "condo" ? "Condo" : "Hotel")).join(", ") || "-";
-          const placeFilter = s.place_ids && s.place_ids.length ? s.place_ids.map((id) => placeById.get(id)?.place_name || "?").join(", ") : "전체";
-          const roomSel = s.room_mode === "manual" ? `수동 · ${(s.room_ids || []).length}개` : `자동 · ${sortLabel(s.sort_type)}`;
+          const isTk = s.type === "ticket";
+          const typeBadge = isTk ? `<span class="badge" style="background:#fce7f3;color:#ec4899">티켓</span>` : `<span class="badge" style="background:#dbeafe;color:#1e40af">숙소</span>`;
+          const cat = isTk
+            ? ((s.ticket_cats || []).length ? s.ticket_cats.join(", ") : "전체")
+            : ((s.cat_1depth || []).map((c) => (c === "condo" ? "Condo" : "Hotel")).join(", ") || "-");
+          const placeFilter = isTk ? "—" : (s.place_ids && s.place_ids.length ? s.place_ids.map((id) => placeById.get(id)?.place_name || "?").join(", ") : "전체");
+          const sel = isTk
+            ? (s.ticket_mode === "manual" ? `수동 · ${(s.ticket_product_ids || []).length}개` : `자동 · ${s.ticket_sort === "name" ? "이름순" : "가격순"}`)
+            : (s.room_mode === "manual" ? `수동 · ${(s.room_ids || []).length}개` : `자동 · ${sortLabel(s.sort_type)}`);
           const period = s.period_start || s.period_end ? `${escapeHtml(s.period_start || "")} ~ ${escapeHtml(s.period_end || "")}` : "상시";
           const on = sectionOn(s, today);
           return `<tr>
+            <td>${typeBadge}</td>
             <td style="font-weight:600">${escapeHtml(s.title_ko || s.title_en || "-")}</td>
             <td>${escapeHtml(cat)}</td>
             <td style="font-size:11px">${escapeHtml(placeFilter)}</td>
-            <td style="font-size:11px">${escapeHtml(roomSel)}</td>
+            <td style="font-size:11px">${escapeHtml(sel)}</td>
             <td style="font-size:11px">${period}</td>
             <td><span class="badge ${on ? "on" : "off"}">${on ? "SHOW" : "HIDE"}</span></td>
             <td style="white-space:nowrap"><button type="button" class="btn btn-ghost js-sec-edit" data-id="${escapeAttr(s.id)}">수정</button> <button type="button" class="btn btn-ghost js-sec-del" data-id="${escapeAttr(s.id)}">삭제</button></td>
           </tr>`;
         })
         .join("")
-    : `<tr><td colspan="7" class="muted" style="padding:12px">등록된 섹션이 없습니다. [+ 섹션 추가]로 등록하세요.</td></tr>`;
+    : `<tr><td colspan="8" class="muted" style="padding:12px">등록된 섹션이 없습니다. [+ 섹션 추가]로 등록하세요.</td></tr>`;
 
   main.innerHTML = `
     <h2 class="page-title">메인 화면 관리 <span style="font-size:12px;font-weight:400;color:#888">— 화면관리 &gt; 메인관리</span></h2>
@@ -1470,8 +1713,8 @@ function renderMainManagement(main) {
     <div class="card" style="border:1.5px solid #6366f1;margin-top:16px">
       <h3 class="section-title" style="color:#3730a3">★ 추천 섹션 영역</h3>
       <div style="font-size:10px;color:#888;margin-bottom:5px">섹션 목록 (${sections.length}개)</div>
-      <div class="product-inv-wrap"><table class="room-list-table"><thead><tr><th>섹션 타이틀(KO)</th><th>카테고리</th><th>숙소 필터</th><th>객실 선택</th><th>노출 기간</th><th>상태</th><th>작업</th></tr></thead><tbody>${secRows}</tbody></table></div>
-      <div style="margin-top:8px"><a href="#/main-management/section/new" class="btn">+ 섹션 추가</a></div>
+      <div class="product-inv-wrap"><table class="room-list-table"><thead><tr><th>유형</th><th>섹션 타이틀(KO)</th><th>카테고리</th><th>숙소 필터</th><th>선택</th><th>노출 기간</th><th>상태</th><th>작업</th></tr></thead><tbody>${secRows}</tbody></table></div>
+      <div style="margin-top:8px;display:flex;gap:8px"><a href="#/main-management/section/new" class="btn">+ 숙소 섹션 추가</a><a href="#/main-management/section/new-ticket" class="btn" style="border-color:#ec4899;color:#be185d">+ 티켓 섹션 추가</a></div>
     </div>
   `;
 
@@ -1929,11 +2172,10 @@ function boot() {
   window.addEventListener("hashchange", () => {
     routeWrap();
   });
-  document.querySelectorAll(".nav-link[data-route]").forEach((el) => {
-    el.addEventListener("click", () => {
-      navigate(el.getAttribute("data-route"));
-    });
-  });
+  const logout = document.getElementById("btn-logout");
+  if (logout) logout.addEventListener("click", () => alert("로그아웃 (프로토타입 목업)"));
+  const lang = document.getElementById("lang-select");
+  if (lang) lang.addEventListener("change", () => alert("언어 전환은 프로토타입 목업입니다."));
   routeWrap();
 }
 
@@ -1941,6 +2183,27 @@ function route() {
   const { path, parts } = parseHash();
   const main = document.getElementById("main");
   if (!main) return;
+
+  // ── 미구현(MOCK) 섹션 ──
+  if (parts[0] === "tours") { renderComingSoon(main, "투어관리", true); return; }
+  if (parts[0] === "reservations") { renderComingSoon(main, "예약관리", false); return; }
+
+  // ── 티켓 도메인 ──
+  if (parts[0] === "ticket-categories") {
+    if (parts[1] === "edit" && parts[2]) { renderTicketCategoryContent(main, parts[2]); return; }
+    renderTicketCategoryList(main);
+    return;
+  }
+  if (parts[0] === "coupon-specs") {
+    renderCouponSpecPage(main, parts[1] === "history" ? "history" : "list");
+    return;
+  }
+  if (parts[0] === "ticket-products") {
+    if (parts.length === 2 && parts[1] === "new") { renderTicketProductForm(main, null); return; }
+    if (parts.length === 3 && parts[1] === "edit" && parts[2]) { renderTicketProductForm(main, parts[2]); return; }
+    renderTicketProductList(main);
+    return;
+  }
 
   if (parts[0] === "room-masters") {
     const tab = parts[1] === "beds" ? "beds" : "types";
@@ -1966,8 +2229,14 @@ function route() {
       renderSectionForm(main, null);
       return;
     }
+    if (parts[1] === "section" && parts[2] === "new-ticket") {
+      renderTicketSectionForm(main, null);
+      return;
+    }
     if (parts[1] === "section" && parts[2] === "edit" && parts[3]) {
-      renderSectionForm(main, parts[3]);
+      const sec = loadMainSection().find((s) => s.id === parts[3]);
+      if (sec && sec.type === "ticket") renderTicketSectionForm(main, parts[3]);
+      else renderSectionForm(main, parts[3]);
       return;
     }
     renderMainManagement(main);
@@ -2102,8 +2371,117 @@ function route() {
   fn(main);
 }
 
+/* ── 티켓 전용 추천 섹션 폼 (숙소 섹션과 분리) ── */
+function renderTicketSectionForm(main, editId) {
+  ensureTicketStores();
+  const sections = loadMainSection();
+  const existing = editId ? sections.find((s) => s.id === editId) : null;
+  const products = loadTicketProducts();
+  const tops = ticketTopCategories();
+  const state = {
+    id: existing?.id || uid(),
+    type: "ticket",
+    title_ko: existing?.title_ko || "", title_en: existing?.title_en || "",
+    subtitle_ko: existing?.subtitle_ko || "", subtitle_en: existing?.subtitle_en || "",
+    visible: existing?.visible !== false,
+    period_start: existing?.period_start || "", period_end: existing?.period_end || "",
+    viewall_use: existing?.viewall_use ?? true,
+    viewall_label_ko: existing?.viewall_label_ko || "", viewall_label_en: existing?.viewall_label_en || "",
+    ticket_mode: existing?.ticket_mode === "manual" ? "manual" : "auto",
+    ticket_sort: existing?.ticket_sort === "name" ? "name" : "price",
+    ticket_cats: Array.isArray(existing?.ticket_cats) ? [...existing.ticket_cats] : [],
+    ticket_product_ids: Array.isArray(existing?.ticket_product_ids) ? [...existing.ticket_product_ids] : [],
+    order: existing?.order ?? sections.length,
+  };
+  const inp = "width:100%;padding:8px;border:1px solid #ddd;border-radius:6px";
+  function sync() {
+    const v = (id) => main.querySelector("#" + id);
+    if (v("ts_title_ko")) state.title_ko = v("ts_title_ko").value;
+    if (v("ts_title_en")) state.title_en = v("ts_title_en").value;
+    if (v("ts_sub_ko")) state.subtitle_ko = v("ts_sub_ko").value;
+    if (v("ts_sub_en")) state.subtitle_en = v("ts_sub_en").value;
+    if (v("ts_visible")) state.visible = v("ts_visible").value === "on";
+    if (v("ts_ps")) state.period_start = v("ts_ps").value;
+    if (v("ts_pe")) state.period_end = v("ts_pe").value;
+    if (v("ts_va_use")) state.viewall_use = v("ts_va_use").value === "on";
+    if (v("ts_va_ko")) state.viewall_label_ko = v("ts_va_ko").value;
+    if (v("ts_va_en")) state.viewall_label_en = v("ts_va_en").value;
+    if (v("ts_sort")) state.ticket_sort = v("ts_sort").value;
+    if (v("ts_order")) state.order = parseInt(v("ts_order").value, 10) || 0;
+    if (main.querySelector(".ts-cat")) state.ticket_cats = [...main.querySelectorAll(".ts-cat:checked")].map((c) => c.value);
+    if (main.querySelector(".ts-prod")) state.ticket_product_ids = [...main.querySelectorAll(".ts-prod:checked")].map((c) => c.value);
+    if (v("ts_mode")) state.ticket_mode = v("ts_mode").value === "manual" ? "manual" : "auto";
+  }
+  function render() {
+    const autoBlock = `
+      <label class="field"><span>카테고리 필터 <span style="color:var(--muted)">미선택=전체</span></span></label>
+      <div style="border:1px solid #ddd;border-radius:6px;padding:8px 10px;background:#fff;font-size:13px;display:flex;flex-wrap:wrap;gap:12px">
+        ${tops.map((t) => `<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" class="ts-cat" value="${escapeAttr(t.name_ko)}" ${state.ticket_cats.includes(t.name_ko) ? "checked" : ""}> ${escapeHtml(t.name_ko)}</label>`).join("")}
+      </div>
+      <label class="field" style="margin-top:10px"><span>정렬 기준</span>
+        <select id="ts_sort" style="${inp}"><option value="price" ${state.ticket_sort === "price" ? "selected" : ""}>최저가 낮은순</option><option value="name" ${state.ticket_sort === "name" ? "selected" : ""}>이름순</option></select></label>`;
+    const manualBlock = `
+      <label class="field"><span>티켓 상품 선택 <span style="color:#d33">*</span> <span style="color:var(--muted)">— 선택 ${state.ticket_product_ids.length}개</span></span></label>
+      <div style="border:1px solid #ddd;border-radius:6px;padding:6px 10px;background:#fff;max-height:280px;overflow:auto">
+        ${products.length ? products.map((p) => `<label style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f0f0eb;font-size:12px;cursor:pointer"><input type="checkbox" class="ts-prod" value="${escapeAttr(p.id)}" ${state.ticket_product_ids.includes(p.id) ? "checked" : ""}> <span class="badge" style="background:#fce7f3;color:#ec4899">${escapeHtml(p.category_1)}${p.category_2 ? " › " + escapeHtml(p.category_2) : ""}</span> ${escapeHtml(p.name_en)}</label>`).join("") : `<span class="muted">티켓 상품이 없습니다. 티켓 상품 등록 후 이용하세요.</span>`}
+      </div>`;
+    main.innerHTML = `
+      <h2 class="page-title">티켓 추천 섹션 ${existing ? "수정" : "등록"} <span class="badge" style="background:#fce7f3;color:#ec4899">티켓</span></h2>
+      <p class="page-desc">프런트 메인에 노출되는 <strong>티켓 전용 추천 섹션</strong>입니다. 카드=썸네일·상품명·최저가, 클릭 시 해당 카테고리 브릿지로 이동합니다. (숙소 섹션과 분리)</p>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <label class="field"><span>섹션 타이틀 (KO) <span style="color:#d33">*</span></span><input id="ts_title_ko" value="${escapeAttr(state.title_ko)}" style="${inp}"></label>
+          <label class="field"><span>섹션 타이틀 (EN)</span><input id="ts_title_en" value="${escapeAttr(state.title_en)}" style="${inp}"></label>
+          <label class="field"><span>서브타이틀 (KO)</span><input id="ts_sub_ko" value="${escapeAttr(state.subtitle_ko)}" style="${inp}"></label>
+          <label class="field"><span>서브타이틀 (EN)</span><input id="ts_sub_en" value="${escapeAttr(state.subtitle_en)}" style="${inp}"></label>
+          <label class="field"><span>노출 여부</span><select id="ts_visible" style="${inp}"><option value="on" ${state.visible ? "selected" : ""}>노출</option><option value="off" ${!state.visible ? "selected" : ""}>미노출</option></select></label>
+          <label class="field"><span>노출 순서</span><input id="ts_order" type="number" value="${state.order}" style="${inp}"></label>
+          <label class="field"><span>노출 시작일 <span style="color:var(--muted)">선택</span></span><input id="ts_ps" type="date" value="${escapeAttr(state.period_start)}" style="${inp}"></label>
+          <label class="field"><span>노출 종료일 <span style="color:var(--muted)">선택</span></span><input id="ts_pe" type="date" value="${escapeAttr(state.period_end)}" style="${inp}"></label>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">전체보기 버튼</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+          <label class="field"><span>사용 여부</span><select id="ts_va_use" style="${inp}"><option value="on" ${state.viewall_use ? "selected" : ""}>사용</option><option value="off" ${!state.viewall_use ? "selected" : ""}>미사용</option></select></label>
+          <label class="field"><span>라벨 (KO)</span><input id="ts_va_ko" value="${escapeAttr(state.viewall_label_ko)}" placeholder="전체보기" style="${inp}"></label>
+          <label class="field"><span>라벨 (EN)</span><input id="ts_va_en" value="${escapeAttr(state.viewall_label_en)}" placeholder="View all" style="${inp}"></label>
+        </div>
+      </div>
+      <div class="card">
+        <label class="field"><span>선택 방식 <span style="color:#d33">*</span></span>
+          <select id="ts_mode" style="${inp}"><option value="auto" ${state.ticket_mode === "auto" ? "selected" : ""}>자동 (카테고리 필터 + 정렬)</option><option value="manual" ${state.ticket_mode === "manual" ? "selected" : ""}>수동 (상품 직접 선택)</option></select></label>
+        <div style="margin-top:10px">${state.ticket_mode === "manual" ? manualBlock : autoBlock}</div>
+      </div>
+      <p id="ts_err" class="error"></p>
+      <div class="toolbar" style="gap:8px">
+        <button type="button" class="btn js-ts-cancel">취소</button>
+        <button type="button" class="btn btn-primary js-ts-save">저장</button>
+      </div>`;
+    main.querySelector("#ts_mode").addEventListener("change", () => { sync(); render(); });
+    main.querySelector(".js-ts-cancel").addEventListener("click", () => navigate("main-management"));
+    main.querySelector(".js-ts-save").addEventListener("click", () => {
+      sync();
+      const err = main.querySelector("#ts_err"); err.textContent = "";
+      if (!state.title_ko.trim() && !state.title_en.trim()) { err.textContent = "섹션 타이틀(KO 또는 EN)을 입력하세요."; return; }
+      if (state.ticket_mode === "manual" && !state.ticket_product_ids.length) { err.textContent = "수동 선택 시 티켓 상품을 1개 이상 선택하세요."; return; }
+      if (state.period_start && state.period_end && state.period_start > state.period_end) { err.textContent = "노출 종료일이 시작일보다 빠릅니다."; return; }
+      const list = loadMainSection();
+      const rec = { ...state };
+      const idx = list.findIndex((x) => x.id === state.id);
+      const now = new Date().toISOString();
+      if (idx >= 0) list[idx] = { ...list[idx], ...rec, updated_at: now };
+      else { rec.created_at = now; list.push(rec); }
+      saveMainSection(list);
+      alert("티켓 섹션이 저장되었습니다.");
+      navigate("main-management");
+    });
+  }
+  render();
+}
+
 function routeWrap() {
-  setActiveNav();
+  renderChrome();
   route();
 }
 
@@ -2360,10 +2738,10 @@ function renderPlaceWizard(main, editId) {
         <label class="field"><span>주소(영문, 선택)</span>
           <textarea id="f_addr_en" rows="3" placeholder="Address in English">${escapeHtml(state.address_en)}</textarea>
         </label>
-        <label class="field"><span>위치 상세 (HTML 또는 텍스트)</span>
-          <textarea id="f_loc_detail" class="js-image-paste" rows="6" placeholder="<p>...</p> 또는 안내 문구">${escapeForTextarea(state.location_detail)}</textarea>
+        <label class="field"><span>위치 상세</span>
+          ${richEditorHtml("f_loc_detail", state.location_detail, { minHeight: 140 })}
         </label>
-        <p style="font-size:12px;color:var(--muted);margin:-8px 0 12px;">클립보드 이미지 붙여넣기 가능 · 길게 저장 시 용량이 커지므로 2MB 이하 권장(프로토타입은 Data URL로 삽입)</p>
+        <p style="font-size:12px;color:var(--muted);margin:6px 0 12px;">툴바 [이미지 불러오기] 또는 스크린샷 Ctrl+V 붙여넣기로 이미지 삽입(자동 업로드·URL 저장).</p>
       `;
     } else if (state.step === 3) {
       const metaLines = (state.image_meta || [])
@@ -2414,19 +2792,19 @@ function renderPlaceWizard(main, editId) {
       body = `
         <div class="dual">
           <label class="field"><span>숙소 안내</span>
-            <textarea id="f_guide" class="js-image-paste" rows="10" placeholder="HTML 또는 텍스트">${escapeForTextarea(state.guide_html)}</textarea>
+            ${richEditorHtml("f_guide", state.guide_html, { minHeight: 200 })}
           </label>
           <label class="field"><span>숙소 안내(영문, 선택)</span>
-            <textarea id="f_guide_en" class="js-image-paste" rows="10" placeholder="HTML or plain text">${escapeForTextarea(state.guide_html_en)}</textarea>
+            ${richEditorHtml("f_guide_en", state.guide_html_en, { minHeight: 200 })}
           </label>
           <label class="field"><span>정책 안내</span>
-            <textarea id="f_policy" class="js-image-paste" rows="10" placeholder="HTML 또는 텍스트">${escapeForTextarea(state.policy_html)}</textarea>
+            ${richEditorHtml("f_policy", state.policy_html, { minHeight: 200 })}
           </label>
           <label class="field"><span>정책 안내(영문, 선택)</span>
-            <textarea id="f_policy_en" class="js-image-paste" rows="10" placeholder="HTML or plain text">${escapeForTextarea(state.policy_html_en)}</textarea>
+            ${richEditorHtml("f_policy_en", state.policy_html_en, { minHeight: 200 })}
           </label>
         </div>
-        <p style="font-size:12px;color:var(--muted);margin:0 0 14px;">위 두 입력칸에 스크린샷 등 이미지를 복사한 뒤 <kbd>Ctrl</kbd>+<kbd>V</kbd>(Mac: <kbd>⌘</kbd>+<kbd>V</kbd>)로 붙여넣으면 이미지가 본문에 삽입됩니다.</p>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 14px;">각 입력칸 툴바의 <b>[이미지 불러오기]</b> 또는 스크린샷 <kbd>Ctrl</kbd>+<kbd>V</kbd> 붙여넣기로 이미지를 삽입할 수 있습니다. (이미지는 자동 업로드되어 URL로 저장)</p>
 
         <div class="field" style="margin-top:8px;border-top:1px solid var(--border, #e3e3e3);padding-top:14px">
           <span>추가요금 안내 (extra_fee_notes · 정보성, 결제와 무관)</span>
@@ -2625,7 +3003,7 @@ function renderPlaceWizard(main, editId) {
           return;
         }
         try {
-          const hero = await buildImageMetaWithDataUrl(f);
+          const hero = await buildImageMetaSmart(f);
           state.image_meta = hero ? [hero] : [];
           state.image_storage_warning = "";
           errEl().textContent = "";
@@ -2640,7 +3018,7 @@ function renderPlaceWizard(main, editId) {
         try {
           const rest = [];
           for (const f of files) {
-            rest.push(await buildImageMetaWithDataUrl(f));
+            rest.push(await buildImageMetaSmart(f));
           }
           state.image_meta = hero ? [hero, ...rest] : rest;
           state.image_storage_warning = "";
@@ -2723,6 +3101,7 @@ function renderPlaceWizard(main, editId) {
     }
 
     main.querySelectorAll("textarea.js-image-paste").forEach((ta) => attachClipboardImagePaste(ta));
+    wireRichEditors(main);
 
     document.getElementById("btn_save_place").addEventListener("click", () => {
       if (state.step === 5) {
@@ -2773,16 +3152,16 @@ function renderPlaceWizard(main, editId) {
     } else if (step === 2) {
       state.address = document.getElementById("f_addr").value.trim();
       state.address_en = document.getElementById("f_addr_en")?.value.trim() || "";
-      state.location_detail = document.getElementById("f_loc_detail").value;
+      { const ld = document.getElementById("f_loc_detail"); if (ld) state.location_detail = ld.innerHTML.trim(); }
     } else if (step === 4) {
       const g = document.getElementById("f_guide");
       const p = document.getElementById("f_policy");
-      if (g) state.guide_html = g.value;
-      if (p) state.policy_html = p.value;
+      if (g) state.guide_html = g.innerHTML.trim();
+      if (p) state.policy_html = p.innerHTML.trim();
       const ge = document.getElementById("f_guide_en");
       const pe = document.getElementById("f_policy_en");
-      if (ge) state.guide_html_en = ge.value;
-      if (pe) state.policy_html_en = pe.value;
+      if (ge) state.guide_html_en = ge.innerHTML.trim();
+      if (pe) state.policy_html_en = pe.innerHTML.trim();
       const efnRowsEl = document.getElementById("efn_rows");
       if (efnRowsEl) {
         state.extra_fee_notes = Array.from(efnRowsEl.querySelectorAll(".efn-row"))
@@ -3653,10 +4032,10 @@ function renderRoomForm(main, editId, presetPlaceId) {
     state.standard_occupancy = parseInt(document.getElementById("rf_std_occ")?.value, 10) || 1;
     state.max_occupancy = parseInt(document.getElementById("rf_max_occ")?.value, 10) || 1;
     state.room_size_sqm = sanitizeRoomSizeSqmInput(document.getElementById("rf_size")?.value ?? "");
-    state.policy_html_en = document.getElementById("rf_policy_en")?.value ?? "";
-    state.policy_html_zh = document.getElementById("rf_policy_zh")?.value ?? "";
-    state.guide_html_en = document.getElementById("rf_guide_en")?.value ?? "";
-    state.guide_html_zh = document.getElementById("rf_guide_zh")?.value ?? "";
+    state.policy_html_en = document.getElementById("rf_policy_en")?.innerHTML.trim() ?? "";
+    state.policy_html_zh = document.getElementById("rf_policy_zh")?.innerHTML.trim() ?? "";
+    state.guide_html_en = document.getElementById("rf_guide_en")?.innerHTML.trim() ?? "";
+    state.guide_html_zh = document.getElementById("rf_guide_zh")?.innerHTML.trim() ?? "";
     state.visibility = document.getElementById("rf_vis")?.value || "SHOW";
     syncBedCountsFromDom();
   }
@@ -3868,17 +4247,17 @@ function renderRoomForm(main, editId, presetPlaceId) {
         <h3 class="section-title">객실정책 · 객실안내</h3>
         <p class="field-hint" style="margin:-6px 0 12px;font-size:12px;">영문(필수)·중문(선택)으로 입력합니다. (외국인 전용 · 국문 미사용) 프런트는 중문 접속 시 중문, 없으면 영문으로 표시됩니다.</p>
         <label class="field"><span>객실정책 (영문, 필수)</span>
-          <textarea id="rf_policy_en" class="js-image-paste" rows="6" placeholder="HTML or plain text">${escapeForTextarea(state.policy_html_en)}</textarea>
+          ${richEditorHtml("rf_policy_en", state.policy_html_en, { minHeight: 140 })}
         </label>
         <label class="field"><span>객실정책 (중문, 선택)</span>
-          <textarea id="rf_policy_zh" class="js-image-paste" rows="6" placeholder="中文（可选）">${escapeForTextarea(state.policy_html_zh)}</textarea>
+          ${richEditorHtml("rf_policy_zh", state.policy_html_zh, { minHeight: 120 })}
         </label>
         <hr style="border:0;border-top:1px solid var(--border);margin:12px 0;" />
         <label class="field"><span>객실안내 (영문, 필수)</span>
-          <textarea id="rf_guide_en" class="js-image-paste" rows="6" placeholder="HTML or plain text">${escapeForTextarea(state.guide_html_en)}</textarea>
+          ${richEditorHtml("rf_guide_en", state.guide_html_en, { minHeight: 140 })}
         </label>
         <label class="field"><span>객실안내 (중문, 선택)</span>
-          <textarea id="rf_guide_zh" class="js-image-paste" rows="6" placeholder="中文（可选）">${escapeForTextarea(state.guide_html_zh)}</textarea>
+          ${richEditorHtml("rf_guide_zh", state.guide_html_zh, { minHeight: 120 })}
         </label>
       </div>
 
@@ -4121,6 +4500,7 @@ function renderRoomForm(main, editId, presetPlaceId) {
     });
 
     main.querySelectorAll("textarea.js-image-paste").forEach((ta) => attachClipboardImagePaste(ta));
+    wireRichEditors(main);
 
     main.querySelectorAll(".js-room-image-remove").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -4145,7 +4525,7 @@ function renderRoomForm(main, editId, presetPlaceId) {
           return;
         }
         try {
-          const hero = await buildImageMetaWithDataUrl(f);
+          const hero = await buildImageMetaSmart(f);
           state.image_meta = hero ? [hero] : [];
           state.image_storage_warning = "";
           errEl().textContent = "";
@@ -4163,7 +4543,7 @@ function renderRoomForm(main, editId, presetPlaceId) {
         try {
           const rest = [];
           for (const file of files) {
-            rest.push(await buildImageMetaWithDataUrl(file));
+            rest.push(await buildImageMetaSmart(file));
           }
           state.image_meta = hero ? [hero, ...rest] : rest;
           state.image_storage_warning = "";
@@ -4612,9 +4992,9 @@ function renderProductForm(main, editId, presetRoomId) {
     const descZh = el("pf_desc_zh");
     if (descZh) state.description_zh = descZh.value || "";
     const guideEn = el("pf_guide_en");
-    if (guideEn) state.guide_policy_html_en = guideEn.value || "";
+    if (guideEn) state.guide_policy_html_en = guideEn.innerHTML.trim() || "";
     const guideZh = el("pf_guide_zh");
-    if (guideZh) state.guide_policy_html_zh = guideZh.value || "";
+    if (guideZh) state.guide_policy_html_zh = guideZh.innerHTML.trim() || "";
     const ct = el("pf_cancel_t");
     if (ct) state.cancel_policy_type = ct.value || PRODUCT_CANCEL_POLICY.NON_REFUNDABLE;
     const cn = el("pf_cancel_n");
@@ -4872,10 +5252,10 @@ function renderProductForm(main, editId, presetRoomId) {
         <h3 class="section-title">④ 상품 안내 / 정책 <span style="font-size:12px;font-weight:400;color:#888">(영문 필수 · 중문 선택)</span></h3>
         ${pkgDescHint}
         <label class="field"><span>상품 안내/정책 (영문, 필수)</span>
-          <textarea id="pf_guide_en" class="js-image-paste" rows="5">${escapeForTextarea(state.guide_policy_html_en)}</textarea>
+          ${richEditorHtml("pf_guide_en", state.guide_policy_html_en, { minHeight: 130 })}
         </label>
         <label class="field"><span>상품 안내/정책 (중문, 선택)</span>
-          <textarea id="pf_guide_zh" class="js-image-paste" rows="5">${escapeForTextarea(state.guide_policy_html_zh)}</textarea>
+          ${richEditorHtml("pf_guide_zh", state.guide_policy_html_zh, { minHeight: 120 })}
         </label>
       </div>
 
@@ -5046,6 +5426,7 @@ function renderProductForm(main, editId, presetRoomId) {
     });
 
     main.querySelectorAll("textarea.js-image-paste").forEach((ta) => attachClipboardImagePaste(ta));
+    wireRichEditors(main);
 
     // 예약조건 구간 일괄(벌크) — 재고·요금은 room 소스라 제외, room.inventory에 있는 날짜만 적용
     document.getElementById("pf_bulk_go")?.addEventListener("click", () => {
@@ -5156,6 +5537,961 @@ function renderProductForm(main, editId, presetRoomId) {
 }
 
 
+/* =====================================================================
+ * 티켓 도메인 (Phase 1) — S17 카테고리 · S13 쿠폰 스펙 · S14-A/B 상품
+ * 정책서: 티켓쿠폰연동-정책서-v0.8.md / 개발스펙 준용
+ * 범위: 어드민 등록 흐름(카테고리→스펙→상품). POS 시뮬레이터·S15/S16은 이후 단계.
+ * ===================================================================== */
+
+/** 티켓 전역 기본 마진 (마스터 미설정 쿠폰ID에 적용) */
+const DEFAULT_TICKET_MARGIN = { type: "amount", value: "30000" }; // 전역 디폴트 (정책 v0.11 §11)
+
+/** 취소정책 기준일 옵션 (이용일 기준) */
+const TICKET_CXL_BASES = [
+  { value: "3plus", label: "이용일 3일 이상 전" },
+  { value: "2", label: "이용일 2일 전" },
+  { value: "1", label: "이용일 1일 전" },
+  { value: "today", label: "이용일 당일 24시 이전" },
+];
+function ticketCxlBaseLabel(v) {
+  return (TICKET_CXL_BASES.find((x) => x.value === v) || {}).label || v || "-";
+}
+
+/* ── load / save ── */
+function loadTicketCategories() {
+  try { const r = localStorage.getItem(STORAGE_TICKET_CATEGORIES); return r ? JSON.parse(r) : []; } catch { return []; }
+}
+function saveTicketCategories(list) { localStorage.setItem(STORAGE_TICKET_CATEGORIES, JSON.stringify(list || [])); }
+
+function loadCouponSpecs() {
+  try { const r = localStorage.getItem(STORAGE_COUPON_SPECS); return r ? JSON.parse(r) : []; } catch { return []; }
+}
+function saveCouponSpecs(list) { localStorage.setItem(STORAGE_COUPON_SPECS, JSON.stringify(list || [])); }
+
+function loadTicketProducts() {
+  try { const r = localStorage.getItem(STORAGE_TICKET_PRODUCTS); return r ? JSON.parse(r) : []; } catch { return []; }
+}
+function saveTicketProducts(list) { localStorage.setItem(STORAGE_TICKET_PRODUCTS, JSON.stringify(list || [])); }
+
+/** 티켓 마진 스키마 정규화 — { categories:{}, overrides:{} }. 구(flat) 스키마는 overrides로 이관. */
+function normalizeTicketMargin(raw) {
+  const r = raw && typeof raw === "object" ? raw : {};
+  if (r.categories || r.overrides) return { categories: r.categories || {}, overrides: r.overrides || {} };
+  // 레거시 flat { COUPON: {type,value} } → overrides로 취급
+  return { categories: {}, overrides: { ...r } };
+}
+function loadTicketMarginMaster() {
+  try { const r = localStorage.getItem(STORAGE_TICKET_MARGIN_MASTER); return normalizeTicketMargin(r ? JSON.parse(r) : {}); } catch { return { categories: {}, overrides: {} }; }
+}
+function saveTicketMarginMaster(map) { localStorage.setItem(STORAGE_TICKET_MARGIN_MASTER, JSON.stringify(normalizeTicketMargin(map))); }
+const isMarginEntry = (e) => e && (e.type === "amount" || e.type === "rate");
+/** 쿠폰ID의 카테고리(1뎁스/2뎁스) 조회 (스펙 기준) */
+function ticketCouponCat(couponId) {
+  const g = groupCouponSpecs(loadCouponSpecs()).get(couponId);
+  return { cat1: g ? g.category || "" : "", cat2: g ? g.product_type || "" : "" };
+}
+/**
+ * 쿠폰ID 적용 마진 (우선순위: 쿠폰ID 개별 > 2뎁스 마스터 > 1뎁스 마스터 > 전역 디폴트) — 정책 v0.11 §11.3
+ * source: override | cat2 | cat1 | default
+ */
+function getTicketMargin(couponId) {
+  const m = loadTicketMarginMaster();
+  const ov = couponId && m.overrides[couponId];
+  if (isMarginEntry(ov)) return { type: ov.type, value: String(ov.value ?? ""), source: "override" };
+  const { cat1, cat2 } = ticketCouponCat(couponId);
+  const key2 = cat1 && cat2 ? `${cat1}>${cat2}` : "";
+  if (key2 && isMarginEntry(m.categories[key2])) return { type: m.categories[key2].type, value: String(m.categories[key2].value ?? ""), source: "cat2" };
+  if (cat1 && isMarginEntry(m.categories[cat1])) return { type: m.categories[cat1].type, value: String(m.categories[cat1].value ?? ""), source: "cat1" };
+  return { type: DEFAULT_TICKET_MARGIN.type, value: DEFAULT_TICKET_MARGIN.value, source: "default" };
+}
+
+function loadTicketUploadHistory() {
+  try { const r = localStorage.getItem(STORAGE_TICKET_UPLOAD_HISTORY); return r ? JSON.parse(r) : []; } catch { return []; }
+}
+function saveTicketUploadHistory(list) { localStorage.setItem(STORAGE_TICKET_UPLOAD_HISTORY, JSON.stringify(list || [])); }
+
+/* ── 코드 채번 ── */
+function nextTicketCategoryCode(list) {
+  let max = 0;
+  (list || []).forEach((c) => { const m = /^TC-(\d+)$/.exec(c.code || ""); if (m) max = Math.max(max, parseInt(m[1], 10)); });
+  return "TC-" + String(max + 1).padStart(3, "0");
+}
+function nextTicketProductCode(list) {
+  let max = 0;
+  (list || []).forEach((p) => { const m = /^PR-T(\d+)$/.exec(p.product_code || ""); if (m) max = Math.max(max, parseInt(m[1], 10)); });
+  return "PR-T" + String(max + 1).padStart(4, "0");
+}
+
+/* ── 헬퍼 ── */
+/** 1뎁스 카테고리 목록 (order순) */
+function ticketTopCategories() {
+  return loadTicketCategories().filter((c) => !c.parent_id).sort((a, b) => (a.order || 0) - (b.order || 0));
+}
+/** 특정 1뎁스의 2뎁스(상품유형) 목록 */
+function ticketSubCategories(parentId) {
+  return loadTicketCategories().filter((c) => c.parent_id === parentId).sort((a, b) => (a.order || 0) - (b.order || 0));
+}
+/** name_ko(관리명)로 카테고리 존재 검증용 집합 */
+function ticketCategoryKoSet() {
+  const set = new Set();
+  loadTicketCategories().forEach((c) => { if (c.name_ko) set.add(c.name_ko); });
+  return set;
+}
+/** 쿠폰ID별 스펙 묶음 (레벨 행 그룹핑) */
+function groupCouponSpecs(specs) {
+  const map = new Map();
+  (specs || []).forEach((s) => {
+    if (!map.has(s.coupon_id)) {
+      map.set(s.coupon_id, { coupon_id: s.coupon_id, pass_name: s.pass_name, category: s.category, product_type: s.product_type, active: s.active !== false, rows: [] });
+    }
+    const g = map.get(s.coupon_id);
+    g.rows.push(s);
+    if (s.active === false) g.active = false;
+  });
+  map.forEach((g) => g.rows.sort((a, b) => (a.level || 0) - (b.level || 0)));
+  return map;
+}
+function ticketProductCountByCoupon(couponId) {
+  return loadTicketProducts().filter((p) => p.spec_coupon_id === couponId).length;
+}
+/** 판매기간 기준 판매상태 (v0.9) — 판매시작 전/판매중/판매종료 */
+function ticketSaleStatus(p) {
+  const today = new Date().toISOString().slice(0, 10);
+  const s = p.sale_start_date || "";
+  const e = p.sale_end_date || "";
+  if (s && today < s) return { key: "before", label: "판매전" };
+  if (e && today > e) return { key: "after", label: "판매종료" };
+  return { key: "on", label: "판매중" };
+}
+function fmtSalePeriod(p) {
+  const s = p.sale_start_date || "";
+  const e = p.sale_end_date || "";
+  if (!s && !e) return "상시(노출 토글 제어)";
+  return `${s || "즉시"} ~ ${e || "무기한"}`;
+}
+/** 자산 없이 렌더용 SVG 플레이스홀더 이미지 (data URL) */
+function svgPlaceholder(label, bg) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="384"><rect width="640" height="384" fill="${bg}"/><text x="320" y="205" font-family="sans-serif" font-size="30" fill="#ffffff" text-anchor="middle">${label}</text></svg>`;
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+function seedDetailHtml(title, color) {
+  return `<h3>${title}</h3><p>상품 상세 소개 영역(프로토타입 더미). 어드민 S14-B 상세정보 탭에서 이미지 붙여넣기·텍스트로 자유 구성합니다.</p><img src="${svgPlaceholder(title, color)}" style="max-width:100%;height:auto;display:block;border-radius:8px;margin-top:8px" />`;
+}
+/** 상품 카드/히어로용 이미지 (썸네일 우선 → 히어로 → 서브) */
+function ticketProductImg(p) {
+  const pick = (a) => (a && a[0] && a[0].data_url) || "";
+  return pick(p.thumb_meta) || pick(p.hero_meta) || pick(p.hero_image_meta) || pick(p.image_meta) || "";
+}
+/** 카테고리(뎁스) 히어로 이미지 */
+function ticketCatImg(c) { return (c && c.hero_image_meta && c.hero_image_meta[0] && c.hero_image_meta[0].data_url) || ""; }
+
+const TICKET_ADDR = "265, High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do, Korea";
+
+/* ── 더미 시드 ── */
+function ensureTicketStores() {
+  // 시드 버전이 최신이면 재주입 생략(관리자 입력 보존). 버전이 바뀌면 카테고리·스펙·마진·상품 재주입.
+  if (localStorage.getItem(STORAGE_TICKET_SEED_VER) === String(TICKET_SEED_VER)) return;
+
+  const T = "2026-07-09T00:00:00.000Z";
+  // 뎁스(카테고리) 콘텐츠 — 히어로·개요·상세·안내·정책·주소 (A안: 콘텐츠는 뎁스 소유)
+  const catImg = (label, color) => [{ data_url: svgPlaceholder(label, color), name: label }];
+  const catC = (label, color, overview) => ({
+    hero_image_meta: catImg(label, color),
+    overview_en: overview, overview_zh: "",
+    detail_html_en: `<h3>${label}</h3><p>${label} 상세 소개(프로토타입 더미). 어드민 S17 카테고리 콘텐츠에서 이미지·텍스트로 구성합니다.</p><img src="${svgPlaceholder(label + " Detail", color)}" style="max-width:100%;height:auto;display:block;border-radius:8px;margin-top:8px" />`,
+    detail_html_zh: "",
+    guide_html_en: `<ul><li>Show the issued 12-digit coupon barcode at the on-site POS/KIOSK.</li><li>Open ticket — free entry within the valid period.</li><li>One coupon per person.</li></ul>`,
+    guide_html_zh: "",
+    policy_html_en: `<ul><li>Cancellation follows the valid end date — full refund if unused before the end date.</li><li>No refund after on-site use.</li></ul>`,
+    policy_html_zh: "",
+    address_en: TICKET_ADDR, address_zh: "",
+  });
+  saveTicketCategories([
+    { id: "tc_waterpark", code: "TC-001", name_ko: "워터파크", name_en: "Water Park", name_zh: "水上乐园", parent_id: null, order: 1, updatedAt: T, ...catC("Water Park", "#38bdf8", "High1 Water World — indoor/outdoor water park. Open-type tickets, free use within the valid period.") },
+    { id: "tc_ski", code: "TC-002", name_ko: "스키", name_en: "Ski", name_zh: "滑雪", parent_id: null, order: 2, updatedAt: T, hero_image_meta: catImg("Ski", "#6366f1") }, // 상위(자식보유) — 콘텐츠는 2뎁스 소유
+    { id: "tc_ski_lift", code: "TC-003", name_ko: "리프트권", name_en: "Lift Pass", name_zh: "缆车票", parent_id: "tc_ski", order: 1, updatedAt: T, ...catC("Ski Lift Pass", "#6366f1", "High1 ski resort lift pass. 4-hour / 7-hour / day pass.") },
+    { id: "tc_ski_rental", code: "TC-004", name_ko: "장비렌탈", name_en: "Equipment Rental", name_zh: "器材租赁", parent_id: "tc_ski", order: 2, updatedAt: T, ...catC("Ski Equipment Rental", "#8b5cf6", "Ski/board equipment rental. 4-hour / 7-hour / day.") },
+    { id: "tc_meal", code: "TC-005", name_ko: "식사권", name_en: "Meal Voucher", name_zh: "餐券", parent_id: null, order: 3, updatedAt: T, ...catC("Meal Voucher", "#f59e0b", "Resort dining meal vouchers.") },
+    { id: "tc_gondola", code: "TC-006", name_ko: "곤돌라", name_en: "Gondola", name_zh: "观光缆车", parent_id: null, order: 4, updatedAt: T, ...catC("Gondola", "#10b981", "Sightseeing gondola round-trip.") },
+  ]);
+
+  // 쿠폰 스펙 — 워터파크 5코드(종일권 3채널 + 4시간 + 7시간) / 스키 리프트 3 / 스키 장비렌탈 3
+  const WW = { s: "2026-07-10", e: "2026-08-30" }; // 워터파크 성수기
+  const SKI = { s: "2026-12-01", e: "2027-02-28" }; // 스키 겨울시즌
+  // (쿠폰명 대인/소인 자동 생성) 한 코드 = 대인(LV.1)+소인(LV.2) 2행
+  const specs = [];
+  const addCoupon = (coupon_id, pass_name, category, product_type, baseName, priceAdult, priceChild, use, discount) => {
+    specs.push(
+      { id: uid(), coupon_id, pass_name, category, product_type, level: 1, level_name: "대인", coupon_name: `${baseName}(대인)`, price: priceAdult, discount_target: discount, use_start_date: use.s, use_end_date: use.e, active: true, created_at: T, updated_at: T },
+      { id: uid(), coupon_id, pass_name, category, product_type, level: 2, level_name: "소인", coupon_name: `${baseName}(소인)`, price: priceChild, discount_target: discount, use_start_date: use.s, use_end_date: use.e, active: true, created_at: T, updated_at: T }
+    );
+  };
+  // 워터파크
+  addCoupon("DBO", "OAT_26성수기_얼리_워터월드(플레이스토리)", "워터파크", "", "워터월드 종일권_성수기", 40000, 35000, WW, "종일권_대인_남_4계절 상품 외 15종");
+  addCoupon("DBR", "OAT_26성수기_얼리_워터월드(티브리지)", "워터파크", "", "워터월드 종일권_성수기", 40000, 35000, WW, "종일권_대인_남_4계절 상품 외 15종");
+  addCoupon("DBT", "OAT_26성수기_얼리_워터월드(스마트인피니)", "워터파크", "", "워터월드 종일권_성수기", 40000, 35000, WW, "종일권_대인_남_4계절 상품 외 15종");
+  addCoupon("DBQ", "OAT_26성수기_워터월드_4시간권", "워터파크", "", "워터월드 4시간권", 30000, 26000, WW, "워터월드 4시간권 대인 외 (입금가 추정)");
+  addCoupon("DBW", "OAT_26성수기_워터월드_7시간권", "워터파크", "", "워터월드 7시간권", 36000, 31000, WW, "워터월드 7시간권 대인 외 (입금가 추정)");
+  // 스키 리프트권
+  addCoupon("SVC", "OAT_26시즌_스키리프트_4시간권", "스키", "리프트권", "스키 리프트 4시간권", 45000, 34000, SKI, "리프트 4시간권 대인 외 (입금가 추정)");
+  addCoupon("SVZ", "OAT_26시즌_스키리프트_7시간권", "스키", "리프트권", "스키 리프트 7시간권", 55000, 40000, SKI, "리프트 7시간권 대인 외 (입금가 추정)");
+  addCoupon("SVA", "OAT_26시즌_스키리프트_종일권", "스키", "리프트권", "스키 리프트 종일권", 65000, 48000, SKI, "리프트 종일권 대인 외 (입금가 추정)");
+  // 스키 장비렌탈
+  addCoupon("RSA", "OAT_26시즌_장비렌탈_4시간권", "스키", "장비렌탈", "스키 장비렌탈 4시간권", 25000, 20000, SKI, "장비렌탈 4시간권 대인 외 (입금가 추정)");
+  addCoupon("RSC", "OAT_26시즌_장비렌탈_7시간권", "스키", "장비렌탈", "스키 장비렌탈 7시간권", 30000, 24000, SKI, "장비렌탈 7시간권 대인 외 (입금가 추정)");
+  addCoupon("RSF", "OAT_26시즌_장비렌탈_종일권", "스키", "장비렌탈", "스키 장비렌탈 종일권", 38000, 30000, SKI, "장비렌탈 종일권 대인 외 (입금가 추정)");
+  // 곤돌라 왕복권 — 성인(대인) 전용 티켓 (아동 레벨 없음)
+  specs.push({ id: uid(), coupon_id: "GDO", pass_name: "OAT_곤돌라_왕복권", category: "곤돌라", product_type: "", level: 1, level_name: "대인", coupon_name: "곤돌라 왕복권(대인)", price: 18000, discount_target: "곤돌라 왕복 대인", use_start_date: "2026-07-01", use_end_date: "2026-12-31", active: true, created_at: T, updated_at: T });
+  saveCouponSpecs(specs);
+
+  // 마진 마스터 — 카테고리 마스터 + 쿠폰ID 오버라이드 (정책 v0.11 §11)
+  saveTicketMarginMaster({
+    categories: {
+      "워터파크": { type: "amount", value: "4000" },
+      "스키>리프트권": { type: "rate", value: "10" },
+      "스키>장비렌탈": { type: "amount", value: "3000" },
+      "곤돌라": { type: "amount", value: "2000" },
+    },
+    overrides: {
+      DBQ: { type: "amount", value: "3000" }, // 워터월드 4시간권만 개별
+    },
+  });
+
+  // 티켓 상품 — 판매 옵션 단위. 이미지(썸네일/히어로/서브)는 상품별. 상세/안내/정책/위치는 뎁스(카테고리) 소유.
+  const cxlWW = [{ base: "3plus", penalty: 0 }, { base: "2", penalty: 50 }, { base: "today", penalty: 100 }];
+  const cxlSKI = [{ base: "3plus", penalty: 0 }, { base: "1", penalty: 50 }, { base: "today", penalty: 100 }];
+  const SALE_WW = { sale_start_date: "2026-07-01", sale_end_date: "2026-08-25" };
+  const SALE_SKI = { sale_start_date: "2026-07-01", sale_end_date: "2027-02-20" }; // 데모: 지금부터 판매·사용기간은 겨울
+  // 상품 이미지 = 썸네일만(검색결과·브릿지 카드·메인 추천). 히어로·상세는 뎁스(S17) 소유.
+  const pimg = (label, color) => ({ thumb_meta: [{ data_url: svgPlaceholder(label, color), name: label }] });
+  const mk = (over) => ({ id: uid(), visibility: "Y", date_mode: "open", created_at: T, updated_at: T, ...over });
+  saveTicketProducts([
+    mk({ product_code: "PR-T0001", name_en: "Water World Day Pass (Peak/Early)", name_zh: "水世界一日通票（旺季/早鸟）", category_1: "워터파크", category_2: "", spec_coupon_id: "DBO", ...SALE_WW, cutoff: { n: 1, unit: "day", time: "23:59" }, cancel_policy: cxlWW, ...pimg("Water World Day Pass", "#38bdf8") }),
+    mk({ product_code: "PR-T0002", name_en: "Water World 4-Hour Pass", name_zh: "水世界4小时票", category_1: "워터파크", category_2: "", spec_coupon_id: "DBQ", ...SALE_WW, cutoff: { n: 0, unit: "hour", time: "23:59" }, cancel_policy: cxlWW, ...pimg("Water World 4-Hour", "#0ea5e9") }),
+    mk({ product_code: "PR-T0003", name_en: "Ski Lift Day Pass", name_zh: "滑雪缆车一日券", category_1: "스키", category_2: "리프트권", spec_coupon_id: "SVA", ...SALE_SKI, cutoff: { n: 1, unit: "day", time: "18:00" }, cancel_policy: cxlSKI, ...pimg("Ski Lift Day Pass", "#6366f1") }),
+    mk({ product_code: "PR-T0004", name_en: "Ski Equipment Rental (Day)", name_zh: "滑雪装备租赁（全日）", category_1: "스키", category_2: "장비렌탈", spec_coupon_id: "RSF", ...SALE_SKI, cutoff: { n: 1, unit: "day", time: "18:00" }, cancel_policy: cxlSKI, ...pimg("Ski Equipment Rental", "#8b5cf6") }),
+    mk({ product_code: "PR-T0005", name_en: "Gondola Round Trip", name_zh: "观光缆车往返", category_1: "곤돌라", category_2: "", spec_coupon_id: "GDO", sale_start_date: "2026-07-01", sale_end_date: "2026-12-31", cutoff: { n: 0, unit: "hour", time: "23:59" }, cancel_policy: cxlWW, ...pimg("Gondola Round Trip", "#10b981") }),
+  ]);
+
+  if (!localStorage.getItem(STORAGE_TICKET_UPLOAD_HISTORY)) saveTicketUploadHistory([]);
+  // 데모용 티켓 추천 섹션(메인) — 티켓 섹션이 없을 때만 1건 추가 (숙소 섹션 보존)
+  try {
+    const secs = JSON.parse(localStorage.getItem(STORAGE_MAIN_SECTION) || "[]");
+    if (!secs.some((s) => s.type === "ticket")) {
+      secs.push({ id: "sec_ticket_demo", type: "ticket", title_ko: "인기 티켓", title_en: "Popular Tickets", subtitle_ko: "워터파크·스키 추천 상품", subtitle_en: "Water Park & Ski picks", visible: true, viewall_use: true, ticket_mode: "auto", ticket_sort: "price", ticket_cats: [], ticket_product_ids: [], order: 90 });
+      localStorage.setItem(STORAGE_MAIN_SECTION, JSON.stringify(secs));
+    }
+  } catch (e) {}
+  localStorage.setItem(STORAGE_TICKET_SEED_VER, String(TICKET_SEED_VER));
+}
+
+/* =========================== S17 티켓 카테고리관리 =========================== */
+function renderTicketCategoryList(main) {
+  ensureTicketStores();
+  const tops = ticketTopCategories();
+  const products = loadTicketProducts();
+  const countByKo = (ko) => products.filter((p) => p.category_1 === ko || p.category_2 === ko).length;
+
+  // 카드형(A안): 1뎁스 = 카드(헤더), 2뎁스(상품유형) = 카드 안 하위 테이블
+  const cards = tops.map((t) => {
+    const subs = ticketSubCategories(t.id);
+    const linked1 = countByKo(t.name_ko);
+    const subRows = subs.map((s) => {
+      const linked2 = countByKo(s.name_ko);
+      return `
+        <tr>
+          <td><span class="tk-lv-pill">2뎁스</span> <strong>${escapeHtml(s.name_en)}</strong>${s.name_zh ? ` <span style="color:var(--muted)">${escapeHtml(s.name_zh)}</span>` : ""}</td>
+          <td><span class="tk-ko-chip">${escapeHtml(s.name_ko)}</span></td>
+          <td>${escapeHtml(s.code)}</td>
+          <td>${s.order || 0}</td>
+          <td>${linked2 ? `<span class="badge on">연결상품 ${linked2}</span>` : `<span class="badge">0</span>`}</td>
+          <td style="text-align:right;white-space:nowrap"><button type="button" class="btn btn-ghost js-tc-content" data-id="${escapeAttr(s.id)}">콘텐츠</button> <button type="button" class="btn btn-ghost js-tc-edit" data-id="${escapeAttr(s.id)}">수정</button></td>
+        </tr>`;
+    }).join("");
+    return `
+      <div class="tk-card">
+        <div class="tk-card-head cat">
+          <span class="tk-code tk-code-cat">${escapeHtml(t.code)}</span>
+          <span class="tk-head-title">${escapeHtml(t.name_en)}${t.name_zh ? ` <span style="color:var(--muted);font-weight:400">${escapeHtml(t.name_zh)}</span>` : ""}</span>
+          <span class="tk-head-meta">관리명 <strong>${escapeHtml(t.name_ko)}</strong> · 순서 ${t.order || 0} · 2뎁스 ${subs.length}개${linked1 ? ` · 연결상품 ${linked1}` : ""}</span>
+          <span class="tk-head-actions">
+            ${subs.length === 0 ? `<button type="button" class="btn btn-ghost js-tc-content" data-id="${escapeAttr(t.id)}">콘텐츠</button>` : ""}
+            <button type="button" class="btn btn-ghost js-tc-edit" data-id="${escapeAttr(t.id)}">수정</button>
+            <button type="button" class="btn btn-ghost js-tc-addsub" data-id="${escapeAttr(t.id)}">+ 하위(2뎁스) 추가</button>
+          </span>
+        </div>
+        ${subs.length
+          ? `<table class="tk-lv-table"><thead><tr><th>상품유형(2뎁스)</th><th style="width:130px">관리명</th><th style="width:90px">코드</th><th style="width:70px">순서</th><th style="width:120px">연결상품</th><th style="width:80px"></th></tr></thead><tbody>${subRows}</tbody></table>`
+          : `<div class="tk-cat-empty">하위 상품유형(2뎁스) 없음 — 1뎁스 단독 카테고리입니다.</div>`}
+      </div>`;
+  }).join("");
+
+  const d1 = tops.length;
+  const d2 = loadTicketCategories().filter((c) => c.parent_id).length;
+
+  main.innerHTML = `
+    <h2 class="page-title">티켓 카테고리관리 <span class="badge" style="background:#eef2ff;color:#6366f1">공통관리</span></h2>
+    <p class="page-desc">티켓 상품(S14)의 카테고리 드롭다운 소스이자 <strong>S13 쿠폰 스펙 업로드 시 검증 기준</strong>입니다. <strong>카드 = 1뎁스 카테고리, 카드 안 행 = 2뎁스(상품유형)</strong>. 최대 2뎁스. 삭제는 없습니다(추가·수정만). 저장소: <code>${STORAGE_TICKET_CATEGORIES}</code></p>
+    <div class="card">
+      <div class="toolbar" style="justify-content:space-between">
+        <span style="color:var(--muted);font-size:13px">등록: 1뎁스 ${d1}개 · 2뎁스 ${d2}개</span>
+        <button type="button" class="btn btn-primary js-tc-add1">+ 1뎁스 카테고리 추가</button>
+      </div>
+      <div class="notice" style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:8px 12px;font-size:12px;color:#3730a3;margin-bottom:12px">
+        <strong>관리명(KO)</strong>은 내부 식별·CSV 매칭용이며, <strong>EN/ZH</strong>는 고객 화면 표시명입니다. 레벨(대인/소인)은 카테고리가 아니라 상품 옵션이므로 트리에 넣지 않습니다.
+      </div>
+      ${cards}
+    </div>
+  `;
+
+  main.querySelector(".js-tc-add1").addEventListener("click", () => openTicketCategoryModal(main, { parentId: null, editId: null }));
+  main.querySelectorAll(".js-tc-addsub").forEach((b) => b.addEventListener("click", () => openTicketCategoryModal(main, { parentId: b.getAttribute("data-id"), editId: null })));
+  main.querySelectorAll(".js-tc-edit").forEach((b) => b.addEventListener("click", () => openTicketCategoryModal(main, { parentId: null, editId: b.getAttribute("data-id") })));
+  main.querySelectorAll(".js-tc-content").forEach((b) => b.addEventListener("click", () => navigate("ticket-categories/edit/" + b.getAttribute("data-id"))));
+}
+
+/* S17 뎁스 콘텐츠 편집 — 히어로·개요·상세설명·이용안내·정책·위치 (프런트 브릿지 매핑) */
+function renderTicketCategoryContent(main, id) {
+  ensureTicketStores();
+  const list = loadTicketCategories();
+  const c = list.find((x) => x.id === id);
+  if (!c) { main.innerHTML = `<div class="card"><div class="empty">카테고리를 찾을 수 없습니다.</div></div>`; return; }
+  const parent = c.parent_id ? list.find((x) => x.id === c.parent_id) : null;
+  const label = `${parent ? parent.name_ko + " › " : ""}${c.name_ko} (${c.name_en})`;
+  const st = {
+    hero_image_meta: c.hero_image_meta ? c.hero_image_meta.map((m) => ({ ...m })) : [],
+    overview_en: c.overview_en || "", overview_zh: c.overview_zh || "",
+    detail_html_en: c.detail_html_en || "", detail_html_zh: c.detail_html_zh || "",
+    guide_html_en: c.guide_html_en || "", guide_html_zh: c.guide_html_zh || "",
+    policy_html_en: c.policy_html_en || "", policy_html_zh: c.policy_html_zh || "",
+    address_en: c.address_en || "", address_zh: c.address_zh || "",
+  };
+  const RICH_KEYS = ["overview_en", "overview_zh", "detail_html_en", "detail_html_zh", "guide_html_en", "guide_html_zh", "policy_html_en", "policy_html_zh"];
+  const sync = () => {
+    const q = (s) => main.querySelector(s);
+    ["address_en", "address_zh"].forEach((k) => { const el = q("#cc_" + k); if (el) st[k] = el.value; });
+    RICH_KEYS.forEach((k) => { const el = q("#cc_" + k); if (el) st[k] = el.innerHTML.trim(); });
+  };
+  const ta = "width:100%;margin:6px 0 0;padding:10px;border:1px solid #ddd;border-radius:6px;font-family:inherit";
+  const inp = "width:100%;padding:8px;border:1px solid #ddd;border-radius:6px";
+  function render() {
+    const heroThumbs = st.hero_image_meta.length
+      ? st.hero_image_meta.map((m, i) => `<div class="image-meta-item"><img src="${escapeAttr(m.data_url)}" alt="" style="width:100%;height:90px;object-fit:cover;border-radius:6px"><button type="button" class="image-meta-delete js-cch-del" data-i="${i}">×</button></div>`).join("")
+      : `<div style="color:var(--muted);font-size:13px;padding:8px 0">등록된 히어로 이미지가 없습니다.</div>`;
+    main.innerHTML = `
+      <h2 class="page-title">카테고리/컨텐츠 관리 <span class="badge" style="background:#eef2ff;color:#6366f1">티켓관리</span></h2>
+      <p class="page-desc"><strong>${escapeHtml(label)}</strong> — 프런트 브릿지의 히어로·상세설명·이용안내·정책·위치에 매핑됩니다. (뎁스 단위 공통 콘텐츠) 저장소: <code>${STORAGE_TICKET_CATEGORIES}</code></p>
+      <div class="card">
+        <h3 style="margin-top:0">① 히어로 이미지 <span class="badge">브릿지 상단</span></h3>
+        <div class="image-meta-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:10px">${heroThumbs}</div>
+        <input type="file" id="cc_hero_img" accept="image/*" multiple>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">② 개요(요약) <span class="badge">리치 에디터</span></h3>
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">개요 (EN)</label>
+        ${richEditorHtml("cc_overview_en", st.overview_en, { minHeight: 90 })}
+        <label style="font-size:13px;font-weight:600;display:block;margin:14px 0 4px">개요 (ZH)</label>
+        ${richEditorHtml("cc_overview_zh", st.overview_zh, { minHeight: 80 })}
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">③ 상세설명 <span class="badge">리치 에디터</span></h3>
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">상세설명 (EN)</label>
+        ${richEditorHtml("cc_detail_html_en", st.detail_html_en, { minHeight: 180 })}
+        <label style="font-size:13px;font-weight:600;display:block;margin:14px 0 4px">상세설명 (ZH)</label>
+        ${richEditorHtml("cc_detail_html_zh", st.detail_html_zh, { minHeight: 120 })}
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">④ 이용안내 <span class="badge">리치 에디터</span></h3>
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">이용안내 (EN)</label>
+        ${richEditorHtml("cc_guide_html_en", st.guide_html_en, { minHeight: 140 })}
+        <label style="font-size:13px;font-weight:600;display:block;margin:14px 0 4px">이용안내 (ZH)</label>
+        ${richEditorHtml("cc_guide_html_zh", st.guide_html_zh, { minHeight: 110 })}
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">⑤ 유의사항 / 정책 <span class="badge">리치 에디터</span></h3>
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">유의사항/정책 (EN)</label>
+        ${richEditorHtml("cc_policy_html_en", st.policy_html_en, { minHeight: 140 })}
+        <label style="font-size:13px;font-weight:600;display:block;margin:14px 0 4px">유의사항/정책 (ZH)</label>
+        ${richEditorHtml("cc_policy_html_zh", st.policy_html_zh, { minHeight: 110 })}
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">⑥ 위치(주소)</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <label style="font-size:13px">주소 (EN)<br><input type="text" id="cc_address_en" value="${escapeAttr(st.address_en)}" style="${inp}"></label>
+          <label style="font-size:13px">주소 (ZH)<br><input type="text" id="cc_address_zh" value="${escapeAttr(st.address_zh)}" style="${inp}"></label>
+        </div>
+      </div>
+      <div class="toolbar" style="gap:8px">
+        <button type="button" class="btn js-cc-cancel">목록으로</button>
+        <button type="button" class="btn btn-primary js-cc-save">저장</button>
+      </div>`;
+    const hi = main.querySelector("#cc_hero_img");
+    if (hi) hi.addEventListener("change", async () => {
+      sync();
+      for (const f of Array.from(hi.files || [])) { try { const src = await resolveImageSrc(f); st.hero_image_meta.push({ data_url: src, name: f.name }); } catch (e) { alert(e.message || "이미지 추가 실패"); } }
+      render();
+    });
+    main.querySelectorAll(".js-cch-del").forEach((b) => b.addEventListener("click", () => { sync(); st.hero_image_meta.splice(parseInt(b.getAttribute("data-i"), 10), 1); render(); }));
+    wireRichEditors(main);
+    main.querySelector(".js-cc-cancel").addEventListener("click", () => navigate("ticket-categories"));
+    main.querySelector(".js-cc-save").addEventListener("click", () => {
+      sync();
+      const list2 = loadTicketCategories();
+      const row = list2.find((x) => x.id === id);
+      Object.assign(row, st, { updatedAt: new Date().toISOString() });
+      try {
+        saveTicketCategories(list2);
+      } catch (e) {
+        if (isStorageQuotaExceeded(e)) {
+          alert("저장 공간(브라우저 localStorage)이 부족합니다.\n\n붙여넣은 이미지 총량이 브라우저 한도(약 5MB)를 넘었습니다.\n· 이미지 개수를 줄이거나\n· 더 작은 이미지를 사용해 주세요.\n(이미지는 자동 축소되지만 여러 장이 쌓이면 한도를 넘을 수 있습니다.)");
+        } else {
+          alert("저장에 실패했습니다: " + (e && e.message || e));
+        }
+        return;
+      }
+      alert("콘텐츠가 저장되었습니다.");
+      navigate("ticket-categories");
+    });
+  }
+  render();
+}
+
+function openTicketCategoryModal(main, { parentId, editId }) {
+  const list = loadTicketCategories();
+  const editing = editId ? list.find((c) => c.id === editId) : null;
+  const parent = editing ? (editing.parent_id ? list.find((c) => c.id === editing.parent_id) : null) : (parentId ? list.find((c) => c.id === parentId) : null);
+  const parentLabel = parent ? `${parent.name_ko} (${parent.name_en})` : "최상위 (1뎁스)";
+
+  const dim = document.createElement("div");
+  dim.id = "tc_modal_dim";
+  dim.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:1000";
+  dim.innerHTML = `
+    <div style="background:#fff;border-radius:10px;padding:22px;width:440px;max-width:92vw;box-shadow:0 12px 40px rgba(0,0,0,.2)">
+      <h3 style="margin:0 0 14px">${editing ? "카테고리 수정" : "카테고리 등록"}</h3>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <label style="font-size:13px">상위 카테고리<br><input type="text" value="${escapeAttr(parentLabel)}" readonly style="width:100%;margin-top:4px;background:#f5f5f5;padding:8px;border:1px solid #ddd;border-radius:6px"></label>
+        <label style="font-size:13px">관리명 (KO) <span style="color:#d33">*</span> <span style="color:var(--muted)">— 내부·CSV 매칭용</span><br><input type="text" id="tc_ko" value="${escapeAttr(editing?.name_ko || "")}" placeholder="예: 워터파크" style="width:100%;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:6px"></label>
+        <label style="font-size:13px">카테고리명 (EN) <span style="color:#d33">*</span><br><input type="text" id="tc_en" value="${escapeAttr(editing?.name_en || "")}" placeholder="e.g. Water Park" style="width:100%;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:6px"></label>
+        <label style="font-size:13px">카테고리명 (ZH) <span style="color:var(--muted)">— 선택</span><br><input type="text" id="tc_zh" value="${escapeAttr(editing?.name_zh || "")}" placeholder="选填" style="width:100%;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:6px"></label>
+        <label style="font-size:13px">노출 순서<br><input type="number" id="tc_order" value="${editing?.order || (list.filter((c) => (parent ? c.parent_id === parent.id : !c.parent_id)).length + 1)}" min="1" style="width:120px;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:6px"></label>
+        <p id="tc_err" class="error" style="margin:0"></p>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px">
+        <button type="button" class="btn js-tc-cancel">취소</button>
+        <button type="button" class="btn btn-primary js-tc-save">저장</button>
+      </div>
+    </div>`;
+  document.body.appendChild(dim);
+  const close = () => dim.remove();
+  dim.addEventListener("click", (e) => { if (e.target === dim) close(); });
+  dim.querySelector(".js-tc-cancel").addEventListener("click", close);
+  dim.querySelector(".js-tc-save").addEventListener("click", () => {
+    const ko = dim.querySelector("#tc_ko").value.trim();
+    const en = dim.querySelector("#tc_en").value.trim();
+    const zh = dim.querySelector("#tc_zh").value.trim();
+    const order = parseInt(dim.querySelector("#tc_order").value, 10) || 1;
+    const err = dim.querySelector("#tc_err");
+    err.textContent = "";
+    if (!ko) { err.textContent = "관리명(KO)을 입력하세요."; return; }
+    if (!en) { err.textContent = "카테고리명(EN)은 필수입니다."; return; }
+    const list2 = loadTicketCategories();
+    const pid = editing ? editing.parent_id : (parent ? parent.id : null);
+    const dupe = list2.find((c) => c.id !== editId && c.name_ko === ko && (c.parent_id || null) === (pid || null));
+    if (dupe) { err.textContent = "같은 뎁스에 동일 관리명이 이미 있습니다."; return; }
+    const now = new Date().toISOString();
+    if (editing) {
+      const row = list2.find((c) => c.id === editId);
+      Object.assign(row, { name_ko: ko, name_en: en, name_zh: zh, order, updatedAt: now });
+    } else {
+      list2.push({ id: uid(), code: nextTicketCategoryCode(list2), name_ko: ko, name_en: en, name_zh: zh, parent_id: pid || null, order, updatedAt: now });
+    }
+    saveTicketCategories(list2);
+    close();
+    renderTicketCategoryList(main);
+  });
+}
+
+/* =========================== S13 쿠폰 스펙 관리 =========================== */
+/** 더미 CSV 업로드 데이터셋 (버튼 클릭 시 주입 — 파일 I/O 대체).
+ *  기존 DBO(덮어쓰기) + 신규 DC1(추가) + 카테고리 오류행(실패) 을 섞어 검증·이력을 시연. */
+function ticketDummyUploadRows() {
+  const ww = { use_start: "2026-07-10", use_end: "2026-08-30" };
+  return [
+    { category: "워터파크", product_type: "", coupon_id: "DBO", pass_name: "OAT_26성수기_얼리_워터월드(플레이스토리)", level: 1, coupon_name: "워터월드 종일권_성수기(대인/얼리)", price: 40000, discount: "종일권_대인_남_4계절 상품 외 15종", ...ww },
+    { category: "워터파크", product_type: "", coupon_id: "DBO", pass_name: "OAT_26성수기_얼리_워터월드(플레이스토리)", level: 2, coupon_name: "워터월드 종일권_성수기(소인/얼리)", price: 35000, discount: "종일권_대인_남_4계절 상품 외 15종", ...ww },
+    { category: "곤돌라", product_type: "", coupon_id: "DC1", pass_name: "OAT_26곤돌라_왕복", level: 1, coupon_name: "곤돌라 왕복권(대인)", price: 18000, discount: "곤돌라 대인 외 2종", use_start: "2026-07-10", use_end: "2026-12-31" },
+    { category: "카트레이싱", product_type: "", coupon_id: "DK1", pass_name: "OAT_카트_1회", level: 1, coupon_name: "카트 1회권", price: 25000, discount: "", use_start: "2026-07-10", use_end: "2026-12-31" },
+  ];
+}
+
+function runTicketDummyUpload(main) {
+  const rows = ticketDummyUploadRows();
+  const koSet = ticketCategoryKoSet();
+  const specs = loadCouponSpecs();
+  const existsKey = new Set(specs.map((s) => s.coupon_id + "|" + s.level));
+
+  // 1) 검증 + 기존 존재 여부 판정
+  const report = [];
+  const overwriteTargets = [];
+  const validAdds = [];
+  rows.forEach((r, i) => {
+    const line = i + 1;
+    if (!koSet.has(r.category)) { report.push({ line, coupon_id: r.coupon_id, level: r.level, status: "fail", reason: `카테고리 불일치 ("${r.category}" 미등록)` }); return; }
+    if (r.product_type && !koSet.has(r.product_type)) { report.push({ line, coupon_id: r.coupon_id, level: r.level, status: "fail", reason: `상품유형 불일치 ("${r.product_type}" 미등록)` }); return; }
+    if (existsKey.has(r.coupon_id + "|" + r.level)) { overwriteTargets.push(r); report.push({ line, coupon_id: r.coupon_id, level: r.level, status: "overwrite", reason: "기존 스펙 덮어쓰기" }); }
+    else { validAdds.push(r); report.push({ line, coupon_id: r.coupon_id, level: r.level, status: "success", reason: "신규 등록" }); }
+  });
+
+  // 2) 덮어쓰기 확인
+  if (overwriteTargets.length) {
+    if (!confirm(`${overwriteTargets.length}건이 이미 존재합니다(쿠폰코드+레벨 동일). 덮어쓰시겠습니까?\n[취소] 시 업로드를 중단합니다.`)) {
+      alert("업로드를 중단했습니다. 변경사항이 없습니다.");
+      return;
+    }
+  }
+
+  // 3) 반영
+  const now = new Date().toISOString();
+  const toRow = (r) => ({
+    id: uid(), coupon_id: r.coupon_id, pass_name: r.pass_name, category: r.category, product_type: r.product_type || "",
+    level: r.level, level_name: r.level === 1 ? "대인" : r.level === 2 ? "소인" : "LV." + r.level,
+    coupon_name: r.coupon_name, price: r.price, discount_target: r.discount || "",
+    use_start_date: r.use_start, use_end_date: r.use_end, active: true, created_at: now, updated_at: now,
+  });
+  overwriteTargets.forEach((r) => {
+    const idx = specs.findIndex((s) => s.coupon_id === r.coupon_id && s.level === r.level);
+    const keepActive = idx >= 0 ? specs[idx].active : true;
+    const nr = toRow(r); nr.active = keepActive !== false;
+    if (idx >= 0) specs[idx] = { ...specs[idx], ...nr }; else specs.push(nr);
+  });
+  validAdds.forEach((r) => specs.push(toRow(r)));
+  saveCouponSpecs(specs);
+
+  const success = report.filter((x) => x.status !== "fail").length;
+  const fail = report.filter((x) => x.status === "fail").length;
+  const hist = loadTicketUploadHistory();
+  hist.unshift({ id: uid(), at: now, filename: "waterpark_ski_specs_dummy.csv", total: report.length, success, fail, uploader: "admin", rows: report });
+  saveTicketUploadHistory(hist.slice(0, 50));
+
+  alert(`업로드 완료 — 전체 ${report.length}건 · 성공 ${success} · 실패 ${fail}\n(성공에는 덮어쓰기 ${overwriteTargets.length}건 포함)`);
+  renderCouponSpecPage(main, "list");
+}
+
+function renderCouponSpecPage(main, tab) {
+  ensureTicketStores();
+  const t = tab === "history" ? "history" : "list";
+  const tabPills = `
+    <a class="room-master-tab ${t === "list" ? "active" : ""}" href="#/coupon-specs">업로드 & 스펙 목록</a>
+    <a class="room-master-tab ${t === "history" ? "active" : ""}" href="#/coupon-specs/history">업로드 이력</a>`;
+
+  if (t === "history") {
+    const hist = loadTicketUploadHistory();
+    const rows = hist.map((h, i) => `
+      <tr class="js-hist-row" data-idx="${i}" style="cursor:pointer">
+        <td>${formatDate(h.at)}</td><td>${escapeHtml(h.filename)}</td>
+        <td>${h.total}</td><td style="color:#1a7f37">${h.success}</td><td style="color:#d33">${h.fail}</td>
+        <td>${escapeHtml(h.uploader)}</td><td><span class="link">상세 보기 ▾</span></td>
+      </tr>
+      <tr class="js-hist-detail" data-idx="${i}" style="display:none"><td colspan="7" style="background:#fafafa">
+        <table style="margin:6px 0"><thead><tr><th>라인</th><th>쿠폰코드</th><th>레벨</th><th>결과</th><th>사유</th></tr></thead>
+        <tbody>${h.rows.map((r) => `<tr><td>${r.line}</td><td>${escapeHtml(r.coupon_id)}</td><td>${r.level}</td><td>${r.status === "fail" ? '<span class="badge off">실패</span>' : r.status === "overwrite" ? '<span class="badge">덮어쓰기</span>' : '<span class="badge on">성공</span>'}</td><td>${escapeHtml(r.reason)}</td></tr>`).join("")}</tbody></table>
+      </td></tr>`).join("");
+    main.innerHTML = `
+      <h2 class="page-title">쿠폰 스펙 관리 <span class="badge" style="background:#fce7f3;color:#ec4899">티켓관리</span></h2>
+      <p class="page-desc">High1 마케팅팀 제공 스펙을 등록·관리합니다. 저장소: <code>${STORAGE_COUPON_SPECS}</code></p>
+      <div class="room-master-tabs">${tabPills}</div>
+      <div class="card">
+        ${hist.length === 0 ? `<div class="empty">업로드 이력이 없습니다. [업로드 & 스펙 목록] 탭에서 <strong>샘플 스펙 불러오기</strong>를 눌러보세요.</div>`
+          : `<table><thead><tr><th>업로드 일시</th><th>파일명</th><th>전체</th><th>성공</th><th>실패</th><th>업로더</th><th>상세</th></tr></thead><tbody>${rows}</tbody></table>`}
+      </div>`;
+    main.querySelectorAll(".js-hist-row").forEach((tr) => tr.addEventListener("click", () => {
+      const d = main.querySelector(`.js-hist-detail[data-idx="${tr.getAttribute("data-idx")}"]`);
+      if (d) d.style.display = d.style.display === "none" ? "" : "none";
+    }));
+    return;
+  }
+
+  // 탭A — 업로드 & 스펙 목록
+  const specs = loadCouponSpecs();
+  const groups = Array.from(groupCouponSpecs(specs).values());
+  // 카드형(A안): 쿠폰ID = 그룹 카드, 레벨 = 카드 내 하위 테이블
+  let cards = "";
+  groups.forEach((g) => {
+    const linked = ticketProductCountByCoupon(g.coupon_id);
+    const issued = 0; // Phase 1: 발급 쿠폰(S16) 미구현 → 0 고정
+    const canDelete = linked === 0 && issued === 0;
+    const catCol = `${escapeHtml(g.category)}${g.product_type ? " › " + escapeHtml(g.product_type) : ""}`;
+    const lvRows = g.rows.map((r) => `
+        <tr>
+          <td><span class="tk-lv-pill ${r.level === 2 ? "lv2" : ""}">LV.${r.level}</span> ${escapeHtml(r.level_name)}</td>
+          <td>${escapeHtml(r.coupon_name)}</td>
+          <td>${catCol}</td>
+          <td>${Number(r.price).toLocaleString()}원</td>
+          <td>${escapeHtml(r.discount_target || "-")}</td>
+          <td>${escapeHtml(r.use_start_date)} ~ ${escapeHtml(r.use_end_date)}</td>
+        </tr>`).join("");
+    cards += `
+      <div class="tk-card ${g.active ? "" : "is-off"}">
+        <div class="tk-card-head">
+          <span class="tk-code">${escapeHtml(g.coupon_id)}</span>
+          <span class="tk-head-title">${escapeHtml(g.pass_name)}</span>
+          <span class="tk-head-meta">레벨 ${g.rows.length} · 연결상품 ${linked} · 발급 ${issued}</span>
+          <span class="tk-head-actions">
+            <span class="badge ${g.active ? "on" : "off"}">${g.active ? "노출 ON" : "노출 OFF 🔒"}</span>
+            <button type="button" class="btn btn-ghost js-cs-toggle" data-cid="${escapeAttr(g.coupon_id)}">${g.active ? "노출 OFF" : "노출 ON"}</button>
+            <button type="button" class="btn btn-ghost js-cs-del" data-cid="${escapeAttr(g.coupon_id)}" ${canDelete ? "" : `disabled title="연결 상품 ${linked}개 / 발급 쿠폰 ${issued}개가 있어 삭제할 수 없습니다"`}>삭제</button>
+          </span>
+        </div>
+        <div class="tk-lv-scroll"><table class="tk-lv-table">
+          <thead><tr><th style="width:110px">레벨</th><th style="min-width:180px">쿠폰명</th><th style="width:130px">카테고리</th><th style="width:95px">입금가</th><th style="min-width:200px">할인대상내역</th><th style="width:180px">사용기간</th></tr></thead>
+          <tbody>${lvRows}</tbody>
+        </table></div>
+      </div>`;
+  });
+
+  main.innerHTML = `
+    <h2 class="page-title">쿠폰 스펙 관리 <span class="badge" style="background:#fce7f3;color:#ec4899">티켓관리</span></h2>
+    <p class="page-desc">High1 제공 쿠폰 스펙을 등록·관리합니다. <strong>카드 = 쿠폰ID(코드), 카드 안 행 = 레벨(대인/소인)</strong>. 스펙은 S14 상품의 연결 소스입니다. 저장소: <code>${STORAGE_COUPON_SPECS}</code></p>
+    <div class="room-master-tabs">${tabPills}</div>
+    <div class="card">
+      <div class="toolbar" style="justify-content:space-between">
+        <span style="color:var(--muted);font-size:13px">등록된 스펙 ${groups.length}종 (레벨행 ${specs.length}건)</span>
+        <span style="display:flex;gap:8px">
+          <button type="button" class="btn js-cs-template">⭳ CSV 템플릿</button>
+          <button type="button" class="btn btn-primary js-cs-upload">⭱ 샘플 스펙 불러오기 (더미)</button>
+        </span>
+      </div>
+      <div class="notice" style="background:#fdf2f8;border:1px solid #fbcfe8;border-radius:6px;padding:8px 12px;font-size:12px;color:#9d174d;margin-bottom:12px">
+        프로토타입: 실제 파일 업로드 대신 <strong>[샘플 스펙 불러오기]</strong> 버튼이 더미 CSV(워터월드 DBO 덮어쓰기 + 곤돌라 DC1 신규 + 카테고리 오류행 1건)를 주입해 <strong>검증·덮어쓰기 확인·이력</strong>을 시연합니다. S17 미등록 카테고리 행은 실패 처리됩니다.
+      </div>
+      ${groups.length === 0 ? `<div class="empty">등록된 스펙이 없습니다. <strong>[샘플 스펙 불러오기]</strong>를 눌러 주입하세요.</div>` : cards}
+    </div>`;
+
+  main.querySelector(".js-cs-upload").addEventListener("click", () => runTicketDummyUpload(main));
+  main.querySelector(".js-cs-template").addEventListener("click", () => {
+    const header = ["카테고리", "상품유형", "쿠폰코드", "이용권명", "레벨", "쿠폰명", "입금가", "할인대상내역", "사용시작일", "사용종료일"];
+    const sample = ["워터파크", "", "DBO", "OAT_26성수기_얼리_워터월드(플레이스토리)", "1", "워터월드 종일권_성수기(대인/얼리)", "40000", "종일권_대인_남_4계절 상품 외 15종", "2026-07-10", "2026-08-30"];
+    const csv = "﻿" + header.join(",") + "\n" + sample.join(",") + "\n";
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "coupon_spec_template.csv"; a.click(); URL.revokeObjectURL(a.href);
+  });
+  main.querySelectorAll(".js-cs-toggle").forEach((b) => b.addEventListener("click", () => {
+    const cid = b.getAttribute("data-cid");
+    const list = loadCouponSpecs();
+    const curOn = list.filter((s) => s.coupon_id === cid).every((s) => s.active !== false);
+    if (!confirm(curOn ? `쿠폰 ${cid}를 미노출 처리하시겠습니까?\n연결된 티켓 상품이 전부 강제 미노출(🔒)됩니다.` : `쿠폰 ${cid}를 노출 처리하시겠습니까?`)) return;
+    list.forEach((s) => { if (s.coupon_id === cid) s.active = !curOn; });
+    saveCouponSpecs(list);
+    renderCouponSpecPage(main, "list");
+  }));
+  main.querySelectorAll(".js-cs-del").forEach((b) => b.addEventListener("click", () => {
+    const cid = b.getAttribute("data-cid");
+    if (!confirm(`쿠폰 스펙 ${cid}를 삭제할까요? (연결 상품·발급 쿠폰이 0건일 때만 가능)`)) return;
+    saveCouponSpecs(loadCouponSpecs().filter((s) => s.coupon_id !== cid));
+    renderCouponSpecPage(main, "list");
+  }));
+}
+
+/* =========================== S14-A 티켓 상품 목록 =========================== */
+function renderTicketProductList(main) {
+  ensureTicketStores();
+  const products = loadTicketProducts();
+  const specs = loadCouponSpecs();
+  const specByCoupon = groupCouponSpecs(specs);
+
+  // 카드형(A안): 상품 = 그룹 카드(헤더=상품명·쿠폰ID·카테고리·노출·액션), 레벨 = 카드 내 하위 테이블(입금가·마진·판매가)
+  const cards = products
+    .slice()
+    .sort((a, b) => (b.updated_at || "").localeCompare(a.updated_at || ""))
+    .map((p) => {
+      const g = specByCoupon.get(p.spec_coupon_id);
+      const specOn = g ? g.active : false;
+      const sale = ticketSaleStatus(p);
+      const forcedHide = !specOn; // 스펙 OFF → 강제 미노출
+      const shown = p.visibility !== "N" && specOn && sale.key === "on"; // 노출 = 스펙ON AND 상품ON AND 판매중 (v0.9 OR 미노출)
+      const margin = getTicketMargin(p.spec_coupon_id);
+      const marginLabel = margin.type === "rate" ? `${margin.value}%` : `+${Number(margin.value).toLocaleString()}원`;
+      const saleBadgeCls = sale.key === "on" ? "on" : "off";
+      const catCol = `${escapeHtml(p.category_1)}${p.category_2 ? " › " + escapeHtml(p.category_2) : ""}`;
+      const saleCol = escapeHtml(fmtSalePeriod(p));
+      const lvRows = g ? g.rows.map((r) => {
+        const sell = computeSellPrice(r.price, margin.type, margin.value);
+        return `
+        <tr>
+          <td><span class="tk-lv-pill ${r.level === 2 ? "lv2" : ""}">LV.${r.level}</span> ${escapeHtml(r.level_name)}</td>
+          <td>${escapeHtml(r.coupon_name)}</td>
+          <td>${catCol}</td>
+          <td>${saleCol}</td>
+          <td>${escapeHtml(r.use_start_date)} ~ ${escapeHtml(r.use_end_date)}</td>
+          <td>${Number(r.price).toLocaleString()}원</td>
+          <td>${marginLabel}</td>
+          <td class="tk-sell">${sell.toLocaleString()}원</td>
+        </tr>`;
+      }).join("") : `<tr><td colspan="8" style="color:#d33">⚠ 연결 스펙(${escapeHtml(p.spec_coupon_id)})을 찾을 수 없습니다.</td></tr>`;
+      const thumb = ticketProductImg(p) ? `<img src="${escapeAttr(ticketProductImg(p))}" alt="" style="width:44px;height:30px;object-fit:cover;border-radius:4px;flex-shrink:0">` : "";
+      return `
+      <div class="tk-card ${shown ? "" : "is-off"}">
+        <div class="tk-card-head">
+          ${thumb}
+          <span class="tk-code tk-code-prod">${escapeHtml(p.spec_coupon_id)}</span>
+          <span class="tk-head-title">${escapeHtml(p.name_en)}${p.name_zh ? ` <span style="color:var(--muted);font-weight:400">${escapeHtml(p.name_zh)}</span>` : ""}</span>
+          <span class="tk-head-actions">
+            <span class="badge ${saleBadgeCls}">${sale.label}</span>
+            ${forcedHide ? '<span class="badge off">강제 미노출 🔒</span>' : `<span class="badge ${shown ? "on" : "off"}">${shown ? "노출중" : "미노출"}</span>`}
+            <button type="button" class="btn btn-ghost js-tp-toggle" data-id="${escapeAttr(p.id)}" ${forcedHide ? "disabled title=\"연결 스펙이 미노출(OFF)이라 제어할 수 없습니다\"" : ""}>${p.visibility === "N" ? "노출" : "미노출"}</button>
+            <button type="button" class="btn btn-ghost js-tp-edit" data-id="${escapeAttr(p.id)}">수정</button>
+            <button type="button" class="btn btn-ghost js-tp-del" data-id="${escapeAttr(p.id)}">삭제</button>
+          </span>
+        </div>
+        <div class="tk-lv-scroll"><table class="tk-lv-table">
+          <thead><tr><th style="width:110px">레벨</th><th style="min-width:180px">쿠폰명</th><th style="width:130px">카테고리</th><th style="width:170px">판매기간</th><th style="width:170px">사용기간</th><th style="width:95px">입금가</th><th style="width:95px">적용 마진</th><th style="width:105px">판매가</th></tr></thead>
+          <tbody>${lvRows}</tbody>
+        </table></div>
+      </div>`;
+    }).join("");
+
+  main.innerHTML = `
+    <h2 class="page-title">티켓 상품 <span class="badge" style="background:#fce7f3;color:#ec4899">티켓관리</span></h2>
+    <p class="page-desc">S13 쿠폰 스펙 기반 판매 상품입니다(스펙 1 : 상품 N). <strong>카드 = 상품, 카드 안 행 = 레벨(대인/소인)</strong>. 마진은 쿠폰ID 단위(S11 티켓 탭)로 관리되며 여기선 판매가로 표시만 됩니다. 저장소: <code>${STORAGE_TICKET_PRODUCTS}</code></p>
+    <div class="card">
+      <div class="toolbar" style="justify-content:space-between">
+        <span style="color:var(--muted);font-size:13px">총 ${products.length}개 상품</span>
+        <button type="button" class="btn btn-primary js-tp-new">+ 상품 등록</button>
+      </div>
+      ${products.length === 0 ? `<div class="empty">등록된 티켓 상품이 없습니다. <strong>[+ 상품 등록]</strong>으로 추가하세요. (먼저 S13에 스펙이 있어야 합니다)</div>` : cards}
+    </div>`;
+
+  const newBtn = main.querySelector(".js-tp-new");
+  if (newBtn) newBtn.addEventListener("click", () => {
+    if (loadCouponSpecs().length === 0) { alert("먼저 S13 쿠폰 스펙 관리에서 스펙을 등록하세요."); return; }
+    navigate("ticket-products/new");
+  });
+  main.querySelectorAll(".js-tp-edit").forEach((b) => b.addEventListener("click", () => navigate("ticket-products/edit/" + b.getAttribute("data-id"))));
+  main.querySelectorAll(".js-tp-del").forEach((b) => b.addEventListener("click", () => {
+    if (!confirm("이 티켓 상품을 삭제할까요?")) return;
+    saveTicketProducts(loadTicketProducts().filter((x) => x.id !== b.getAttribute("data-id")));
+    renderTicketProductList(main);
+  }));
+  main.querySelectorAll(".js-tp-toggle").forEach((b) => b.addEventListener("click", () => {
+    const list = loadTicketProducts();
+    const p = list.find((x) => x.id === b.getAttribute("data-id"));
+    if (!p) return;
+    p.visibility = p.visibility === "N" ? "Y" : "N";
+    p.updated_at = new Date().toISOString();
+    saveTicketProducts(list);
+    renderTicketProductList(main);
+  }));
+}
+
+/* =========================== S14-B 티켓 상품 마스터 (+탭2 커트오프) =========================== */
+function renderTicketProductForm(main, id) {
+  ensureTicketStores();
+  const editing = id ? loadTicketProducts().find((x) => x.id === id) : null;
+  const specGroups = Array.from(groupCouponSpecs(loadCouponSpecs()).values());
+
+  const state = {
+    tab: "master",
+    name_en: editing?.name_en || "",
+    name_zh: editing?.name_zh || "",
+    cat1: editing?.category_1 || "",
+    cat2: editing?.category_2 || "",
+    spec_coupon_id: editing?.spec_coupon_id || "",
+    visibility: editing?.visibility || "Y",
+    sale_start_date: editing?.sale_start_date || "",
+    sale_end_date: editing?.sale_end_date || "",
+    date_mode: "open", // 오픈형 고정 (v0.4·항목4)
+    cutoff: editing?.cutoff ? { ...editing.cutoff } : { n: 1, unit: "day", time: "23:59" },
+    // 오픈형은 취소 특례(사용종료일 기준)를 적용하므로 이용일 구간은 편집하지 않음(항목5·v0.11 8.2).
+    // 날짜지정형 전환 대비 기본값만 보존.
+    cancel_policy: editing?.cancel_policy ? editing.cancel_policy.map((c) => ({ ...c })) : [{ base: "3plus", penalty: 0 }, { base: "today", penalty: 100 }],
+    // 상품 이미지 — 썸네일만(검색결과·브릿지 카드·메인 추천). 상세설명·안내·정책·위치·히어로는 뎁스(S17 카테고리/컨텐츠) 소유.
+    thumb_meta: editing?.thumb_meta ? editing.thumb_meta.map((m) => ({ ...m })) : [],
+  };
+
+  function syncFromDom() {
+    const q = (id2) => main.querySelector(id2);
+    if (state.tab === "master") {
+      if (q("#tp_en")) state.name_en = q("#tp_en").value;
+      if (q("#tp_zh")) state.name_zh = q("#tp_zh").value;
+      if (q("#tp_sale_s")) state.sale_start_date = q("#tp_sale_s").value;
+      if (q("#tp_sale_e")) state.sale_end_date = q("#tp_sale_e").value;
+    } else if (state.tab === "date") {
+      if (q("#tp_cutn")) state.cutoff.n = parseInt(q("#tp_cutn").value, 10) || 0;
+      if (q("#tp_cutunit")) state.cutoff.unit = q("#tp_cutunit").value;
+      if (q("#tp_cuttime")) state.cutoff.time = q("#tp_cuttime").value;
+    }
+    // 썸네일은 파일 입력·state 직접 관리라 sync 불필요
+  }
+
+  function render() {
+    const tops = ticketTopCategories();
+    const subs = state.cat1 ? ticketSubCategories((tops.find((t) => t.name_ko === state.cat1) || {}).id) : [];
+    // 항목3: 카테고리1(+2) 선택 → 연결 스펙 필터. 1개면 자동선택.
+    const filteredSpecs = state.cat1
+      ? specGroups.filter((sg) => sg.category === state.cat1 && (state.cat2 ? sg.product_type === state.cat2 : true))
+      : [];
+    if (state.spec_coupon_id && !filteredSpecs.some((s) => s.coupon_id === state.spec_coupon_id)) state.spec_coupon_id = "";
+    if (!state.spec_coupon_id && filteredSpecs.length === 1) state.spec_coupon_id = filteredSpecs[0].coupon_id;
+
+    const g = specGroups.find((x) => x.coupon_id === state.spec_coupon_id);
+    const margin = getTicketMargin(state.spec_coupon_id);
+    const marginLabel = margin.type === "rate" ? `${margin.value}%` : `+${Number(margin.value).toLocaleString()}원`;
+    const useEnd = g && g.rows.length ? g.rows[0].use_end_date : "";
+
+    const tabPills = `
+      <a class="room-master-tab ${state.tab === "master" ? "active" : ""}" href="javascript:void(0)" data-tab="master">탭1 · 상품 마스터</a>
+      <a class="room-master-tab ${state.tab === "date" ? "active" : ""}" href="javascript:void(0)" data-tab="date">탭2 · 날짜 설정</a>`;
+
+    const thumbCardHtml = () => {
+      const grid = "display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:10px";
+      const thumbs = state.thumb_meta.length
+        ? state.thumb_meta.map((m, i) => `<div class="image-meta-item"><img src="${escapeAttr(m.data_url)}" alt="" style="width:100%;height:90px;object-fit:cover;border-radius:6px"><button type="button" class="image-meta-delete js-tpt-del" data-i="${i}">×</button></div>`).join("")
+        : `<div style="color:var(--muted);font-size:13px;padding:8px 0">등록된 썸네일이 없습니다.</div>`;
+      return `<div class="card">
+          <h3 style="margin-top:0">③ 썸네일 <span class="badge">검색결과·브릿지 카드·메인 추천</span></h3>
+          <div class="notice" style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:8px 12px;font-size:12px;color:#3730a3;margin:0 0 10px">상세설명·이용안내·정책·위치·히어로 이미지는 <strong>카테고리/컨텐츠 관리(S17)</strong>에서 뎁스 단위로 관리합니다. 상품엔 목록 대표 <strong>썸네일</strong>만 등록합니다. (${PLACE_IMAGE_MAX_MB}MB 이하, 첫 장이 대표)</div>
+          <div class="image-meta-list" style="${grid}">${thumbs}</div>
+          <input type="file" id="tp_thumb_img" accept="image/*" multiple>
+        </div>`;
+    };
+
+    const inputStyle = "width:100%;padding:8px;border:1px solid #ddd;border-radius:6px";
+    let panel = "";
+    if (state.tab === "master") {
+      const levelRows = g ? g.rows.map((r) => {
+        const sell = computeSellPrice(r.price, margin.type, margin.value);
+        return `<tr><td>LV.${r.level} ${escapeHtml(r.level_name)}</td><td>${Number(r.price).toLocaleString()}원</td><td>${marginLabel} <span class="badge">읽기전용</span></td><td><strong>${sell.toLocaleString()}원</strong></td></tr>`;
+      }).join("") : `<tr><td colspan="4" style="color:var(--muted)">카테고리를 선택하면 연결 스펙이 좁혀지고, 스펙 선택 시 레벨·판매가가 표시됩니다.</td></tr>`;
+      // 항목3: 필터된 스펙 드롭다운 (카테고리 미선택 시 안내)
+      const specOptions = !state.cat1
+        ? `<option value="">먼저 카테고리를 선택하세요</option>`
+        : filteredSpecs.length === 0
+          ? `<option value="">이 카테고리에 연결 가능한 스펙 없음</option>`
+          : `<option value="">선택</option>` + filteredSpecs.map((sg) => `<option value="${escapeAttr(sg.coupon_id)}" ${state.spec_coupon_id === sg.coupon_id ? "selected" : ""}>${escapeHtml(sg.coupon_id)} — ${escapeHtml(sg.pass_name)}</option>`).join("");
+      panel = `
+        <div class="card">
+          <h3 style="margin-top:0">① 기본정보</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <label style="font-size:13px">상품명 (EN) <span style="color:#d33">*</span><br><input type="text" id="tp_en" value="${escapeAttr(state.name_en)}" style="${inputStyle}"></label>
+            <label style="font-size:13px">상품명 (ZH) <span style="color:var(--muted)">선택</span><br><input type="text" id="tp_zh" value="${escapeAttr(state.name_zh)}" style="${inputStyle}"></label>
+            <label style="font-size:13px">카테고리 1뎁스 <span style="color:#d33">*</span><br>
+              <select id="tp_cat1" style="${inputStyle}"><option value="">선택</option>${tops.map((t) => `<option value="${escapeAttr(t.name_ko)}" ${state.cat1 === t.name_ko ? "selected" : ""}>${escapeHtml(t.name_ko)} (${escapeHtml(t.name_en)})</option>`).join("")}</select></label>
+            <label style="font-size:13px">카테고리 2뎁스 (상품유형)<br>
+              <select id="tp_cat2" style="${inputStyle}" ${subs.length ? "" : "disabled"}><option value="">${subs.length ? "전체(상품유형 무관)" : "— 없음"}</option>${subs.map((s) => `<option value="${escapeAttr(s.name_ko)}" ${state.cat2 === s.name_ko ? "selected" : ""}>${escapeHtml(s.name_ko)}</option>`).join("")}</select></label>
+            <label style="font-size:13px">연결 스펙 (쿠폰ID) <span style="color:#d33">*</span> <span style="color:var(--muted)">— 카테고리로 자동 필터</span><br>
+              <select id="tp_spec" style="${inputStyle}" ${state.cat1 && filteredSpecs.length ? "" : "disabled"}>${specOptions}</select></label>
+            <label style="font-size:13px">노출 여부<br>
+              <select id="tp_vis" style="${inputStyle}"><option value="Y" ${state.visibility !== "N" ? "selected" : ""}>노출</option><option value="N" ${state.visibility === "N" ? "selected" : ""}>미노출</option></select></label>
+            <label style="font-size:13px">판매 시작일 <span style="color:var(--muted)">선택·미설정 시 즉시</span><br><input type="date" id="tp_sale_s" value="${escapeAttr(state.sale_start_date)}" style="${inputStyle}"></label>
+            <label style="font-size:13px">판매 종료일 <span style="color:var(--muted)">선택·경과 시 자동 미노출</span><br><input type="date" id="tp_sale_e" value="${escapeAttr(state.sale_end_date)}" style="${inputStyle}"></label>
+          </div>
+          <div class="notice" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 12px;font-size:12px;color:#1e40af;margin-top:10px">판매기간(우리 홈페이지 판매 가능 기간)은 High1 사용기간(현장 입장 가능 기간)과 별개입니다. 판매종료일 자정 경과 시 프런트 자동 미노출(v0.9).</div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">② 레벨 구성 & 판매가 <span class="badge">마진 읽기전용</span></h3>
+          <p class="page-desc" style="margin-top:0">이 상품 마진: 쿠폰ID <strong>${escapeHtml(state.spec_coupon_id || "-")}</strong> 기준 <strong>${state.spec_coupon_id ? marginLabel : "-"}</strong> · <span class="link js-margin-link" style="cursor:pointer">편집: S11 마진관리 티켓 탭 →</span></p>
+          <table><thead><tr><th>레벨</th><th>입금가</th><th>적용 마진 (S11·읽기전용)</th><th>판매가</th></tr></thead><tbody>${levelRows}</tbody></table>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">③ 취소/환불 정책 <span class="badge" style="background:#ecfdf5;color:#047857">오픈형 고정</span></h3>
+          <p class="page-desc" style="margin-top:0">오픈형 상품은 이용일이 없어 <strong>이용일 기준 구간을 설정하지 않습니다.</strong> 아래 <strong>사용기간 종료일 기준</strong> 규칙이 자동 적용됩니다. (정책 v0.11 8.2절)</p>
+          <table><thead><tr><th>취소 시점</th><th>쿠폰 상태</th><th>환불</th></tr></thead><tbody>
+            <tr><td>사용종료일(<strong>${useEnd || "연결 스펙의 사용종료일"}</strong>) 이전</td><td>미사용 (SOLD)</td><td style="color:#1a7f37;font-weight:600">전액 환불</td></tr>
+            <tr><td>사용종료일(<strong>${useEnd || "연결 스펙의 사용종료일"}</strong>) 이후</td><td>미사용 (SOLD)</td><td style="color:#d33;font-weight:600">환불 불가</td></tr>
+            <tr><td>사용 완료 후</td><td>사용됨 (USED)</td><td style="color:#d33;font-weight:600">환불 불가</td></tr>
+          </tbody></table>
+        </div>
+        ${thumbCardHtml()}`;
+    } else if (state.tab === "date") {
+      const isOpen = state.date_mode === "open";
+      panel = `
+        <div class="card">
+          <h3 style="margin-top:0">날짜 방식</h3>
+          <div style="display:flex;align-items:center;gap:8px;font-size:14px"><span class="badge on">오픈형 (고정)</span> 사용기간 내 자유 사용 — 현재 운영 방식</div>
+          <div class="notice" style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:6px;padding:8px 12px;font-size:12px;color:#065f46;margin-top:10px">오픈형은 날짜별 한도·입금가 설정이 없습니다. 사용기간은 스펙(사용시작/종료일)을 표시용으로만 사용하며 날짜 유효성 체크는 하지 않습니다(DBER31/32 미발생). ※ 날짜지정형은 정책상 기능 유지이나 현재 프로토타입 범위 밖.</div>
+        </div>
+        ${isOpen
+          ? `<div class="card"><h3 style="margin-top:0">커트오프 (예약 마감)</h3><div class="notice" style="background:#f8f9fb;border:1px solid #e5e7eb;border-radius:6px;padding:8px 12px;font-size:12px;color:var(--muted)">커트오프는 <strong>이용일 기준 마감</strong>이라 이용일이 없는 <strong>오픈형에는 적용되지 않습니다.</strong> 날짜지정형에서만 설정합니다.</div></div>`
+          : `<div class="card">
+          <h3 style="margin-top:0">커트오프 (예약 마감)</h3>
+          <p class="page-desc" style="margin-top:0">미설정 시 이용일 당일 자정까지 구매 가능.</p>
+          <div style="display:flex;align-items:center;gap:8px">
+            이용일 <input type="number" id="tp_cutn" value="${state.cutoff.n}" min="0" style="width:70px;padding:6px">
+            <select id="tp_cutunit" style="padding:6px"><option value="day" ${state.cutoff.unit === "day" ? "selected" : ""}>일</option><option value="hour" ${state.cutoff.unit === "hour" ? "selected" : ""}>시간</option></select>
+            전 <input type="time" id="tp_cuttime" value="${escapeAttr(state.cutoff.time)}" style="padding:6px"> 까지
+          </div>
+        </div>`}`;
+    }
+
+    main.innerHTML = `
+      <h2 class="page-title">${editing ? "티켓 상품 수정" : "티켓 상품 등록"} <span class="badge" style="background:#fce7f3;color:#ec4899">티켓관리</span></h2>
+      <p class="page-desc">${editing ? `상품코드 ${escapeHtml(editing.product_code)}` : "신규 상품"} · 저장소: <code>${STORAGE_TICKET_PRODUCTS}</code></p>
+      <div class="room-master-tabs">${tabPills}</div>
+      ${panel}
+      <p id="tp_err" class="error"></p>
+      <div class="toolbar" style="gap:8px">
+        <button type="button" class="btn js-tp-cancel">취소</button>
+        <button type="button" class="btn btn-primary js-tp-save">저장</button>
+      </div>`;
+
+    // 탭 전환
+    main.querySelectorAll(".room-master-tab[data-tab]").forEach((el) => el.addEventListener("click", () => { syncFromDom(); state.tab = el.getAttribute("data-tab"); render(); }));
+    // master 탭 컨트롤
+    const cat1 = main.querySelector("#tp_cat1");
+    if (cat1) cat1.addEventListener("change", () => { syncFromDom(); state.cat1 = cat1.value; state.cat2 = ""; state.spec_coupon_id = ""; render(); });
+    const cat2 = main.querySelector("#tp_cat2");
+    if (cat2) cat2.addEventListener("change", () => { syncFromDom(); state.cat2 = cat2.value; state.spec_coupon_id = ""; render(); });
+    const spec = main.querySelector("#tp_spec");
+    if (spec) spec.addEventListener("change", () => { syncFromDom(); state.spec_coupon_id = spec.value; render(); });
+    const vis = main.querySelector("#tp_vis");
+    if (vis) vis.addEventListener("change", () => { state.visibility = vis.value; });
+    const mlink = main.querySelector(".js-margin-link");
+    if (mlink) mlink.addEventListener("click", () => alert("S11 마진관리 티켓 탭은 이후 단계에서 구현됩니다. (Phase 1은 더미 마진 읽기전용 표시)"));
+
+    // 썸네일 업로드·삭제 (탭1 하단)
+    const thumbInput = main.querySelector("#tp_thumb_img");
+    if (thumbInput) thumbInput.addEventListener("change", async () => {
+      syncFromDom();
+      for (const f of Array.from(thumbInput.files || [])) {
+        try { const src = await resolveImageSrc(f); state.thumb_meta.push({ data_url: src, name: f.name }); }
+        catch (e) { alert(e.message || "이미지 추가 실패"); }
+      }
+      render();
+    });
+    main.querySelectorAll(".js-tpt-del").forEach((b) => b.addEventListener("click", () => { state.thumb_meta.splice(parseInt(b.getAttribute("data-i"), 10), 1); render(); }));
+
+    main.querySelector(".js-tp-cancel").addEventListener("click", () => navigate("ticket-products"));
+    main.querySelector(".js-tp-save").addEventListener("click", () => {
+      syncFromDom();
+      const err = main.querySelector("#tp_err"); err.textContent = "";
+      const fail = (msg) => { state.tab = "master"; render(); main.querySelector("#tp_err").textContent = msg; };
+      if (!state.name_en.trim()) return fail("상품명(EN)은 필수입니다.");
+      if (!state.cat1) return fail("카테고리(1뎁스)를 선택하세요.");
+      if (!state.spec_coupon_id) return fail("연결 스펙(쿠폰ID)을 선택하세요. (카테고리를 고르면 해당 스펙만 표시됩니다)");
+      if (state.sale_start_date && state.sale_end_date && state.sale_start_date > state.sale_end_date) return fail("판매 종료일이 시작일보다 빠릅니다.");
+      // 오픈형 취소정책은 사용종료일 기준 고정(항목5·v0.11) — 구간 유효성 검사 없음.
+      const list = loadTicketProducts();
+      const now = new Date().toISOString();
+      const payload = { name_en: state.name_en.trim(), name_zh: state.name_zh.trim(), category_1: state.cat1, category_2: state.cat2, spec_coupon_id: state.spec_coupon_id, visibility: state.visibility, sale_start_date: state.sale_start_date, sale_end_date: state.sale_end_date, date_mode: "open", cutoff: state.cutoff, cancel_policy: state.cancel_policy, thumb_meta: state.thumb_meta };
+      if (editing) {
+        Object.assign(list.find((x) => x.id === editing.id), payload, { updated_at: now });
+      } else {
+        list.push({ id: uid(), product_code: nextTicketProductCode(list), ...payload, created_at: now, updated_at: now });
+      }
+      try {
+        saveTicketProducts(list);
+      } catch (e) {
+        if (isStorageQuotaExceeded(e)) return fail("저장 공간(localStorage)이 부족합니다. 썸네일 이미지 용량을 줄여주세요.");
+        return fail("저장 실패: " + (e && e.message || e));
+      }
+      alert("저장되었습니다.");
+      navigate("ticket-products");
+    });
+  }
+
+  render();
+}
+
 /** textarea 본문 삽입 시 파서 깨짐 방지(그 외는 원문 유지 — HTML·이미지 붙여넣기 대응) */
 function escapeForTextarea(s) {
   return String(s ?? "").replace(/<\/textarea/gi, "<\\/textarea");
@@ -5239,8 +6575,178 @@ function attachClipboardImagePaste(textarea) {
   });
 }
 
+/* =========================================================================
+ * 리치 에디터 (프로토타입) — contenteditable + 툴바
+ *  - [이미지 불러오기] 파일 선택 / Ctrl+V 이미지 붙여넣기 / 굵게·제목·목록
+ *  - HTML 문자열을 읽고 씀. 대용량 콘텐츠 필드(설명·안내·정책·상품상세)에 공용 사용.
+ * =====================================================================*/
+const RICH_IMG_MAX_MB = 2;
+
+function richEditorHtml(id, html, opts) {
+  opts = opts || {};
+  const minH = opts.minHeight || 160;
+  return `
+    <div class="rich-ed" data-ed="${id}">
+      <div class="rich-tb">
+        <button type="button" class="rich-btn" data-cmd="bold" title="굵게"><b>B</b></button>
+        <button type="button" class="rich-btn" data-cmd="formatBlock" data-val="h3" title="제목">제목</button>
+        <button type="button" class="rich-btn" data-cmd="insertUnorderedList" title="목록">• 목록</button>
+        <span class="rich-tb-div"></span>
+        <button type="button" class="rich-btn rich-img-btn" title="이미지 불러오기">🖼 이미지 불러오기</button>
+        <span class="rich-tb-hint">이미지는 Ctrl+V 붙여넣기도 됩니다</span>
+        <input type="file" class="rich-file" accept="image/*" multiple hidden />
+      </div>
+      <div id="${id}" class="rich-area" contenteditable="true" style="min-height:${minH}px">${html || ""}</div>
+    </div>`;
+}
+
+/* ── Cloudinary 이미지 업로드 (프로토타입: 무인증 업로드) ──
+ * 붙여넣은/불러온 이미지를 Cloudinary에 올리고 URL만 localStorage에 저장.
+ * → base64 미저장 → 용량 문제 해소. 업로드 실패 시 압축 base64로 폴백. */
+const CLOUDINARY = { cloud: "gu089qzz", preset: "high1_unsigned" };
+
+/** 캔버스로 리사이즈 후 Blob(JPEG) 반환 — 업로드 대역폭 절약 */
+function compressImageToBlob(fileOrBlob, maxDim, quality) {
+  maxDim = maxDim || 1600;
+  quality = quality || 0.82;
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(fileOrBlob);
+    const img = new Image();
+    img.onload = () => {
+      let w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+      const s = Math.min(1, maxDim / Math.max(w, h || 1));
+      w = Math.max(1, Math.round(w * s)); h = Math.max(1, Math.round(h * s));
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      const cx = cv.getContext("2d");
+      cx.fillStyle = "#ffffff"; cx.fillRect(0, 0, w, h);
+      cx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      cv.toBlob((b) => (b ? resolve(b) : reject(new Error("이미지 처리 실패"))), "image/jpeg", quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("이미지를 불러올 수 없습니다.")); };
+    img.src = url;
+  });
+}
+
+/** Cloudinary 업로드 → secure_url 반환 */
+function uploadToCloudinary(fileOrBlob) {
+  return compressImageToBlob(fileOrBlob).then((blob) => {
+    const fd = new FormData();
+    fd.append("upload_preset", CLOUDINARY.preset);
+    fd.append("file", blob);
+    return fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloud}/image/upload`, { method: "POST", body: fd })
+      .then((r) => r.json())
+      .then((j) => { if (j && j.secure_url) return j.secure_url; throw new Error((j && j.error && j.error.message) || "업로드 실패"); });
+  });
+}
+
+/** 이미지 소스 확보: Cloudinary URL(우선) → 실패 시 압축 base64 폴백 */
+function resolveImageSrc(fileOrBlob) {
+  return uploadToCloudinary(fileOrBlob).catch((e) => {
+    console.warn("Cloudinary 업로드 실패 → base64 폴백:", e && e.message);
+    return compressImageToDataUrl(fileOrBlob);
+  });
+}
+
+/** 이미지 메타 객체 확보(숙소·객실용) — Cloudinary URL 우선, 실패 시 base64 메타 폴백 */
+function buildImageMetaSmart(file, maxMB) {
+  return uploadToCloudinary(file)
+    .then((url) => ({ name: file.name, size: file.size, type: "image/jpeg", data_url: url, cdn: true }))
+    .catch((e) => { console.warn("Cloudinary 업로드 실패 → base64 폴백:", e && e.message); return buildImageMetaWithDataUrl(file, maxMB); });
+}
+
+/**
+ * 이미지 자동 축소 — 캔버스 리사이즈 + JPEG 압축으로 data URL 크기 대폭 감소.
+ * localStorage 용량 초과 방지(폴백용). 화면 확인용 화질로 충분.
+ */
+function compressImageToDataUrl(fileOrBlob, maxDim, quality) {
+  maxDim = maxDim || 1400;
+  quality = quality || 0.72;
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(fileOrBlob);
+    const img = new Image();
+    img.onload = () => {
+      let w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+      const scale = Math.min(1, maxDim / Math.max(w, h || 1));
+      w = Math.max(1, Math.round(w * scale));
+      h = Math.max(1, Math.round(h * scale));
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      const cx = cv.getContext("2d");
+      cx.fillStyle = "#ffffff"; cx.fillRect(0, 0, w, h); // JPEG 투명 배경 대비 흰 배경
+      cx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      let out;
+      try { out = cv.toDataURL("image/jpeg", quality); } catch (e) { out = cv.toDataURL(); }
+      resolve(out);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("이미지를 불러올 수 없습니다.")); };
+    img.src = url;
+  });
+}
+
+function _richInsertImageSrc(area, src) {
+  const safe = String(src).replace(/"/g, "&quot;");
+  area.focus();
+  document.execCommand(
+    "insertHTML",
+    false,
+    `<img src="${safe}" alt="" style="max-width:100%;height:auto;display:block;border-radius:6px;margin:8px 0;" />`
+  );
+}
+
+function wireRichEditors(scope) {
+  scope.querySelectorAll(".rich-ed").forEach((ed) => {
+    const area = ed.querySelector(".rich-area");
+    const file = ed.querySelector(".rich-file");
+    // 서식 버튼 (mousedown로 선택영역 유지)
+    ed.querySelectorAll(".rich-btn[data-cmd]").forEach((b) => {
+      b.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        area.focus();
+        document.execCommand(b.getAttribute("data-cmd"), false, b.getAttribute("data-val") || null);
+      });
+    });
+    // 이미지 불러오기
+    ed.querySelector(".rich-img-btn").addEventListener("click", () => file.click());
+    file.addEventListener("change", async () => {
+      for (const f of Array.from(file.files || [])) {
+        try {
+          const src = await resolveImageSrc(f); // Cloudinary URL(우선) / base64 폴백
+          _richInsertImageSrc(area, src);
+        } catch (err) {
+          alert(err.message || "이미지 추가 실패");
+        }
+      }
+      file.value = "";
+    });
+    // 이미지 붙여넣기 — 업로드 후 URL 삽입
+    area.addEventListener("paste", (e) => {
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items || !items.length) return;
+      for (let i = 0; i < items.length; i++) {
+        if (!items[i].type.startsWith("image/")) continue;
+        const f = items[i].getAsFile();
+        if (!f) continue;
+        e.preventDefault();
+        resolveImageSrc(f)
+          .then((src) => _richInsertImageSrc(area, src))
+          .catch((err) => alert(err.message || "이미지 붙여넣기 실패"));
+        return;
+      }
+    });
+  });
+}
+
+function readRichEditor(scope, id) {
+  const el = scope.querySelector("#" + id);
+  return el ? el.innerHTML.trim() : "";
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   ensureFacilityStores();
   ensureRoomMasters();
+  ensureTicketStores();
   boot();
 });

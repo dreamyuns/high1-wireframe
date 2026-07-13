@@ -56,7 +56,7 @@
   </div>
   <div class="sec-sub">
     발급된 쿠폰 단위 현황 조회. 주문 단위(1주문=N장)는 S15. 쿠폰 1장 = 1행.<br>
-    기준: 티켓 쿠폰 연동 정책서 v0.8 · 12.5절 / 인수인계 문서 S16
+    기준: 티켓 쿠폰 연동 정책서 v0.11 · 12.5절 / 인수인계 문서 S16
   </div>
 
   <div class="two-col">
@@ -96,7 +96,7 @@
 
           <!-- 공통정책 블록 -->
           <div class="sec-policy">
-            <span class="ref">기준: v0.8 4절 · 5절 · 7절 · 9절 · 12.5절</span><br>
+            <span class="ref">기준: v0.11 4절 · 5절 · 7절 · 9절 · 12.5절</span><br>
             · 쿠폰 상태 <b>3종</b>: <b>SOLD</b>(판매완료·현장 사용가능, = "미사용") → <b>USED</b>(사용완료), 주문취소 시 <b>CANCELED</b>. 쿠폰번호는 구매 시점에 생성되므로(정책서 2.2절) 발급현황에는 <b>판매 전(AVAILABLE) 상태가 없습니다.</b><br>
             · 상태 변경은 하이원 POS/KIOSK가 우리 서버로 호출하는 <b>사용(use)·사용취소(cancel) API</b> 또는 주문 취소(S15)로 발생. <b>이 화면은 조회 중심</b>.<br>
             · <b>취소는 두 가지로만 처리</b>합니다. ① 사용취소(cancel API) = 현장 실수로 되돌릴 때, USED → SOLD 원복. ② 주문취소(S15) = 구매 자체 취소, SOLD → CANCELED. <b>별도의 VOID(무효화)는 운영하지 않습니다</b>(정책서 §9 · M-05 "VOID 미운영").<br>
@@ -104,7 +104,7 @@
             · 쿠폰 1개 = 1영업장. 리프트권+장비렌탈처럼 여러 권종을 함께 사면 <b>권종마다 별도 쿠폰번호(바코드)</b>가 발급됩니다(정책서 7절).
           </div>
 
-          <!-- API 연동 정보 (v0.8 4절) -->
+          <!-- API 연동 정보 (v0.11 4절) -->
           <div style="border:1px solid #fbcfe8;border-radius:6px;background:#fff;padding:12px 16px;margin-bottom:14px;">
             <div style="font-size:12px;font-weight:700;color:#831843;margin-bottom:8px;">쿠폰 API 연동 정보 <span class="wf-cn">7</span></div>
             <div style="font-size:11px;color:#555;line-height:1.75;margin-bottom:10px;">

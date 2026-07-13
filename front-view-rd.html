@@ -54,6 +54,17 @@
 .ft-rd-foot { background: #f8f8f5; padding: 8px 14px; border-top: 1px solid #e8e8e2; display: flex; justify-content: flex-end; border-radius: 0 0 8px 8px; }
 .ft-rd-cta { background: #1a1f2e; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; font-size: 11px; font-weight: 700; }
 
+/* ── 티켓 상세보기 모달 시뮬레이션 (간소화 — 사용기간+옵션가 표만) ── */
+.ft-tk-sim { max-width: 440px; }
+.ft-tk-cat { color: rgba(255,255,255,.6); font-size: 10px; }
+.ft-tk-name { color: #fff; font-size: 13px; font-weight: 700; }
+.ft-tk-body { padding: 12px 14px; background: #fff; border-radius: 0 0 8px 8px; }
+.ft-tk-table { width: 100%; border-collapse: collapse; font-size: 9px; margin-bottom: 8px; }
+.ft-tk-table th { background: #f0f0ea; color: #555; text-align: left; padding: 4px 8px; border: 1px solid #e8e8e2; font-weight: 700; white-space: nowrap; }
+.ft-tk-table td { padding: 4px 8px; border: 1px solid #e8e8e2; color: #444; }
+.ft-tk-table td.num { text-align: right; }
+.ft-tk-note { font-size: 9px; color: #888; line-height: 1.6; background: #fafaf8; border: 1px dashed #d0d0c8; border-radius: 4px; padding: 6px 8px; }
+
 /* ── 주석 패널 ── */
 .fv-ann { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
 .fv-ann h3 { font-size: 14px; font-weight: 700; color: #1a1f2e; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e8e8e2; }
@@ -378,6 +389,171 @@
 
     </div><!-- /fv-ann -->
   </div><!-- /fv-two-col -->
+
+  <!-- ═══════════════════════════════════════════════════════════
+       티켓 상세보기 모달 데이터 매핑 (오픈형 티켓 · 간소화 모달)
+       ═══════════════════════════════════════════════════════════ -->
+  <div style="height:1px;background:#e8e8e2;margin:40px 0 28px"></div>
+
+  <div class="sec-title">
+    <span class="sec-badge">REF-4 · 티켓</span>
+    티켓 상세보기 모달 데이터 매핑
+    <span style="font-size:12px;font-weight:400;color:#888">— 오픈형 티켓 상세보기 모달(간소화) UI 각 요소의 데이터 출처 · 기준: 정책서 v0.12 §12.3 · front-prototype · 2026-07-10</span>
+  </div>
+
+  <!-- 공통 전제 (티켓 모달 전체 적용) -->
+  <div style="background:#fff;border:1px solid #e8e8e2;border-left:3px solid #6366f1;border-radius:6px;padding:12px 16px;margin-bottom:24px;font-size:11px;color:#444;line-height:1.7">
+    <div style="font-weight:700;color:#1a1f2e;margin-bottom:6px">공통 전제 — 이 티켓 모달 전체에 적용</div>
+    · <strong>localStorage 키</strong>: 카테고리 <code>high1_ticket_categories_v1</code> · 쿠폰 스펙 <code>high1_coupon_specs_v1</code> · 티켓 상품 <code>high1_ticket_products_v1</code> · 마진 마스터 <code>high1_ticket_margin_master_v1</code><br>
+    · <strong>간소화 원칙 (정책서 v0.12 §12.3)</strong>: 이 모달에는 <strong>상단 이미지·상품 상세설명을 넣지 않습니다.</strong> 구매를 결정하는 데 필요한 <strong>사용기간 + 옵션가(레벨별) 표만</strong> 간결하게 보여줍니다. 히어로 이미지·상세설명·이용안내·정책·위치 같은 풍부한 콘텐츠는 <strong>브릿지(카테고리 콘텐츠 · S17 소유)</strong>에서 노출됩니다.<br>
+    · <strong>다국어</strong>: 외국인 전용, 국문 미사용. 상품명·카테고리명은 <strong>영어(EN, 필수)/중국어(ZH, 선택)</strong> 두 벌(<code>_en</code>·<code>_zh</code>), 중국어가 없으면 영어로 대체 표시합니다.<br>
+    · <strong>오픈형 전용</strong>: 현재 프로토타입은 오픈형(사용기간 안에서 자유 이용) 단품만 다룹니다. 따라서 "유형" 행은 <strong>오픈형으로 고정</strong>됩니다. (날짜지정형은 향후 확장)
+  </div>
+
+  <div class="fv-two-col">
+
+    <!-- ── 티켓 상세보기 모달 시뮬레이션 ── -->
+    <div>
+      <div class="front-sim ft-tk-sim">
+
+        <!-- Modal Header T1 T2 -->
+        <div class="ft-rd-head" style="position:relative;padding-right:36px">
+          <div class="ft-rd-head-text">
+            <div style="display:flex;align-items:center;gap:4px">
+              <div class="ft-tk-name">Water World Day Pass (Peak/Early)</div>
+              <span class="wf-cn">T2</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px">
+              <div class="ft-tk-cat">Water Park</div>
+              <span class="wf-cn">T1</span>
+            </div>
+          </div>
+          <span class="ft-rd-close">✕</span>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="ft-tk-body">
+
+          <!-- 기본 정보표 T3 T4 -->
+          <table class="ft-tk-table">
+            <tr>
+              <th style="width:70px">사용기간 <span class="wf-cn">T3</span></th>
+              <td>2026-07-10 ~ 2026-08-30</td>
+            </tr>
+            <tr>
+              <th>유형 <span class="wf-cn">T4</span></th>
+              <td>오픈형 (사용기간 내 자유 이용)</td>
+            </tr>
+          </table>
+
+          <!-- 옵션가 표 (레벨별) T5 -->
+          <table class="ft-tk-table" style="position:relative">
+            <thead>
+              <tr>
+                <th>옵션 <span class="wf-cn" style="position:absolute;top:-9px;right:0">T5</span></th>
+                <th style="text-align:right">판매가</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>대인 · 워터월드 종일권_성수기(대인)</td>
+                <td class="num">44,000원</td>
+              </tr>
+              <tr>
+                <td>소인 · 워터월드 종일권_성수기(소인)</td>
+                <td class="num">39,000원</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 간소화 안내 문구 T6 -->
+          <div style="position:relative;padding-right:24px">
+            <div class="ft-tk-note">
+              상세설명·이용안내·정책·위치는 브릿지 페이지에서 확인하세요. 수량 선택·담기는 브릿지 상품 선택에서 진행합니다.
+            </div>
+            <span class="wf-cn" style="position:absolute;top:4px;right:0">T6</span>
+          </div>
+
+        </div><!-- /ft-tk-body -->
+      </div><!-- /front-sim -->
+    </div>
+
+    <!-- ── 주석 패널 (티켓) ── -->
+    <div class="fv-ann">
+      <h3>티켓 상세보기 모달 주석 (callout T1~T6)</h3>
+
+      <div class="fv-ann-item">
+        <div class="cn">T1</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">모달 헤더 — 카테고리 라벨</div>
+          <div class="fv-ann-desc">헤더 아래줄에 카테고리 경로를 연한 색으로 표시. 1뎁스 카테고리의 영어 이름(없으면 상품의 카테고리 값)을 쓰고, 2뎁스(상품유형)가 있으면 " › 2뎁스명"을 뒤에 붙입니다.</div>
+          <div class="fv-ann-admin">어드민 S17 카테고리·뎁스 관리 · 카테고리명 / S14-B 상품 등록 · 연결 카테고리</div>
+          <div class="fv-ann-ls">high1_ticket_products_v1[].category_1 → high1_ticket_categories_v1[].name_en (2뎁스는 category_2)</div>
+          <div class="fv-ann-front">모달 헤더 아래줄 (연한 색)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T2</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">모달 헤더 — 상품명</div>
+          <div class="fv-ann-desc">헤더 위줄에 상품명을 크고 굵게 표시.</div>
+          <div class="fv-ann-admin">어드민 S14-B 상품 등록 · 상품명(EN 필수 / ZH 선택)</div>
+          <div class="fv-ann-ls">high1_ticket_products_v1[].name_en (없으면 name_zh 대체 없이 EN 기준)</div>
+          <div class="fv-ann-front">모달 헤더 위줄 (흰색, 굵게)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T3</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">기본 정보표 — 사용기간</div>
+          <div class="fv-ann-desc">상품에 연결된 쿠폰 스펙의 사용시작일~사용종료일을 표시. 오픈형은 이 기간 안에서 자유롭게 현장 입장할 수 있습니다. (스펙이 없으면 "-")</div>
+          <div class="fv-ann-admin">어드민 S13 쿠폰 스펙(CSV 업로드) · 사용기간 (High1 제공 값)</div>
+          <div class="fv-ann-ls">high1_ticket_products_v1[].spec_coupon_id → high1_coupon_specs_v1[].use_start_date ~ use_end_date</div>
+          <div class="fv-ann-front">기본 정보표 · 사용기간 행</div>
+          <div class="fv-ann-rule">사용기간(현장 입장 가능 기간)과 판매기간(우리가 파는 기간·S14-B)은 서로 다른 개념입니다.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T4</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">기본 정보표 — 유형</div>
+          <div class="fv-ann-desc">상품의 날짜 방식을 표시. 현재 프로토타입은 오픈형(open)만 있어 "오픈형 (사용기간 내 자유 이용)"으로 고정 표시됩니다.</div>
+          <div class="fv-ann-admin">어드민 S14-C 상품 등록 · 날짜 방식</div>
+          <div class="fv-ann-ls">high1_ticket_products_v1[].date_mode ("open")</div>
+          <div class="fv-ann-front">기본 정보표 · 유형 행</div>
+          <div class="fv-ann-rule">날짜지정형은 향후 확장 대상. 현재 프로토타입 범위는 오픈형 단품만입니다.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T5</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">옵션가 표 — 레벨별 판매가</div>
+          <div class="fv-ann-desc">레벨(대인/소인 등)마다 한 줄씩 표시. 왼쪽 옵션명 = "레벨명 · 쿠폰명", 오른쪽 값 = 판매가. 레벨은 스펙에 있는 만큼만 나오며(예: 곤돌라는 대인만), 없는 레벨 줄은 만들어지지 않습니다.</div>
+          <div class="fv-ann-admin">어드민 S13 쿠폰 스펙 · 레벨/쿠폰명/입금가(price) · S11 마진관리(쿠폰ID·카테고리 마진)</div>
+          <div class="fv-ann-ls">high1_coupon_specs_v1[]{level, level_name, coupon_name, price} + high1_ticket_margin_master_v1</div>
+          <div class="fv-ann-front">옵션가 표 (옵션 / 판매가 2열)</div>
+          <div class="fv-ann-rule">판매가 = 입금가(price) + 마진. 마진 우선순위: 쿠폰ID 개별 &gt; 2뎁스 &gt; 1뎁스 &gt; 전역 디폴트(30,000원). 소수점은 버림(floor). 입금가(원가)는 고객에게 보이지 않습니다.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T6</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">간소화 안내 문구 (정적)</div>
+          <div class="fv-ann-desc">옵션표 아래 회색 안내 문구. 모달은 가격표만 간결하게 보여주므로, 상세설명·이용안내·정책·위치는 브릿지 페이지(카테고리 콘텐츠)에서 확인하고, 수량 선택·담기도 브릿지에서 진행하도록 안내합니다. (데이터가 아니라 고정 문구입니다)</div>
+          <div class="fv-ann-admin">— (입력 필드 아님 · 시스템 고정 문구)</div>
+          <div class="fv-ann-ls">—</div>
+          <div class="fv-ann-front">옵션가 표 하단 회색 안내 박스</div>
+          <div class="fv-ann-rule">정책서 v0.12 §12.3 간소화: 상단 이미지·상세설명은 모달에서 제거. 히어로·상세설명 등 풍부한 콘텐츠는 S17 카테고리 콘텐츠가 소유하며 브릿지에서 노출됩니다.</div>
+        </div>
+      </div>
+
+    </div><!-- /fv-ann (티켓) -->
+  </div><!-- /fv-two-col (티켓) -->
 
 </div><!-- /page -->
 </body>

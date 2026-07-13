@@ -145,10 +145,11 @@
               <thead>
                 <tr>
                   <th style="width:20px"></th>
+                  <th>유형 <span class="wf-cn">9</span></th>
                   <th>섹션 타이틀 (KO)</th>
                   <th>카테고리</th>
                   <th>숙소 필터</th>
-                  <th>객실 선택</th>
+                  <th>선택</th>
                   <th>노출 기간</th>
                   <th>상태</th>
                   <th style="width:76px">작업</th>
@@ -157,6 +158,7 @@
               <tbody>
                 <tr>
                   <td style="color:#bbb;text-align:center;font-size:16px;cursor:grab">≡</td>
+                  <td><span class="wf-badge" style="background:#dbeafe;color:#1e40af;font-size:9px">숙소</span></td>
                   <td style="font-weight:600;font-size:11px">이번 주 추천 호텔</td>
                   <td><span class="wf-badge bg-hotel">Hotel</span></td>
                   <td style="font-size:10px">팰리스, 그랜드메인</td>
@@ -170,6 +172,7 @@
                 </tr>
                 <tr>
                   <td style="color:#bbb;text-align:center;font-size:16px;cursor:grab">≡</td>
+                  <td><span class="wf-badge" style="background:#dbeafe;color:#1e40af;font-size:9px">숙소</span></td>
                   <td style="font-weight:600;font-size:11px">인기 콘도</td>
                   <td><span class="wf-badge bg-condo">Condo</span></td>
                   <td style="font-size:10px;color:#888">전체</td>
@@ -181,10 +184,27 @@
                     <span class="wf-btn wf-btn-sm wf-btn-danger">삭제</span>
                   </td>
                 </tr>
+                <tr>
+                  <td style="color:#bbb;text-align:center;font-size:16px;cursor:grab">≡</td>
+                  <td><span class="wf-badge" style="background:#fce7f3;color:#ec4899;font-size:9px">티켓</span></td>
+                  <td style="font-weight:600;font-size:11px">여름 물놀이 티켓</td>
+                  <td><span class="wf-badge" style="background:#fce7f3;color:#9d174d">워터파크</span></td>
+                  <td style="font-size:10px;color:#aaa">— (숙소 필터 없음)</td>
+                  <td style="font-size:10px">자동 · 최저가순</td>
+                  <td style="font-size:10px;color:#aaa">상시</td>
+                  <td><span class="wf-badge bg-show">SHOW</span></td>
+                  <td style="white-space:nowrap">
+                    <span class="wf-btn wf-btn-sm">수정</span>
+                    <span class="wf-btn wf-btn-sm wf-btn-danger">삭제</span>
+                  </td>
+                </tr>
               </tbody>
             </table>
 
-            <span class="wf-btn" style="font-size:11px">+ 섹션 추가 <span class="wf-cn">8</span></span>
+            <div style="display:flex;gap:8px">
+              <span class="wf-btn" style="font-size:11px">+ 숙소 섹션 추가 <span class="wf-cn">8</span></span>
+              <span class="wf-btn" style="font-size:11px;border-color:#ec4899;color:#be185d">+ 티켓 섹션 추가 <span class="wf-cn">10</span></span>
+            </div>
           </div><!-- /추천 섹션 -->
 
         </div><!-- /wf-main -->
@@ -268,11 +288,11 @@
         <div class="ann-body">
           <div class="ann-title">추천 섹션 영역 — 개요</div>
           <div class="ann-desc">
-            프런트 메인의 "추천 숙소" 섹션 목록을 관리. 섹션 추가·삭제·순서 조정 가능.<br>
-            현재는 숙소(hotel/condo) 전용. 티켓·투어는 추후 확장 예정.
+            프런트 메인의 추천 섹션 목록을 관리. 섹션 추가·삭제·순서 조정 가능.<br>
+            <strong>섹션은 유형(숙소/티켓)으로 나뉜다.</strong> 숙소 섹션과 티켓 섹션은 각각 다른 폼으로 등록하며, 목록에서 유형 배지로 구분한다. (투어는 추후)
           </div>
-          <div class="ann-front">→ 프런트: 히어로 아래 섹션 순서대로 노출. 섹션 단위 타이틀·카드 그리드.</div>
-          <div class="ann-rule">추천 객실 0건 섹션은 프런트에서 섹션 전체 자동 미노출.</div>
+          <div class="ann-front">→ 프런트: 히어로 아래 섹션 순서대로 노출. 숙소 섹션=객실 카드 그리드 / 티켓 섹션=티켓 카드 가로 스트립(클릭 시 카테고리 브릿지).</div>
+          <div class="ann-rule">추천 대상(객실/티켓) 0건 섹션은 프런트에서 섹션 전체 자동 미노출.</div>
         </div>
       </div>
 
@@ -292,10 +312,30 @@
       <div class="ann-item">
         <div class="cn">8</div>
         <div class="ann-body">
-          <div class="ann-title">[+ 섹션 추가] 버튼</div>
+          <div class="ann-title">[+ 숙소 섹션 추가] 버튼</div>
           <div class="ann-desc">
-            S12-C 추천 섹션 설정 폼으로 이동. 섹션 수 상한 없음.
+            <strong>S12-C 추천 섹션 설정(숙소)</strong> 폼으로 이동. 카테고리(Hotel/Condo)→숙소→객실 자동/수동. 섹션 수 상한 없음.
           </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">9</div>
+        <div class="ann-body">
+          <div class="ann-title">유형 배지 (숙소 / 티켓)</div>
+          <div class="ann-desc">각 섹션이 숙소 섹션인지 티켓 섹션인지 표시. <strong>숙소</strong>(파랑) / <strong>티켓</strong>(로즈).</div>
+          <div class="ann-rule">유형에 따라 컬럼 의미가 다름 — 숙소: 카테고리=Hotel/Condo·숙소 필터 사용 / 티켓: 카테고리=티켓 카테고리(워터파크 등)·숙소 필터 없음(—). "선택" 컬럼은 공통(자동 정렬 / 수동 N개).</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">10</div>
+        <div class="ann-body">
+          <div class="ann-title">[+ 티켓 섹션 추가] 버튼</div>
+          <div class="ann-desc">
+            <strong>S12-D 티켓 추천 섹션 설정</strong> 폼으로 이동(숙소 섹션과 분리). 티켓 전용: 타이틀·노출기간·전체보기 버튼 + 선택방식 자동(카테고리 필터+정렬[최저가순/이름순])/수동(티켓 상품 직접 선택). 카드=썸네일·상품명·최저가.
+          </div>
+          <div class="ann-rule">티켓 카드 클릭 시 해당 카테고리 브릿지로 이동.</div>
         </div>
       </div>
 

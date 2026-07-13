@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>S17-B 카테고리/컨텐츠 관리 (콘텐츠 편집)</title>
+  <link rel="stylesheet" href="wf-styles.css" />
+  <style>
+    .sec-policy{background:#fdf2f8;border:1px solid #fbcfe8;border-left:3px solid #ec4899;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:11px;line-height:1.7;color:#9d174d}
+    .sec-policy b{color:#831843}
+    .sec-policy .ref{font-size:10px;color:#ec4899;font-weight:700}
+    /* 콘텐츠 블록 카드 */
+    .cc-block{border:1px solid #e0e0da;border-radius:8px;padding:14px 16px;margin-bottom:12px;background:#fff}
+    .cc-block-h{font-size:13px;font-weight:700;color:#1a1f2e;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+    .cc-badge{font-size:9px;font-weight:700;padding:1px 7px;border-radius:99px;background:#fce7f3;color:#9d174d}
+    .cc-badge.rich{background:#eef2ff;color:#6366f1}
+    .cc-lbl{font-size:12px;font-weight:600;color:#444;display:block;margin:10px 0 4px}
+    /* 리치 에디터 목업 */
+    .rich-tb{display:flex;gap:4px;border:1px solid #ddd;border-bottom:none;border-radius:6px 6px 0 0;padding:5px 7px;background:#faf5f7;flex-wrap:wrap}
+    .rich-tb .rb{font-size:11px;padding:2px 8px;border:1px solid #e0d0d8;border-radius:4px;background:#fff;color:#555}
+    .rich-tb .rb.img{margin-left:auto;color:#9d174d;font-weight:600}
+    .rich-area{border:1px solid #ddd;border-radius:0 0 6px 6px;padding:10px 12px;min-height:60px;font-size:12px;color:#333;background:#fff;line-height:1.6}
+    .rich-area .ph{color:#bbb}
+    .cc-input{width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:12px}
+    .cc-hero{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:10px}
+    .cc-hero .ph{height:80px;border:1px dashed #d8b4c8;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#c98bb0;font-size:11px;background:#fdf2f8}
+    .cc-flag{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #f59e0b;border-radius:4px;padding:8px 12px;font-size:11px;color:#78350f;line-height:1.6;margin-top:6px}
+  </style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">카테고리/컨텐츠 관리 — 콘텐츠 편집</span>
+  <span class="page-nav-route">#/ticket-categories/edit/:id</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s17-ticket-category.html">← 이전</a>
+    <a class="page-nav-pager" href="s13-coupon-spec.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge" style="background:#ec4899;">S17-B</span>
+    카테고리/컨텐츠 관리 — 콘텐츠 편집
+    <span style="font-size:12px;font-weight:400;color:#888">— S17 목록의 [콘텐츠] 진입 · 뎁스 단위 공통 콘텐츠</span>
+  </div>
+  <div class="sec-sub">
+    선택한 <b>리프(말단) 뎁스</b>의 프런트 브릿지 콘텐츠를 편집한다. <b>히어로·개요·상세설명·이용안내·유의사항/정책·위치</b> 6블록. 텍스트 4종은 <b>리치 에디터</b>(굵게·제목·목록·이미지 불러오기·Ctrl+V), 이미지는 <b>스토리지 업로드 후 URL 저장</b>. 콘텐츠는 <b>카테고리(뎁스)가 소유</b>하며 상품(S14)은 썸네일만 갖는다.<br>
+    기준: 티켓 쿠폰 연동 정책서 v0.12 · 12.6절 · 14절(이미지 저장) / 프로토타입 admin v0.7.11
+  </div>
+
+  <div class="two-col">
+
+    <!-- 와이어프레임 -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item on">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item">화면관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">티켓관리</div>
+          <div class="wf-lnb-item on">카테고리/컨텐츠 관리</div>
+          <div class="wf-lnb-item">쿠폰 스펙 관리</div>
+          <div class="wf-lnb-item">티켓 상품</div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="wf-main">
+          <div class="wf-page-title">
+            카테고리/컨텐츠 관리 — 콘텐츠 편집
+            <span class="wf-badge" style="font-size:11px;margin-left:8px;background:#ec4899;">S17-B</span>
+          </div>
+
+          <!-- 공통정책 블록 -->
+          <div class="sec-policy">
+            <span class="ref">기준: v0.12 · 12.6절 · 14절</span> <span class="wf-cn" style="background:#ec4899">0</span><br>
+            · 여기서 편집한 콘텐츠는 <b>프런트 티켓 브릿지</b>(히어로·개요·상세설명·이용안내·정책·위치)에 매핑됩니다. <b>뎁스(카테고리) 단위 공통</b>이라 상품마다 따로 넣지 않습니다.<br>
+            · 텍스트는 모두 <b>EN(필수)/ZH(선택)</b>. ZH 미입력 시 EN으로 대체 노출.<br>
+            · 모든 이미지는 <b>스토리지 업로드 후 URL만 저장</b>(base64 아님). 업로드 시 자동 축소. 저장 공간 부족 시 알럿(§14).
+          </div>
+
+          <!-- 편집 대상 -->
+          <div style="background:#faf5f7;border:1px solid #f3e0e9;border-radius:6px;padding:8px 12px;font-size:11px;margin-bottom:14px">
+            편집 대상 뎁스: <b style="color:#9d174d">Water Park (워터파크)</b> <span style="color:#888">— 1뎁스 단독(리프)</span> <span class="wf-cn">1</span>
+          </div>
+
+          <!-- ① 히어로 이미지 -->
+          <div class="cc-block">
+            <div class="cc-block-h">① 히어로 이미지 <span class="cc-badge">브릿지 상단</span> <span class="wf-cn">2</span></div>
+            <div class="cc-hero">
+              <div class="ph">이미지 미리보기</div>
+              <div class="ph" style="border-style:solid;background:#fff;color:#bbb">+ 추가</div>
+            </div>
+            <div class="wf-hint">파일 선택(다중) · 업로드 시 자동 축소 → 스토리지 업로드 후 <b>URL 저장</b>. 브릿지 최상단 대표 이미지.</div>
+          </div>
+
+          <!-- ② 개요 -->
+          <div class="cc-block">
+            <div class="cc-block-h">② 개요(요약) <span class="cc-badge rich">리치 에디터</span> <span class="wf-cn">3</span></div>
+            <div class="cc-lbl">개요 (EN) <span class="wf-form-req">*</span></div>
+            <div class="rich-tb">
+              <span class="rb"><b>B</b></span><span class="rb">제목</span><span class="rb">• 목록</span><span class="rb img">🖼 이미지 불러오기 <span class="wf-cn">8</span></span>
+            </div>
+            <div class="rich-area"><span class="ph">Water park summary (one line) …</span></div>
+            <div class="cc-lbl">개요 (ZH)</div>
+            <div class="rich-tb"><span class="rb"><b>B</b></span><span class="rb">제목</span><span class="rb">• 목록</span><span class="rb img">🖼 이미지 불러오기</span></div>
+            <div class="rich-area"><span class="ph">水上乐园简介 …</span></div>
+          </div>
+
+          <!-- ③ 상세설명 -->
+          <div class="cc-block">
+            <div class="cc-block-h">③ 상세설명 <span class="cc-badge rich">리치 에디터</span> <span class="wf-cn">4</span></div>
+            <div class="cc-lbl">상세설명 (EN) <span class="wf-form-req">*</span></div>
+            <div class="rich-tb"><span class="rb"><b>B</b></span><span class="rb">제목</span><span class="rb">• 목록</span><span class="rb img">🖼 이미지 불러오기</span></div>
+            <div class="rich-area" style="min-height:100px"><span class="ph">Detailed description (HTML) — headings, lists, inline images …</span></div>
+            <div class="cc-lbl">상세설명 (ZH)</div>
+            <div class="rich-tb"><span class="rb"><b>B</b></span><span class="rb">제목</span><span class="rb">• 목록</span><span class="rb img">🖼 이미지 불러오기</span></div>
+            <div class="rich-area"><span class="ph">详细说明 …</span></div>
+          </div>
+
+          <!-- ④ 이용안내 -->
+          <div class="cc-block">
+            <div class="cc-block-h">④ 이용안내 <span class="cc-badge rich">리치 에디터</span> <span class="wf-cn">5</span></div>
+            <div class="cc-lbl">이용안내 (EN) <span class="wf-form-req">*</span></div>
+            <div class="rich-tb"><span class="rb"><b>B</b></span><span class="rb">제목</span><span class="rb">• 목록</span><span class="rb img">🖼 이미지 불러오기</span></div>
+            <div class="rich-area"><span class="ph">On-site usage guide · what to bring · operating hours …</span></div>
+            <div class="cc-lbl">이용안내 (ZH)</div>
+            <div class="rich-tb"><span class="rb"><b>B</b></span><span class="rb">제목</span><span class="rb">• 목록</span><span class="rb img">🖼 이미지 불러오기</span></div>
+            <div class="rich-area"><span class="ph">使用须知 …</span></div>
+            <div class="cc-flag">※ 검토 중(공유안): 이 <b>이용안내·정책</b>을 S18-A [티켓 구매완료] 이메일의 카테고리별 이용안내와 <b>공유</b>하는 방향 논의 예정. 확정 시 S18-A 주석을 "S17 콘텐츠 공유"로 조정.</div>
+          </div>
+
+          <!-- ⑤ 유의사항/정책 -->
+          <div class="cc-block">
+            <div class="cc-block-h">⑤ 유의사항 / 정책 <span class="cc-badge rich">리치 에디터</span> <span class="wf-cn">6</span></div>
+            <div class="cc-lbl">유의사항/정책 (EN) <span class="wf-form-req">*</span></div>
+            <div class="rich-tb"><span class="rb"><b>B</b></span><span class="rb">제목</span><span class="rb">• 목록</span><span class="rb img">🖼 이미지 불러오기</span></div>
+            <div class="rich-area"><span class="ph">Cancellation·refund·notice …</span></div>
+            <div class="cc-lbl">유의사항/정책 (ZH)</div>
+            <div class="rich-tb"><span class="rb"><b>B</b></span><span class="rb">제목</span><span class="rb">• 목록</span><span class="rb img">🖼 이미지 불러오기</span></div>
+            <div class="rich-area"><span class="ph">注意事项/政策 …</span></div>
+          </div>
+
+          <!-- ⑥ 위치(주소) -->
+          <div class="cc-block">
+            <div class="cc-block-h">⑥ 위치(주소) <span class="wf-cn">7</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><div class="cc-lbl" style="margin-top:0">주소 (EN)</div><input class="cc-input" value="High1 Resort, Jeongseon, Gangwon" /></div>
+              <div><div class="cc-lbl" style="margin-top:0">주소 (ZH)</div><input class="cc-input" value="江原道旌善郡 High1度假村" /></div>
+            </div>
+            <div class="wf-hint">영업장 위치·교통 안내. 텍스트 입력(리치 에디터 아님).</div>
+          </div>
+
+          <!-- 저장 -->
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+            <button class="wf-btn">목록으로</button>
+            <button class="wf-btn wf-btn-primary" style="background:#ec4899;border-color:#ec4899;">저장 <span class="wf-cn">9</span></button>
+          </div>
+
+        </div><!-- /wf-main -->
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+    <!-- 주석 -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">0</span>
+        <div class="ann-body">
+          <div class="ann-title">공통정책 — 뎁스 소유 콘텐츠 · 프런트 브릿지 매핑</div>
+          <div class="ann-desc">여기서 편집한 콘텐츠는 프런트 <b>티켓 브릿지</b>에 그대로 나타납니다. <b>카테고리(뎁스) 단위 공통</b>이라 상품마다 중복 등록하지 않습니다.</div>
+          <div class="ann-rule">텍스트=EN 필수/ZH 선택(ZH 미입력 시 EN 대체). 이미지=스토리지 업로드 후 URL 저장(§14). (정책서 v0.12 §12.6)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn">1</span>
+        <div class="ann-body">
+          <div class="ann-title">편집 대상 뎁스</div>
+          <div class="ann-desc">S17 목록에서 누른 <b>리프(말단) 뎁스</b>가 표시됩니다. 2뎁스가 있으면 2뎁스(예: Ski › Lift Pass), 없으면 1뎁스(예: Water Park)가 대상입니다.</div>
+          <div class="ann-rule">2뎁스를 가진 1뎁스(예: Ski)는 콘텐츠를 직접 갖지 않으므로 이 화면 대상이 아닙니다.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">2</span>
+        <div class="ann-body">
+          <div class="ann-title">① 히어로 이미지 (브릿지 상단)</div>
+          <div class="ann-desc">브릿지 최상단 대표 이미지. 파일 다중 선택 가능. 업로드 시 <b>자동 축소 후 스토리지 업로드 → URL 저장</b>(base64 아님).</div>
+          <div class="ann-front">→ 프런트: 티켓 브릿지 hero-fullwidth(460px) 배경</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">3</span>
+        <div class="ann-body">
+          <div class="ann-title">② 개요(요약) — 리치 에디터 EN 필수/ZH</div>
+          <div class="ann-desc">카테고리 한 줄 소개. EN 필수, ZH 선택.</div>
+          <div class="ann-front">→ 프런트: 브릿지 개요(Overview) 영역</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">4</span>
+        <div class="ann-body">
+          <div class="ann-title">③ 상세설명 — 리치 에디터 EN 필수/ZH</div>
+          <div class="ann-desc">카테고리 본문 설명(HTML). 제목·목록·이미지 삽입 가능.</div>
+          <div class="ann-front">→ 프런트: 브릿지 상세설명 영역</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">5</span>
+        <div class="ann-body">
+          <div class="ann-title">④ 이용안내 — 리치 에디터 EN 필수/ZH</div>
+          <div class="ann-desc">현장 이용 시 주의사항·준비물·운영 안내.</div>
+          <div class="ann-front">→ 프런트: 브릿지 이용안내(안내) 영역</div>
+          <div class="ann-rule">※ 검토 중: S18-A [티켓 구매완료] 이메일의 카테고리별 이용안내와 <b>공유</b> 방향 논의 예정(반영 후 확정).</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">6</span>
+        <div class="ann-body">
+          <div class="ann-title">⑤ 유의사항 / 정책 — 리치 에디터 EN 필수/ZH</div>
+          <div class="ann-desc">취소·환불 등 이용 정책 안내.</div>
+          <div class="ann-front">→ 프런트: 브릿지 정책(유의사항) 영역</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn">7</span>
+        <div class="ann-body">
+          <div class="ann-title">⑥ 위치(주소) — 텍스트 EN/ZH</div>
+          <div class="ann-desc">영업장 위치·교통 안내. 리치 에디터가 아닌 일반 텍스트 입력.</div>
+          <div class="ann-front">→ 프런트: 브릿지 위치(Location) 영역</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#6366f1;">8</span>
+        <div class="ann-body">
+          <div class="ann-title">리치 에디터 툴바</div>
+          <div class="ann-desc"><b>B(굵게)</b> · <b>제목</b>(h3) · <b>• 목록</b>(글머리 목록) · <b>🖼 이미지 불러오기</b>(파일 선택). 추가로 <b>Ctrl+V로 이미지 붙여넣기</b> 지원.</div>
+          <div class="ann-rule">붙여넣기·불러오기 이미지 모두 자동 축소 후 스토리지 업로드(URL 저장). 개요·상세설명·이용안내·유의사항/정책 4블록에 공통 적용.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">9</span>
+        <div class="ann-body">
+          <div class="ann-title">[저장] — 유효성 · 저장 실패 안내</div>
+          <div class="ann-desc">현재 뎁스의 콘텐츠를 저장합니다. EN 필수 항목(개요·상세설명·이용안내·유의사항/정책)이 비면 저장 불가.</div>
+          <div class="ann-rule">이미지는 URL로 저장되어 용량이 작지만, 저장 공간 부족 시 <b>알럿</b>으로 안내(§14). 저장 후 목록(S17)으로 돌아갑니다.</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+
+</body>
+</html>

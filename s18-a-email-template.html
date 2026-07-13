@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S18-A — 이메일 템플릿 관리 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+  /* 공통정책 블록 — 화면관리 초록 계열 톤에 맞춘 안내 박스 */
+  .sec-policy{background:#ecfdf5;border:1px solid #a7f3d0;border-left:3px solid #10b981;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:11px;line-height:1.7;color:#065f46}
+  .sec-policy b{color:#064e3b}
+  .sec-policy .ref{font-size:10px;color:#059669;font-weight:700}
+  /* 시스템 자동 삽입 안내 박스 (편집 불가 · 읽기전용) */
+  .wf-readonly-box{background:#f1f5f9;border:1px dashed #94a3b8;border-radius:4px;padding:10px 12px;font-size:11px;color:#475569;line-height:1.7}
+  .wf-readonly-box .lock{display:inline-block;background:#64748b;color:#fff;font-size:9px;padding:1px 6px;border-radius:99px;font-weight:700;margin-right:6px}
+  /* 발송 시점 안내 박스 */
+  .wf-send-box{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #f59e0b;border-radius:4px;padding:9px 12px;font-size:11px;color:#78350f;line-height:1.7}
+  /* 탭 배지 (수기 전용 · 미결) */
+  .tab-tag{display:inline-block;font-size:8px;font-weight:700;padding:1px 5px;border-radius:99px;margin-left:4px;vertical-align:middle}
+  .tab-tag.manual{background:#fef3c7;color:#92400e}
+  .tab-tag.pending{background:#fee2e2;color:#991b1b}
+  /* 주석 경고 박스 (공용 css 미포함 — 파일 로컬 정의) */
+  .ann-warn{margin-top:5px;font-size:12px;color:#991b1b;background:#fef2f2;padding:5px 9px;border-radius:3px;border-left:2px solid #f87171;line-height:1.6}
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">S18-A — 이메일 템플릿 관리</span>
+  <span class="page-nav-route">#/email-template</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s12-c-recommend-form.html">← 이전</a>
+    <a class="page-nav-pager" href="front-view-main.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge" style="background:#10b981">S18-A</span>
+    이메일 템플릿 관리
+    <span style="font-size:12px;font-weight:400;color:#888">— #/email-template · 화면관리 &gt; 이메일 템플릿 관리</span>
+  </div>
+  <div class="sec-sub">
+    숙소·티켓 예약/구매 완료 시 고객에게 발송하는 <b>이메일 문구</b>를 <b>발송 유형별 탭</b>으로 통합 관리하는 화면입니다. 일부 탭(예약확정·구매완료)의 문구는 프런트 <b>예약/주문 상세</b> 화면에도 함께 표시됩니다.<br>
+    기준: 티켓 쿠폰 연동 정책서 v0.11 · 12.7절
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 이메일 템플릿 관리 — 발송 유형별 탭 (숙소+티켓 통합)     -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item on">화면관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">화면관리</div>
+          <div class="wf-lnb-item">메인관리</div>
+          <div class="wf-lnb-item on">이메일 템플릿 관리</div>
+          <div class="wf-lnb-item" style="color:rgba(255,255,255,.25)">배너관리 <span style="font-size:9px">(추후)</span></div>
+          <div class="wf-lnb-item" style="color:rgba(255,255,255,.25)">팝업관리 <span style="font-size:9px">(추후)</span></div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="wf-main">
+          <div class="wf-page-title">
+            이메일 템플릿 관리
+            <span class="wf-badge" style="font-size:11px;margin-left:8px">S18-A</span>
+          </div>
+
+          <!-- 공통정책 블록 -->
+          <div class="sec-policy">
+            <span class="ref">기준: v0.11 · 12.7절</span> <span class="wf-cn" style="background:#10b981">0</span><br>
+            · 발송 유형(숙소 예약확정 · 숙소 대기 알림 · 숙소 취소완료 · 티켓 구매완료 · 티켓 취소완료)마다 <b>탭</b>으로 나뉘며, 각 탭에서 고객 안내 문구를 관리합니다.<br>
+            · <b>안내 문구 EN(영어)은 필수</b>, ZH(중국어)는 선택입니다(ZH 미입력 시 EN으로 대체 발송).<br>
+            · <b>시스템 자동 삽입 항목</b>(예약번호 · 바코드 · 상품명 등)은 탭별로 시스템이 자동으로 채웁니다(편집 불가).<br>
+            · <b>프런트 예약/주문 상세</b> 화면에 함께 표시되는 탭은 <b>숙소 예약확정 · 티켓 구매완료</b> 2개뿐입니다. 나머지 탭은 이메일 발송 전용입니다.<br>
+            · 나중에 <b>투어</b> 등 상품 유형이 추가되어도 <b>탭 추가</b>로 확장할 수 있는 구조입니다.
+          </div>
+
+          <!-- 탭 (발송 유형별) -->
+          <div class="wf-tab-bar">
+            <div class="wf-tab on">숙소 예약확정 <span class="wf-cn">1</span></div>
+            <div class="wf-tab">숙소 대기 알림<span class="tab-tag manual">수기 전용</span></div>
+            <div class="wf-tab">숙소 취소완료</div>
+            <div class="wf-tab">티켓 구매완료</div>
+            <div class="wf-tab">티켓 취소완료<span class="tab-tag pending">미결</span></div>
+          </div>
+
+          <!-- ── [숙소 예약확정] 탭 선택 상태 ── -->
+
+          <!-- 발송 시점 안내 -->
+          <div class="wf-section-head">발송 시점 <span class="wf-cn">2</span></div>
+          <div class="wf-send-box">
+            <b>[숙소 예약확정]</b> 이 탭의 이메일은 다음 시점에 자동 발송됩니다.<br>
+            · <b>PMS 연동 상품</b>: API 6(예약 요청)이 정상 완료된 즉시<br>
+            · <b>수기 상품</b>: 관리자가 예약을 <b>확정</b> 처리한 시점 (수기 예약은 최초 '대기' → 확정 시 발송)
+          </div>
+
+          <!-- 편집 섹션: 안내 문구 -->
+          <div class="wf-section-head">안내 문구 <span class="wf-cn">3</span></div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">안내 문구 EN <span class="wf-form-req">*</span></div>
+            <div class="wf-form-field">
+              <textarea class="wf-textarea" placeholder="e.g. Your reservation is confirmed. Please present this email at check-in. Check-in starts at 3:00 PM."></textarea>
+              <div class="wf-hint">예약확정 안내 · 체크인 방법 · 주의사항 등. 영어(EN) 필수 입력. 미입력 시 저장 불가.</div>
+            </div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">안내 문구 ZH <span class="wf-cn">4</span></div>
+            <div class="wf-form-field">
+              <textarea class="wf-textarea" placeholder="您的预订已确认。请在入住时出示此邮件。入住时间为下午3:00起。"></textarea>
+              <div class="wf-hint">중국어(ZH)는 선택 입력. 미입력 시 EN 문구로 대체 발송.</div>
+            </div>
+          </div>
+
+          <!-- 시스템 자동 삽입 항목 (편집 불가) -->
+          <div class="wf-section-head">시스템 자동 삽입 항목 <span class="wf-cn">5</span></div>
+
+          <div class="wf-readonly-box">
+            <div style="margin-bottom:6px"><span class="lock">편집 불가</span><b>[숙소 예약확정]</b> 탭의 자동 삽입 항목입니다. 시스템이 예약 데이터로 자동으로 채웁니다.</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+              <span class="wf-badge" style="background:#e2e8f0;color:#475569">예약번호</span>
+              <span class="wf-badge" style="background:#e2e8f0;color:#475569">숙소명</span>
+              <span class="wf-badge" style="background:#e2e8f0;color:#475569">체크인/아웃 일자</span>
+              <span class="wf-badge" style="background:#e2e8f0;color:#475569">객실명</span>
+              <span class="wf-badge" style="background:#e2e8f0;color:#475569">결제금액</span>
+            </div>
+          </div>
+
+          <!-- 저장 -->
+          <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+            <span class="wf-btn">취소</span>
+            <span class="wf-btn wf-btn-primary" style="background:#10b981;border-color:#10b981">저장 <span class="wf-cn" style="background:#1a1f2e">6</span></span>
+          </div>
+
+          <!-- 탭별 관리 항목 요약 -->
+          <div class="wf-section-head" style="margin-top:26px">탭별 관리 항목 요약 <span class="wf-cn">7</span></div>
+
+          <table class="wf-table" style="margin-bottom:6px">
+            <thead>
+              <tr>
+                <th style="width:120px">탭 (발송 유형)</th>
+                <th style="width:180px">발송 시점</th>
+                <th>시스템 자동 삽입 (편집 불가)</th>
+                <th style="width:110px">관리자 편집 항목</th>
+                <th style="width:90px">프런트 연동</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>숙소 예약확정</b></td>
+                <td>연동: API 6 완료 시 / 수기: 확정 처리 시</td>
+                <td>예약번호 · 숙소명 · 체크인/아웃 · 객실명 · 결제금액</td>
+                <td>안내 문구 (EN/ZH)</td>
+                <td>✅ 예약상세</td>
+              </tr>
+              <tr>
+                <td><b>숙소 대기 알림</b> <span class="tab-tag manual">수기 전용</span></td>
+                <td>수기 예약 접수 직후 (대기 진입 시)</td>
+                <td>예약번호 · 숙소명 · 체크인/아웃 · 대기 안내</td>
+                <td>안내 문구 (EN/ZH)</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><b>숙소 취소완료</b></td>
+                <td>취소 처리 완료 시</td>
+                <td>예약번호 · 취소일시 · 환불 금액</td>
+                <td>안내 문구 (EN/ZH)</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td><b>티켓 구매완료</b></td>
+                <td>PG 결제 완료 즉시</td>
+                <td>주문번호 · 상품명 · 바코드 이미지 · 사용기간</td>
+                <td>안내 문구 + <b>이용안내 · 취소·환불</b> (카테고리 오버라이드)</td>
+                <td>✅ 주문상세</td>
+              </tr>
+              <tr style="opacity:.6">
+                <td><b>티켓 취소완료</b> <span class="tab-tag pending">미결</span></td>
+                <td>발송 여부 미확정 (신규-5)</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 티켓 구매완료 탭 특례 -->
+          <div class="wf-section-head" style="margin-top:20px">티켓 구매완료 탭 — 카테고리별 이용안내 (특례) <span class="wf-cn">8</span></div>
+          <div class="wf-readonly-box" style="background:#eff6ff;border-color:#93c5fd;color:#1e3a8a;border-style:solid">
+            <div style="margin-bottom:6px"><b>[티켓 구매완료]</b> 탭만 안내 문구 외에 <b>이용안내(EN/ZH)</b>·<b>취소·환불 안내(EN/ZH)</b>를 추가로 관리합니다.</div>
+            <div>· <b>전체 기본</b> 콘텐츠 + <b>카테고리(1뎁스)별 오버라이드</b> 구조 (카테고리 문구 미설정 시 전체 기본으로 폴백).<br>
+            · 카테고리 목록은 <b>S17(티켓 카테고리관리)</b>에 등록된 1뎁스 카테고리를 그대로 불러옵니다.</div>
+          </div>
+
+          <!-- 노출 채널 -->
+          <div class="wf-section-head" style="margin-top:20px">노출 채널 <span class="wf-cn">9</span></div>
+          <table class="wf-table" style="margin-bottom:6px">
+            <thead>
+              <tr>
+                <th style="width:170px">채널</th>
+                <th style="width:220px">대상 탭</th>
+                <th>비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>이메일 자동 발송</b></td>
+                <td>전체 탭 (티켓 취소완료 제외 — 미결)</td>
+                <td>각 발송 시점에 자동 발송</td>
+              </tr>
+              <tr>
+                <td><b>프런트 예약/주문 상세</b></td>
+                <td>숙소 예약확정 · 티켓 구매완료</td>
+                <td>이메일과 동일 안내 문구 표시 (별도 설정 불필요)</td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div><!-- /wf-main -->
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 주석 패널 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">0</div>
+        <div class="ann-body">
+          <div class="ann-title">공통정책 — 발송 유형별 이메일 템플릿</div>
+          <div class="ann-desc">
+            숙소·티켓의 예약/구매/취소 등 <strong>발송 유형마다 탭</strong>이 나뉩니다. 각 탭에서 고객에게 보낼 안내 문구를 관리합니다.<br>
+            API(외부 서비스와 데이터를 주고받는 통로) 없이 어드민이 직접 관리하는 콘텐츠입니다.
+          </div>
+          <div class="ann-rule">정책 근거: 정책서 v0.11 · 12.7절. 투어 등 상품 유형 추가 시 탭 추가로 확장.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">발송 유형별 탭 (5종)</div>
+          <div class="ann-desc">
+            <strong>숙소 예약확정 / 숙소 대기 알림 / 숙소 취소완료 / 티켓 구매완료 / 티켓 취소완료</strong> 5개 탭입니다.<br>
+            · <strong>숙소 대기 알림</strong>은 <strong>수기 상품 전용</strong>입니다(PMS 연동 상품은 대기 단계가 없음).<br>
+            · <strong>티켓 취소완료</strong>는 <strong>미결(신규-5)</strong> — 발송 여부가 아직 확정되지 않아 회색으로 표시됩니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">발송 시점 (탭별 자동 안내)</div>
+          <div class="ann-desc">
+            선택한 탭의 이메일이 <strong>언제 자동 발송되는지</strong> 알려주는 읽기용 안내입니다.<br>
+            숙소 예약확정 탭: PMS 연동 상품은 <strong>API 6(예약 요청) 완료 즉시</strong>, 수기 상품은 관리자가 <strong>확정</strong>했을 때 발송됩니다.
+          </div>
+          <div class="ann-rule">수기 상품 예약은 최초 '대기' 상태로 접수되고, 관리자가 호텔 확인 후 확정하면 이 이메일이 나갑니다.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">안내 문구 EN (필수)</div>
+          <div class="ann-desc">
+            해당 발송 유형에서 고객에게 보여줄 안내 문구를 영어로 적습니다.<br>
+            <strong>EN(영어)은 필수</strong>입니다. 비워두면 저장할 수 없습니다.
+          </div>
+          <div class="ann-front">→ 프런트: (예약확정·구매완료 탭 한정) 예약/주문 상세 화면에도 동일 문구 표시</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">안내 문구 ZH (선택)</div>
+          <div class="ann-desc">
+            중국어 안내 문구입니다. <strong>선택 입력</strong>이며, 비워두면 <strong>EN 문구로 대체</strong>되어 발송됩니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">시스템 자동 삽입 항목 (편집 불가)</div>
+          <div class="ann-desc">
+            탭마다 시스템이 <strong>자동으로 채우는 항목</strong>이 다릅니다. 관리자가 편집할 수 없고 안내용으로만 표시됩니다.<br>
+            숙소 예약확정 탭: 예약번호 · 숙소명 · 체크인/아웃 일자 · 객실명 · 결제금액이 자동 포함됩니다.
+          </div>
+          <div class="ann-rule">각 탭의 자동 삽입 항목은 아래 [탭별 관리 항목 요약] 표에서 한눈에 확인할 수 있습니다.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">6</div>
+        <div class="ann-body">
+          <div class="ann-title">[저장] 버튼 — 유효성 검사</div>
+          <div class="ann-desc">
+            현재 선택한 탭의 문구를 저장합니다.<br>
+            저장 시 <strong>안내 문구 EN</strong>이 비어 있으면 저장이 막히고 경고가 표시됩니다.
+          </div>
+          <div class="ann-warn">
+            EN(영어) 필수 항목이 비어 있으면 저장 불가.<br>
+            ※ 티켓 구매완료 탭은 이용안내 EN · 취소·환불 EN도 함께 필수 검사됩니다(CN8 참고).
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">7</div>
+        <div class="ann-body">
+          <div class="ann-title">탭별 관리 항목 요약 표</div>
+          <div class="ann-desc">
+            5개 탭 각각의 <strong>발송 시점 · 자동 삽입 항목 · 관리자 편집 항목 · 프런트 연동 여부</strong>를 한 표로 정리한 개발 참고용 요약입니다(읽기용).<br>
+            <strong>프런트 연동 ✅ 인 탭은 [숙소 예약확정]·[티켓 구매완료] 2개뿐</strong>입니다. 나머지는 이메일 발송 전용입니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">8</div>
+        <div class="ann-body">
+          <div class="ann-title">티켓 구매완료 탭 — 카테고리별 이용안내 (특례)</div>
+          <div class="ann-desc">
+            <strong>티켓 구매완료 탭만</strong> 안내 문구 외에 <strong>이용안내(EN/ZH)</strong>·<strong>취소·환불 안내(EN/ZH)</strong>를 추가로 관리합니다.<br>
+            <strong>전체 기본 콘텐츠</strong> + <strong>카테고리(1뎁스)별 오버라이드</strong> 구조입니다. 카테고리 문구를 따로 설정하지 않으면 전체 기본 문구가 대신 나갑니다(폴백).
+          </div>
+          <div class="ann-rule">카테고리 목록은 S17(티켓 카테고리관리)에 등록된 1뎁스 카테고리를 불러옵니다. (기존 '이용안내 콘텐츠 관리' 구조를 이 탭으로 흡수)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">9</div>
+        <div class="ann-body">
+          <div class="ann-title">노출 채널</div>
+          <div class="ann-desc">
+            설정한 문구가 어디에 나가는지 안내하는 표입니다(읽기용).<br>
+            <strong>이메일</strong>: 각 발송 시점에 자동 발송(티켓 취소완료는 미결이라 제외).<br>
+            <strong>프런트 예약/주문 상세</strong>: <strong>숙소 예약확정 · 티켓 구매완료</strong> 탭 문구만 프런트 상세 화면에도 표시됩니다.
+          </div>
+          <div class="ann-front">→ 프런트: 예약상세(숙소) · 주문상세(티켓) 화면에 동일 안내 문구 노출</div>
+          <div class="ann-warn">
+            ※ 미결(신규-5): <strong>티켓 취소완료 이메일 발송 여부</strong> 및 취소 이메일 템플릿 관리 필요 여부 미확정. 확정 시 [티켓 취소완료] 탭 활성화 → 대화창 1(정책) 확인 후 반영 예정.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

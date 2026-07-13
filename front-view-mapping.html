@@ -102,6 +102,39 @@
 .fv-ann-front { font-size: 10px; color: #0e7490; background: #ecfeff; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #0e7490; line-height: 1.55; margin-top: 3px; }
 .fv-ann-rule { font-size: 10px; color: #92400e; background: #fefce8; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #fde68a; line-height: 1.55; margin-top: 3px; }
 
+/* ── 티켓 브릿지: 2뎁스 다크 서브탭 (place-selector 재사용) ── */
+.tk-subtabs { background: #2a2f3e; display: flex; padding: 0 14px; gap: 2px; }
+.tk-subtab { padding: 8px 13px; font-size: 10px; color: rgba(255,255,255,.55); border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; }
+.tk-subtab.on { color: #fff; border-bottom-color: #7c3aed; font-weight: 700; }
+
+/* ── 티켓 브릿지 상품 카드 ── */
+.tk-room-list { display: flex; flex-direction: column; gap: 10px; }
+.tk-pc { background: #fff; border-radius: 6px; border: 1px solid #e0e0da; overflow: hidden; position: relative; display: flex; }
+.tk-pc-thumb { flex: 0 0 120px; width: 120px; background: linear-gradient(135deg, #c9d2c0 0%, #a8b49a 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 9px; color: #4a5240; text-align: center; min-height: 150px; }
+.tk-pc-main { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 10px 12px 0; }
+.tk-pc-cat { font-size: 9px; color: #6a7c48; font-weight: 700; margin-bottom: 2px; }
+.tk-pc-title { font-size: 13px; font-weight: 700; color: #1a1f2e; margin-bottom: 3px; }
+.tk-pc-use { font-size: 9px; color: #555; margin-bottom: 6px; }
+.tk-optbox { border: 1px solid #ececec; border-radius: 6px; padding: 2px 9px; margin-bottom: 8px; }
+.tk-optrow { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #f3f3ee; font-size: 10px; }
+.tk-optrow:last-child { border-bottom: none; }
+.tk-optlabel { color: #1a1f2e; font-weight: 600; }
+.tk-optprice { color: #1a1f2e; font-weight: 700; }
+.tk-step { display: flex; align-items: center; gap: 7px; }
+.tk-step button { width: 18px; height: 18px; border: 1px solid #ccc; background: #f7f7f4; border-radius: 4px; font-size: 11px; line-height: 1; cursor: pointer; }
+/* 카드 하단: 소계 줄 없음 → 담기 버튼명에 통합. 버튼 블록만 카드 우측 50% */
+.tk-pc-foot { display: flex; justify-content: flex-end; padding: 8px 12px 10px; margin-top: auto; }
+.tk-foot-btns { width: 50%; display: grid; grid-template-columns: 3fr 7fr; gap: 6px; }
+.tk-detail-btn { background: #f0f0ea; color: #1a1f2e; border: 1px solid #ccc; border-radius: 4px; font-size: 9px; padding: 7px 0; cursor: pointer; }
+.tk-add-btn { background: #7c3aed; color: #fff; border: none; border-radius: 4px; font-size: 9px; font-weight: 700; padding: 7px 0; cursor: pointer; }
+/* 우측 선택 내역(장바구니) */
+.tk-cart { background: #fff; border: 1px solid #e0e0da; border-radius: 8px; padding: 12px; }
+.tk-cart h4 { font-size: 11px; font-weight: 700; color: #1a1f2e; margin: 0 0 8px; }
+.tk-cart-line { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; color: #444; padding: 6px 0; border-bottom: 1px solid #f3f3ee; line-height: 1.5; }
+.tk-cart-line span:last-child { font-weight: 700; color: #1a1f2e; white-space: nowrap; }
+.tk-cart-total { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: #1a1f2e; padding-top: 8px; }
+.tk-cart-reserve { width: 100%; margin-top: 10px; background: #7c3aed; color: #fff; border: none; border-radius: 5px; padding: 8px 0; font-size: 10px; font-weight: 700; cursor: pointer; }
+
 /* ── 범례 ── */
 .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; align-items: center; font-size: 11px; color: #666; padding: 8px 14px; background: #fff; border-radius: 6px; border: 1px solid #e8e8e2; }
 .legend-item { display: flex; align-items: center; gap: 5px; }
@@ -114,10 +147,10 @@
   <a class="page-nav-back" href="index.html">← 목록</a>
   <span class="page-nav-sep">|</span>
   <span class="page-nav-title">REF-2 — 브릿지 페이지 데이터 매핑</span>
-  <span class="page-nav-route">front-prototype v0.6 · #/bridge/:category</span>
+  <span class="page-nav-route">front-prototype · 숙소 #/bridge/:category · 티켓 #/ticket/bridge/:catKo</span>
   <div class="page-nav-nav">
     <a class="page-nav-pager" href="data-mapping.html">← 이전</a>
-    <a class="page-nav-pager" href="front-view-layer.html">다음 →</a>
+    <a class="page-nav-pager" href="front-view-search.html">다음 →</a>
   </div>
 </nav>
 
@@ -549,6 +582,348 @@
 
     </div><!-- /fv-ann -->
   </div><!-- /fv-two-col -->
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ═══ 티켓 브릿지 페이지 데이터 매핑 (숙소 브릿지 컴포넌트 재사용) ═══ -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+
+  <div class="sec-title" style="margin-top:44px">
+    <span class="sec-badge">REF-2</span>
+    티켓 브릿지 페이지 데이터 매핑
+    <span style="font-size:12px;font-weight:400;color:#888">— 카테고리 콘텐츠(S17) + 상품 선택(담기·장바구니) · 기준: 정책서 v0.12 §12.6 · front-prototype · 2026-07-10</span>
+  </div>
+
+  <!-- 티켓 카테고리 구조 설명 -->
+  <div class="type-grid">
+    <div class="type-card" style="background:#ecfdf5;border-color:#6ee7b7">
+      <div class="type-card-title">1뎁스 카테고리 — 브릿지 화면 단위</div>
+      <div class="type-card-desc">위쪽 메뉴 "Ticket"에서 고른 1차 분류(스키·워터파크·식사권 등)의 브릿지 화면입니다. S17에서 관리자가 직접 등록한 카테고리입니다.</div>
+      <div class="type-card-ls">high1_ticket_categories_v1[].parent_id = null</div>
+    </div>
+    <div class="type-card" style="background:#eef2ff;border-color:#c7d2fe">
+      <div class="type-card-title">2뎁스 상품유형 — 다크 서브탭(선택)</div>
+      <div class="type-card-desc">1뎁스 아래에 상품유형(리프트권·장비렌탈 등)이 있으면 상단에 어두운 서브탭으로 나옵니다. 2뎁스가 없으면 서브탭은 아예 표시되지 않습니다.</div>
+      <div class="type-card-ls">high1_ticket_categories_v1[].parent_id = (1뎁스 id)</div>
+    </div>
+  </div>
+
+  <!-- 공통 전제 (티켓 브릿지 전체 적용) -->
+  <div style="background:#fff;border:1px solid #e8e8e2;border-left:3px solid #7c3aed;border-radius:6px;padding:12px 16px;margin-bottom:24px;font-size:11px;color:#444;line-height:1.7">
+    <div style="font-weight:700;color:#1a1f2e;margin-bottom:6px">공통 전제 — 이 티켓 브릿지 화면 전체에 적용</div>
+    · <strong>화면 뼈대 = 숙소 브릿지 컴포넌트 그대로 재사용</strong>: 상단 2뎁스 다크바(place-selector) · 큰 히어로(hero-fullwidth) · 따라 붙는 sticky 네비게이션(place-nav: 개요/상품선택/상세설명/안내/정책/위치) · 개요(Overview)를 숙소 브릿지와 같은 컴포넌트로 만듭니다. 히어로 글자는 상단 로고와 같은 왼쪽 선에 맞춰 <strong>좌측 정렬</strong>합니다.<br>
+    · <strong>브릿지 콘텐츠 주인 = 카테고리(S17)</strong>: 히어로 이미지·개요·상세설명·이용안내·정책·위치는 <strong>상품이 아니라 카테고리(뎁스)가 소유</strong>합니다. 2뎁스 서브탭을 고르면 그 2뎁스 콘텐츠, 2뎁스가 없으면 1뎁스 콘텐츠를 씁니다. (정책서 v0.12 §12.6 A안)<br>
+    · <strong>상품(S14)은 썸네일만 소유</strong>: 상품카드의 썸네일 이미지만 상품이 가지고 있고, 상세설명 등 나머지 콘텐츠는 카테고리에서 공통으로 끌어옵니다.<br>
+    · <strong>localStorage 키(값을 저장해 두는 브라우저 저장소의 이름표)</strong>: 카테고리 <code>high1_ticket_categories_v1</code> · 상품 <code>high1_ticket_products_v1</code> · 마진 <code>high1_ticket_margin_master_v1</code> · 주문(프런트가 저장) <code>high1_ticket_orders_v1</code><br>
+    · <strong>다국어</strong>: 모든 이름·콘텐츠 필드는 영어(EN, 필수)/중국어(ZH, 선택) 두 벌(<code>_en</code>·<code>_zh</code>)로 저장하며, 중국어가 없으면 영어로 대체 표시합니다. <span style="color:#92400e">※ 현재 프로토타입은 개발단계라 KO/EN으로 표기되며, 이 문서는 목표형(EN/ZH)으로 설명합니다.</span>
+  </div>
+
+  <div class="fv-two-col">
+
+    <!-- ── 프런트 화면 시뮬레이션 (티켓 브릿지) ── -->
+    <div>
+      <div class="front-sim">
+
+        <!-- Topbar -->
+        <div class="ft-topbar">
+          <span class="ft-logo">high<span>1</span></span>
+          <div class="ft-nav">
+            <button class="ft-nav-btn">Hotel</button>
+            <button class="ft-nav-btn">Condo</button>
+            <button class="ft-nav-btn on">Ticket</button>
+          </div>
+          <div class="ft-lang">
+            <button class="ft-lang-btn">KO</button>
+            <button class="ft-lang-btn">EN</button>
+          </div>
+        </div>
+
+        <!-- 2뎁스 다크 서브탭 T1 (2뎁스 있을 때만) -->
+        <div style="position:relative;padding-right:28px">
+          <div class="tk-subtabs">
+            <div class="tk-subtab on">리프트권</div>
+            <div class="tk-subtab">장비렌탈</div>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:8px;right:4px">T1</span>
+        </div>
+
+        <!-- Hero T2 이미지 / T3 텍스트 -->
+        <div class="ft-hero" style="position:relative">
+          <div class="ft-hero-bg" style="background:linear-gradient(135deg,#7fae6a 0%,#4f7c3a 100%)">카테고리 히어로 이미지</div>
+          <div class="ft-hero-overlay">
+            <div class="ft-hero-name">스키 · 리프트권</div>
+            <div class="ft-hero-sub">Ski</div>
+            <button class="ft-hero-open-btn">상세 안내 ↗</button>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:8px;right:28px">T2</span>
+          <span class="wf-cn" style="position:absolute;top:8px;right:6px">T3</span>
+        </div>
+
+        <!-- Sticky Nav T4 -->
+        <div style="position:relative;padding-right:28px">
+          <div class="ft-sticky-nav">
+            <div class="ft-sticky-tab on">Overview</div>
+            <div class="ft-sticky-tab">Select</div>
+            <div class="ft-sticky-tab">Detail</div>
+            <div class="ft-sticky-tab">Guide</div>
+            <div class="ft-sticky-tab">Policy</div>
+            <div class="ft-sticky-tab">Location</div>
+          </div>
+          <span class="wf-cn" style="position:absolute;top:8px;right:4px">T4</span>
+        </div>
+
+        <!-- Overview T5 (카테고리 개요) -->
+        <div class="ft-overview" style="position:relative;padding-right:28px">
+          <div class="ft-overview-label">Overview</div>
+          <div class="ft-overview-val" style="font-weight:400;color:#555;line-height:1.7">하이원 스키장 리프트권 — 사용기간 내 자유롭게 이용하는 오픈형 티켓입니다.</div>
+          <span class="wf-cn" style="position:absolute;top:12px;right:6px">T5</span>
+        </div>
+
+        <!-- Select 섹션: 상품 목록 + 선택 내역 -->
+        <div style="padding:12px 16px;background:#f5f5f2">
+          <div style="font-size:13px;font-weight:700;color:#1a1f2e;margin-bottom:8px">Select tickets</div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+
+            <!-- 상품 카드 목록 -->
+            <div class="tk-room-list" style="flex:1;min-width:0">
+
+              <!-- 카드 1 — 수량 선택됨 → "총 N매 , NN원 담기" -->
+              <div class="tk-pc">
+                <div class="tk-pc-thumb" style="position:relative">
+                  <span>썸네일</span>
+                  <span>(상품 소유)</span>
+                  <span class="wf-cn" style="position:absolute;top:6px;left:6px">T6</span>
+                </div>
+                <div class="tk-pc-main">
+                  <div style="display:flex;align-items:center;gap:4px">
+                    <div class="tk-pc-cat" style="margin-bottom:0">스키 › 리프트권</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:4px">
+                    <div class="tk-pc-title" style="margin-bottom:0">하이원 스키 1일 리프트권</div>
+                    <span class="wf-cn">T7</span>
+                  </div>
+                  <div style="margin-top:5px"></div>
+                  <div style="display:flex;align-items:center;gap:4px">
+                    <div class="tk-pc-use" style="margin-bottom:0">🗓 사용기간 2026-12-01 ~ 2027-03-01</div>
+                    <span class="wf-cn">T9</span>
+                  </div>
+                  <div style="margin-top:6px"></div>
+                  <div style="display:flex;align-items:flex-start;gap:4px">
+                    <div class="tk-optbox" style="flex:1;margin-bottom:0">
+                      <div class="tk-optrow">
+                        <span class="tk-optlabel">성인 <span style="color:#888">리프트 1일권</span></span>
+                        <span class="tk-optprice">₩55,000</span>
+                        <span class="tk-step"><button>−</button><span>2</span><button>+</button></span>
+                      </div>
+                      <div class="tk-optrow">
+                        <span class="tk-optlabel">아동 <span style="color:#888">리프트 1일권(소인)</span></span>
+                        <span class="tk-optprice">₩40,000</span>
+                        <span class="tk-step"><button>−</button><span>1</span><button>+</button></span>
+                      </div>
+                    </div>
+                    <span class="wf-cn" style="flex-shrink:0">T8</span>
+                  </div>
+                  <div class="tk-pc-foot" style="position:relative">
+                    <div class="tk-foot-btns">
+                      <button class="tk-detail-btn">상세보기</button>
+                      <button class="tk-add-btn">총 3매 , ₩150,000 담기</button>
+                    </div>
+                    <span class="wf-cn" style="position:absolute;top:2px;right:2px">T10</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 카드 2 — 수량 0 → 버튼명 "담기" -->
+              <div class="tk-pc">
+                <div class="tk-pc-thumb"><span>썸네일</span><span>(상품 소유)</span></div>
+                <div class="tk-pc-main">
+                  <div class="tk-pc-cat">스키 › 리프트권</div>
+                  <div class="tk-pc-title">하이원 스키 오후권</div>
+                  <div class="tk-pc-use">🗓 사용기간 2026-12-01 ~ 2027-03-01</div>
+                  <div class="tk-optbox">
+                    <div class="tk-optrow">
+                      <span class="tk-optlabel">성인 <span style="color:#888">오후 리프트권</span></span>
+                      <span class="tk-optprice">₩38,000</span>
+                      <span class="tk-step"><button>−</button><span>0</span><button>+</button></span>
+                    </div>
+                  </div>
+                  <div class="tk-pc-foot">
+                    <div class="tk-foot-btns">
+                      <button class="tk-detail-btn">상세보기</button>
+                      <button class="tk-add-btn">담기</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /tk-room-list -->
+
+            <!-- 선택 내역(장바구니) T11 -->
+            <div style="flex:0 0 190px;position:relative">
+              <div class="tk-cart">
+                <h4>🧾 선택 내역</h4>
+                <div class="tk-cart-line"><span>하이원 스키 1일 리프트권<br>성인 × 2</span><span>₩110,000</span></div>
+                <div class="tk-cart-line"><span>하이원 스키 1일 리프트권<br>아동 × 1</span><span>₩40,000</span></div>
+                <div class="tk-cart-total"><span>총 3매</span><span>₩150,000</span></div>
+                <button class="tk-cart-reserve">예약하기</button>
+              </div>
+              <span class="wf-cn" style="position:absolute;top:6px;right:6px">T11</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Detail / Guide / Policy / Location T12 (카테고리 콘텐츠) -->
+        <div style="position:relative;padding:12px 16px;background:#fff;border-top:1px solid #e8e8e2">
+          <div style="font-size:12px;font-weight:700;color:#1a1f2e;margin-bottom:4px">Detail · Guide · Policy · Location</div>
+          <div style="font-size:10px;color:#666;line-height:1.7">상세설명 → 이용안내 → 정책 → 위치 4개 섹션 본문이 이어서 나타나며, 위 sticky 네비게이션 탭을 누르면 해당 위치로 이동합니다. 모두 카테고리(S17)가 소유한 콘텐츠입니다.</div>
+          <span class="wf-cn" style="position:absolute;top:12px;right:6px">T12</span>
+        </div>
+
+      </div><!-- /front-sim -->
+    </div>
+
+    <!-- ── 주석 패널 (티켓 브릿지) ── -->
+    <div class="fv-ann">
+      <h3>티켓 브릿지 페이지 주석 (callout T1~T12)</h3>
+
+      <div class="fv-ann-item">
+        <div class="cn">T1</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">2뎁스 상품유형 서브탭 (다크바)</div>
+          <div class="fv-ann-desc">1뎁스 카테고리 아래에 상품유형(2뎁스)이 있으면 상단에 어두운 서브탭으로 나옵니다. 숙소 브릿지의 place-selector 컴포넌트를 그대로 재사용합니다. 2뎁스가 없는 카테고리는 이 바가 아예 나오지 않습니다.</div>
+          <div class="fv-ann-admin">어드민 S17 티켓 카테고리관리 · 2뎁스(상품유형) 등록</div>
+          <div class="fv-ann-ls">high1_ticket_categories_v1[].parent_id(=1뎁스 id) · name_en/_zh · order</div>
+          <div class="fv-ann-front">서브탭 글자 = 2뎁스명(EN, 없으면 대체). 탭을 누르면 그 2뎁스의 콘텐츠·상품으로 바뀝니다.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T2</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Hero 이미지 (카테고리 소유)</div>
+          <div class="fv-ann-desc">화면 상단 큰 배경 이미지입니다. 상품이 아니라 카테고리(뎁스)가 가진 히어로 이미지를 보여줍니다. 2뎁스를 골랐으면 2뎁스, 없으면 1뎁스 히어로를 씁니다. 이미지가 없으면 회색 자리표시가 나옵니다.</div>
+          <div class="fv-ann-admin">어드민 S17 · 카테고리 히어로 이미지 등록</div>
+          <div class="fv-ann-ls">high1_ticket_categories_v1[].hero_image_meta[].data_url</div>
+          <div class="fv-ann-front">hero-fullwidth 배경 이미지 (ticketCatImgFront 함수, 460px 높이)</div>
+          <div class="fv-ann-rule">정책서 v0.12 §12.6 A안: 히어로 이미지는 카테고리 소유. 상품별 히어로는 폐지.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T3</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Hero 텍스트 — 카테고리명 · 상세 안내 버튼</div>
+          <div class="fv-ann-desc">히어로 위 어두운 덮개에 카테고리명(1뎁스 · 2뎁스)을 큰 글자로 표시합니다. 글자는 상단 로고와 같은 왼쪽 선에 맞춰 좌측 정렬합니다. "상세 안내 ↗" 버튼을 누르면 아래 상세설명(Detail) 위치로 이동합니다.</div>
+          <div class="fv-ann-admin">어드민 S17 · 카테고리명(1뎁스) / 상품유형명(2뎁스)</div>
+          <div class="fv-ann-ls">high1_ticket_categories_v1[].name_en/_zh (1뎁스 + 2뎁스)</div>
+          <div class="fv-ann-front">1행 = "1뎁스명 · 2뎁스명" / 2행 = 보조 라벨(영문 액센트) / 버튼 = Detail로 스크롤</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T4</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Sticky Nav 탭 (6개)</div>
+          <div class="fv-ann-desc">Overview · Select · Detail · Guide · Policy · Location 6개 탭입니다. 숙소 브릿지와 달리 레이어를 열지 않고, 모두 같은 페이지 안에서 해당 위치로 부드럽게 스크롤 이동합니다.</div>
+          <div class="fv-ann-front">각 탭 → 같은 페이지 내 섹션으로 스크롤 (place-nav 컴포넌트, data-sec 이동)</div>
+          <div class="fv-ann-rule">Detail/Guide/Policy/Location 본문 출처: 상세설명→detail_html · 이용안내→guide_html · 정책→policy_html · 위치→address (모두 카테고리 EN/ZH)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T5</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Overview — 카테고리 개요</div>
+          <div class="fv-ann-desc">카테고리의 한 줄 소개(개요)를 표시합니다. 상품이 아니라 카테고리가 소유한 콘텐츠입니다.</div>
+          <div class="fv-ann-admin">어드민 S17 · 개요 (EN 필수 / ZH 선택)</div>
+          <div class="fv-ann-ls">high1_ticket_categories_v1[].overview_en/_zh</div>
+          <div class="fv-ann-front">Overview 섹션 본문 (catField 함수로 언어 선택)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T6</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">상품 썸네일 (상품 소유)</div>
+          <div class="fv-ann-desc">상품 카드 왼쪽 썸네일 이미지입니다. 브릿지에서 <strong>상품(S14)이 소유하는 유일한 콘텐츠</strong>가 이 썸네일입니다. 나머지(히어로·설명 등)는 카테고리 공통입니다.</div>
+          <div class="fv-ann-admin">어드민 S14 티켓 상품 · 썸네일 이미지 등록</div>
+          <div class="fv-ann-ls">high1_ticket_products_v1[].thumb_meta[].data_url (ticketImg 함수)</div>
+          <div class="fv-ann-front">카드 좌측 썸네일. 없으면 "No Image" 자리표시</div>
+          <div class="fv-ann-rule">정책서 v0.12 §12.6 A안: 상품은 썸네일만 소유. 상품별 히어로·상세소개 폐지.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T7</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">상품명 + 카테고리 경로</div>
+          <div class="fv-ann-desc">상품명(크고 굵게)과 위에 카테고리 경로("1뎁스 › 2뎁스")를 표시합니다.</div>
+          <div class="fv-ann-admin">어드민 S14 티켓 상품 · 상품명 / 카테고리 지정</div>
+          <div class="fv-ann-ls">high1_ticket_products_v1[].name_en/_zh · category_1 · category_2</div>
+          <div class="fv-ann-front">카드 1행(카테고리 경로 — 연한 색) / 2행(상품명 — 굵게)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T8</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">옵션 행 — 레벨 · 옵션가 · 수량 스테퍼</div>
+          <div class="fv-ann-desc">상품에 연결된 쿠폰 스펙을 레벨(성인/아동)별로 한 줄씩 늘어놓습니다. 한 줄에 레벨명·쿠폰명, 옵션 판매가, 그리고 −/+ 수량 스테퍼가 있습니다. 수량은 "담기" 전까지 임시 상태(pending)로만 잡힙니다.</div>
+          <div class="fv-ann-admin">쿠폰 스펙 = S13 CSV 업로드 · 옵션가(판매가) = 입금가 + 마진(S11)</div>
+          <div class="fv-ann-ls">스펙: specGroupsMap().rows[]{level, level_name, coupon_name, use_start_date, use_end_date} · 마진: high1_ticket_margin_master_v1</div>
+          <div class="fv-ann-front">옵션 판매가 = 쿠폰 입금가 + 마진 (ticketLevelSell 함수, 소수점 버림)</div>
+          <div class="fv-ann-rule">레벨(성인/아동)은 카테고리 뎁스가 아니라 상품 구분자(옵션)입니다. (정책서 v0.12 §12.6)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T9</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">사용기간 (오픈형)</div>
+          <div class="fv-ann-desc">🗓 사용 시작일 ~ 종료일을 표시합니다. 오픈형 티켓은 이용일이 정해져 있지 않고 이 기간 안에서 자유롭게 씁니다.</div>
+          <div class="fv-ann-admin">쿠폰 스펙(S13) · 사용 시작일 / 사용 종료일</div>
+          <div class="fv-ann-ls">specGroupsMap().rows[0].use_start_date · use_end_date</div>
+          <div class="fv-ann-front">카드 "🗓 사용기간 YYYY-MM-DD ~ YYYY-MM-DD"</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T10</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">담기 버튼 — "총 N매 , NN원 담기"</div>
+          <div class="fv-ann-desc">카드에는 소계(합계) 줄을 따로 두지 않고, 담기 버튼 이름에 합쳐 보여줍니다. 옵션 수량을 하나라도 고르면 버튼명이 "총 3매 , ₩150,000 담기"처럼 바뀌고, 아무것도 안 고르면 그냥 "담기"입니다. 누르면 오른쪽 선택 내역(장바구니)에 담깁니다.</div>
+          <div class="fv-ann-admin">— (프런트 계산: 옵션 수량 × 옵션 판매가 합)</div>
+          <div class="fv-ann-ls">pending 수량 × ticketLevelSell 합 → addLabel 문자열</div>
+          <div class="fv-ann-front">버튼 블록은 카드 <strong>우측 50%</strong>에 배치. [상세보기]:[담기] 비율 = <strong>3:7</strong>. 소계 줄은 삭제.</div>
+          <div class="fv-ann-rule">"담기"만 임시 수량을 장바구니로 확정. 수량 0에서 담기 누르면 "수량을 선택하세요" 안내.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T11</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">선택 내역 (장바구니)</div>
+          <div class="fv-ann-desc">담은 상품·옵션을 줄 단위로 모아 보여주고, 맨 아래에 총 매수·합계를 표시합니다. "예약하기"를 누르면 결제 페이지로 넘어갑니다. 장바구니 범위는 지금 보고 있는 1뎁스 카테고리 기준이며, 다른 1뎁스로 이동하면 초기화됩니다.</div>
+          <div class="fv-ann-admin">— (프런트 임시 상태. 예약 확정 시 주문 저장)</div>
+          <div class="fv-ann-ls">uiState.ticketCart{deptKey, items[]} → 예약 시 high1_ticket_orders_v1</div>
+          <div class="fv-ann-front">Select 섹션 오른쪽 패널. 줄별 ✕로 삭제. "예약하기" → #/ticket/checkout</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T12</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">Detail · Guide · Policy · Location (카테고리 콘텐츠)</div>
+          <div class="fv-ann-desc">상세설명·이용안내·정책·위치 4개 섹션이 이어서 나옵니다. 모두 카테고리(S17)가 소유한 콘텐츠이며, 상품마다 따로 등록하지 않습니다.</div>
+          <div class="fv-ann-admin">어드민 S17 · 상세설명 / 이용안내 / 정책 / 위치 (EN 필수 / ZH 선택)</div>
+          <div class="fv-ann-ls">high1_ticket_categories_v1[].detail_html_en/_zh · guide_html_en/_zh · policy_html_en/_zh · address_en/_zh</div>
+          <div class="fv-ann-front">Detail / Guide / Policy / Location 섹션 본문</div>
+          <div class="fv-ann-rule">정책(Policy)에는 오픈형 취소·환불 기준을 함께 안내: 사용종료일 이전 미사용=전액환불 / 이후·사용완료=환불불가. (정책서 v0.12 §8.2)</div>
+        </div>
+      </div>
+
+    </div><!-- /fv-ann (티켓) -->
+  </div><!-- /fv-two-col (티켓) -->
 
 </div><!-- /page -->
 </body>

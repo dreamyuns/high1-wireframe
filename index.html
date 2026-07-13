@@ -76,7 +76,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
 <!-- 좌측 고정 목차 -->
 <nav class="toc">
   <div class="toc-logo">high<span>1</span></div>
-  <div class="toc-ver">Admin Wireframe v0.9.12</div>
+  <div class="toc-ver">Admin Wireframe v0.9.20</div>
   <a class="toc-link" data-target="grp-policy"><span class="toc-dot" style="background:#fbbf24"></span>정책 문서</a>
   <a class="toc-link" data-target="grp-property"><span class="toc-dot" style="background:#60a5fa"></span>숙소관리</a>
   <a class="toc-link" data-target="grp-ticket"><span class="toc-dot" style="background:#f472b6"></span>티켓관리</a>
@@ -90,7 +90,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
 <div class="cover">
   <div class="cover-logo">high<span>1</span></div>
   <div class="cover-title">Admin Wireframe</div>
-  <div class="cover-meta">v0.9.12 · 2026-07-09 · 개발자 전달용 화면기획서</div>
+  <div class="cover-meta">v0.9.20 · 2026-07-10 · 개발자 전달용 화면기획서</div>
   <div class="cover-desc">
     <strong>admin-prototype v0.6</strong> 기준 화면 레이아웃 · 필드 정의 · 동작 규칙 · 프런트 데이터 매핑.<br>
     각 화면 카드를 클릭하면 해당 화면의 상세 기획서로 이동합니다.<br>
@@ -117,12 +117,12 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
         <div class="sc-date">2026-07-08</div>
         <div class="sc-arrow">→</div>
       </a>
-      <a class="screen-card" href="ticket-coupon-policy-v0.7.html">
+      <a class="screen-card" href="ticket-coupon-policy-v0.12.html">
         <div class="sc-num" style="color:#f472b6">TICKET-POL</div>
-        <div class="sc-name">티켓 쿠폰 연동 정책서 v0.7</div>
-        <div class="sc-route">티켓 화면(S13~S17·S15-B) 기준 정책 · HTML · KO/EN</div>
-        <div class="sc-desc">쿠폰번호(12자리·구매 시 발급) · 스펙/CSV(10컬럼·이용권명) · API 3종·응답코드 · 상태 3종(AVAILABLE·VOID 제거) · 취소(전체만) · 마진(coupon_id 단위) · S17 직접등록·2뎁스 · 어드민 화면 전반. <strong>좌측 TOC·한영 토글</strong>.</div>
-        <div class="sc-date">2026-07-09</div>
+        <div class="sc-name">티켓 쿠폰 연동 정책서 v0.12</div>
+        <div class="sc-route">티켓 화면(S13~S18-A) 기준 정책 · HTML · KO/EN</div>
+        <div class="sc-desc">쿠폰번호(12자리·구매 시 발급) · 스펙/CSV · API 3종·응답코드 · 상태 3종(SOLD/USED/CANCELED) · 주문/사용상태 · 취소(전체만·오픈형 종료일) · 마진 A안(카테고리 마스터+쿠폰ID·4단계) · S15-B · S17 직접등록·2뎁스 · S18-A 이메일 템플릿 · <b>콘텐츠 소유 A안(§12.3·12.6)·성인전용(2.3)·프런트 검색(§13·사용일+7일)·이미지 URL 저장(§14)</b>. <strong>좌측 TOC·한영 토글</strong>.</div>
+        <div class="sc-date">2026-07-10</div>
         <div class="sc-arrow">→</div>
       </a>
     </div>
@@ -161,7 +161,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
         <div class="sc-name">숙소 등록 — 이미지</div>
         <div class="sc-route">#/places/new · #/places/edit/:id</div>
         <div class="sc-desc">대표 이미지 필수 1장 · 추가 최대 9장 · 2MB 제한 · Quota 경고</div>
-        <div class="sc-date">2026-05-29</div>
+        <div class="sc-date">2026-07-10</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s02-4-wizard-step4.html">
@@ -193,7 +193,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
         <div class="sc-name">객실 등록·수정</div>
         <div class="sc-route">#/rooms/new · #/rooms/edit/:id</div>
         <div class="sc-desc">기본정보 · 인원(기준/최대) · 객실유형 단일 · PMS 객실코드(RM_TYP_CD) · 침대구성 · 시설 · 안내·정책 (객실특징·부가요금 제거 → 부가요금은 숙소 S02-4 이관)</div>
-        <div class="sc-date">2026-07-08</div>
+        <div class="sc-date">2026-07-10</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s04-inv.html">
@@ -243,15 +243,31 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
   <div class="group group-ticket" id="grp-ticket">
     <div class="group-title">티켓관리 — Ticket / Coupon Management</div>
     <div style="font-size:12px;color:rgba(255,255,255,.5);margin:-6px 0 14px;line-height:1.6">
-      기준 정책서: <a href="ticket-coupon-policy-v0.7.html" style="color:#f472b6;font-weight:600">티켓 쿠폰 연동 정책서 v0.7</a>
-      <span style="color:rgba(255,255,255,.3)">— 화면 S13~S17·S15-B 정책서 v0.7 정합 완료 (coupon_id 중심 · S17 직접등록 · 카테고리 2뎁스 · 정책 HTML v0.7 반영)</span>
+      기준 정책서: <a href="ticket-coupon-policy-v0.12.html" style="color:#f472b6;font-weight:600">티켓 쿠폰 연동 정책서 v0.12</a>
+      <span style="color:rgba(255,255,255,.3)">— 화면 S13~S18-A 정책서 v0.12 정합 (상태 3종·주문/사용상태 · 마진 A안 · S15-B · S17 직접등록·2뎁스 · S18-A 이메일 템플릿 · 콘텐츠 소유 A안 · 프런트 검색·이미지 저장 · 정책 HTML v0.12 반영)</span>
     </div>
     <div class="screen-grid">
+      <a class="screen-card" href="s17-ticket-category.html">
+        <div class="sc-num">S17</div>
+        <div class="sc-name">카테고리/컨텐츠 관리 — 목록</div>
+        <div class="sc-route">#/ticket-categories · 티켓관리 GNB(LNB 최상단)</div>
+        <div class="sc-desc">공통관리→<b>티켓관리 이동</b> · 카드형(1뎁스 카드/2뎁스 행) · 직접 등록(추가·수정, 삭제 없음) · 최대 2뎁스 · 표시명 EN/ZH·관리명 KO · <b>리프 뎁스에 [콘텐츠] 버튼→S17-B</b> · S13 검증 기준 · v0.12 §12.1·12.6</div>
+        <div class="sc-date">2026-07-10</div>
+        <div class="sc-arrow">→</div>
+      </a>
+      <a class="screen-card" href="s17-b-ticket-content.html">
+        <div class="sc-num">S17-B</div>
+        <div class="sc-name">카테고리/컨텐츠 관리 — 콘텐츠 편집</div>
+        <div class="sc-route">#/ticket-categories/edit/:id · 티켓관리 GNB</div>
+        <div class="sc-desc">뎁스(카테고리) 소유 콘텐츠 6블록 — 히어로 이미지·개요·상세설명·이용안내·유의사항/정책·위치 · 텍스트 4종 리치 에디터(굵게·제목·목록·이미지 불러오기·Ctrl+V) · EN필수/ZH · 이미지 URL 저장 · 프런트 브릿지 매핑 · v0.12 §12.6·14</div>
+        <div class="sc-date">2026-07-10</div>
+        <div class="sc-arrow">→</div>
+      </a>
       <a class="screen-card" href="s13-coupon-spec.html">
         <div class="sc-num">S13</div>
         <div class="sc-name">쿠폰 스펙 관리</div>
         <div class="sc-route">#/coupon-specs · 티켓관리 GNB</div>
-        <div class="sc-desc">탭A(업로드&스펙목록)/탭B(업로드 이력) · CSV 10컬럼 한국어 재정의(이용권명 추가·ticket_type 제거) · S17 선행검증(카테고리/상품유형 일치) · 조건부 삭제(연결상품0 AND 발급쿠폰0) · 바코드 12자리</div>
+        <div class="sc-desc">탭A(업로드&스펙목록)/탭B(업로드 이력) · CSV 10컬럼 한국어 재정의(이용권명 추가·ticket_type 제거) · S17 선행검증(카테고리/상품유형 일치) · 조건부 삭제(연결상품0 AND 발급쿠폰0) · 바코드 12자리 · S11 마진 자동연동(§11.8·재계산 경고)</div>
         <div class="sc-date">2026-07-09</div>
         <div class="sc-arrow">→</div>
       </a>
@@ -267,16 +283,16 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
         <div class="sc-num">S14-B</div>
         <div class="sc-name">티켓 상품 — 마스터 (탭1)</div>
         <div class="sc-route">#/ticket-products/new · 티켓관리 GNB</div>
-        <div class="sc-desc">탭1 마스터 — 기본정보(스펙 연결)·카테고리 2뎁스 드롭다운(스키만 상품유형) · 마진 S11 티켓탭 상속(읽기전용) · 취소정책 구간형 · EN필수/ZH</div>
-        <div class="sc-date">2026-07-09</div>
+        <div class="sc-desc">탭1 마스터 — 기본정보(스펙 연결·판매기간·<b>썸네일</b>)·카테고리 2뎁스(스키만 상품유형) · 마진 S11 티켓탭 상속(읽기전용) · 취소정책 구간형 · EN필수/ZH · 판매종료일 초과 자동 미노출 · <b>콘텐츠(상세·안내·정책·위치·히어로)는 S17 소유, 상품은 썸네일만</b></div>
+        <div class="sc-date">2026-07-10</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s14-c-ticket-date-cal.html">
         <div class="sc-num">S14-C</div>
         <div class="sc-name">티켓 상품 — 날짜 설정 (탭2)</div>
         <div class="sc-route">#/ticket-products/edit/:id · 티켓관리 GNB</div>
-        <div class="sc-desc">탭2 날짜 — 오픈형 우선(날짜지정형 기능만 유지·미사용) · 사용기간 표시용(날짜 유효성 미구현) · 커트오프</div>
-        <div class="sc-date">2026-07-08</div>
+        <div class="sc-desc">탭2 날짜 — 오픈형 우선(날짜지정형 기능만 유지·미사용) · 사용기간 표시용(날짜 유효성 미구현) · 커트오프(날짜지정형 전용)</div>
+        <div class="sc-date">2026-07-09</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s15-ticket-order-list.html">
@@ -303,14 +319,6 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
         <div class="sc-date">2026-07-09</div>
         <div class="sc-arrow">→</div>
       </a>
-      <a class="screen-card" href="s17-ticket-category.html">
-        <div class="sc-num">S17</div>
-        <div class="sc-name">티켓 카테고리관리</div>
-        <div class="sc-route">#/ticket-categories · 공통관리 GNB</div>
-        <div class="sc-desc">관리자 직접 등록(신규만·삭제 없음) · 최대 2뎁스 · 표시명 EN/ZH·순서 편집 · S13 CSV가 이 카테고리 참조·검증(역방향) · 레벨=구분자</div>
-        <div class="sc-date">2026-07-09</div>
-        <div class="sc-arrow">→</div>
-      </a>
     </div>
   </div>
 
@@ -322,8 +330,8 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
         <div class="sc-num" style="color:#34d399">S12-A</div>
         <div class="sc-name">메인 화면 관리</div>
         <div class="sc-route">#/main-management</div>
-        <div class="sc-desc">히어로 이미지 영역(슬라이드 목록·전역설정) + 추천 섹션 목록. 두 영역 독립 저장·순서 드래그.</div>
-        <div class="sc-date">2026-07-08</div>
+        <div class="sc-desc">히어로 이미지 영역(슬라이드 목록·전역설정) + 추천 섹션 목록. <b>추천 섹션 유형(숙소/티켓) 분기</b> — [+숙소 섹션→S12-C]/[+티켓 섹션→S12-D]. 두 영역 독립 저장.</div>
+        <div class="sc-date">2026-07-10</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s12-b-hero-form.html" style="border-left:3px solid #10b981">
@@ -336,13 +344,29 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
       </a>
       <a class="screen-card" href="s12-c-recommend-form.html" style="border-left:3px solid #10b981">
         <div class="sc-num" style="color:#34d399">S12-C</div>
-        <div class="sc-name">추천 섹션 설정</div>
+        <div class="sc-name">추천 섹션 설정 (숙소)</div>
         <div class="sc-route">#/main-management/section/new · /edit/:id</div>
-        <div class="sc-desc">1/2/3뎁스 카테고리 선택 · 2뎁스 탭 분리 · 자동(정렬) / 수동(드래그) 객실 선택</div>
+        <div class="sc-desc">숙소 추천 섹션 · 1/2/3뎁스 카테고리 선택 · 2뎁스 탭 분리 · 자동(정렬) / 수동(드래그) 객실 선택</div>
         <div class="sc-date">2026-07-08</div>
         <div class="sc-arrow">→</div>
       </a>
-    </div>
+      <a class="screen-card" href="s12-d-ticket-section.html" style="border-left:3px solid #10b981">
+        <div class="sc-num" style="color:#34d399">S12-D</div>
+        <div class="sc-name">티켓 추천 섹션 설정</div>
+        <div class="sc-route">#/main-management/section/new-ticket</div>
+        <div class="sc-desc">티켓 전용 추천 섹션(숙소 S12-C와 분리) · 타이틀·노출기간·전체보기 + 선택방식 자동(카테고리 필터+정렬)/수동(상품 선택) · 카드=썸네일·상품명·최저가 · 클릭→카테고리 브릿지 · 프로토타입 admin v0.7.11</div>
+        <div class="sc-date">2026-07-10</div>
+        <div class="sc-arrow">→</div>
+      </a>
+          <a class="screen-card" href="s18-a-email-template.html" style="border-left:3px solid #10b981">
+        <div class="sc-num" style="color:#34d399">S18-A</div>
+        <div class="sc-name">이메일 템플릿 관리</div>
+        <div class="sc-route">#/email-template · 화면관리 GNB</div>
+        <div class="sc-desc">숙소+티켓 발송 유형별 이메일 템플릿 · 5탭(숙소 예약확정/대기알림(수기)/취소완료 · 티켓 구매완료/취소완료(미결)) · 안내문구 EN필수·ZH · 티켓 구매완료=카테고리 오버라이드 · 프런트 예약/주문상세 연동(예약확정·구매완료) · v0.11 12.7절</div>
+        <div class="sc-date">2026-07-09</div>
+        <div class="sc-arrow">→</div>
+      </a>
+</div>
   </div>
 
   <!-- 공통관리 -->
@@ -409,8 +433,8 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
         <div class="sc-num">S11</div>
         <div class="sc-name">마진관리</div>
         <div class="sc-route">#/margin-management</div>
-        <div class="sc-desc">숙소·티켓 통합 · [숙소] 객실타입(RM_TYP_CD)별 · [티켓] 쿠폰ID 단위(카테고리 필터→쿠폰ID 목록) · 유형(전역디폴트/금액/율%)·판매가 예시 · 미설정 시 전역디폴트 30,000원 (S11-B 폐기·통합)</div>
-        <div class="sc-date">2026-07-08</div>
+        <div class="sc-desc">숙소·티켓 통합 · [숙소] 객실타입(RM_TYP_CD)별 목록 · [티켓] 목록 UI(카테고리 마스터+쿠폰ID 오버라이드·4단계 우선순위·상속/개별 토글) · 유형(전역디폴트/금액/율%)·판매가 예시 · 미설정 시 전역디폴트 30,000원 (S11-B 폐기·통합)</div>
+        <div class="sc-date">2026-07-09</div>
         <div class="sc-arrow">→</div>
       </a>
     </div>
@@ -464,10 +488,18 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
         <div class="sc-name">브릿지 페이지 데이터 매핑</div>
         <div class="sc-route">HOTEL/CONDO 설명 · 숙소탭 · Hero · Sticky Nav · Overview · 상품 카드</div>
         <div class="sc-desc">숙소 선택 탭·Hero·Overview·상품 카드 callout. 듀얼 캘린더·객실별 인원 검색바 · 룸타입 필터 · 취소정책 2상태 · 인원추가요금 조건 · EN/ZH.</div>
-        <div class="sc-date">2026-07-08</div>
+        <div class="sc-date">2026-07-10</div>
         <div class="sc-arrow">→</div>
       </a>
-      <a class="screen-card" href="front-view-layer.html" style="border-left:3px solid #f59e0b">
+            <a class="screen-card" href="front-view-search.html" style="border-left:3px solid #f59e0b">
+        <div class="sc-num" style="color:#fbbf24">REF-8</div>
+        <div class="sc-name">검색결과 페이지 데이터 매핑</div>
+        <div class="sc-route">프런트 검색결과 · 검색바·필터·상품 카드</div>
+        <div class="sc-desc">듀얼 캘린더·객실별 인원 검색바 · 좌측 필터(정렬/숙소/룸타입) · 수용필터 · canonical 상품카드(취소정책·인원추가요금·회원가) · 객실별 최저가 1카드 · EN/ZH</div>
+        <div class="sc-date">2026-07-10</div>
+        <div class="sc-arrow">→</div>
+      </a>
+<a class="screen-card" href="front-view-layer.html" style="border-left:3px solid #f59e0b">
         <div class="sc-num" style="color:#fbbf24">REF-3</div>
         <div class="sc-name">장소 레이어 데이터 매핑</div>
         <div class="sc-route">안내 / 정책 / 위치 탭</div>
@@ -480,7 +512,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
         <div class="sc-name">Room Detail 모달 데이터 매핑</div>
         <div class="sc-route">객실·상품 상세 모달</div>
         <div class="sc-desc">갤러리·Information·상품안내·객실안내·객실정책·ROOM 도메인 시설 callout (객실특징·엑스트라베드·추가요금 제거) · EN/ZH.</div>
-        <div class="sc-date">2026-07-08</div>
+        <div class="sc-date">2026-07-10</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="pms-integration-guide.html" style="border-left:3px solid #f59e0b">
@@ -504,7 +536,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
         <div class="sc-name">프런트 메인 화면 데이터 매핑</div>
         <div class="sc-route">어드민 S12 입력 → 프런트 메인 노출</div>
         <div class="sc-desc">히어로 슬라이드 callout · 추천 섹션/카드 callout · 최저가 배치 로직 · 카드 클릭 브릿지 이동 규칙 · EN/ZH · 실제 키(high1_main_*_v1)</div>
-        <div class="sc-date">2026-07-08</div>
+        <div class="sc-date">2026-07-10</div>
         <div class="sc-arrow">→</div>
       </a>
     </div>
@@ -532,7 +564,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
   </div>
 
   <div class="footer">
-    High1 Admin Wireframe v0.9.12 · 2026-07-09 · 개발자 전달용<br>
+    High1 Admin Wireframe v0.9.20 · 2026-07-10 · 개발자 전달용<br>
     와이어프레임은 레이아웃·기능 기준이며, 실제 비주얼 디자인은 Figma에서 별도 정의합니다.
   </div>
 </div>

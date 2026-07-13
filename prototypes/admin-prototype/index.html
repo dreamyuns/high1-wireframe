@@ -3,43 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>High1 Admin Prototype v0.6</title>
+    <title>High1 Admin Prototype v0.7.18</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="app">
-      <aside class="sidebar">
-        <h1>High1 Admin <span class="ver-badge">v0.6</span></h1>
-        <div class="nav-group">
-          <div class="nav-group-title">숙소/객실관리</div>
-          <button type="button" class="nav-link" data-route="places">숙소관리</button>
-          <button type="button" class="nav-link" data-route="rooms">객실관리</button>
-          <button type="button" class="nav-link" data-route="products">상품관리</button>
+      <header class="topbar">
+        <div class="topbar-l">
+          <span class="brand">high1 <span class="ver-badge">v0.7.18</span></span>
+          <nav class="gnb" id="gnb"></nav>
         </div>
-        <div class="nav-group">
-          <div class="nav-group-title">공통관리</div>
-          <div class="nav-group-subtitle">카테고리 관리</div>
-          <button type="button" class="nav-link nav-link-sub" data-route="categories/place">
-            숙소시설관리
-          </button>
-          <button type="button" class="nav-link nav-link-sub" data-route="categories/room">
-            객실시설관리
-          </button>
-          <div class="nav-group-subtitle">시설 관리</div>
-          <button type="button" class="nav-link nav-link-sub" data-route="facilities/place">숙소 시설</button>
-          <button type="button" class="nav-link nav-link-sub" data-route="facilities/room">객실 시설</button>
-          <button type="button" class="nav-link" data-route="room-masters">객실유형관리</button>
+        <div class="topbar-r">
+          <div class="lang-box">
+            <span class="lang-label">언어</span>
+            <select class="lang-select" id="lang-select">
+              <option>한국어</option>
+              <option>English</option>
+              <option>中文</option>
+            </select>
+          </div>
+          <button type="button" class="logout-btn" id="btn-logout">로그아웃</button>
         </div>
-        <div class="nav-group">
-          <div class="nav-group-title">화면관리</div>
-          <button type="button" class="nav-link" data-route="main-management">메인관리</button>
-        </div>
-        <div class="nav-group">
-          <div class="nav-group-title">마진관리</div>
-          <button type="button" class="nav-link" data-route="margin-management">마진관리</button>
-        </div>
-      </aside>
-      <main id="main"></main>
+      </header>
+      <div class="app-body">
+        <aside class="sidebar" id="lnb"></aside>
+        <main id="main"></main>
+      </div>
     </div>
     <script src="app.js"></script>
   </body>

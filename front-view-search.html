@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>REF-8 — 검색결과 페이지 데이터 매핑</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+.page { max-width: 1800px; }
+.fv-two-col { display: grid; grid-template-columns: 58% 40%; gap: 28px; align-items: start; }
+
+/* ── 프런트 시뮬레이션 ── */
+.front-sim { border: 1px solid #d0d0c8; border-radius: 8px; overflow: visible; background: #fafaf8; font-family: "Segoe UI", Arial, sans-serif; }
+
+/* Topbar */
+.ft-topbar { background: #1a1f2e; display: flex; align-items: center; padding: 9px 16px; gap: 16px; border-radius: 8px 8px 0 0; }
+.ft-logo { color: #c49a6c; font-weight: 700; font-size: 13px; }
+.ft-logo span { color: #fff; }
+.ft-nav { display: flex; gap: 2px; }
+.ft-nav-btn { color: rgba(255,255,255,.5); font-size: 10px; padding: 4px 10px; border-radius: 3px; border: none; background: none; cursor: pointer; }
+.ft-nav-btn.on { background: rgba(255,255,255,.15); color: #fff; font-weight: 600; }
+.ft-lang { margin-left: auto; display: flex; gap: 4px; }
+.ft-lang-btn { background: rgba(255,255,255,.1); color: rgba(255,255,255,.55); font-size: 9px; padding: 2px 7px; border-radius: 3px; border: none; }
+
+/* 결과 본문 래퍼 */
+.ft-body { padding: 12px 16px; background: #f5f5f2; border-radius: 0 0 8px 8px; }
+.ft-result-title { font-size: 15px; font-weight: 800; color: #1a1f2e; margin-bottom: 2px; }
+.ft-result-sub { font-size: 10px; color: #7c3aed; margin-bottom: 3px; }
+.ft-result-count { font-size: 10px; color: #888; margin-bottom: 10px; }
+.ft-cols { display: flex; gap: 12px; align-items: flex-start; }
+
+/* 좌측 필터 */
+.ft-filter { flex: 0 0 150px; width: 150px; border: 1px solid #ececec; border-radius: 8px; background: #fff; padding: 12px 11px; }
+.ft-filter-group { margin-bottom: 16px; }
+.ft-filter-title { font-size: 10px; font-weight: 700; color: #1a1f2e; margin-bottom: 7px; }
+.ft-radio { display: flex; align-items: center; gap: 5px; font-size: 9px; color: #444; margin-bottom: 5px; }
+.ft-check { display: flex; align-items: center; gap: 5px; font-size: 9px; color: #444; margin-bottom: 5px; }
+.ft-type-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.ft-type-chip { border-radius: 12px; font-size: 8px; padding: 3px 9px; }
+.ft-type-chip.on { background: #1a1f2e; color: #fff; }
+.ft-type-chip.on2 { background: #a68a5b; color: #fff; }
+.ft-type-chip.off { background: #f0f0ec; color: #555; }
+.ft-reset { width: 100%; border: 1px solid #ddd; background: #fff; border-radius: 5px; padding: 6px; font-size: 9px; color: #666; }
+
+/* 상품 카드 */
+.ft-list { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.ft-pc { display: grid; grid-template-columns: 130px 1fr 118px; background: #fff; border-radius: 6px; border: 1px solid #e0e0da; overflow: hidden; position: relative; }
+.ft-pc-thumb { background: linear-gradient(135deg, #c0cad4 0%, #a0aab4 100%); display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666; position: relative; min-height: 150px; }
+.ft-pc-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; background: rgba(255,255,255,.85); border: 1px solid #ccc; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+.ft-pc-content { padding: 10px 12px; border-right: 1px solid #e8e8e2; display: flex; flex-direction: column; gap: 0; }
+.ft-pc-sub { font-size: 9px; color: #555; border: 1px solid #bbb; border-radius: 3px; display: inline-block; padding: 1px 6px; margin-bottom: 5px; }
+.ft-pc-room-name { font-size: 10px; color: #888; margin-bottom: 1px; }
+.ft-pc-product-name { font-size: 12px; font-weight: 700; color: #1a1f2e; margin-bottom: 6px; }
+.ft-pc-info { font-size: 9px; color: #555; line-height: 1.7; margin-bottom: 5px; }
+.ft-pc-chips { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 5px; }
+.ft-pc-chip { background: #f0f0ea; border: 1px solid #ddd; border-radius: 99px; font-size: 9px; color: #444; padding: 1px 7px; }
+.ft-pc-panel { padding: 10px 12px; display: flex; flex-direction: column; }
+.ft-pc-rd-btn { background: #f0f0ea; color: #1a1f2e; border: 1px solid #ccc; border-radius: 4px; font-size: 9px; padding: 5px 0; width: 100%; margin-bottom: 6px; }
+.ft-pc-cancel-free { font-size: 9px; color: #1a6fb8; font-weight: 700; margin-bottom: 5px; }
+.ft-pc-cancel-no { font-size: 9px; color: #e74c3c; font-weight: 700; margin-bottom: 5px; }
+.ft-pc-extra { font-size: 9px; color: #c49a6c; background: #fdf6e9; border-radius: 3px; padding: 3px 7px; margin-bottom: 5px; }
+.ft-pc-member { font-size: 8px; font-weight: 700; color: #888; margin-bottom: 2px; }
+.ft-pc-price { font-size: 13px; font-weight: 700; color: #1a1f2e; }
+.ft-pc-state { font-size: 10px; color: #888; margin-top: auto; }
+
+/* ── 주석 패널 ── */
+.fv-ann { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.fv-ann h3 { font-size: 14px; font-weight: 700; color: #1a1f2e; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e8e8e2; }
+.fv-ann-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #f0f0eb; display: flex; gap: 10px; align-items: flex-start; }
+.fv-ann-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.fv-ann-body { flex: 1; }
+.fv-ann-title { font-size: 13px; font-weight: 700; color: #1a1f2e; margin-bottom: 3px; }
+.fv-ann-desc { font-size: 11px; color: #555; line-height: 1.6; margin-bottom: 2px; }
+.fv-ann-admin { font-size: 10px; color: #444; background: #f0f0ea; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #999; line-height: 1.55; margin-top: 3px; }
+.fv-ann-ls { font-size: 10px; color: #1a1f2e; background: #f0f4ff; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #6366f1; line-height: 1.55; margin-top: 3px; font-family: monospace; }
+.fv-ann-front { font-size: 10px; color: #0e7490; background: #ecfeff; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #0e7490; line-height: 1.55; margin-top: 3px; }
+.fv-ann-rule { font-size: 10px; color: #92400e; background: #fefce8; padding: 3px 8px; border-radius: 3px; border-left: 2px solid #fde68a; line-height: 1.55; margin-top: 3px; }
+
+/* ── 범례 ── */
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; align-items: center; font-size: 11px; color: #666; padding: 8px 14px; background: #fff; border-radius: 6px; border: 1px solid #e8e8e2; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">REF-8 — 검색결과 페이지 데이터 매핑</span>
+  <span class="page-nav-route">front-prototype v0.6 · #/search</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="front-view-mapping.html">← 이전</a>
+    <a class="page-nav-pager" href="front-view-layer.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge">REF-8</span>
+    검색결과 페이지 데이터 매핑
+    <span style="font-size:12px;font-weight:400;color:#888">— 어드민 입력 → localStorage → 프런트 노출 · 기준: front-prototype v0.6 · 2026-07-09 (티켓 검색결과 추가: 정책서 v0.12 · admin v0.7.11 / front v0.8.5 · 2026-07-10)</span>
+  </div>
+
+  <!-- 범례 -->
+  <div class="legend">
+    <span style="font-weight:700;color:#1a1f2e;font-size:11px">범례</span>
+    <div class="legend-item"><div class="legend-dot" style="background:#f0f0ea;border:1px solid #bbb"></div> 어드민 화면 참조</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e8edff;border:1px solid #99a"></div> localStorage 키</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ecfeff;border:1px solid #a5f3fc"></div> 프런트 노출 위치</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fefce8;border:1px solid #fde68a"></div> 비즈니스 규칙</div>
+  </div>
+
+  <!-- 공통 전제 (섹션 전체 적용) -->
+  <div style="background:#fff;border:1px solid #e8e8e2;border-left:3px solid #6366f1;border-radius:6px;padding:12px 16px;margin-bottom:24px;font-size:11px;color:#444;line-height:1.7">
+    <div style="font-weight:700;color:#1a1f2e;margin-bottom:6px">공통 전제 — 이 화면 전체에 적용</div>
+    · <strong>이 화면은 무엇인가요?</strong> 메인·브릿지의 <strong>공용 검색바</strong>에서 [검색]을 누르면(로딩 약 2초) 이동하는 <strong>검색결과 목록</strong>입니다(경로 <code>#/search</code>). 브릿지(REF-2)와 <strong>같은 함수(renderListing)</strong>로 그려지며, 브릿지는 "숙소 1곳 안"의 객실만, 검색결과는 <strong>모든 숙소를 통틀어</strong> 조건에 맞는 객실을 모아 보여 준다는 점이 다릅니다.<br>
+    · <strong>카드 1장 = 객실 1개</strong>입니다. 한 객실에 상품이 여러 개면, 그중 <strong>예약 가능하고 가장 싼 상품 1개</strong>만 골라 카드로 보여 줍니다(최저가 대표). 예약 가능한 상품이 하나도 없는 객실은 목록에서 <strong>빠집니다</strong>.<br>
+    · <strong>localStorage 키(값을 저장해 두는 브라우저 저장소의 이름표)</strong>: 숙소 <code>high1_places_v1</code> · 객실 <code>high1_rooms_v1</code> · 상품 <code>high1_products_v1</code> · 시설 <code>high1_facilities_v2</code> · 침대유형 <code>high1_room_master_bed_type_v1</code> · 객실유형 <code>high1_room_master_room_type_v1</code><br>
+    · <strong>데이터가 오는 두 곳(이원 구조)</strong>: 재고·요금·판매마감은 <strong>객실(S04-INV / room.inventory)</strong>에서, 마진·예약조건(취소·컷오프 등)은 <strong>상품(S06-B / product.inventory)</strong>에서 각각 가져와 합쳐 계산합니다.<br>
+    · <strong>다국어</strong>: 외국인 전용 사이트로 국문(KO)은 쓰지 않습니다. 모든 이름 필드는 <strong>영어(EN, 필수) / 중국어(ZH, 선택)</strong> 두 벌로 저장하며, 중국어가 없으면 영어로 대체 표시합니다.<br>
+    · <span style="color:#92400e">※ 프로토타입 후속 반영: 현재 프런트 프로토타입은 아직 옛 KO/EN 토글 방식이라, 이 문서는 목표형(EN/ZH)으로 표기하고 해당 부분에 안내를 답니다.</span>
+  </div>
+
+  <div class="fv-two-col">
+
+    <!-- ── 프런트 화면 시뮬레이션 ── -->
+    <div>
+      <div class="front-sim">
+
+        <!-- Topbar -->
+        <div class="ft-topbar">
+          <span class="ft-logo">high<span>1</span></span>
+          <div class="ft-nav">
+            <button class="ft-nav-btn on">Hotel</button>
+            <button class="ft-nav-btn">Condo</button>
+          </div>
+          <div class="ft-lang">
+            <button class="ft-lang-btn">KO</button>
+            <button class="ft-lang-btn">EN</button>
+          </div>
+        </div>
+
+        <div class="ft-body">
+
+          <!-- 공용 검색바 ① -->
+          <div style="position:relative;margin-bottom:12px">
+            <div style="background:#1a1f2e;border-radius:10px;padding:12px 16px;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap">
+              <div style="color:#fff;font-size:11px;font-weight:700;padding-bottom:7px">Accommodation</div>
+              <div style="flex:1;min-width:170px">
+                <div style="color:rgba(255,255,255,.6);font-size:8px;margin-bottom:3px">일정 (체크인 → 체크아웃)</div>
+                <div style="background:#fff;border-radius:5px;padding:7px 10px;font-size:10px">📅 2026-07-16 &nbsp;→&nbsp; 2026-07-18</div>
+              </div>
+              <div style="flex:0 0 auto;min-width:120px">
+                <div style="color:rgba(255,255,255,.6);font-size:8px;margin-bottom:3px">인원 · 객실</div>
+                <div style="background:#fff;border-radius:5px;padding:7px 10px;font-size:10px">👥 총 3명 · 1객실 ▾</div>
+              </div>
+              <button style="background:#7c3aed;color:#fff;border:none;border-radius:5px;padding:9px 20px;font-size:10px;font-weight:700">검색</button>
+            </div>
+            <span class="wf-cn" style="position:absolute;top:2px;right:4px">1</span>
+          </div>
+
+          <!-- 결과 헤더 ⑤ -->
+          <div style="position:relative;padding-right:24px">
+            <div class="ft-result-title">검색 결과</div>
+            <div class="ft-result-sub">로그인 회원은 회원 전용가로 예약할 수 있습니다.</div>
+            <div class="ft-result-count">총 2건</div>
+            <span class="wf-cn" style="position:absolute;top:0;right:2px">5</span>
+          </div>
+
+          <div class="ft-cols">
+
+            <!-- 좌측 필터 -->
+            <aside class="ft-filter">
+              <!-- 정렬 ② -->
+              <div class="ft-filter-group" style="position:relative;padding-right:22px">
+                <div class="ft-filter-title">정렬</div>
+                <label class="ft-radio"><input type="radio" checked> 낮은 가격순</label>
+                <label class="ft-radio"><input type="radio"> 높은 가격순</label>
+                <span class="wf-cn" style="position:absolute;top:0;right:0">2</span>
+              </div>
+              <!-- 숙소 ③ -->
+              <div class="ft-filter-group" style="position:relative;padding-right:22px">
+                <div class="ft-filter-title">숙소</div>
+                <label class="ft-check"><input type="checkbox" checked> 전체</label>
+                <label class="ft-check"><input type="checkbox"> 그랜드 호텔 컨벤션타워</label>
+                <label class="ft-check"><input type="checkbox"> 스키 인 리조트</label>
+                <span class="wf-cn" style="position:absolute;top:0;right:0">3</span>
+              </div>
+              <!-- 룸타입 ④ -->
+              <div class="ft-filter-group" style="position:relative;padding-right:22px">
+                <div class="ft-filter-title">룸타입</div>
+                <div class="ft-type-chips">
+                  <span class="ft-type-chip on">전체</span>
+                  <span class="ft-type-chip off">스탠다드</span>
+                  <span class="ft-type-chip off">슈페리어</span>
+                </div>
+                <span class="wf-cn" style="position:absolute;top:0;right:0">4</span>
+              </div>
+              <button class="ft-reset">초기화</button>
+            </aside>
+
+            <!-- 상품 카드 목록 -->
+            <div class="ft-list">
+
+              <!-- 카드 1 — 무료취소 가능, 예약가능(ok) -->
+              <div class="ft-pc">
+                <!-- 이미지 -->
+                <div class="ft-pc-thumb">
+                  <span>이미지</span>
+                  <div class="ft-pc-arrow" style="left:4px">‹</div>
+                  <div class="ft-pc-arrow" style="right:4px">›</div>
+                </div>
+                <!-- 정보 영역 -->
+                <div class="ft-pc-content">
+                  <div>
+                    <span class="ft-pc-sub">그랜드 호텔 컨벤션타워</span>
+                    <span class="wf-cn" style="margin-left:2px">6</span>
+                  </div>
+                  <div class="ft-pc-room-name">베스트슬립 슈페리어 더블베드</div>
+                  <div style="display:flex;align-items:center;gap:4px">
+                    <div class="ft-pc-product-name" style="margin-bottom:0">디럭스 더블 (조식 포함)</div>
+                    <span class="wf-cn">7</span>
+                  </div>
+                  <div style="margin-top:6px"></div>
+                  <div style="display:flex;align-items:flex-start;gap:4px">
+                    <div class="ft-pc-info" style="margin-bottom:0">
+                      📐 객실크기 38㎡<br>
+                      🛏 침대 더블베드 1개, 트윈베드 1개<br>
+                      👥 인원 기준 2명 / 최대 4명
+                    </div>
+                    <span class="wf-cn">8</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+                    <div class="ft-pc-chips" style="margin-bottom:0">
+                      <span class="ft-pc-chip">실내와이파이</span>
+                      <span class="ft-pc-chip">금연객실</span>
+                      <span class="ft-pc-chip">벽걸이TV</span>
+                    </div>
+                    <span class="wf-cn">9</span>
+                  </div>
+                  <div style="margin-top:5px"></div>
+                  <div style="display:flex;align-items:flex-start;gap:4px">
+                    <div class="ft-pc-extra" style="margin-bottom:0;flex:1">⚠ 인원추가요금이 발생할 수 있습니다.</div>
+                    <span class="wf-cn" style="flex-shrink:0">11</span>
+                  </div>
+                </div>
+                <!-- 가격 패널 -->
+                <div class="ft-pc-panel">
+                  <button class="ft-pc-rd-btn">Room Detail →</button>
+                  <div style="display:flex;align-items:center;gap:4px">
+                    <div class="ft-pc-cancel-free" style="margin-bottom:0">2026-07-13 23:59까지 무료취소 가능</div>
+                    <span class="wf-cn">10</span>
+                  </div>
+                  <div class="ft-pc-member" style="margin-top:6px">MEMBER RATE / 회원가</div>
+                  <div style="display:flex;align-items:center;gap:4px">
+                    <div class="ft-pc-price">₩418,000</div>
+                    <span class="wf-cn">12</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 카드 2 — 취소/환불불가 -->
+              <div class="ft-pc">
+                <div class="ft-pc-thumb">
+                  <span>이미지</span>
+                  <div class="ft-pc-arrow" style="left:4px">‹</div>
+                  <div class="ft-pc-arrow" style="right:4px">›</div>
+                </div>
+                <div class="ft-pc-content">
+                  <div><span class="ft-pc-sub">스키 인 리조트</span></div>
+                  <div class="ft-pc-room-name">스탠다드 트윈룸</div>
+                  <div class="ft-pc-product-name">스탠다드 트윈 (룸만)</div>
+                  <div style="margin-top:6px"></div>
+                  <div class="ft-pc-info">
+                    📐 객실크기 26㎡<br>
+                    🛏 침대 트윈베드 2개<br>
+                    👥 인원 기준 2명 / 최대 2명
+                  </div>
+                  <div class="ft-pc-chips">
+                    <span class="ft-pc-chip">암막커튼</span>
+                    <span class="ft-pc-chip">비데</span>
+                    <span class="ft-pc-chip">금연객실</span>
+                  </div>
+                </div>
+                <div class="ft-pc-panel">
+                  <button class="ft-pc-rd-btn">Room Detail →</button>
+                  <div class="ft-pc-cancel-no">취소 및 환불불가</div>
+                  <div class="ft-pc-member" style="margin-top:6px">MEMBER RATE / 회원가</div>
+                  <div class="ft-pc-price">₩256,000</div>
+                </div>
+              </div>
+
+            </div><!-- /ft-list -->
+          </div><!-- /ft-cols -->
+
+        </div><!-- /ft-body -->
+      </div><!-- /front-sim -->
+    </div>
+
+    <!-- ── 주석 패널 ── -->
+    <div class="fv-ann">
+      <h3>검색결과 페이지 주석 (callout ①~⑫)</h3>
+
+      <div class="fv-ann-item">
+        <div class="cn">1</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">공용 검색바 — 일정(듀얼 캘린더) + 인원·객실</div>
+          <div class="fv-ann-desc">메인·브릿지와 <strong>똑같이 쓰는 공용 검색바</strong>입니다. 결과 화면 위쪽에도 그대로 있어 조건을 바꿔 다시 검색할 수 있습니다.<br>· 일정: 두 달치 달력 2개가 함께 열려 체크인·체크아웃을 자유롭게 고릅니다(1박 고정 아님).<br>· 인원·객실: 객실을 추가/삭제하고 객실마다 성인·아동 수를 정합니다(1객실 최대 8명, 최대 5객실).<br>· [검색]을 누르면 로딩(약 2초) 후 결과를 다시 계산합니다.</div>
+          <div class="fv-ann-admin">재고·요금 = S04-INV(객실) / 마진·예약조건 = S06-B(상품)</div>
+          <div class="fv-ann-ls">
+            재고·요금·마감: high1_rooms_v1[].inventory[YYYY-MM-DD].{price, avlb_cnt, closed}<br>
+            예약조건·마진: high1_products_v1[].inventory[YYYY-MM-DD].{checkin_allowed, cutoff_days_before_checkin, margin_type, margin_value}
+          </div>
+          <div class="fv-ann-front">검색바(renderSearchBar) → 검색 시 commitSearch → 로딩 2초 → 결과 목록 재계산</div>
+          <div class="fv-ann-rule">
+            각 상품 예약 가능 판단 순서(evaluateProductForStay): need_dates → 판매기간(sale_out) → 투숙가능기간(no_inv) → <strong>체크인 허용(closed)</strong> → 컷오프(cutoff) → <strong>재고(soldout · 잔여재고 AVLB_RM_CNT ≤ 0)</strong> → ok<br>
+            재고 3값: AVLB_RM_CNT(잔여 · sold out 기준) / OPER_RM_CNT(총 운영) / RSV_CNT(예약된 수)
+          </div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">2</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">좌측 필터 — 정렬</div>
+          <div class="fv-ann-desc">결과를 <strong>낮은 가격순 / 높은 가격순</strong>으로 다시 줄 세웁니다. 기본값은 낮은 가격순입니다. 정렬 기준 가격은 각 카드의 <strong>회원가(박 합산 판매가)</strong>입니다.</div>
+          <div class="fv-ann-front">화면 안에서만 정렬(별도 저장·API 호출 없음). 검색결과 화면 전용(브릿지에는 정렬·숙소 필터 없이 룸타입 필터만)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">3</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">좌측 필터 — 숙소</div>
+          <div class="fv-ann-desc">결과에 나온 <strong>숙소들만</strong> 체크박스로 보여 줍니다(결과에 없는 숙소는 항목 자체가 안 나옴). "전체"를 켜면 모두 표시, 개별 숙소를 체크하면 그 숙소만 골라 봅니다(여러 개 동시 선택 가능).</div>
+          <div class="fv-ann-admin">어드민 S02-1 Step1 · 숙소명</div>
+          <div class="fv-ann-ls">high1_places_v1[].place_name_en/_zh (결과에 포함된 숙소만 자동 수집)</div>
+          <div class="fv-ann-front">좌측 필터 "숙소" 체크박스 목록</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">4</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">좌측 필터 — 룸타입</div>
+          <div class="fv-ann-desc">결과에 나온 <strong>객실유형(룸타입)만</strong> 알약 버튼으로 보여 줍니다. "전체" 또는 개별 룸타입을 눌러 골라 봅니다(여러 개 동시 선택 가능).</div>
+          <div class="fv-ann-admin">어드민 S09 객실유형관리 · 객실유형 마스터</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].room_type_id → high1_room_master_room_type_v1[].name</div>
+          <div class="fv-ann-front">좌측 필터 "룸타입" 토글 버튼 (전체 / 개별 룸타입)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">5</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">결과 헤더 — 제목 · 회원가 안내 · 총 건수 (+ 수용 필터)</div>
+          <div class="fv-ann-desc">"검색 결과" 제목, "로그인 회원은 회원 전용가로 예약할 수 있습니다" 안내, 그리고 필터까지 적용된 <strong>총 건수(총 N건)</strong>를 표시합니다.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 최대인원(max_occupancy)</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].max_occupancy · high1_rooms_v1[].visibility · high1_places_v1[].visibility</div>
+          <div class="fv-ann-front">결과 목록 위 헤더(제목/안내/총 건수)</div>
+          <div class="fv-ann-rule">
+            <strong>수용 필터</strong>: 요청 인원(요청 객실 중 인원이 가장 많은 객실 = reqMax)이 객실 최대인원보다 크면 <strong>목록에서 제외</strong> → 즉 reqMax ≤ max_occupancy 인 객실만 노출.<br>
+            그리고 <strong>노출 조건</strong>: 객실 visibility ≠ HIDE, 소속 숙소 visibility ≠ HIDE, 예약 가능(ok) 상품이 1개 이상 있어야 목록에 나옵니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">6</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">숙소명 뱃지</div>
+          <div class="fv-ann-desc">카드 맨 위에 이 객실이 속한 <strong>숙소명(place_name)</strong>을 작은 뱃지로 표시합니다. 검색결과는 여러 숙소가 섞여 나오므로, 어느 숙소인지 바로 알 수 있게 뱃지가 특히 중요합니다.</div>
+          <div class="fv-ann-admin">어드민 S02-1 Step1 · 숙소명</div>
+          <div class="fv-ann-ls">high1_places_v1[].place_name_en/_zh</div>
+          <div class="fv-ann-front">카드 맨 위 뱃지 텍스트 = 숙소명</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">7</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">객실명 + 상품명</div>
+          <div class="fv-ann-desc">객실명(작게)과 상품명(크고 굵게)을 2줄로 표시합니다. 카드 1장은 한 객실을 나타내며, 상품명은 그 객실의 <strong>최저가 예약가능 상품</strong> 이름입니다.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실명 / S06 상품 등록 · 상품명</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].room_name_en/_zh · high1_products_v1[].name_en/_zh</div>
+          <div class="fv-ann-front">카드 1행(객실명 — 연한 색) / 2행(상품명 — 굵게)</div>
+          <div class="fv-ann-rule">상품유형은 ROOM_ONLY(객실만) 하나로 운영합니다. (PACKAGE 없음)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">8</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">정보 라인 — 크기 · 침대 · 인원</div>
+          <div class="fv-ann-desc">📐 객실크기(㎡) · 🛏 침대("{침대유형} {개수}개" 나열) · 👥 인원(기준/최대)을 3줄로 표시합니다.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 객실크기 / 침대유형·개수 / 기준인원 / 최대인원</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].room_size_sqm · high1_rooms_v1[].bed_rows[]{bed_type_id, count} → high1_room_master_bed_type_v1[].name_en/_zh · standard_occupancy · max_occupancy</div>
+          <div class="fv-ann-front">카드 정보 3줄: "📐 N㎡" / "🛏 {유형} {N}개" / "👥 기준 N명 / 최대 N명"</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">9</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">객실 대표 시설 칩 (ROOM)</div>
+          <div class="fv-ann-desc">객실에 지정한 대표 시설을 칩으로 나열합니다. 숙소 전체 시설(PLACE 도메인)과 별개로, 객실별 시설(ROOM 도메인)에서 대표로 고른 항목입니다.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 시설 선택 (ROOM 도메인, 대표 설정)</div>
+          <div class="fv-ann-ls">high1_rooms_v1[].featured_facility_ids → high1_facilities_v2[].name_en/_zh (ROOM 도메인)</div>
+          <div class="fv-ann-front">카드 시설 칩 행</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">10</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">취소정책 표시 (2가지 상태)</div>
+          <div class="fv-ann-desc">상품의 취소 정책에 따라 2가지로만 표시합니다.</div>
+          <div class="fv-ann-admin">어드민 S06-A 취소정책 → cancel_policy_type / cancel_free_days_before</div>
+          <div class="fv-ann-ls">high1_products_v1[].cancel_policy_type · high1_products_v1[].cancel_free_days_before</div>
+          <div class="fv-ann-front">
+            ① FREE_N_DAYS(무료취소 N일 전): 오늘 &lt; (체크인 − N)일 → "{체크인 − N − 1}일 23:59까지 무료취소 가능" (<strong style="color:#1a6fb8">파란색 볼드</strong>)<br>
+            ② NON_REFUNDABLE(환불불가) 또는 무료취소 기간 지남 → "취소 및 환불불가" (<strong style="color:#e74c3c">빨간색 볼드</strong>)
+          </div>
+          <div class="fv-ann-rule">cancelSummaryLine() 함수가 판단. 카드 가격 패널에 표시됩니다.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">11</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">인원추가요금 안내 (조건부)</div>
+          <div class="fv-ann-desc">검색한 인원(요청 객실 중 최대 인원 = reqMax)이 객실 <strong>기준 인원</strong>보다 많을 때만 "인원추가요금이 발생할 수 있습니다"를 표시합니다. 기준 인원 이하이면 나오지 않습니다.</div>
+          <div class="fv-ann-admin">어드민 S03 객실 등록 · 기준인원(standard_occupancy)</div>
+          <div class="fv-ann-ls">조건: reqMax &gt; high1_rooms_v1[].standard_occupancy (단, ⑤ 수용 필터를 통과해 reqMax ≤ max_occupancy 인 객실만 카드로 나옴)</div>
+          <div class="fv-ann-front">카드 안내 문구 (조건 충족 시에만 노출)</div>
+          <div class="fv-ann-rule">실제 추가요금 정책·금액은 상품 카드가 아니라 상세/정책 레이어에서 안내합니다. (숙소 단위 · REF-3 소관)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">12</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">판매가 — MEMBER RATE / 회원가</div>
+          <div class="fv-ann-desc">체크인~체크아웃 각 박의 판매가를 더한 합계입니다. 예약 가능(ok)일 때만 금액이 나오고, 그 외에는 상태 메시지(판매 기간 외·예약마감·컷오프 등)가 나옵니다. (검색결과 목록에는 애초에 예약 가능 상품만 올라오므로 대부분 금액이 표시됩니다.)</div>
+          <div class="fv-ann-admin">입금가(원가) = S04-INV(객실) · 마진 = S06-B(상품)</div>
+          <div class="fv-ann-ls">판매가 = high1_rooms_v1[].inventory[날짜].price(입금가) + 마진(high1_products_v1[].inventory[날짜].margin_type/value)</div>
+          <div class="fv-ann-front">ok → "MEMBER RATE / 회원가 + ₩금액" / 그 외 → 상태 메시지</div>
+          <div class="fv-ann-rule">판매가 = 입금가 + 마진, 소수점 버림(floor). computeSellPriceFront() 함수. 고객에게는 입금가(원가)를 노출하지 않습니다.</div>
+        </div>
+      </div>
+
+    </div><!-- /fv-ann -->
+  </div><!-- /fv-two-col -->
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- ══ 티켓 검색결과 매핑 (숙소 검색결과와 동일 UI 재사용) ══════════ -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+
+  <div class="sec-title" style="margin-top:48px">
+    <span class="sec-badge" style="background:#7c3aed">REF-8 · 티켓</span>
+    티켓 검색결과 페이지 데이터 매핑
+    <span style="font-size:12px;font-weight:400;color:#888">— 어드민 입력 → localStorage → 프런트 노출 · 경로 <code>#/ticket/search</code></span>
+  </div>
+
+  <!-- 티켓 공통 전제 (티켓 섹션 전체 적용) -->
+  <div style="background:#fff;border:1px solid #e8e8e2;border-left:3px solid #7c3aed;border-radius:6px;padding:12px 16px;margin-bottom:24px;font-size:11px;color:#444;line-height:1.7">
+    <div style="font-weight:700;color:#1a1f2e;margin-bottom:6px">티켓 공통 전제 — 티켓 검색결과 화면 전체에 적용 · 기준: 정책서 v0.12 §13</div>
+    · <strong>이 화면은 무엇인가요?</strong> 공용 검색바를 <strong>Ticket(티켓) 모드</strong>로 바꾼 뒤 [검색]을 누르면 이동하는 <strong>티켓 검색결과 목록</strong>입니다(경로 <code>#/ticket/search</code>). <strong>숙소 검색결과와 똑같은 UI(좌측 필터 + 상품 카드)를 그대로 재사용</strong>합니다. 다른 점은 검색바가 "일정·인원"이 아니라 <strong>"사용일 하루"</strong>를 고른다는 것과, 카드가 객실이 아니라 <strong>티켓 상품</strong>이라는 점입니다.<br>
+    · <strong>카드 1장 = 티켓 상품 1개</strong>입니다(숙소는 카드 1장 = 객실 1개였습니다). 상품 안에 성인·아동 같은 여러 옵션(레벨)이 있으면, 카드에는 옵션별 가격을 모두 보여 주고 <strong>가장 싼 옵션 가격을 "최저가"</strong>로 대표 표시합니다.<br>
+    · <strong>localStorage 키(값을 저장해 두는 브라우저 저장소의 이름표)</strong>: 티켓 상품 <code>high1_ticket_products_v1</code> · 쿠폰 스펙(옵션·가격) <code>high1_coupon_specs_v1</code> · 카테고리 <code>high1_ticket_categories_v1</code> · 티켓 마진 <code>high1_ticket_margin_master_v1</code><br>
+    · <strong>노출 조건(4가지 모두 충족해야 카드가 나옵니다 · §13.1)</strong>: ① 상품 노출 ON(visibility ≠ N) AND ② 연결된 쿠폰 스펙 토글 ON(active) AND ③ 오늘이 판매기간(sale_start_date ~ sale_end_date) 안 AND ④ 검색한 <strong>사용일이 사용기간(use_start_date ~ use_end_date) 안</strong>. 하나라도 어긋나면 목록에서 빠집니다.<br>
+    · <strong>콘텐츠가 오는 두 곳(소유 이원 구조 · §13 / 정책서 콘텐츠 소유 재정의)</strong>: <strong>썸네일(카드 이미지)은 상품(S14)</strong>이 가지고, <strong>상세 소개·이용안내·취소환불 안내는 카테고리(S17)</strong>가 가집니다. 검색결과 카드는 <strong>썸네일만</strong> 사용하고, 상세·안내는 [상세보기] 모달에서 카테고리 것을 불러옵니다.<br>
+    · <strong>다국어</strong>: 외국인 전용 사이트로 국문(KO)은 쓰지 않습니다. 이름·안내는 <strong>영어(EN, 필수) / 중국어(ZH, 선택)</strong>로 저장하며, 중국어가 없으면 영어로 대체합니다.<br>
+    · <span style="color:#92400e">※ 프로토타입 후속 반영: 현재 프런트 프로토타입은 아직 옛 KO/EN 토글 방식이라, 이 문서는 목표형(EN/ZH)으로 표기합니다. (기준: admin v0.7.11 / front v0.8.5)</span>
+  </div>
+
+  <div class="fv-two-col">
+
+    <!-- ── 프런트 화면 시뮬레이션 (티켓) ── -->
+    <div>
+      <div class="front-sim">
+
+        <!-- Topbar -->
+        <div class="ft-topbar">
+          <span class="ft-logo">high<span>1</span></span>
+          <div class="ft-nav">
+            <button class="ft-nav-btn">Hotel</button>
+            <button class="ft-nav-btn">Condo</button>
+            <button class="ft-nav-btn on">Ticket</button>
+          </div>
+          <div class="ft-lang">
+            <button class="ft-lang-btn">KO</button>
+            <button class="ft-lang-btn">EN</button>
+          </div>
+        </div>
+
+        <div class="ft-body">
+
+          <!-- 티켓 검색바 T1 -->
+          <div style="position:relative;margin-bottom:12px">
+            <div style="background:#1a1f2e;border-radius:10px;padding:12px 16px;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap">
+              <div style="color:#fff;font-size:11px;font-weight:700;padding-bottom:7px">Ticket</div>
+              <div style="flex:1;min-width:170px">
+                <div style="color:rgba(255,255,255,.6);font-size:8px;margin-bottom:3px">사용일 (티켓을 쓸 하루)</div>
+                <div style="background:#fff;border-radius:5px;padding:7px 10px;font-size:10px">📅 2026-07-17</div>
+              </div>
+              <button style="background:#7c3aed;color:#fff;border:none;border-radius:5px;padding:9px 20px;font-size:10px;font-weight:700">검색</button>
+            </div>
+            <span class="wf-cn" style="position:absolute;top:2px;right:4px">T1</span>
+          </div>
+
+          <!-- 결과 헤더 T4 -->
+          <div style="position:relative;padding-right:24px">
+            <div class="ft-result-title">검색 결과</div>
+            <div class="ft-result-sub">사용일 2026-07-17 기준 · 그날 사용 가능한 판매중 티켓</div>
+            <div class="ft-result-count">총 2건</div>
+            <span class="wf-cn" style="position:absolute;top:0;right:2px">T4</span>
+          </div>
+
+          <div class="ft-cols">
+
+            <!-- 좌측 필터 -->
+            <aside class="ft-filter">
+              <!-- 정렬 T2 -->
+              <div class="ft-filter-group" style="position:relative;padding-right:22px">
+                <div class="ft-filter-title">정렬</div>
+                <label class="ft-radio"><input type="radio" checked> 낮은 가격순</label>
+                <label class="ft-radio"><input type="radio"> 높은 가격순</label>
+                <span class="wf-cn" style="position:absolute;top:0;right:0">T2</span>
+              </div>
+              <!-- 카테고리 T3 -->
+              <div class="ft-filter-group" style="position:relative;padding-right:22px">
+                <div class="ft-filter-title">카테고리</div>
+                <label class="ft-check"><input type="checkbox" checked> 전체</label>
+                <label class="ft-check"><input type="checkbox"> 워터파크</label>
+                <label class="ft-check"><input type="checkbox"> 스키</label>
+                <label class="ft-check"><input type="checkbox"> 곤돌라</label>
+                <span class="wf-cn" style="position:absolute;top:0;right:0">T3</span>
+              </div>
+              <button class="ft-reset">초기화</button>
+            </aside>
+
+            <!-- 티켓 카드 목록 -->
+            <div class="ft-list">
+
+              <!-- 카드 1 — 성인·아동, 오픈형 -->
+              <div class="ft-pc">
+                <!-- 썸네일 (상품 소유) -->
+                <div class="ft-pc-thumb">
+                  <span>이미지</span>
+                  <div class="ft-pc-arrow" style="left:4px">‹</div>
+                  <div class="ft-pc-arrow" style="right:4px">›</div>
+                  <span class="wf-cn" style="position:absolute;top:4px;left:4px">T5</span>
+                </div>
+                <!-- 정보 영역 -->
+                <div class="ft-pc-content">
+                  <div>
+                    <span class="ft-pc-sub">Water Park</span>
+                    <span class="wf-cn" style="margin-left:2px">T6</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:4px">
+                    <div class="ft-pc-product-name" style="margin-bottom:0">Water World Day Pass</div>
+                    <span class="wf-cn">T7</span>
+                  </div>
+                  <div style="margin-top:6px"></div>
+                  <div style="display:flex;align-items:flex-start;gap:4px">
+                    <div class="ft-pc-info" style="margin-bottom:0">🗓 사용기간 2026-07-01 ~ 2026-08-31</div>
+                    <span class="wf-cn">T8</span>
+                  </div>
+                  <div style="display:flex;align-items:flex-start;gap:4px">
+                    <div class="ft-pc-info" style="margin-bottom:0">👥 성인·아동 예약가능</div>
+                    <span class="wf-cn">T9</span>
+                  </div>
+                  <div style="display:flex;align-items:flex-start;gap:4px">
+                    <div class="ft-pc-info" style="margin-bottom:0">👤 성인 ₩69,000<br>👤 아동 ₩55,000</div>
+                    <span class="wf-cn">T10</span>
+                  </div>
+                  <div style="margin-top:5px"></div>
+                  <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+                    <div class="ft-pc-chips" style="margin-bottom:0">
+                      <span class="ft-pc-chip">오픈형 · 사용기간 내 자유이용</span>
+                    </div>
+                    <span class="wf-cn">T11</span>
+                  </div>
+                </div>
+                <!-- 가격 패널 -->
+                <div class="ft-pc-panel">
+                  <div style="display:flex;align-items:center;gap:4px">
+                    <button class="ft-pc-rd-btn" style="margin-bottom:0">상세보기 →</button>
+                    <span class="wf-cn">T12</span>
+                  </div>
+                  <div style="margin-top:6px"></div>
+                  <div style="display:flex;align-items:center;gap:4px">
+                    <div class="ft-pc-cancel-free" style="margin-bottom:0">사용종료일 이전 무료취소</div>
+                    <span class="wf-cn">T13</span>
+                  </div>
+                  <div class="ft-pc-member" style="margin-top:6px">FROM / 최저가</div>
+                  <div style="display:flex;align-items:center;gap:4px">
+                    <div class="ft-pc-price">₩55,000</div>
+                    <span class="wf-cn">T14</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 카드 2 — 곤돌라(성인 전용), 오픈형 -->
+              <div class="ft-pc">
+                <div class="ft-pc-thumb">
+                  <span>이미지</span>
+                  <div class="ft-pc-arrow" style="left:4px">‹</div>
+                  <div class="ft-pc-arrow" style="right:4px">›</div>
+                </div>
+                <div class="ft-pc-content">
+                  <div><span class="ft-pc-sub">Gondola</span></div>
+                  <div class="ft-pc-product-name">Gondola Round Trip</div>
+                  <div style="margin-top:6px"></div>
+                  <div class="ft-pc-info">🗓 사용기간 2026-07-01 ~ 2026-12-31</div>
+                  <div class="ft-pc-info">👥 성인 예약가능 <span style="color:#c49a6c;font-weight:700">(성인 전용)</span></div>
+                  <div class="ft-pc-info">👤 성인 ₩24,000</div>
+                  <div class="ft-pc-chips">
+                    <span class="ft-pc-chip">오픈형 · 사용기간 내 자유이용</span>
+                  </div>
+                </div>
+                <div class="ft-pc-panel">
+                  <button class="ft-pc-rd-btn">상세보기 →</button>
+                  <div class="ft-pc-cancel-free">사용종료일 이전 무료취소</div>
+                  <div class="ft-pc-member" style="margin-top:6px">FROM / 최저가</div>
+                  <div class="ft-pc-price">₩24,000</div>
+                </div>
+              </div>
+
+            </div><!-- /ft-list -->
+          </div><!-- /ft-cols -->
+
+        </div><!-- /ft-body -->
+      </div><!-- /front-sim -->
+    </div>
+
+    <!-- ── 주석 패널 (티켓) ── -->
+    <div class="fv-ann">
+      <h3>티켓 검색결과 주석 (callout T1~T14)</h3>
+
+      <div class="fv-ann-item">
+        <div class="cn">T1</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">공용 검색바 — 티켓 모드(사용일 하루)</div>
+          <div class="fv-ann-desc">숙소와 똑같은 공용 검색바를 <strong>Ticket 모드</strong>로 바꾼 모습입니다. 숙소는 "일정(체크인·체크아웃)+인원"을 고르지만, 티켓은 <strong>사용일(티켓을 쓸 하루)</strong> 하나만 고릅니다.<br>· <strong>사용일 기본값 = 오늘 +7일</strong>(§13.1). 처음 들어오면 자동으로 오늘로부터 7일 뒤 날짜가 들어가 있습니다.<br>· 고객이 날짜를 바꾸고 [검색]을 누르면 그날 기준으로 목록을 다시 계산합니다.</div>
+          <div class="fv-ann-front">검색바(renderSearchBar, searchDomain="ticket") → 검색 시 로딩 → 결과(#/ticket/search, renderTicketSearch)에서 사용일 기준 재계산</div>
+          <div class="fv-ann-rule">사용일 기본값은 <code>addCalendarDaysYmd(오늘, 7)</code>로 계산합니다. (정책서 v0.12 §13.1)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T2</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">좌측 필터 — 정렬</div>
+          <div class="fv-ann-desc">결과를 <strong>낮은 가격순 / 높은 가격순</strong>으로 다시 줄 세웁니다. 기본값은 낮은 가격순입니다. 정렬 기준 가격은 각 카드의 <strong>최저가(가장 싼 옵션 판매가)</strong>입니다.</div>
+          <div class="fv-ann-front">화면 안에서만 정렬(별도 저장·API 호출 없음). 숙소 검색결과와 동일한 좌측 필터 구조를 재사용합니다.</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T3</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">좌측 필터 — 카테고리</div>
+          <div class="fv-ann-desc">숙소 검색결과의 "숙소·룸타입" 필터 자리에, 티켓은 <strong>카테고리(1뎁스)</strong> 체크박스가 들어갑니다. "전체"를 켜면 모두, 개별 카테고리를 체크하면 그 카테고리 티켓만 골라 봅니다(여러 개 동시 선택 가능).</div>
+          <div class="fv-ann-admin">어드민 S17 카테고리 관리 · 1뎁스 카테고리명</div>
+          <div class="fv-ann-ls">high1_ticket_categories_v1[].name_en/_zh (parent_id 없는 1뎁스만) · 상품 매칭 키 = high1_ticket_products_v1[].category_1</div>
+          <div class="fv-ann-front">좌측 필터 "카테고리" 체크박스 목록 (tk-cat / tk-cat-all)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T4</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">결과 헤더 — 제목 · 사용일 안내 · 총 건수</div>
+          <div class="fv-ann-desc">"검색 결과" 제목과 함께 <strong>"사용일 {날짜} 기준 · 그날 사용 가능한 판매중 티켓"</strong> 안내, 그리고 필터까지 적용된 <strong>총 건수(총 N건)</strong>를 표시합니다.</div>
+          <div class="fv-ann-front">결과 목록 위 헤더(제목/사용일 안내/총 건수)</div>
+          <div class="fv-ann-rule">
+            <strong>노출 판정 순서</strong>: ticketVisibleNow(상품 노출 ON + 스펙 active + 오늘이 판매기간 안) → ticketUsableOn(사용일이 사용기간 안) → 카테고리 필터 → 정렬. 4가지를 모두 통과한 상품만 목록에 나옵니다. (§13.1)
+          </div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T5</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">썸네일 (상품 소유 · S14)</div>
+          <div class="fv-ann-desc">카드 왼쪽 이미지입니다. <strong>썸네일은 상품(S14)이 가진 이미지</strong>를 씁니다(카테고리 히어로 이미지가 아닙니다). 이미지가 여러 장이면 이전/다음 화살표로 넘길 수 있습니다.</div>
+          <div class="fv-ann-admin">어드민 S14 티켓 상품 등록 · 상품 이미지(썸네일)</div>
+          <div class="fv-ann-ls">high1_ticket_products_v1[].thumb_meta / hero_meta / image_meta (이미지 URL)</div>
+          <div class="fv-ann-front">카드 썸네일(ticketGallery로 이미지 모음 → 이전/다음)</div>
+          <div class="fv-ann-rule">상세 소개·이용안내·취소환불 안내는 <strong>카테고리(S17) 소유</strong>라 카드에는 안 나오고 [상세보기] 모달에서 불러옵니다. 카드는 썸네일만 사용합니다. (정책서 v0.12 콘텐츠 소유 재정의)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T6</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">카테고리 뱃지</div>
+          <div class="fv-ann-desc">카드 맨 위에 이 티켓이 속한 <strong>카테고리</strong>를 작은 뱃지로 표시합니다. 2뎁스(상품유형)가 있으면 "1뎁스 › 2뎁스"(예: Ski › Lift) 형태로 함께 보여 줍니다. 외국인 전용이라 항상 영어(name_en)로 표기합니다.</div>
+          <div class="fv-ann-admin">어드민 S17 카테고리 관리 · 카테고리명(1뎁스/2뎁스)</div>
+          <div class="fv-ann-ls">high1_ticket_products_v1[].category_1 / category_2 → high1_ticket_categories_v1[].name_en</div>
+          <div class="fv-ann-front">카드 맨 위 뱃지 텍스트 = 카테고리(ticketCatEnLabel)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T7</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">상품명</div>
+          <div class="fv-ann-desc">티켓 상품 이름을 크고 굵게 표시합니다. 카드 1장은 티켓 상품 1개를 나타냅니다.</div>
+          <div class="fv-ann-admin">어드민 S14 티켓 상품 등록 · 상품명(EN 필수/ZH 선택)</div>
+          <div class="fv-ann-ls">high1_ticket_products_v1[].name_en/_zh</div>
+          <div class="fv-ann-front">카드 상품명(굵게)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T8</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">사용기간</div>
+          <div class="fv-ann-desc">🗓 이 티켓을 현장에서 쓸 수 있는 기간(시작일 ~ 종료일)입니다. 연결된 쿠폰 스펙에 저장된 값을 그대로 보여 줍니다.</div>
+          <div class="fv-ann-admin">어드민 S13 쿠폰 스펙 · 사용기간(use_start_date / use_end_date)</div>
+          <div class="fv-ann-ls">high1_coupon_specs_v1[].use_start_date · high1_coupon_specs_v1[].use_end_date (spec_coupon_id로 상품과 연결)</div>
+          <div class="fv-ann-front">카드 정보 줄 "🗓 사용기간 {시작} ~ {종료}"</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T9</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">예약 가능 인원 (성인·아동 / 성인 전용)</div>
+          <div class="fv-ann-desc">👥 이 티켓을 예약할 수 있는 대상을 표시합니다. 쿠폰 스펙의 <strong>레벨</strong>로 판단합니다: 레벨 1=성인, 레벨 2=아동.<br>· 성인·아동 옵션이 모두 있으면 "성인·아동 예약가능"<br>· <strong>성인 옵션만 있는 티켓(예: 곤돌라 왕복권)은 "성인 예약가능(성인 전용)"</strong>으로 구분해 표시합니다.</div>
+          <div class="fv-ann-admin">어드민 S13 쿠폰 스펙 · 레벨(level / level_name)</div>
+          <div class="fv-ann-ls">high1_coupon_specs_v1[].level (1=성인 / 2=아동) · level_name</div>
+          <div class="fv-ann-front">카드 정보 줄 "👥 …예약가능" (ticketPaxLabel)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T10</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">레벨별 판매가</div>
+          <div class="fv-ann-desc">👤 성인·아동 등 옵션(레벨)마다 판매가를 한 줄씩 보여 줍니다. 판매가는 <strong>입금가(원가) + 마진</strong>으로 계산하며, 고객에게 입금가는 노출하지 않습니다.</div>
+          <div class="fv-ann-admin">입금가 = S13 쿠폰 스펙 · 판매가(price) / 마진 = S11 티켓 마진(쿠폰ID 단위)</div>
+          <div class="fv-ann-ls">판매가 = high1_coupon_specs_v1[].price(입금가) + 마진(high1_ticket_margin_master_v1[쿠폰ID])</div>
+          <div class="fv-ann-front">카드 옵션 줄 "👤 {레벨} ₩금액" (ticketLevelSell → computeSellPriceFront)</div>
+          <div class="fv-ann-rule">판매가 = 입금가 + 마진, 소수점 버림(floor). 마진 미설정 시 전역 디폴트 30,000원. (정책서 §11)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T11</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">티켓 방식 칩 — 오픈형</div>
+          <div class="fv-ann-desc">이 티켓이 <strong>오픈형(사용기간 안에서 아무 때나 자유이용)</strong>임을 칩으로 표시합니다. 현재는 오픈형 단품 위주로 운영합니다.</div>
+          <div class="fv-ann-admin">어드민 S14 티켓 상품 등록 · 판매 방식(오픈형/날짜지정형)</div>
+          <div class="fv-ann-front">카드 칩 "오픈형 · 사용기간 내 자유이용"</div>
+          <div class="fv-ann-rule">날짜지정형은 선택한 날짜에 판매 한도 &gt; 0이고 커트오프 미경과일 때만 노출됩니다. (정책서 v0.12 §13.2)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T12</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">상세보기 버튼</div>
+          <div class="fv-ann-desc">누르면 <strong>상세보기 모달</strong>이 열립니다. 모달 안의 상세 소개·이용안내·취소환불 안내는 <strong>카테고리(S17)</strong>가 가진 내용을 불러옵니다.</div>
+          <div class="fv-ann-admin">어드민 S17 카테고리 관리 · 상세설명·이용안내·정책 (카테고리 소유)</div>
+          <div class="fv-ann-ls">high1_ticket_categories_v1[].detail_html_en / guide_html_en 등</div>
+          <div class="fv-ann-front">[상세보기] → openTicketModal(상품ID)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T13</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">취소 안내 — 사용종료일 이전 무료취소</div>
+          <div class="fv-ann-desc">오픈형 티켓은 <strong>이용일(사용할 특정 날짜)이 없으므로</strong> 숙소식 "N일 전 무료취소" 대신 <strong>"사용종료일 이전 무료취소"</strong>로 안내합니다.</div>
+          <div class="fv-ann-front">카드 가격 패널의 취소 안내 문구(파란색 볼드)</div>
+          <div class="fv-ann-rule">오픈형 취소 기준: 사용기간 종료일(use_end_date) 전 미사용(SOLD)=전액 환불 / 종료 후=환불 불가 / 사용완료(USED)=환불 불가. (정책서 v0.12 §8.2 오픈형 취소 특례)</div>
+        </div>
+      </div>
+
+      <div class="fv-ann-item">
+        <div class="cn">T14</div>
+        <div class="fv-ann-body">
+          <div class="fv-ann-title">최저가 — FROM / 최저가</div>
+          <div class="fv-ann-desc">카드에 담긴 옵션(레벨) 판매가 중 <strong>가장 싼 값</strong>을 대표 가격으로 보여 줍니다(예: 성인·아동 중 더 싼 아동가). "최저가"임을 함께 표기해 옵션에 따라 가격이 달라질 수 있음을 알립니다.</div>
+          <div class="fv-ann-admin">입금가 = S13 쿠폰 스펙 · 판매가(price) / 마진 = S11 티켓 마진</div>
+          <div class="fv-ann-ls">최저가 = min( 각 레벨 판매가 ) = min( high1_coupon_specs_v1[].price + 마진 )</div>
+          <div class="fv-ann-front">카드 가격 패널 "FROM / 최저가 + ₩금액" (ticketMinPrice)</div>
+        </div>
+      </div>
+
+    </div><!-- /fv-ann (티켓) -->
+  </div><!-- /fv-two-col (티켓) -->
+
+</div><!-- /page -->
+</body>
+</html>

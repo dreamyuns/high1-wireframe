@@ -16,6 +16,14 @@ const STORAGE_BED_TYPES  = "high1_room_master_bed_type_v1";
 const STORAGE_MAIN_HERO     = "high1_main_hero_v1";
 const STORAGE_MAIN_HERO_CFG = "high1_main_hero_cfg_v1";
 const STORAGE_MAIN_SECTION  = "high1_main_section_v1";
+/* 티켓 도메인 (어드민과 공유) */
+const STORAGE_TICKET_CATEGORIES = "high1_ticket_categories_v1";
+const STORAGE_COUPON_SPECS      = "high1_coupon_specs_v1";
+const STORAGE_TICKET_PRODUCTS   = "high1_ticket_products_v1";
+const STORAGE_TICKET_MARGIN     = "high1_ticket_margin_master_v1";
+const STORAGE_TICKET_ORDERS     = "high1_ticket_orders_v1";   // 구매 주문(프런트 쓰기)
+const STORAGE_TICKET_COUPONS    = "high1_coupons_v1";          // 발급 쿠폰(프런트 쓰기)
+const DEFAULT_TICKET_MARGIN_FRONT = { type: "amount", value: "30000" }; // 전역 디폴트 (정책 v0.11 §11)
 
 const PRODUCT_CANCEL_POLICY = {
   FREE_N_DAYS:    "FREE_N_DAYS",
@@ -149,6 +157,10 @@ const uiState = {
   cardImgIdx: {},
   placeLayer: { open: false, placeId: "", tab: "detail" },
   roomDetail: { open: false, productId: "" },
+  searchDomain: "acc",       // acc | ticket (검색바 도메인 토글)
+  ticketUseDate: "",          // 티켓 검색 사용일(하루)
+  ticketDetailTab: "select",  // 티켓 상세 탭
+  ticketQty: {},              // 상세: coupon level별 수량 { level: n }
 };
 
 /* ─── i18n helpers ─── */
@@ -751,6 +763,43 @@ function roomCardHtml(room, placeById, allProducts, L) {
     </div>`;
 }
 
+/* 티켓 추천 섹션 — 대상 상품 (수동/자동) */
+function ticketSectionProducts(s, gmap) {
+  let list = loadTicketProducts().filter((p) => ticketVisibleNow(p, gmap));
+  if (s.ticket_mode === "manual") {
+    const ids = Array.isArray(s.ticket_product_ids) ? s.ticket_product_ids : [];
+    const byId = new Map(list.map((p) => [p.id, p]));
+    return ids.map((id) => byId.get(id)).filter(Boolean); // 지정 순서 유지
+  }
+  const cats = Array.isArray(s.ticket_cats) ? s.ticket_cats : [];
+  if (cats.length) list = list.filter((p) => cats.includes(p.category_1));
+  if (s.ticket_sort === "name") list.sort((a, b) => a.name_en.localeCompare(b.name_en));
+  else list.sort((a, b) => ticketMinPrice(a, gmap) - ticketMinPrice(b, gmap));
+  return list.slice(0, 12);
+}
+/* 티켓 추천 카드 — 숙소 추천 카드(.rec-card)와 동일 규격 */
+function ticketRecCardHtml(p, gmap, L) {
+  const img = ticketImg(p);
+  const thumb = img
+    ? `<img src="${escapeHtml(img)}" alt="" style="width:100%;height:100%;object-fit:cover">`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:12px;background:#f1f1ee">No Image</div>`;
+  const min = ticketMinPrice(p, gmap);
+  const g = gmap.get(p.spec_coupon_id);
+  const cat = ticketCatByKo(p.category_1) || {};
+  const catLabel = ticketCatEnLabel(p);
+  const priceHtml = `<span style="font-size:15px;font-weight:800;color:#1a1f2e">${formatWon(min)} ~</span>`;
+  return `<div class="rec-card js-tkrec-card" data-cat="${escapeHtml(p.category_1)}" data-pid="${escapeHtml(p.id)}" style="flex:0 0 240px;width:240px;border:1px solid #ececec;border-radius:10px;overflow:hidden;background:#fff;display:flex;flex-direction:column;cursor:pointer">
+      <div style="width:100%;aspect-ratio:4/3;background:#f1f1ee">${thumb}</div>
+      <div style="padding:11px 12px 13px;display:flex;flex-direction:column;gap:5px;flex:1">
+        <div style="font-size:11px;color:#8a8a8a">${escapeHtml(catLabel)}</div>
+        <div style="font-size:14px;font-weight:700;color:#222;line-height:1.35;min-height:38px">${escapeHtml(p.name_en)}</div>
+        <div style="font-size:11px;color:#666;display:flex;flex-direction:column;gap:2px"><span>🎫 ${L("오픈형", "Open")}</span><span>👥 ${ticketPaxLabel(g, L)}</span></div>
+        <div style="text-align:right;margin-top:auto;padding-top:6px"><span style="font-size:11px;color:#888">${L("최저", "From")}</span> ${priceHtml}</div>
+        <button class="rec-cta" style="width:100%;margin-top:6px;background:#1a1f2e;color:#fff;border:none;border-radius:6px;padding:9px;font-size:12.5px;font-weight:600;cursor:pointer">${L("예약하기", "Book")}</button>
+      </div>
+    </div>`;
+}
+
 function mainSectionsHtml(app, L, todayStr) {
   const sections = loadJson(STORAGE_MAIN_SECTION, [])
     .filter((s) => sectionOn(s, todayStr))
@@ -760,9 +809,33 @@ function mainSectionsHtml(app, L, todayStr) {
   const placeById = new Map(allPlaces.map((p) => [p.id, p]));
   const allRooms = loadJson(STORAGE_ROOMS, []);
   const allProducts = loadJson(STORAGE_PRODUCTS, []);
+  const gmapT = specGroupsMap();
   if (!uiState.sectionTab) uiState.sectionTab = {};
 
   const blocks = sections.map((s) => {
+    // ── 티켓 전용 섹션 분기 ──
+    if (s.type === "ticket") {
+      const tTitle = L(s.title_ko, s.title_en) || L("추천 티켓", "Recommended Tickets");
+      const tSub = L(s.subtitle_ko, s.subtitle_en);
+      const tProds = ticketSectionProducts(s, gmapT);
+      const tCards = tProds.length
+        ? tProds.map((p) => ticketRecCardHtml(p, gmapT, L)).join("")
+        : `<div style="color:#aaa;font-size:13px;padding:24px 0">${L("표시할 티켓이 없습니다.", "No tickets to show.")}</div>`;
+      const tViewAll = s.viewall_use
+        ? `<a href="#/ticket/search" style="font-size:13px;color:#1a1f2e;font-weight:600;text-decoration:underline">${escapeHtml(L(s.viewall_label_ko, s.viewall_label_en) || L("전체 보기", "View All"))} →</a>`
+        : "";
+      const tSlide = tProds.length > 4;
+      const tArrows = tSlide
+        ? `<button class="rec-arrow rec-prev" data-dir="-1" style="position:absolute;left:-14px;top:38%;z-index:3;width:34px;height:34px;border-radius:50%;border:1px solid #e2e2e2;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12);cursor:pointer;font-size:16px">‹</button><button class="rec-arrow rec-next" data-dir="1" style="position:absolute;right:-14px;top:38%;z-index:3;width:34px;height:34px;border-radius:50%;border:1px solid #e2e2e2;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12);cursor:pointer;font-size:16px">›</button>`
+        : "";
+      return `<section style="max-width:1100px;margin:34px auto 0;padding:0 24px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><h2 style="font-size:20px;font-weight:800;color:#1a1f2e;margin:0">${escapeHtml(tTitle)}</h2>${tSub ? `<div style="font-size:13px;color:#888;margin-top:3px">${escapeHtml(tSub)}</div>` : ""}</div>
+          ${tViewAll}
+        </div>
+        <div style="position:relative;margin-top:12px">${tArrows}<div class="rec-strip" style="display:flex;gap:16px;overflow-x:${tSlide ? "auto" : "hidden"};scroll-behavior:smooth;padding:4px 2px 8px;scrollbar-width:none">${tCards}</div></div>
+      </section>`;
+    }
     const title = L(s.title_ko, s.title_en) || L("추천", "Recommended");
     const subtitle = L(s.subtitle_ko, s.subtitle_en);
     // 탭: 자동 모드 + cat_1depth 2개 이상일 때 카테고리 탭
@@ -823,6 +896,11 @@ function wireMainSections(app) {
   // 예약 확인 → 객실 상세
   app.querySelectorAll(".rec-cta[data-open-product]").forEach((btn) => btn.addEventListener("click", () => {
     openRoomDetail(btn.dataset.openProduct);
+  }));
+  // 티켓 추천 카드 → 해당 카테고리 브릿지
+  app.querySelectorAll(".js-tkrec-card").forEach((c) => c.addEventListener("click", () => {
+    uiState.ticketFocusId = c.dataset.pid;
+    location.hash = "#/ticket/bridge/" + encodeURIComponent(c.dataset.cat);
   }));
 }
 
@@ -928,8 +1006,27 @@ function renderSearchBar(pax, draft, minYmd, L, topMargin) {
   const fieldLabel = (txt) => `<div style="color:rgba(255,255,255,.6);font-size:11px;margin-bottom:4px">${txt}</div>`;
   const calPopover = uiState.calOpen ? calendarPopoverHtml(draft.ci, draft.co, minYmd, L, uiState.lang) : "";
   const paxPopover = uiState.paxOpen ? paxPopoverHtml(pax, L) : "";
+  const isTicket = uiState.searchDomain === "ticket";
+  const domainSel = `<div style="flex:0 0 auto">
+      ${fieldLabel(L("구분", "Domain"))}
+      <select id="domainSel" style="background:#fff;border:none;border-radius:6px;padding:10px 12px;font-size:13px;font-weight:700;cursor:pointer">
+        <option value="acc" ${!isTicket ? "selected" : ""}>Accommodation</option>
+        <option value="ticket" ${isTicket ? "selected" : ""}>Ticket</option>
+      </select>
+    </div>`;
+  if (isTicket) {
+    if (!uiState.ticketUseDate) uiState.ticketUseDate = addCalendarDaysYmd(minYmd, 7) || minYmd; // 사용일 디폴트 = 오늘+7일
+    return `<div style="max-width:1100px;margin:${topMargin};position:relative;z-index:20;background:#1a1f2e;border-radius:12px;padding:18px 26px;display:flex;align-items:flex-end;justify-content:center;gap:22px;flex-wrap:wrap;box-shadow:0 8px 26px rgba(0,0,0,.25)">
+      ${domainSel}
+      <div style="flex:1;min-width:280px;max-width:440px">
+        ${fieldLabel(L("사용일 (하루 선택)", "Usage date (single day)"))}
+        <input type="date" id="tUseDate" min="${minYmd || ""}" value="${escapeHtml(uiState.ticketUseDate || "")}" style="width:100%;background:#fff;border:none;border-radius:6px;padding:10px 14px;font-size:13px;cursor:pointer">
+      </div>
+      <button id="mainSearch" style="background:#7c3aed;color:#fff;border:none;border-radius:6px;padding:12px 30px;font-size:14px;font-weight:600;cursor:pointer">${L("검색", "Search")}</button>
+    </div>`;
+  }
   return `<div style="max-width:1100px;margin:${topMargin};position:relative;z-index:20;background:#1a1f2e;border-radius:12px;padding:18px 26px;display:flex;align-items:flex-end;justify-content:center;gap:22px;flex-wrap:wrap;box-shadow:0 8px 26px rgba(0,0,0,.25)">
-      <div style="color:#fff;font-size:13px;font-weight:700;padding-bottom:9px">Accommodation</div>
+      ${domainSel}
       <div class="cal-wrap" style="position:relative;flex:1;min-width:280px;max-width:440px">
         ${fieldLabel(L("일정 (체크인 → 체크아웃)", "Dates (check-in → check-out)"))}
         <button id="dateBtn" style="width:100%;text-align:left;background:#fff;border:none;border-radius:6px;padding:10px 14px;font-size:13px;cursor:pointer">📅 ${escapeHtml(dateLabel)}</button>
@@ -952,6 +1049,26 @@ function commitSearch(pax, draft) {
 
 function wireSearchBar(app, ctx) {
   const { pax, draft, minYmd, L, rerender, onSearch } = ctx;
+  // 도메인 토글(Accommodation/Ticket) + 티켓 사용일
+  app.querySelector("#domainSel")?.addEventListener("change", (e) => {
+    const toTicket = e.target.value === "ticket";
+    uiState.searchDomain = toTicket ? "ticket" : "acc";
+    uiState.calOpen = false; uiState.paxOpen = false;
+    const onTicketRoute = parseHash().parts[0] === "ticket";
+    // 티켓 선택 시 검색결과로 자동 이동하지 않음 — 검색바만 티켓 모드로 전환(검색 버튼으로만 이동)
+    if (!toTicket && onTicketRoute) { location.hash = "#/"; return; }
+    rerender();
+  });
+  app.querySelector("#tUseDate")?.addEventListener("change", (e) => { uiState.ticketUseDate = e.target.value; });
+  if (uiState.searchDomain === "ticket") {
+    app.querySelector("#mainSearch")?.addEventListener("click", () => {
+      const d = app.querySelector("#tUseDate");
+      uiState.ticketUseDate = d ? d.value : uiState.ticketUseDate;
+      showLoadingOverlay(L("티켓 검색 중…", "Searching tickets…"));
+      setTimeout(() => { hideLoadingOverlay(); location.hash = "#/ticket/search"; render(); }, 400);
+    });
+    return; // 티켓 모드는 날짜/인원 팝오버 배선 불필요
+  }
   app.querySelector("#dateBtn")?.addEventListener("click", () => {
     uiState.calOpen = !uiState.calOpen; uiState.paxOpen = false;
     if (uiState.calOpen) uiState.calMonth = calFirstOfMonth(draft.ci || minYmd);
@@ -1644,6 +1761,607 @@ function renderRoomDetailModal() {
   };
 }
 
+/* ═══════════════════ 티켓 도메인 (프런트) ═══════════════════ */
+function ldJson(k, f) { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : f; } catch { return f; } }
+function loadTicketCategories() { return ldJson(STORAGE_TICKET_CATEGORIES, []); }
+function loadCouponSpecs() { return ldJson(STORAGE_COUPON_SPECS, []); }
+function loadTicketProducts() { return ldJson(STORAGE_TICKET_PRODUCTS, []); }
+function normalizeTicketMarginF(raw) {
+  const r = raw && typeof raw === "object" ? raw : {};
+  if (r.categories || r.overrides) return { categories: r.categories || {}, overrides: r.overrides || {} };
+  return { categories: {}, overrides: { ...r } }; // 레거시 flat → overrides
+}
+function loadTicketMargin() { return normalizeTicketMarginF(ldJson(STORAGE_TICKET_MARGIN, {})); }
+function loadTicketOrders() { return ldJson(STORAGE_TICKET_ORDERS, []); }
+function saveTicketOrders(v) { localStorage.setItem(STORAGE_TICKET_ORDERS, JSON.stringify(v || [])); }
+function loadTicketCoupons() { return ldJson(STORAGE_TICKET_COUPONS, []); }
+function saveTicketCoupons(v) { localStorage.setItem(STORAGE_TICKET_COUPONS, JSON.stringify(v || [])); }
+
+const isMarginEntryF = (e) => e && (e.type === "amount" || e.type === "rate");
+/** 쿠폰ID 적용 마진 (우선순위: 쿠폰ID 개별 > 2뎁스 > 1뎁스 > 전역) — 어드민 getTicketMargin과 동일 (정책 v0.11 §11.3) */
+function getTicketMarginFront(couponId) {
+  const m = loadTicketMargin();
+  const ov = couponId && m.overrides[couponId];
+  if (isMarginEntryF(ov)) return { type: ov.type, value: String(ov.value ?? "") };
+  const g = specGroupsMap().get(couponId);
+  const cat1 = g ? g.category || "" : "", cat2 = g ? g.product_type || "" : "";
+  const k2 = cat1 && cat2 ? `${cat1}>${cat2}` : "";
+  if (k2 && isMarginEntryF(m.categories[k2])) return { type: m.categories[k2].type, value: String(m.categories[k2].value ?? "") };
+  if (cat1 && isMarginEntryF(m.categories[cat1])) return { type: m.categories[cat1].type, value: String(m.categories[cat1].value ?? "") };
+  return { ...DEFAULT_TICKET_MARGIN_FRONT };
+}
+/** 프런트 단독 데모용 티켓 더미 시드 — 어드민 데이터가 없을 때만 주입(어드민과 동일 셋). */
+function svgPh(label, bg) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="384"><rect width="640" height="384" fill="${bg}"/><text x="320" y="205" font-family="sans-serif" font-size="30" fill="#fff" text-anchor="middle">${label}</text></svg>`;
+  return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+function ensureTicketFrontSeed() {
+  if (localStorage.getItem(STORAGE_TICKET_PRODUCTS) || localStorage.getItem(STORAGE_TICKET_CATEGORIES)) return; // 어드민/기존 데이터 보존
+  const T = "2026-07-09T00:00:00.000Z";
+  const ADDR = "265, High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do, Korea";
+  const catC = (label, color, ov) => ({
+    hero_image_meta: [{ data_url: svgPh(label, color) }], overview_en: ov, overview_zh: "",
+    detail_html_en: `<h3>${label}</h3><p>${label} 상세 소개(프로토타입 더미).</p><img src="${svgPh(label + " Detail", color)}" style="max-width:100%;height:auto;display:block;border-radius:8px;margin-top:8px" />`, detail_html_zh: "",
+    guide_html_en: `<ul><li>Show the issued 12-digit coupon barcode at the on-site POS/KIOSK.</li><li>Open ticket — free entry within the valid period.</li><li>One coupon per person.</li></ul>`, guide_html_zh: "",
+    policy_html_en: `<ul><li>Cancellation follows the valid end date — full refund if unused before the end date.</li><li>No refund after on-site use.</li></ul>`, policy_html_zh: "",
+    address_en: ADDR, address_zh: "",
+  });
+  localStorage.setItem(STORAGE_TICKET_CATEGORIES, JSON.stringify([
+    { id: "tc_waterpark", code: "TC-001", name_ko: "워터파크", name_en: "Water Park", name_zh: "水上乐园", parent_id: null, order: 1, ...catC("Water Park", "#38bdf8", "High1 Water World — open-type tickets, free use within the valid period.") },
+    { id: "tc_ski", code: "TC-002", name_ko: "스키", name_en: "Ski", name_zh: "滑雪", parent_id: null, order: 2, hero_image_meta: [{ data_url: svgPh("Ski", "#6366f1") }] },
+    { id: "tc_ski_lift", code: "TC-003", name_ko: "리프트권", name_en: "Lift Pass", name_zh: "缆车票", parent_id: "tc_ski", order: 1, ...catC("Ski Lift Pass", "#6366f1", "High1 ski lift pass. 4-hour / 7-hour / day.") },
+    { id: "tc_ski_rental", code: "TC-004", name_ko: "장비렌탈", name_en: "Equipment Rental", name_zh: "器材租赁", parent_id: "tc_ski", order: 2, ...catC("Ski Equipment Rental", "#8b5cf6", "Ski/board equipment rental.") },
+    { id: "tc_meal", code: "TC-005", name_ko: "식사권", name_en: "Meal Voucher", name_zh: "餐券", parent_id: null, order: 3, ...catC("Meal Voucher", "#f59e0b", "Resort dining meal vouchers.") },
+    { id: "tc_gondola", code: "TC-006", name_ko: "곤돌라", name_en: "Gondola", name_zh: "观光缆车", parent_id: null, order: 4, ...catC("Gondola", "#10b981", "Sightseeing gondola round-trip.") },
+  ]));
+  const WW = { s: "2026-07-10", e: "2026-08-30" }, SKI = { s: "2026-12-01", e: "2027-02-28" };
+  const specs = [];
+  const add = (cid, pass, cat, ptype, base, aPrice, cPrice, use) => specs.push(
+    { id: "s_" + cid + "1", coupon_id: cid, pass_name: pass, category: cat, product_type: ptype, level: 1, level_name: "대인", coupon_name: `${base}(대인)`, price: aPrice, discount_target: "", use_start_date: use.s, use_end_date: use.e, active: true },
+    { id: "s_" + cid + "2", coupon_id: cid, pass_name: pass, category: cat, product_type: ptype, level: 2, level_name: "소인", coupon_name: `${base}(소인)`, price: cPrice, discount_target: "", use_start_date: use.s, use_end_date: use.e, active: true });
+  add("DBO", "OAT_26성수기_얼리_워터월드(플레이스토리)", "워터파크", "", "워터월드 종일권_성수기", 40000, 35000, WW);
+  add("DBR", "OAT_26성수기_얼리_워터월드(티브리지)", "워터파크", "", "워터월드 종일권_성수기", 40000, 35000, WW);
+  add("DBT", "OAT_26성수기_얼리_워터월드(스마트인피니)", "워터파크", "", "워터월드 종일권_성수기", 40000, 35000, WW);
+  add("DBQ", "OAT_26성수기_워터월드_4시간권", "워터파크", "", "워터월드 4시간권", 30000, 26000, WW);
+  add("DBW", "OAT_26성수기_워터월드_7시간권", "워터파크", "", "워터월드 7시간권", 36000, 31000, WW);
+  add("SVC", "OAT_26시즌_스키리프트_4시간권", "스키", "리프트권", "스키 리프트 4시간권", 45000, 34000, SKI);
+  add("SVZ", "OAT_26시즌_스키리프트_7시간권", "스키", "리프트권", "스키 리프트 7시간권", 55000, 40000, SKI);
+  add("SVA", "OAT_26시즌_스키리프트_종일권", "스키", "리프트권", "스키 리프트 종일권", 65000, 48000, SKI);
+  add("RSA", "OAT_26시즌_장비렌탈_4시간권", "스키", "장비렌탈", "스키 장비렌탈 4시간권", 25000, 20000, SKI);
+  add("RSC", "OAT_26시즌_장비렌탈_7시간권", "스키", "장비렌탈", "스키 장비렌탈 7시간권", 30000, 24000, SKI);
+  add("RSF", "OAT_26시즌_장비렌탈_종일권", "스키", "장비렌탈", "스키 장비렌탈 종일권", 38000, 30000, SKI);
+  // 곤돌라 왕복권 — 성인(대인) 전용 티켓 (아동 레벨 없음)
+  specs.push({ id: "s_GDO1", coupon_id: "GDO", pass_name: "OAT_곤돌라_왕복권", category: "곤돌라", product_type: "", level: 1, level_name: "대인", coupon_name: "곤돌라 왕복권(대인)", price: 18000, discount_target: "", use_start_date: "2026-07-01", use_end_date: "2026-12-31", active: true });
+  localStorage.setItem(STORAGE_COUPON_SPECS, JSON.stringify(specs));
+  localStorage.setItem(STORAGE_TICKET_MARGIN, JSON.stringify({
+    categories: {
+      "워터파크": { type: "amount", value: "4000" },
+      "스키>리프트권": { type: "rate", value: "10" },
+      "스키>장비렌탈": { type: "amount", value: "3000" },
+      "곤돌라": { type: "amount", value: "2000" },
+    },
+    overrides: { DBQ: { type: "amount", value: "3000" } },
+  }));
+  const SW = { sale_start_date: "2026-07-01", sale_end_date: "2026-08-25" }, SS = { sale_start_date: "2026-07-01", sale_end_date: "2027-02-20" };
+  // 상품 이미지 = 썸네일만. 히어로·상세는 뎁스(S17) 소유.
+  const pimg = (label, color) => ({ thumb_meta: [{ data_url: svgPh(label, color) }] });
+  const mk = (o) => Object.assign({ id: "p_" + o.product_code, visibility: "Y", date_mode: "open", cancel_policy: [{ base: "3plus", penalty: 0 }, { base: "today", penalty: 100 }], created_at: T, updated_at: T }, o);
+  localStorage.setItem(STORAGE_TICKET_PRODUCTS, JSON.stringify([
+    mk({ product_code: "PR-T0001", name_en: "Water World Day Pass (Peak/Early)", name_zh: "水世界一日通票（旺季/早鸟）", category_1: "워터파크", category_2: "", spec_coupon_id: "DBO", ...SW, cutoff: { n: 1, unit: "day", time: "23:59" }, ...pimg("Water World Day Pass", "#38bdf8") }),
+    mk({ product_code: "PR-T0002", name_en: "Water World 4-Hour Pass", name_zh: "水世界4小时票", category_1: "워터파크", category_2: "", spec_coupon_id: "DBQ", ...SW, cutoff: { n: 0, unit: "hour", time: "23:59" }, ...pimg("Water World 4-Hour", "#0ea5e9") }),
+    mk({ product_code: "PR-T0003", name_en: "Ski Lift Day Pass", name_zh: "滑雪缆车一日券", category_1: "스키", category_2: "리프트권", spec_coupon_id: "SVA", ...SS, cutoff: { n: 1, unit: "day", time: "18:00" }, ...pimg("Ski Lift Day Pass", "#6366f1") }),
+    mk({ product_code: "PR-T0004", name_en: "Ski Equipment Rental (Day)", name_zh: "滑雪装备租赁（全日）", category_1: "스키", category_2: "장비렌탈", spec_coupon_id: "RSF", ...SS, cutoff: { n: 1, unit: "day", time: "18:00" }, ...pimg("Ski Equipment Rental", "#8b5cf6") }),
+    mk({ product_code: "PR-T0005", name_en: "Gondola Round Trip", name_zh: "观光缆车往返", category_1: "곤돌라", category_2: "", spec_coupon_id: "GDO", sale_start_date: "2026-07-01", sale_end_date: "2026-12-31", cutoff: { n: 0, unit: "hour", time: "23:59" }, ...pimg("Gondola Round Trip", "#10b981") }),
+  ]));
+  // 데모 티켓 추천 섹션(메인) — 티켓 섹션이 없을 때만
+  try {
+    const secs = JSON.parse(localStorage.getItem(STORAGE_MAIN_SECTION) || "[]");
+    if (!secs.some((s) => s.type === "ticket")) {
+      secs.push({ id: "sec_ticket_demo", type: "ticket", title_ko: "인기 티켓", title_en: "Popular Tickets", subtitle_ko: "워터파크·스키 추천 상품", subtitle_en: "Water Park & Ski picks", visible: true, viewall_use: true, ticket_mode: "auto", ticket_sort: "price", ticket_cats: [], ticket_product_ids: [], order: 90 });
+      localStorage.setItem(STORAGE_MAIN_SECTION, JSON.stringify(secs));
+    }
+  } catch (e) {}
+}
+
+/** coupon_id별 스펙 묶음 */
+function specGroupsMap() {
+  const map = new Map();
+  loadCouponSpecs().forEach((s) => {
+    if (!map.has(s.coupon_id)) map.set(s.coupon_id, { coupon_id: s.coupon_id, pass_name: s.pass_name, category: s.category, product_type: s.product_type, active: s.active !== false, rows: [] });
+    const g = map.get(s.coupon_id); g.rows.push(s); if (s.active === false) g.active = false;
+  });
+  map.forEach((g) => g.rows.sort((a, b) => (a.level || 0) - (b.level || 0)));
+  return map;
+}
+function ticketTopCats() { return loadTicketCategories().filter((c) => !c.parent_id).sort((a, b) => (a.order || 0) - (b.order || 0)); }
+function ticketCatByKo(ko) { return loadTicketCategories().find((c) => c.name_ko === ko && !c.parent_id); }
+/** 판매기간·노출·스펙 Cascade 기준 노출 여부 (오늘 기준) */
+function ticketVisibleNow(p, gmap) {
+  const g = gmap.get(p.spec_coupon_id); if (!g || !g.active) return false;
+  if (p.visibility === "N") return false;
+  const today = todayKstYmd();
+  if (p.sale_start_date && today < p.sale_start_date) return false;
+  if (p.sale_end_date && today > p.sale_end_date) return false;
+  return true;
+}
+/** 선택 사용일이 상품 사용기간에 포함되는지 (사용일 미선택이면 통과) */
+function ticketUsableOn(p, gmap, date) {
+  if (!date) return true;
+  const g = gmap.get(p.spec_coupon_id); if (!g || !g.rows.length) return false;
+  const r = g.rows[0];
+  return (!r.use_start_date || date >= r.use_start_date) && (!r.use_end_date || date <= r.use_end_date);
+}
+/** 레벨별 판매가 = 입금가 + 쿠폰ID 마진 */
+function ticketLevelSell(spec, margin) { return computeSellPriceFront(spec.price, margin.type, margin.value); }
+function ticketMinPrice(p, gmap) {
+  const g = gmap.get(p.spec_coupon_id); if (!g || !g.rows.length) return 0;
+  const margin = getTicketMarginFront(p.spec_coupon_id);
+  return Math.min(...g.rows.map((r) => ticketLevelSell(r, margin)));
+}
+function ticketImg(p) { const pk = (a) => (a && a[0] && a[0].data_url) || ""; return pk(p.thumb_meta) || pk(p.hero_meta) || pk(p.hero_image_meta) || pk(p.image_meta) || ""; }
+/** 예약 가능 인원 라벨 — 스펙 레벨(1=성인·2=아동)로 판단. 성인 전용 티켓도 있음. */
+function ticketPaxLabel(g, L) {
+  const lv = new Set((g && g.rows ? g.rows : []).map((r) => r.level));
+  const parts = [];
+  if (lv.has(1)) parts.push(L("성인", "Adult"));
+  if (lv.has(2)) parts.push(L("아동", "Child"));
+  return `${parts.join("·") || L("성인", "Adult")} ${L("예약가능", "available")}`;
+}
+function ticketGallery(p) { const a = []; (p.hero_meta || []).forEach((m) => m.data_url && a.push(m.data_url)); (p.thumb_meta || []).forEach((m) => m.data_url && a.push(m.data_url)); (p.image_meta || []).forEach((m) => m.data_url && a.push(m.data_url)); return a.length ? a : ((p.hero_image_meta || []).map((m) => m.data_url).filter(Boolean)); }
+function ticketCatImgFront(c) { return (c && c.hero_image_meta && c.hero_image_meta[0] && c.hero_image_meta[0].data_url) || ""; }
+/** 뎁스 콘텐츠 localized (EN 우선, ko는 en fallback) */
+function catField(c, base) { if (!c) return ""; return (uiState.lang === "en" ? c[base + "_en"] : (c[base + "_en"] || c[base + "_zh"])) || c[base + "_en"] || c[base + "_zh"] || ""; }
+/** 카드 카테고리 뱃지 라벨 — 숙소 카드와 동일하게 항상 영어(name_en) 표기 (외국인 전용) */
+function ticketCatEnLabel(p) {
+  const cats = loadTicketCategories();
+  const c1 = cats.find((c) => !c.parent_id && c.name_ko === p.category_1);
+  const cat1en = (c1 && c1.name_en) || p.category_1 || "";
+  if (!p.category_2) return cat1en;
+  const c2 = cats.find((c) => c.parent_id === (c1 && c1.id) && c.name_ko === p.category_2);
+  return cat1en + " › " + ((c2 && c2.name_en) || p.category_2);
+}
+/** 상품 상세 소개(리치 HTML) — 상세보기 모달용. 상품 소유(S14 탭4) */
+function ticketProductDetail(p) { if (!p) return ""; return (uiState.lang === "en" ? p.detail_html_en : (p.detail_html_en || p.detail_html_zh)) || p.detail_html_en || p.detail_html_zh || ""; }
+
+/** 가로형 canonical 티켓 카드 (숙소 검색결과·브릿지 카드와 유사) */
+function ticketCardHtml(p, gmap, L) {
+  const g = gmap.get(p.spec_coupon_id);
+  const cat = (ticketCatByKo(p.category_1) || {});
+  const catLabel = cat.name_en || p.category_1;
+  const img = ticketImg(p);
+  const min = ticketMinPrice(p, gmap);
+  const useP = g && g.rows.length ? `${g.rows[0].use_start_date} ~ ${g.rows[0].use_end_date}` : "";
+  const lvls = g ? g.rows.map((r) => escapeHtml(r.level_name)).join(" · ") : "";
+  return `<article class="tkf-hcard" data-tid="${escapeHtml(p.id)}">
+    <div class="tkf-hcard-img">${img ? `<img src="${escapeHtml(img)}" alt="">` : `<div class="tkf-noimg">No Image</div>`}</div>
+    <div class="tkf-hcard-body">
+      <div class="tkf-card-cat">${escapeHtml(catLabel)}${p.category_2 ? " › " + escapeHtml(p.category_2) : ""}</div>
+      <div class="tkf-hcard-title">${escapeHtml(p.name_en)}</div>
+${/* ZH(name_zh) 미노출 — 개발단계 KO-EN. 추후 EN-ZH 전환 시 name_zh 노출로 복원 */ ""}
+      ${useP ? `<div class="tkf-card-use">🗓 ${L("사용기간", "Valid")} ${escapeHtml(useP)}</div>` : ""}
+      ${lvls ? `<div class="tkf-card-use">🎫 ${lvls}</div>` : ""}
+    </div>
+    <div class="tkf-hcard-price">
+      <button type="button" class="tkf-hcard-detail">${L("상세보기", "Detail")} →</button>
+      <div><span class="tkf-hcard-from">${L("최저", "from")}</span> <strong class="tkf-hcard-amt">${formatWon(min)}</strong></div>
+    </div>
+  </article>`;
+}
+
+/** GNB Ticket 드롭다운 — 1뎁스 카테고리 목록 */
+function renderTicketGnb() {
+  const menu = document.getElementById("ticketNavMenu"); if (!menu) return;
+  const cats = ticketTopCats();
+  menu.innerHTML = cats.map((c) => `<a href="#/ticket/bridge/${encodeURIComponent(c.name_ko)}">${escapeHtml(c.name_en || c.name_ko)}</a>`).join("");
+  // Ticket 글자 클릭 → 첫 카테고리 브릿지
+  const btn = document.querySelector("#ticketNav .gnb-acc-btn");
+  if (btn && cats.length) btn.setAttribute("href", "#/ticket/bridge/" + encodeURIComponent(cats[0].name_ko));
+}
+
+function ticketSearchBarTop(L, note) {
+  uiState.searchDomain = "ticket";
+  const minYmd = todayKstYmd();
+  const bar = renderSearchBar(defaultPax(), { ci: "", co: "" }, minYmd, L, "24px auto 8px");
+  return `<div style="background:#0f1220;padding:26px 16px 18px">${bar}${note ? `<div style="max-width:1100px;margin:6px auto 0;color:rgba(255,255,255,.6);font-size:12px;text-align:center">${note}</div>` : ""}</div>`;
+}
+function wireTicketSearchBar(app) {
+  wireSearchBar(app, { pax: defaultPax(), draft: { ci: "", co: "" }, minYmd: todayKstYmd(), L: (ko, en) => (uiState.lang === "en" ? en : ko), rerender: () => render(), onSearch: () => {} });
+}
+
+/* ─── 티켓 검색결과 (#/ticket/search) — 숙소 검색결과와 100% 동일 UI (좌 필터 + canonical 카드) ─── */
+/** 티켓 canonical 카드 — 숙소 productCardHtml과 동일한 .product-card 구조 */
+function ticketProductCardHtml(p, gmap, L) {
+  const lang = uiState.lang;
+  const g = gmap.get(p.spec_coupon_id);
+  const rows = g ? g.rows : [];
+  const margin = getTicketMarginFront(p.spec_coupon_id);
+  const cat = ticketCatByKo(p.category_1) || {};
+  const catLabel = ticketCatEnLabel(p);
+  const useP = rows.length ? `${rows[0].use_start_date} ~ ${rows[0].use_end_date}` : "-";
+  // 썸네일 (이미지 여러 장이면 이전/다음)
+  const imgs = ticketGallery(p);
+  let idx = uiState.cardImgIdx[p.id] || 0; if (idx >= imgs.length) idx = 0; uiState.cardImgIdx[p.id] = idx;
+  const thumbHtml = imgs.length === 0
+    ? `<div class="pc-thumb pc-no-image">No Image</div>`
+    : `<div class="pc-thumb"><img src="${escapeHtml(imgs[idx])}" alt="" />${imgs.length > 1 ? `<div class="pc-thumb-nav"><button type="button" data-tpc-prev="${escapeHtml(p.id)}">&#8249;</button><button type="button" data-tpc-next="${escapeHtml(p.id)}">&#8250;</button></div>` : ""}</div>`;
+  const optLines = rows.map((r) => `<div class="pc-info-line">👤 ${ticketLevelLabel(r.level, r.level_name, L)} ${formatWon(ticketLevelSell(r, margin))}</div>`).join("");
+  const contentHtml = `<div class="pc-content">
+    <div class="pc-place-badge">${escapeHtml(catLabel)}</div>
+    <div class="pc-room-name">${escapeHtml(p.name_en)}</div>
+    <div class="pc-product-name">${/* ZH(name_zh) 미노출 — 개발단계 KO-EN. 추후 EN-ZH 시 복원 */ ""}</div>
+    <div class="pc-data">
+      <div class="pc-info-line">🗓 ${L("사용기간", "Valid")} ${escapeHtml(useP)}</div>
+      <div class="pc-info-line">👥 ${ticketPaxLabel(g, L)}</div>
+      ${optLines}
+    </div>
+    <div class="pc-chips"><span class="pc-chip">${L("오픈형 · 사용기간 내 자유이용", "Open ticket")}</span></div>
+  </div>`;
+  const min = ticketMinPrice(p, gmap);
+  const pricePanelHtml = `<div class="pc-price-panel">
+    <button type="button" class="btn-room-detail js-tk-detail" data-pid="${escapeHtml(p.id)}">${L("상세보기", "Detail")} →</button>
+    <div class="pc-cancel pc-cancel-free">${L("사용종료일 이전 무료취소", "Free cancel before end date")}</div>
+    <div class="pc-price-box"><div class="pc-member-label">${L("최저가", "From")}</div><div class="pc-price">${formatWon(min)}</div></div>
+  </div>`;
+  return `<article class="product-card js-tk-card" data-cat="${escapeHtml(p.category_1)}" data-pid="${escapeHtml(p.id)}">${thumbHtml}${contentHtml}${pricePanelHtml}</article>`;
+}
+
+function renderTicketSearch(app) {
+  const L = (ko, en) => (uiState.lang === "en" ? en || ko || "" : ko || en || "");
+  uiState.searchDomain = "ticket";
+  const gmap = specGroupsMap();
+  const minYmd = todayKstYmd();
+  if (!uiState.ticketUseDate) uiState.ticketUseDate = addCalendarDaysYmd(minYmd, 7) || minYmd; // 사용일 디폴트 = 오늘+7일
+  const date = uiState.ticketUseDate;
+  const pax = defaultPax();
+  const f = uiState.ticketFilter || (uiState.ticketFilter = { order: "price_asc", cats: [] });
+  let list = loadTicketProducts().filter((p) => ticketVisibleNow(p, gmap) && ticketUsableOn(p, gmap, date));
+  if (f.cats.length) list = list.filter((p) => f.cats.includes(p.category_1));
+  list = list.map((p) => ({ p, min: ticketMinPrice(p, gmap) }));
+  if (f.order === "price_desc") list.sort((a, b) => b.min - a.min);
+  else if (f.order === "name") list.sort((a, b) => a.p.name_en.localeCompare(b.p.name_en));
+  else list.sort((a, b) => a.min - b.min);
+
+  const cats = ticketTopCats();
+  // 서치바 (숙소 검색결과와 동일한 topBar)
+  const topBar = `<div style="padding:20px 24px 0">${renderSearchBar(pax, { ci: "", co: "" }, minYmd, L, "0 auto")}</div>`;
+  // 좌측 필터 — 숙소식(정렬 라디오 + 카테고리 체크박스 + 초기화)
+  const orderPanel = `
+    <div style="margin-bottom:22px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">${L("정렬", "Order")}</div>
+      ${[["price_asc", L("낮은 가격순", "Low cost")], ["price_desc", L("높은 가격순", "High cost")]]
+        .map(([v, lb]) => `<label style="display:flex;align-items:center;gap:7px;font-size:12.5px;margin-bottom:6px;cursor:pointer"><input type="radio" name="tkord" class="tk-order" value="${v}" ${f.order === v ? "checked" : ""}>${lb}</label>`).join("")}
+    </div>`;
+  const catPanel = `
+    <div style="margin-bottom:22px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">${L("카테고리", "Category")}</div>
+      <label style="display:flex;align-items:center;gap:7px;font-size:12.5px;margin-bottom:6px;cursor:pointer"><input type="checkbox" class="tk-cat-all" ${f.cats.length === 0 ? "checked" : ""}>${L("전체", "All")}</label>
+      ${cats.map((c) => `<label style="display:flex;align-items:center;gap:7px;font-size:12.5px;margin-bottom:6px;cursor:pointer"><input type="checkbox" class="tk-cat" value="${escapeHtml(c.name_ko)}" ${f.cats.includes(c.name_ko) ? "checked" : ""}>${escapeHtml(uiState.lang === "en" ? (c.name_en || c.name_ko) : c.name_ko)}</label>`).join("")}
+    </div>`;
+  const resetBtn = `<button id="tkReset" style="width:100%;border:1px solid #ddd;background:#fff;border-radius:6px;padding:9px;font-size:12.5px;cursor:pointer;color:#666">${L("초기화", "Reset")}</button>`;
+  const filterPanel = `<aside style="flex:0 0 216px;width:216px;border:1px solid #ececec;border-radius:10px;padding:18px 16px;align-self:flex-start">${orderPanel}${catPanel}${resetBtn}</aside>`;
+  const listHtml = list.length
+    ? list.map((r) => ticketProductCardHtml(r.p, gmap, L)).join("")
+    : `<div style="border:1px solid #ececec;border-radius:12px;padding:48px;text-align:center;color:#999;font-size:14px">${L("조건에 맞는 티켓이 없습니다.", "No tickets match.")}</div>`;
+
+  app.innerHTML = topBar + `
+    <div style="max-width:1100px;margin:24px auto 60px;padding:0 24px">
+      <h1 style="font-size:22px;font-weight:800;color:#1a1f2e;margin:0 0 4px">${L("검색 결과", "Search Result")}</h1>
+      <p style="font-size:12.5px;color:#7c3aed;margin:0 0 20px">${date ? L(`사용일 ${date} 기준 · 그날 사용 가능한 판매중 티켓`, `Usable on ${date}`) : L("사용일을 선택하면 그날 사용 가능한 티켓만 표시됩니다.", "Pick a usage date to filter.")}</p>
+      <div style="display:flex;gap:24px;align-items:flex-start">
+        ${filterPanel}
+        <div style="flex:1;display:flex;flex-direction:column;gap:16px;min-width:0">
+          <div style="font-size:13px;color:#888">${L("총", "Total")} ${list.length}${L("건", "")}</div>
+          ${listHtml}
+        </div>
+      </div>
+    </div>`;
+  wireTicketSearchBar(app);
+  app.querySelectorAll(".tk-order").forEach((r) => r.addEventListener("change", () => { f.order = r.value; render(); }));
+  app.querySelector(".tk-cat-all")?.addEventListener("change", () => { f.cats = []; render(); });
+  app.querySelectorAll(".tk-cat").forEach((c) => c.addEventListener("change", () => { f.cats = Array.from(app.querySelectorAll(".tk-cat:checked")).map((x) => x.value); render(); }));
+  app.querySelector("#tkReset")?.addEventListener("click", () => { uiState.ticketFilter = { order: "price_asc", cats: [] }; render(); });
+  // 카드 클릭 → 브릿지 / 상세보기 버튼 → 모달 / 이미지 이전·다음
+  app.querySelectorAll(".js-tk-detail").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); openTicketModal(b.dataset.pid); }));
+  app.querySelectorAll(".js-tk-card").forEach((c) => c.addEventListener("click", () => { uiState.ticketFocusId = c.dataset.pid; location.hash = "#/ticket/bridge/" + encodeURIComponent(c.dataset.cat); }));
+  const step = (id, delta) => { const p = loadTicketProducts().find((x) => x.id === id); const n = ticketGallery(p).length; if (!n) return; uiState.cardImgIdx[id] = ((uiState.cardImgIdx[id] || 0) + delta + n) % n; render(); };
+  app.querySelectorAll("[data-tpc-prev]").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); step(b.getAttribute("data-tpc-prev"), -1); }));
+  app.querySelectorAll("[data-tpc-next]").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); step(b.getAttribute("data-tpc-next"), 1); }));
+}
+
+/* ─── 티켓 브릿지 (#/ticket/bridge/:catKo) — 숙소식 리치 랜딩 ─── */
+function ticketLevelLabel(level, name, L) { return level === 1 ? L("성인", "Adult") : level === 2 ? L("아동", "Child") : name; }
+/** 브릿지 상품 행 (썸네일 + 성인/아동 스테퍼(pending) + 담기·상세보기) */
+function ticketBridgeProductRow(p, gmap, L) {
+  const g = gmap.get(p.spec_coupon_id); const margin = getTicketMarginFront(p.spec_coupon_id);
+  const img = ticketImg(p); const rows = g ? g.rows : [];
+  const pend = (uiState.ticketPending && uiState.ticketPending[p.id]) || {};
+  const useP = rows.length ? `${rows[0].use_start_date} ~ ${rows[0].use_end_date}` : "";
+  let rowSub = 0, rowQty = 0;
+  const opt = rows.map((r) => {
+    const sell = ticketLevelSell(r, margin); const q = parseInt(pend[r.level], 10) || 0;
+    rowSub += sell * q; rowQty += q;
+    return `<div class="tkf-optrow"><span class="tkf-optlabel">${ticketLevelLabel(r.level, r.level_name, L)} <span style="color:#888">${escapeHtml(r.coupon_name)}</span></span><span class="tkf-optprice">${formatWon(sell)}</span><span class="tkf-step"><button type="button" class="tkf-pqbtn" data-pid="${escapeHtml(p.id)}" data-lv="${r.level}" data-d="-1">−</button><span>${q}</span><button type="button" class="tkf-pqbtn" data-pid="${escapeHtml(p.id)}" data-lv="${r.level}" data-d="1">+</button></span></div>`;
+  }).join("");
+  const addLabel = rowQty > 0
+    ? (uiState.lang === "en" ? `Add ${rowQty} · ${formatWon(rowSub)}` : `총 ${rowQty}매 , ${formatWon(rowSub)} 담기`)
+    : L("담기", "Add");
+  return `<div class="tkf-pcard" data-pid="${escapeHtml(p.id)}">
+    <div class="tkf-pcard-img">${img ? `<img src="${escapeHtml(img)}" alt="">` : `<div class="tkf-noimg">No Image</div>`}</div>
+    <div class="tkf-pcard-main">
+      <div class="tkf-hcard-title">${escapeHtml(p.name_en)}</div>
+${/* ZH(name_zh) 미노출 — 개발단계 KO-EN. 추후 EN-ZH 전환 시 name_zh 노출로 복원 */ ""}
+      ${useP ? `<div class="tkf-card-use">🗓 ${L("사용기간", "Valid")} ${escapeHtml(useP)}</div>` : ""}
+      <div class="tkf-optbox">${opt || `<div class="tkf-empty" style="padding:10px 0">${L("연결 스펙 없음", "No spec")}</div>`}</div>
+      <div class="tkf-pcard-foot">
+        <div class="tkf-foot-btns">
+          <button type="button" class="tkf-detailbtn" data-pid="${escapeHtml(p.id)}">${L("상세보기", "Detail")}</button>
+          <button type="button" class="tkf-addbtn btn-cta" data-pid="${escapeHtml(p.id)}">${addLabel}</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+/** 우측 선택 내역(장바구니) */
+function ticketCartHtml(gmap, L) {
+  const items = (uiState.ticketCart && uiState.ticketCart.items) || [];
+  if (!items.length) return `<div class="tkf-cart"><h3>🧾 ${L("선택 내역", "Cart")}</h3><div class="tkf-cart-empty">${L("담긴 상품이 없습니다.", "Cart is empty.")}<br>${L("상품에서 수량 선택 후 [담기]", "Add items above.")}</div></div>`;
+  let total = 0, cnt = 0;
+  const lines = items.map((it, idx) => {
+    const p = loadTicketProducts().find((x) => x.id === it.product_id); if (!p) return "";
+    const g = gmap.get(p.spec_coupon_id); const r = g && g.rows.find((x) => x.level === it.level); if (!r) return "";
+    const sell = ticketLevelSell(r, getTicketMarginFront(p.spec_coupon_id)); const sum = sell * it.qty; total += sum; cnt += it.qty;
+    return `<div class="tkf-cart-line"><div class="tkf-cart-l"><b>${escapeHtml(p.name_en)}</b><br><span>${ticketLevelLabel(it.level, r.level_name, L)} × ${it.qty}</span></div><div class="tkf-cart-r">${formatWon(sum)}<button type="button" class="tkf-cart-x" data-idx="${idx}">✕</button></div></div>`;
+  }).join("");
+  return `<div class="tkf-cart"><h3>🧾 ${L("선택 내역", "Cart")}</h3>${lines}<div class="tkf-cart-total"><span>${L("총", "Total")} ${cnt}${L("매", "")}</span><strong>${formatWon(total)}</strong></div><button type="button" id="tkfReserve" class="btn-cta" style="width:100%;margin-top:10px">${L("예약하기", "Reserve")}</button></div>`;
+}
+
+/* ─── 티켓 브릿지 (#/ticket/bridge/:catKo) — 뎁스 콘텐츠 + 상품선택(담기·장바구니) + 2뎁스 서브탭 ─── */
+function renderTicketBridge(app, catKo) {
+  const L = (ko, en) => (uiState.lang === "en" ? en : ko);
+  const gmap = specGroupsMap();
+  const cat = ticketCatByKo(catKo);
+  const catLabel = cat ? (cat.name_en || cat.name_ko) : catKo;
+  const allCats = loadTicketCategories();
+  const subs = cat ? allCats.filter((c) => c.parent_id === cat.id).sort((a, b) => (a.order || 0) - (b.order || 0)) : [];
+  // 활성 서브탭(2뎁스). 없으면 1뎁스가 콘텐츠 소유.
+  let activeSub = null;
+  if (subs.length) { activeSub = subs.find((s) => s.name_ko === uiState.ticketSubTab) || subs[0]; }
+  const contentCat = activeSub || cat; // 콘텐츠 소유 뎁스
+  // 장바구니 범위 = 1뎁스 브릿지(catKo). 다른 1뎁스로 오면 초기화.
+  if (!uiState.ticketCart || uiState.ticketCart.deptKey !== catKo) { uiState.ticketCart = { deptKey: catKo, items: [] }; uiState.ticketPending = {}; }
+  // 상품 = 1뎁스 일치 AND (서브탭 있으면 2뎁스 일치)
+  const list = loadTicketProducts().filter((p) => ticketVisibleNow(p, gmap) && p.category_1 === catKo && (activeSub ? p.category_2 === activeSub.name_ko : true));
+  const heroImg = ticketCatImgFront(cat) || ticketCatImgFront(contentCat) || (list.map((p) => ticketImg(p)).find(Boolean) || "");
+  const localizedC = (base) => catField(contentCat, base);
+  const addr = localizedC("address") || "265, High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do, Korea";
+  const productRows = list.length ? list.map((p) => ticketBridgeProductRow(p, gmap, L)).join("") : `<div class="tkf-empty">${L("판매중인 티켓이 없습니다.", "No tickets on sale.")}</div>`;
+  // 2뎁스 = 숙소 place-selector 동일 클래스(우측 정렬은 CSS로). 없으면 미표시.
+  const subTabBar = subs.length ? `<div class="place-selector"><div class="place-selector-inner">${subs.map((s) => `<button type="button" class="place-tab-btn ${activeSub && activeSub.id === s.id ? "active" : ""}" data-sub="${escapeHtml(s.name_ko)}">${escapeHtml(uiState.lang === "en" ? (s.name_en || s.name_ko) : s.name_ko)}</button>`).join("")}</div></div>` : "";
+  const heroName = escapeHtml(uiState.lang === "en" ? catLabel : (cat ? cat.name_ko : catKo)) + (activeSub ? " · " + escapeHtml(uiState.lang === "en" ? (activeSub.name_en || activeSub.name_ko) : activeSub.name_ko) : "");
+  // 히어로 서브 = 숙소식(보조 라벨). KO일 때만 영문 액센트, EN일 때 생략. (중국어 고정 제거)
+  const heroSub = uiState.lang === "en" ? "" : escapeHtml(cat && cat.name_en ? cat.name_en : "");
+  const heroHtml = `<div class="hero-fullwidth">
+    ${heroImg ? `<img src="${escapeHtml(heroImg)}" alt="" />` : `<div class="hero-placeholder"></div>`}
+    <div class="hero-overlay"><div class="hero-text">
+      <div class="hero-place-name">${heroName}</div>
+      <div class="hero-sub-name">${heroSub}</div>
+      <button type="button" class="hero-open-layer-btn js-tk-hero-detail">${L("상세 안내", "Details")} ↗</button>
+    </div></div>
+  </div>`;
+
+  app.innerHTML = `
+    ${subTabBar}
+    ${heroHtml}
+    <nav class="place-nav"><div class="place-nav-inner">
+      <button type="button" class="place-nav-btn active" data-sec="overview">Overview</button>
+      <button type="button" class="place-nav-btn" data-sec="select">Select</button>
+      <button type="button" class="place-nav-btn" data-sec="detail">Detail</button>
+      <button type="button" class="place-nav-btn" data-sec="guide">Guide</button>
+      <button type="button" class="place-nav-btn" data-sec="policy">Policy</button>
+      <button type="button" class="place-nav-btn" data-sec="loc">Location</button>
+    </div></nav>
+    <div class="content-wrap">
+      <section id="sec-overview" class="sec-overview">
+        <div class="overview-grid"><div><div class="overview-item-label">Overview</div><div class="tkf-detail-html" style="font-size:14px;color:#555;line-height:1.7;margin-top:6px">${localizedC("overview") || escapeHtml(catLabel + " — open ticket.")}</div></div></div>
+      </section>
+      <section id="sec-select" class="tkf-sec">
+        <h2>Select tickets</h2>
+        <div class="tkf-selwrap">
+          <div class="tkf-sellist">${productRows}</div>
+          <div class="tkf-sellcart" id="tkfCartWrap">${ticketCartHtml(gmap, L)}</div>
+        </div>
+      </section>
+      <section id="sec-detail" class="tkf-sec"><h2>Detail</h2><div class="tkf-detail-html">${localizedC("detail_html") || `<div class="tkf-empty">${L("상세설명 없음", "No detail")}</div>`}</div></section>
+      <section id="sec-guide" class="tkf-sec"><h2>Guide</h2><div class="tkf-detail-html">${localizedC("guide_html") || `<div class="tkf-empty">${L("이용안내 없음", "No guide")}</div>`}</div></section>
+      <section id="sec-policy" class="tkf-sec"><h2>Policy</h2>
+        <table class="tkf-info" style="margin-bottom:10px"><tr><th>${L("취소·환불(오픈형)", "Cancellation")}</th><td>${L("사용종료일 이전 미사용=전액환불 / 이후·사용완료=환불불가", "Full refund if unused before end date; otherwise no refund")}</td></tr></table>
+        <div class="tkf-detail-html">${localizedC("policy_html") || ""}</div></section>
+      <section id="sec-loc" class="tkf-sec"><h2>Location</h2><div class="tkf-map">🗺️ ${L("지도 (프로토타입)", "Map (prototype)")}</div><p style="color:#555;font-size:13px;margin-top:8px">📍 ${escapeHtml(addr)}</p></section>
+    </div>`;
+
+  app.querySelectorAll(".place-tab-btn").forEach((b) => b.addEventListener("click", () => { uiState.ticketSubTab = b.dataset.sub; render(); }));
+  app.querySelectorAll(".place-nav-btn[data-sec]").forEach((a) => a.addEventListener("click", () => {
+    app.querySelectorAll(".place-nav-btn").forEach((x) => x.classList.remove("active")); a.classList.add("active");
+    document.getElementById("sec-" + a.dataset.sec)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }));
+  app.querySelector(".js-tk-hero-detail")?.addEventListener("click", () => document.getElementById("sec-detail")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  app.querySelectorAll(".tkf-pqbtn").forEach((b) => b.addEventListener("click", () => {
+    const pid = b.dataset.pid, lv = b.dataset.lv, d = parseInt(b.dataset.d, 10);
+    uiState.ticketPending[pid] = uiState.ticketPending[pid] || {};
+    uiState.ticketPending[pid][lv] = Math.max(0, Math.min(20, (parseInt(uiState.ticketPending[pid][lv], 10) || 0) + d));
+    render();
+  }));
+  app.querySelectorAll(".tkf-addbtn").forEach((b) => b.addEventListener("click", () => {
+    const pid = b.dataset.pid; const pend = uiState.ticketPending[pid] || {};
+    const cart = uiState.ticketCart;
+    let added = 0;
+    Object.keys(pend).forEach((lv) => {
+      const q = parseInt(pend[lv], 10) || 0; if (q <= 0) return;
+      const level = parseInt(lv, 10);
+      const ex = cart.items.find((it) => it.product_id === pid && it.level === level);
+      if (ex) ex.qty += q; else cart.items.push({ product_id: pid, level, qty: q });
+      added += q;
+    });
+    if (!added) { alert(L("수량을 선택하세요.", "Select quantity.")); return; }
+    uiState.ticketPending[pid] = {};
+    render();
+  }));
+  app.querySelectorAll(".tkf-detailbtn").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); openTicketModal(b.dataset.pid); }));
+  // 장바구니 라인 삭제(✕)
+  app.querySelectorAll(".tkf-cart-x").forEach((b) => b.addEventListener("click", () => {
+    const idx = parseInt(b.dataset.idx, 10);
+    if (uiState.ticketCart && Array.isArray(uiState.ticketCart.items)) uiState.ticketCart.items.splice(idx, 1);
+    render();
+  }));
+  app.querySelector("#tkfReserve")?.addEventListener("click", () => {
+    if (!uiState.ticketCart.items.length) { alert(L("담긴 상품이 없습니다.", "Cart is empty.")); return; }
+    location.hash = "#/ticket/checkout";
+  });
+  if (uiState.ticketFocusId) { const el = app.querySelector(`.tkf-pcard[data-pid="${uiState.ticketFocusId}"]`); if (el) el.classList.add("tkf-focus"); uiState.ticketFocusId = ""; }
+}
+
+/* ─── 상세보기 모달 (A안) — 이미지 갤러리 + 기본정보만 ─── */
+function openTicketModal(id) { uiState.ticketModal = { open: true, productId: id }; renderTicketModal(); }
+function closeTicketModal() { uiState.ticketModal = { open: false, productId: "" }; renderTicketModal(); }
+function renderTicketModal() {
+  let root = document.getElementById("tkfModalRoot");
+  const st = uiState.ticketModal || { open: false };
+  if (!st.open) { if (root) root.remove(); return; }
+  if (!root) { root = document.createElement("div"); root.id = "tkfModalRoot"; document.body.appendChild(root); }
+  const L = (ko, en) => (uiState.lang === "en" ? en : ko);
+  const gmap = specGroupsMap();
+  const p = loadTicketProducts().find((x) => x.id === st.productId);
+  if (!p) { root.remove(); return; }
+  const g = gmap.get(p.spec_coupon_id); const margin = getTicketMarginFront(p.spec_coupon_id);
+  const cat = ticketCatByKo(p.category_1) || {};
+  const rows = g ? g.rows : [];
+  const useP = rows.length ? `${rows[0].use_start_date} ~ ${rows[0].use_end_date}` : "-";
+  const gallery = ticketGallery(p);
+  const priceRows = rows.map((r) => `<tr><td>${ticketLevelLabel(r.level, r.level_name, L)} · ${escapeHtml(r.coupon_name)}</td><td style="text-align:right">${formatWon(ticketLevelSell(r, margin))}</td></tr>`).join("");
+  root.innerHTML = `
+    <div class="tkf-modal-backdrop"></div>
+    <div class="tkf-modal" role="dialog" aria-modal="true">
+      <div class="tkf-modal-head">
+        <div><div class="tkf-detail-cat">${escapeHtml(cat.name_en || p.category_1)}${p.category_2 ? " › " + escapeHtml(p.category_2) : ""}</div><div class="tkf-modal-title">${escapeHtml(p.name_en)}</div></div>
+        <button type="button" class="tkf-modal-close" aria-label="close">✕</button>
+      </div>
+      <div class="tkf-modal-body">
+        <table class="tkf-info"><tr><th>${L("사용기간", "Valid")}</th><td>${escapeHtml(useP)}</td></tr><tr><th>${L("유형", "Type")}</th><td>${L("오픈형 (사용기간 내 자유 이용)", "Open ticket")}</td></tr></table>
+        <table class="tkf-info" style="margin-top:8px"><thead><tr><th>${L("옵션", "Option")}</th><th style="text-align:right">${L("판매가", "Price")}</th></tr></thead><tbody>${priceRows}</tbody></table>
+        <p style="color:#888;font-size:12px;margin-top:10px">${L("상세설명·이용안내·정책·위치는 브릿지 페이지에서 확인하세요. 수량 선택·담기는 브릿지 상품선택에서.", "See detail/guide/policy/location on the bridge page; select quantity there.")}</p>
+      </div>
+    </div>`;
+  root.querySelector(".tkf-modal-backdrop").addEventListener("click", closeTicketModal);
+  root.querySelector(".tkf-modal-close").addEventListener("click", closeTicketModal);
+}
+
+/* ─── 구매 → 주문 생성 + 12자리 쿠폰 발급 (결제 목업) ─── */
+function genCouponNo(couponId, level, serialInt) {
+  const cid = (couponId + "XXX").slice(0, 3).toUpperCase();
+  const serial = String(serialInt).padStart(6, "0").slice(-6);
+  const rand = String(Math.floor(Math.random() * 100)).padStart(2, "0");
+  return `${cid}${level}${serial}${rand}`;
+}
+/* ─── 결제 페이지 (#/ticket/checkout) — 다상품 장바구니 ─── */
+function renderTicketCheckout(app) {
+  const L = (ko, en) => (uiState.lang === "en" ? en : ko);
+  const cart = uiState.ticketCart;
+  const gmap = specGroupsMap();
+  const items = (cart && cart.items) || [];
+  if (!items.length) { app.innerHTML = `<div class="content-wrap" style="max-width:760px;margin:40px auto;padding:0 16px"><div class="tkf-empty">${L("선택된 상품이 없습니다.", "No selection.")}</div><div style="text-align:center;margin-top:14px"><a href="#/ticket/search" class="btn-cta" style="text-decoration:none">${L("티켓 목록", "Tickets")}</a></div></div>`; return; }
+  const lines = items.map((it) => {
+    const p = loadTicketProducts().find((x) => x.id === it.product_id); const g = gmap.get(p.spec_coupon_id); const r = g.rows.find((x) => x.level === it.level);
+    const sell = ticketLevelSell(r, getTicketMarginFront(p.spec_coupon_id));
+    return { pname: p.name_en, opt: `${ticketLevelLabel(it.level, r.level_name, L)} · ${r.coupon_name}`, qty: it.qty, sum: sell * it.qty };
+  });
+  const total = lines.reduce((s, l) => s + l.sum, 0);
+  const b = uiState.ticketBuyer || (uiState.ticketBuyer = { last: "Hong", first: "Gildong", email: "guest@example.com", phone: "010-1234-5678", nationality: "KR" });
+  const inp = "width:100%;padding:9px;border:1px solid #ddd;border-radius:6px";
+  app.innerHTML = `<div class="content-wrap" style="max-width:860px;margin:24px auto;padding:0 16px 60px">
+    <h2 style="font-size:22px;margin:0 0 16px">${L("결제", "Checkout")}</h2>
+    <div class="tkf-co-grid">
+      <div>
+        <div class="tkf-co-card"><h3>${L("주문 상품", "Order")} <span style="color:#888;font-size:13px;font-weight:400">${items.length}${L("종", "")}</span></h3>
+          <table class="tkf-info">${lines.map((l) => `<tr><th>${escapeHtml(l.pname)}<br><span style="font-weight:400;color:#888">${escapeHtml(l.opt)} × ${l.qty}</span></th><td style="text-align:right;vertical-align:top">${formatWon(l.sum)}</td></tr>`).join("")}</table>
+        </div>
+        <div class="tkf-co-card"><h3>${L("구매자 정보", "Buyer")}</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <label style="font-size:13px">${L("성(Last)", "Last name")}<br><input id="co_last" value="${escapeHtml(b.last)}" style="${inp}"></label>
+            <label style="font-size:13px">${L("이름(First)", "First name")}<br><input id="co_first" value="${escapeHtml(b.first)}" style="${inp}"></label>
+            <label style="font-size:13px">${L("이메일", "Email")}<br><input id="co_email" value="${escapeHtml(b.email)}" style="${inp}"></label>
+            <label style="font-size:13px">${L("전화", "Phone")}<br><input id="co_phone" value="${escapeHtml(b.phone)}" style="${inp}"></label>
+            <label style="font-size:13px">${L("국적", "Nationality")}<br><input id="co_nat" value="${escapeHtml(b.nationality)}" style="${inp}"></label>
+          </div>
+        </div>
+        <div class="tkf-co-card"><h3>${L("결제수단", "Payment")}</h3><label class="tkf-fopt"><input type="radio" checked> ${L("신용카드 (목업)", "Credit card (mock)")}</label></div>
+      </div>
+      <div>
+        <div class="tkf-co-card tkf-co-sum"><h3>${L("결제 요약", "Summary")}</h3>
+          <div class="tkf-co-total"><span>${L("총 결제금액", "Total")}</span><strong>${formatWon(total)}</strong></div>
+          <button type="button" id="co_pay" class="btn-cta" style="width:100%;margin-top:12px">${L("결제하기", "Pay")}</button>
+          <a href="javascript:history.back()" style="display:block;text-align:center;margin-top:8px;font-size:13px;color:#888;text-decoration:none">${L("← 뒤로", "← Back")}</a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  app.querySelector("#co_pay").addEventListener("click", () => {
+    ["last", "first", "email", "phone", "nationality"].forEach((k, i) => { const id = ["co_last", "co_first", "co_email", "co_phone", "co_nat"][i]; b[k] = app.querySelector("#" + id).value; });
+    if (!b.email.trim()) { alert(L("이메일을 입력하세요.", "Enter email.")); return; }
+    showLoadingOverlay(L("결제 처리 중…", "Processing…"));
+    setTimeout(() => {
+      hideLoadingOverlay();
+      const res = createTicketOrder(items, b);
+      uiState.ticketCart = null;
+      uiState.ticketLastOrder = res;
+      location.hash = "#/ticket/done"; render();
+    }, 700);
+  });
+}
+
+/* ─── 주문 생성 + 12자리 쿠폰 발급 (다상품 장바구니) ─── */
+function createTicketOrder(cartItems, buyer) {
+  const gmap = specGroupsMap();
+  const orders = loadTicketOrders(); const coupons = loadTicketCoupons();
+  const ymd = todayKstYmd().replace(/-/g, "");
+  const orderNo = `ORD-${ymd}-${String(orders.length + 1).padStart(5, "0")}`;
+  const nowIso = new Date().toISOString();
+  const orderItems = []; const issued = []; let total = 0;
+  cartItems.forEach((it) => {
+    const p = loadTicketProducts().find((x) => x.id === it.product_id); const g = gmap.get(p.spec_coupon_id); const r = g.rows.find((x) => x.level === it.level);
+    const margin = getTicketMarginFront(p.spec_coupon_id); const sell = ticketLevelSell(r, margin);
+    total += sell * it.qty;
+    orderItems.push({ product_id: p.id, product_name: p.name_en, coupon_id: p.spec_coupon_id, level: it.level, level_name: r.level_name, coupon_name: r.coupon_name, qty: it.qty, unit_deposit: r.price, unit_sell: sell, use_start_date: r.use_start_date, use_end_date: r.use_end_date });
+    for (let i = 0; i < it.qty; i++) {
+      const serialSeed = coupons.filter((c) => c.coupon_id === p.spec_coupon_id && c.level === it.level).length + issued.filter((x) => x.coupon_id === p.spec_coupon_id && x.level === it.level).length + 1;
+      issued.push({ id: "id_" + Math.random().toString(36).slice(2, 10), coupon_no: genCouponNo(p.spec_coupon_id, it.level, serialSeed), order_no: orderNo, product_id: p.id, product_name: p.name_en, coupon_id: p.spec_coupon_id, level: it.level, level_name: r.level_name, coupon_name: r.coupon_name, deposit: r.price, sell, status: "SOLD", use_start_date: r.use_start_date, use_end_date: r.use_end_date, created_at: nowIso });
+    }
+  });
+  const order = { id: "id_" + Math.random().toString(36).slice(2, 10), order_no: orderNo, items: orderItems, total, pay_method: "CARD(mock)", status: "결제완료", buyer: { name: `${buyer.first} ${buyer.last}`, phone: buyer.phone, email: buyer.email, nationality: buyer.nationality }, use_date: uiState.ticketUseDate || "", created_at: nowIso };
+  orders.push(order); saveTicketOrders(orders);
+  coupons.push(...issued); saveTicketCoupons(coupons);
+  return { order, issued };
+}
+
+/* ─── 예약완료 (#/ticket/done) ─── */
+function renderTicketDone(app) {
+  const L = (ko, en) => (uiState.lang === "en" ? en : ko);
+  const res = uiState.ticketLastOrder;
+  if (!res) { location.hash = "#/ticket/search"; return; }
+  const { order, issued } = res;
+  const rows = issued.map((c) => `<tr><td style="font-family:monospace">${escapeHtml(c.coupon_no)}</td><td>${escapeHtml(c.coupon_name)}</td><td>${formatWon(c.sell)}</td><td>${escapeHtml(c.use_start_date)}~${escapeHtml(c.use_end_date)}</td></tr>`).join("");
+  app.innerHTML = `<div class="content-wrap" style="max-width:780px;margin:30px auto;padding:0 16px 60px">
+    <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:28px;text-align:center;margin-bottom:18px">
+      <div style="font-size:44px">🎫</div>
+      <h2 style="margin:8px 0 4px">${L("예약이 완료되었습니다", "Reservation complete")}</h2>
+      <div style="color:#065f46">${L("주문번호", "Order")} <strong>${escapeHtml(order.order_no)}</strong> · ${L("결제금액", "Paid")} <strong>${formatWon(order.total)}</strong> · ${L("결제완료(목업)", "Paid (mock)")}</div>
+    </div>
+    <h3 style="font-size:16px;margin:0 0 8px">${L("발급된 쿠폰", "Issued coupons")} (${issued.length})</h3>
+    <table class="tkf-info tkf-issued"><thead><tr><th>${L("쿠폰번호(12자리)", "Coupon No.")}</th><th>${L("쿠폰명", "Coupon")}</th><th>${L("판매가", "Price")}</th><th>${L("사용기간", "Valid")}</th></tr></thead><tbody>${rows}</tbody></table>
+    <div style="margin-top:8px;color:#888;font-size:12px">${L("발급 쿠폰은 어드민 예약·발급현황(S15/S16)에서 조회되고, 현장에서 바코드로 사용 처리됩니다.", "Coupons appear in admin S15/S16 and are used on-site.")}</div>
+    <div style="margin-top:20px;text-align:center"><a href="#/ticket/search" class="btn-cta" style="text-decoration:none">${L("티켓 더 보기", "More tickets")}</a></div>
+  </div>`;
+}
+
 /* ─── Main render ─── */
 function render() {
   const app = document.getElementById("app");
@@ -1652,12 +2370,29 @@ function render() {
   document.documentElement.lang = uiState.lang === "en" ? "en" : "ko";
   document.getElementById("langKo")?.classList.toggle("active", uiState.lang === "ko");
   document.getElementById("langEn")?.classList.toggle("active", uiState.lang === "en");
+  renderTicketGnb();
 
   if (window.__heroTimer) { clearInterval(window.__heroTimer); window.__heroTimer = null; }
-  const { parts } = parseHash();
-  if (parts[0] === "bridge") {
+  const { parts, path } = parseHash();
+  const prevPath = uiState._lastHash;
+  // 페이지 이동(해시 변경) 시 티켓 상세 모달 닫힘
+  if (uiState._lastHash !== undefined && uiState._lastHash !== path && uiState.ticketModal && uiState.ticketModal.open) {
+    uiState.ticketModal.open = false;
+  }
+  uiState._lastHash = path;
+  // 다른 페이지 → 메인(#/) 진입 시 검색바 도메인 숙소 기본. (메인 내 재렌더·언어토글에선 유지)
+  if (parts[0] !== "ticket" && parts[0] !== "search" && parts[0] !== "bridge" && prevPath !== undefined && prevPath !== path) uiState.searchDomain = "acc";
+
+  if (parts[0] === "ticket") {
+    if (parts[1] === "bridge") renderTicketBridge(app, decodeURIComponent(parts[2] || ""));
+    else if (parts[1] === "checkout") renderTicketCheckout(app);
+    else if (parts[1] === "done") renderTicketDone(app);
+    else renderTicketSearch(app);
+  } else if (parts[0] === "bridge") {
+    uiState.searchDomain = "acc";
     renderBridge(app, parts[1] === "CONDO" ? "CONDO" : "HOTEL");
   } else if (parts[0] === "search") {
+    uiState.searchDomain = "acc";
     renderSearch(app);
   } else {
     renderMain(app);
@@ -1665,10 +2400,12 @@ function render() {
 
   renderPlaceLayer();
   renderRoomDetailModal();
+  renderTicketModal();
 }
 
 /* ─── Init ─── */
 window.addEventListener("DOMContentLoaded", () => {
+  ensureTicketFrontSeed();
   document.getElementById("placeLayerClose")?.addEventListener("click", () => {
     uiState.placeLayer.open = false;
     renderPlaceLayer();

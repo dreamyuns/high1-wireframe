@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>티켓 쿠폰 연동 정책서 v0.7 | High1</title>
+<title>티켓 쿠폰 연동 정책서 v0.12 | High1</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:"Segoe UI","Malgun Gothic",Arial,sans-serif;background:#f0f0eb;color:#1a1a1a;font-size:14px;padding-left:210px}
@@ -73,7 +73,7 @@
 <!-- 좌측 TOC -->
 <nav class="toc">
   <div class="toc-logo">high<span>1</span></div>
-  <div class="toc-ver">티켓 쿠폰 정책서 v0.7</div>
+  <div class="toc-ver">티켓 쿠폰 정책서 v0.12</div>
   <a class="toc-link" data-idx="0"><span class="toc-num">1</span><span class="toc-ko-text">전체 연동 아키텍처</span><span class="toc-en-text" style="display:none">Integration Architecture</span></a>
   <a class="toc-link" data-idx="1"><span class="toc-num">2</span><span class="toc-ko-text">쿠폰번호 구조·생성</span><span class="toc-en-text" style="display:none">Coupon Number</span></a>
   <a class="toc-link" data-idx="2"><span class="toc-num">3</span><span class="toc-ko-text">쿠폰 스펙 파일 구조</span><span class="toc-en-text" style="display:none">Spec File Structure</span></a>
@@ -86,8 +86,10 @@
   <a class="toc-link" data-idx="9"><span class="toc-num">10</span><span class="toc-ko-text">장애·URL 등록</span><span class="toc-en-text" style="display:none">Failure &amp; URL</span></a>
   <a class="toc-link" data-idx="10"><span class="toc-num">11</span><span class="toc-ko-text">마진 관리 정책</span><span class="toc-en-text" style="display:none">Margin Policy</span></a>
   <a class="toc-link" data-idx="11"><span class="toc-num">12</span><span class="toc-ko-text">어드민 화면 구조</span><span class="toc-en-text" style="display:none">Admin Screens</span></a>
-  <a class="toc-link" data-idx="12"><span class="toc-num">13</span><span class="toc-ko-text">미결 사항</span><span class="toc-en-text" style="display:none">Open Issues</span></a>
-  <a class="toc-link" data-idx="13"><span class="toc-num">14</span><span class="toc-ko-text">용어 정의</span><span class="toc-en-text" style="display:none">Glossary</span></a>
+  <a class="toc-link" data-idx="12"><span class="toc-num">13</span><span class="toc-ko-text">프런트 티켓 검색 정책</span><span class="toc-en-text" style="display:none">Front Ticket Search</span></a>
+  <a class="toc-link" data-idx="13"><span class="toc-num">14</span><span class="toc-ko-text">이미지 저장 정책</span><span class="toc-en-text" style="display:none">Image Storage</span></a>
+  <a class="toc-link" data-idx="14"><span class="toc-num">16</span><span class="toc-ko-text">미결 사항</span><span class="toc-en-text" style="display:none">Open Issues</span></a>
+  <a class="toc-link" data-idx="15"><span class="toc-num">17</span><span class="toc-ko-text">용어 정의</span><span class="toc-en-text" style="display:none">Glossary</span></a>
 </nav>
 
 <div class="page">
@@ -96,11 +98,11 @@
   <div class="lang-ko show">
 
     <div class="doc-head">
-      <div class="doc-title">티켓 쿠폰 연동 정책서 <span class="badge">v0.7</span></div>
+      <div class="doc-title">티켓 쿠폰 연동 정책서 <span class="badge">v0.12</span></div>
       <div class="doc-meta">
-        작성일: 2026-07-09 · 상태: 진행 중<br>
+        작성일: 2026-07-09 · 최종수정: 2026-07-10 · 상태: 진행 중<br>
         기준 문서: 하이원 소셜연동 인터페이스규격서 v1.0(2018) · High1 개발팀 확인질문 답변서 v0.2 · 쿠폰등록정보(워터월드) 성수기 샘플 · 리프트 종일권 발급 데이터<br>
-        변경 이력: v0.5 BARCODE 12자리 확정·URL 등록 절차 → v0.6 coupon_id 재편(마진=쿠폰ID단위·VOID 미운영·AVAILABLE 정리·부분취소 폐지·S15-B 신설) → <b>v0.7 S17 카테고리 직접 등록 전환(자동추출 폐기·S13 선행검증), S13 CSV 컬럼 재정의(ticket_type·사용인원 제거·이용권명 추가·한국어 컬럼명·탭A/B·조건부 삭제), 카테고리 최대 2뎁스(권종 3뎁스 제거)</b>
+        변경 이력: v0.8 주문상태(결제완료/취소완료) 정의·S15-B 컬럼 확장 → v0.9 판매기간 정책 신설(S14-B) → v0.10 티켓 마진 구조 전면 변경(카테고리 마스터 1/2뎁스 + 쿠폰ID 오버라이드) → v0.11 오픈형 취소 기준(사용기간 종료일) 추가 · 이메일 템플릿 관리(S18-A) 신설 → <b>v0.12 콘텐츠 소유 재정의 A안(S17 콘텐츠 소유 추가 · S14 콘텐츠 재정의) · 성인 전용 티켓 케이스(2.3절) · 프런트 티켓 검색 정책 신규(사용일 기본값 오늘+7일) · 이미지 저장 정책 신규</b>
       </div>
     </div>
 
@@ -166,6 +168,12 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
           <div class="pd-desc">LV.1=대인 / LV.2=소인 / LV.3~8 미사용 예약. 현장에서 성인·소인 별도 확인 없이 레벨별 상품 목록만 표시(Q23 답변). <b>쿠폰 레벨 = 상품 구분자 역할만 함.</b><br>
           동일 쿠폰ID+레벨 내 유니크. <b>CANCELED 번호는 재사용 가능, USED 번호는 재사용 불가</b>(Q14 답변).</div>
           <div class="pd-rule">레벨 구성은 카테고리(스키/워터파크)에 따라 상이. 스펙 파일 수령 후 확정.</div>
+          <div class="pd-rose"><b>v0.12 추가 — 성인 전용 티켓 케이스:</b> 상품마다 레벨 구성이 다를 수 있다. 대인·소인 2레벨이 아닌 <b>대인 레벨만 존재하는</b> 경우가 있다. 예) 곤돌라 왕복권 = LV.1(대인)만 제공, LV.2(소인) 없음. 프런트 카드는 레벨 구성을 자동 판별하여 문구를 표시하고, 소인 레벨이 없으면 고객이 아동 수량을 선택할 수 없도록 UI를 제한한다.</div>
+          <table class="pd-table">
+            <tr><th>레벨 구성</th><th>프런트 카드 표시</th></tr>
+            <tr><td>LV.1(대인) + LV.2(소인) 모두 있음</td><td>"성인·아동 예약 가능"</td></tr>
+            <tr><td>LV.1(대인)만 있음 (소인 레벨 없음)</td><td>"성인 예약 가능"</td></tr>
+          </table>
         </div>
       </div>
     </div>
@@ -188,10 +196,11 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
             <tr><td>쿠폰명</td><td>레벨별 노출 이름 (예: 워터월드 종일권_성수기(대인/얼리))</td><td>고객 표시명</td></tr>
             <tr><td>적용금액(입금가)</td><td><b>High1에 납부하는 원가</b></td><td>고객 미노출</td></tr>
             <tr><td>할인대상 내역</td><td>적용 가능 PMS 상품 목록 (예: 종일권_대인_남_4계절 상품 외 15종)</td><td></td></tr>
-            <tr><td>사용기간 (use_start/use_end)</td><td>고객 현장 사용 가능 기간. <b>2컬럼 관리, 판매기간 미관리</b></td><td></td></tr>
+            <tr><td>사용기간 (use_start/use_end)</td><td>고객 현장 사용 가능 기간. <b>2컬럼 관리.</b> CSV에서 가져오는 High1 원본 데이터.</td><td></td></tr>
+            <tr><td>단일/그룹 · 내부/외부</td><td>그룹 = 외부 대행사 전용 / 외부 = 대행사 채널</td><td>참고용</td></tr>
             <tr><td>여신ID</td><td>High1 내부 정산 계정 식별자 (대행사별 상이)</td><td>참고용</td></tr>
           </table>
-          <div class="pd-warn"><b>인쇄기간 미사용 확정:</b> 인쇄기간(판매 시작 가능 기간) 미관리. 사용기간(2컬럼)만 관리.</div>
+          <div class="pd-warn"><b>인쇄기간(High1 제공) 미사용:</b> High1 스펙 파일의 인쇄기간 컬럼은 우리 CSV 템플릿에 포함하지 않는다. <b>판매기간은 우리가 S14-B에서 직접 설정한다</b> — High1 제공 인쇄기간과 별개로, 상품별 판매시작일/판매종료일을 우리 어드민에서 관리(12.3절 판매기간 정책 참고).</div>
           <div class="pd-warn"><b>사용인원 미사용:</b> 원본 엑셀에 사용인원(1인 1쿠폰 기준) 컬럼이 있으나 우리 CSV 템플릿에서는 제외. 1인 1쿠폰 원칙은 7절 재고 관리로 적용.</div>
         </div>
         <div class="pd-item">
@@ -210,7 +219,7 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
       <div class="pd-body">
         <div class="pd-item">
           <div class="pd-item-title">개요</div>
-          <div class="pd-desc">API <b>3개</b>(영업장·상품 구분 없이 통합) · HTTP <b>GET</b> · 인증 <b>없음</b>(Q16 답변) · HTTPS 미확인(M-01, Q17 공란). 기존 규격서의 <code>lift_*</code>/<code>hiww_ent_*</code> 구분 불필요(Q15 답변). 영업장별 별도 endpoint 없음.</div>
+          <div class="pd-desc">API <b>3개</b>(영업장·상품 구분 없이 통합) · HTTP <b>GET</b> · 인증 <b>없음</b>(Q16 답변) · HTTPS 미확인(M-01, Q17 공란). URL 내 스키리프트권/워터월드 분리 불필요(Q15 답변). 영업장별 별도 endpoint 없음.</div>
           <div class="pd-rule">약식 URL: 조회 <code>/search?barcode=</code> · 사용 <code>/use?barcode=</code> · 취소 <code>/cancel?barcode=</code>. URL 등록: 우리 서버 URL을 High1 개발팀 담당자에게 전달 → POS/KIOSK 설정값으로 반영(10절).</div>
         </div>
         <div class="pd-item">
@@ -247,6 +256,7 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
       <div class="pd-section-title"><span class="badge">5</span>쿠폰 상태 관리</div>
       <div class="pd-body">
         <div class="pd-item">
+          <div class="pd-item-title">상태 흐름 / 상태 정의 (SOLD / USED / CANCELED 3종)</div>
           <div class="pd-rose"><b>쿠폰번호는 구매(결제 완료) 시점에 생성된다(2.2절).</b> 실제 발급된 쿠폰 행은 처음부터 <b>SOLD</b> 상태로 생성되며, <b>발급현황(S16)에는 판매 전(AVAILABLE) 상태의 쿠폰 행이 존재하지 않는다.</b> AVAILABLE은 "발급 가능한 스펙/재고 개념"일 뿐, 발급된 쿠폰 행의 상태가 아니다.</div>
           <div class="pd-pre">[구매(결제 완료) 시점에 쿠폰번호 생성]
    ▼
@@ -261,6 +271,28 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
             <tr><td>USED</td><td>현장 사용 완료.</td></tr>
             <tr><td>CANCELED</td><td>주문 취소로 무효화됨.</td></tr>
           </table>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">주문 상태 (주문 레벨 · 결제완료/취소완료 2종)</div>
+          <div class="pd-rose"><b>주문 상태 값 정의 (v0.8 신규).</b> 쿠폰 상태(위)는 쿠폰 1개 단위 상태이며, 주문 상태는 주문 전체 단위 상태다. 티켓 주문은 PG 결제 완료 즉시 쿠폰번호가 발급되므로 숙소 예약(대기→확정)과 달리 <b>대기 상태 없음.</b></div>
+          <table class="pd-table">
+            <tr><th>주문 상태</th><th>의미</th><th>전환 조건</th></tr>
+            <tr><td><b>결제완료</b></td><td>PG 결제 성공, 쿠폰 발급됨. 주문의 초기·정상 상태.</td><td>PG 결제 완료 시 자동 부여</td></tr>
+            <tr><td><b>취소완료</b></td><td>주문 전체 취소 처리 완료, 환불 처리됨. 발급된 쿠폰 전체 SOLD → CANCELED.</td><td>자동취소(고객 요청) 또는 수동취소(관리자) 완료 시</td></tr>
+          </table>
+          <div class="pd-rule"><b>주문 상태 ≠ 사용 상태.</b> 결제완료 주문 안에서 쿠폰이 얼마나 사용됐는지는 아래 사용상태로 별도 추적한다. 두 개념을 혼용하지 않는다.</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">사용 상태 (주문 레벨 집계 · 미사용/일부사용/사용완료 3종)</div>
+          <div class="pd-desc">한 주문에 여러 쿠폰이 발급될 수 있으므로, 쿠폰별 SOLD/USED 상태를 주문 단위로 집계한 값이다. S15 목록에서 컬럼으로 표시.</div>
+          <table class="pd-table">
+            <tr><th>사용 상태</th><th>집계 기준</th><th>표시 조건</th></tr>
+            <tr><td><b>미사용</b></td><td>발급된 모든 쿠폰이 SOLD 상태</td><td>결제완료 주문에서만 표시</td></tr>
+            <tr><td><b>일부사용</b></td><td>발급된 쿠폰 중 일부는 USED, 일부는 SOLD</td><td>결제완료 주문에서만 표시</td></tr>
+            <tr><td><b>사용완료</b></td><td>발급된 모든 쿠폰이 USED 상태</td><td>결제완료 주문에서만 표시</td></tr>
+            <tr><td>—</td><td>(취소완료 주문은 사용상태 표시 없음)</td><td>주문상태=취소완료이면 사용상태 비해당</td></tr>
+          </table>
+          <div class="pd-rule"><b>미결(신규-3):</b> 일부사용(USED 포함) 주문의 전체 취소 처리 규칙은 운영정책 확정 필요. (13절 참고)</div>
         </div>
       </div>
     </div>
@@ -305,13 +337,24 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
           <div class="pd-rule">단품 고객 취소 자동화 가능: High1 통보 불필요(DB 상태 변경만) + 취소정책 사전 설정 + 결제 환불 API 자동 호출.</div>
         </div>
         <div class="pd-item">
-          <div class="pd-item-title">티켓 취소 정책 설정 (S14-B)</div>
+          <div class="pd-item-title">티켓 취소 정책 설정 (S14-B) — 날짜지정형: 이용일 기준</div>
           <div class="pd-desc">어드민 S14-B에서 상품별 직접 입력(수동). <b>숙소 취소정책(S06-A)과 동일 구조</b>, 단 기준이 <b>이용일(사용일)</b>(숙소는 체크인 기준).<br>
           구간: 기준일 셀렉트(3일 이상 전 / 2일 전 / 1일 전 / 당일 24시 이전) + <b>위약금율(%)</b>. <b>1구간 이상 없으면 저장 불가.</b></div>
           <div class="pd-rose"><b>위약금율 표기:</b> 0% = 무료취소(전액환불) / 1~99% = 부분 위약금 / 100% = 환불불가. <b>1구간 이상 필수</b>, <b>노쇼 고정행 없음</b>(PO 결정).</div>
           <div class="pd-pre">구간1: 이용일 3일 이상 전  → 위약금율 0%   (무료취소)
 구간2: 이용일 2일 전       → 위약금율 50%
 구간3: 이용일 당일 24시 이전 → 위약금율 100% (환불불가)</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">오픈형 취소 특례 (사용기간 종료일 기준) — A안 확정</div>
+          <div class="pd-warn"><b>v0.11 추가 — 오픈형 취소 기준.</b> 날짜지정형 상품은 위 이용일 기준 취소 구간을 적용한다. <b>오픈형 상품은 이용일(사용일)이 없으므로 이용일 기준 취소 구간을 적용할 수 없다.</b> 오픈형 상품의 취소 기준은 아래와 같다.</div>
+          <table class="pd-table">
+            <tr><th>취소 시점</th><th>쿠폰 상태</th><th>환불</th></tr>
+            <tr><td>사용기간 종료일(use_end_date) <b>이전</b></td><td>SOLD (미사용)</td><td><b>전액 환불</b></td></tr>
+            <tr><td>사용기간 종료일(use_end_date) <b>이후</b></td><td>SOLD (미사용)</td><td><b>환불 불가</b></td></tr>
+            <tr><td>사용 완료 후</td><td>USED</td><td><b>환불 불가</b> (사용취소는 High1 /cancel로만 가능)</td></tr>
+          </table>
+          <div class="pd-rule"><b>오픈형 취소 기준 = 사용기간 종료일(use_end_date).</b> 이 값은 S13 쿠폰 스펙의 `사용종료일` 필드에서 가져온다. 오픈형 상품에서 S14-B 취소정책(이용일 기준 구간)은 <b>날짜지정형 전환 시를 대비해 설정값을 유지하지만, 오픈형 운영 중에는 위 특례가 우선 적용된다.</b></div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">전체 취소만 운영 (부분취소·부분환불 폐지)</div>
@@ -371,28 +414,82 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
       <div class="pd-section-title"><span class="badge">11</span>마진 관리 정책</div>
       <div class="pd-body">
         <div class="pd-item">
-          <div class="pd-item-title">티켓 마진 = 쿠폰ID(coupon_id) 단위</div>
-          <div class="pd-warn"><b>v0.6 변경 — 티켓 마진 = 쿠폰ID 단위 재정의.</b> 종전 "카테고리(1뎁스) 마스터 + S14-B 레벨별 개별 설정" 구조 폐기. coupon_id=관리 축 / category=필터 / level=옵션 재편에 맞춰, 마진은 <b>쿠폰ID 단위</b>로 설정. 한 쿠폰ID의 모든 레벨(대인·소인)은 <b>동일 마진</b> 적용. S11 마진관리에서 숙소/티켓 탭 통합 운영.</div>
-          <div class="pd-pre">① S11 티켓 탭 — 쿠폰ID별 마진 설정
-    카테고리 선택(필터) → 해당 카테고리 쿠폰ID 목록 → 쿠폰ID별 마진(모든 레벨 동일)
-    미설정 쿠폰ID → 전역 디폴트 마진 적용
-   ▼
-② S14-B — 마진 읽기전용 표시 (연결 쿠폰ID 마진 표시만, 레벨별 개별 UI 없음)</div>
+          <div class="pd-item-title">개요 — 카테고리 마스터 + 쿠폰ID 오버라이드</div>
+          <div class="pd-warn"><b>v0.10 변경 — 티켓 마진 구조 전면 재정의.</b> 종전(v0.6~v0.9) "쿠폰ID 단위 단일 설정" 구조를 폐기한다. <b>카테고리 마스터(1/2뎁스) + 쿠폰ID 개별 오버라이드 절충안</b>으로 전환한다. S11 마진관리 화면에서 숙소/티켓 탭 통합 운영한다.</div>
         </div>
         <div class="pd-item">
-          <div class="pd-item-title">설정 축 정리</div>
-          <div class="pd-desc"><b>관리 축 = 쿠폰ID.</b> 마진은 S11 티켓 탭에서 쿠폰ID 단위로 설정.<br>
-          <b>category는 필터.</b> S11에서 카테고리를 골라 그 안 쿠폰ID 목록을 좁히는 용도.<br>
-          <b>level은 옵션(구분자).</b> 레벨별로 마진 차등 불가. 쿠폰ID 하나의 마진 = 그 안 모든 레벨 공통.<br>
-          <b>S14-B는 읽기전용.</b> 상품 화면에서는 연결 쿠폰ID의 마진을 표시만 함.</div>
+          <div class="pd-item-title">마진 설정 구조</div>
+          <div class="pd-pre">① S11 티켓 탭 — 카테고리/상품유형 선택 (A안 UX)
+    ├── [마스터 마진 설정 영역]
+    │    선택한 카테고리(1뎁스) 또는 상품유형(2뎁스)의 기본 마진 설정
+    └── [쿠폰ID 목록]
+         선택한 카테고리/상품유형에 속한 쿠폰ID 전체 표시
+         각 행: 상속(카테고리 마스터 적용 중) / 개별(오버라이드 설정됨) 배지
+         "개별 설정" 토글 ON → 쿠폰ID별 마진 편집 활성화
+         "개별 설정" 해제 → 카테고리 마스터로 복귀
+   ▼
+② S14-B — 마진 읽기전용 표시
+       연결 쿠폰ID에 실제 적용되는 마진(상속 또는 개별) 표시만 함</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">마진 적용 우선순위 (4단계)</div>
+          <div class="pd-desc">여러 조건 중 가장 높은 우선순위가 적용된다.</div>
+          <table class="pd-table">
+            <tr><th>우선순위</th><th>설정 위치</th><th>설명</th></tr>
+            <tr><td>1 (최우선)</td><td>쿠폰ID 개별 오버라이드</td><td>S11에서 해당 쿠폰ID에 직접 설정한 마진</td></tr>
+            <tr><td>2</td><td>2뎁스(상품유형) 마스터</td><td>해당 상품유형에 설정한 마진 (예: 스키&gt;리프트권)</td></tr>
+            <tr><td>3</td><td>1뎁스(카테고리) 마스터</td><td>해당 카테고리에 설정한 마진 (예: 스키)</td></tr>
+            <tr><td>4 (최하위)</td><td>전역 디폴트</td><td>카테고리 미설정 시 적용 (마진금액 30,000원)</td></tr>
+          </table>
+          <div class="pd-rule"><b>예시:</b> 쿠폰ID <code>DBO</code>가 스키 &gt; 리프트권에 속하는 경우 — <code>DBO</code> 개별 설정이 있으면 그 값 적용. 없으면 리프트권(2뎁스) 마스터 적용. 리프트권도 없으면 스키(1뎁스) 마스터 적용. 스키도 없으면 전역 디폴트(30,000원) 적용.</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">S11 티켓 탭 UX 흐름 (A안)</div>
+          <div class="pd-pre">[카테고리 선택 영역]
+  칩/드롭다운: 스키 / 워터파크 / 식사권 / 곤돌라 … (1뎁스)
+  선택한 카테고리 하위에 상품유형(2뎁스)이 있으면 → 상품유형 선택 칩 추가 표시
+      ↓ 카테고리 또는 상품유형 선택 시
+[마스터 마진 설정 영역]
+  선택된 뎁스의 기본 마진 설정 (마진 유형 · 값 · 판매가 예시)  [마스터 저장]
+[쿠폰ID 목록]
+  컬럼: 쿠폰ID / 이용권명 / 상속|개별 배지 / 마진 유형 / 마진 값 / 판매가 예시(레벨별) / 개별설정 토글
+  - 상속 배지: 현재 마스터 값 회색 읽기전용 표시
+  - 개별 배지: 오버라이드 값 편집 가능
+  - 토글 ON → 편집 활성화 + 배지 "개별" / 토글 OFF → 마스터로 복귀 + 배지 "상속"
+  [쿠폰ID 마진 저장]</div>
+          <div class="pd-rule"><b>마스터 저장 → 쿠폰ID 목록 "상속" 행 즉시 갱신.</b> <b>일괄 적용:</b> 카테고리 필터로 범위 좁힘 → 마진 유형·값 → [전체 적용] → 표시된 쿠폰ID에 일괄 "개별" 설정.</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">저장 구조</div>
+          <div class="pd-pre">h1_ticket_margin_master_v1 = {
+  categories: {
+    "스키":         { type: "amount", value: 5000 },  // 1뎁스 마스터
+    "스키&gt;리프트권": { type: "amount", value: 4000 }  // 2뎁스 마스터
+  },
+  overrides: {
+    "DBO": { type: "amount", value: 6000 }             // 쿠폰ID 개별 오버라이드
+  }
+}</div>
+          <div class="pd-rule"><b>미결(신규-4):</b> 저장 키 <code>h1_ticket_margin_master_v1</code> 확정 여부 — 위 구조로 스키마 변경이 발생하므로 키 이름도 함께 재확정 필요.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">마진 규칙</div>
-          <div class="pd-desc">마진율(%) 또는 마진금액(정액) 선택. 마진율 <b>-49%~+100%(정수만)</b>, 계산 결과 소수점 <b>버림(floor)</b>. 음수=할인 / 양수=마크업. 이력 관리 필수(변경일시·변경자·전/후).</div>
+          <div class="pd-desc">마진율(%) 또는 마진금액(정액) 선택. 마진율 <b>-49%~+100%(정수만, 소수점 입력 불가)</b>, 계산 결과 소수점 <b>버림(floor)</b>. 음수=할인 / 양수=마크업. 이력 관리 필수(변경일시·변경자·전/후). <b>level(대인/소인)은 마진 단위가 아님</b> — 쿠폰ID(또는 카테고리 마스터)의 마진이 모든 레벨에 동일 적용.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">오픈형 상품의 마진</div>
-          <div class="pd-desc"><b>v0.4</b> 주 운영 방식은 오픈형(날짜지정형 기능 유지). 오픈형은 날짜 지정이 없으므로 <b>마진은 쿠폰ID 단위(S11 티켓 탭) 고정 설정</b> — 날짜별·레벨별 차등 없음. <b>판매가 = 입금가(스펙 적용금액) + 쿠폰ID 마진.</b></div>
+          <div class="pd-desc">오픈형으로 운영하는 경우 날짜 지정이 없으므로: <b>마진은 카테고리 마스터 또는 쿠폰ID 오버라이드로 고정 설정</b> — 날짜별 차등 없음. <b>판매가 = 입금가(스펙 파일 적용금액) + 적용 마진(우선순위 11.3절).</b></div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">11.8 S13 CSV 업로드 → S11 마진 자동 연동 (v0.11 신규)</div>
+          <div class="pd-desc">S13에서 CSV 업로드가 완료되면 등록된 쿠폰코드(coupon_id) 정보가 S11 티켓 마진 목록에 자동 반영된다.</div>
+          <table class="pd-table">
+            <tr><th>케이스</th><th>처리</th></tr>
+            <tr><td>신규 쿠폰코드</td><td>S11 티켓 목록에 행 추가. 마진 미설정(상속) 상태로 초기화.</td></tr>
+            <tr><td>기존 — 카테고리·상품유형 동일</td><td>변경 없음. 기존 마진값 유지.</td></tr>
+            <tr><td>기존 — 카테고리/상품유형 변경</td><td>카테고리·상품유형 매핑 업데이트. 마진값 유지. 단, 아래 경고 처리 적용.</td></tr>
+          </table>
+          <div class="pd-warn"><b>카테고리 변경 시 경고:</b> 카테고리·상품유형이 변경된 쿠폰코드 중 마진이 <b>'상속'</b> 상태인 항목은 새 카테고리 마스터로 재계산된다. 1건 이상이면 업로드 결과(탭A 성공/실패 요약 하단)에 <b>"N개 쿠폰코드의 카테고리가 변경되어 상속 마진이 재계산되었습니다. S11 마진관리에서 확인하세요."</b> 경고 표시. <b>개별(오버라이드)</b> 쿠폰코드는 유지되어 경고 제외.</div>
         </div>
       </div>
     </div>
@@ -404,42 +501,65 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
         <div class="pd-item">
           <div class="pd-item-title">GNB / LNB 배치</div>
           <table class="pd-table">
-            <tr><th>GNB</th><th>화면 번호</th><th>화면명</th></tr>
-            <tr><td rowspan="4">티켓관리</td><td>S13</td><td>쿠폰 스펙 관리</td></tr>
-            <tr><td>S14-A</td><td>티켓 상품 목록</td></tr>
-            <tr><td>S14-B</td><td>상품 마스터 (기본정보·마진·취소정책)</td></tr>
-            <tr><td>S14-C</td><td>날짜 설정 (날짜·한도·커트오프)</td></tr>
-            <tr><td rowspan="3">예약관리</td><td>S15</td><td>티켓 예약/주문 관리</td></tr>
-            <tr><td><b>S15-B</b></td><td><b>티켓 주문 상세 페이지</b> (<code>#/ticket-orders/:id</code>)</td></tr>
-            <tr><td>S16</td><td>쿠폰 발급 현황</td></tr>
-            <tr><td rowspan="2">공통관리</td><td>S17</td><td>티켓 카테고리관리 (신규)</td></tr>
-            <tr><td>S11</td><td>마진관리 (숙소·티켓 탭 통합)</td></tr>
+            <tr><th>GNB</th><th>LNB</th><th>화면 번호</th><th>화면명</th></tr>
+            <tr><td rowspan="4">티켓관리</td><td>쿠폰 스펙 관리</td><td>S13</td><td>쿠폰 스펙 관리</td></tr>
+            <tr><td>상품 목록</td><td>S14-A</td><td>티켓 상품 목록</td></tr>
+            <tr><td>상품 마스터 (탭1)</td><td>S14-B</td><td>티켓 상품 기본정보·마진·취소정책</td></tr>
+            <tr><td>날짜 설정 (탭2)</td><td>S14-C</td><td>티켓 상품 날짜·한도·커트오프</td></tr>
+            <tr><td rowspan="4">예약관리</td><td>숙소 예약</td><td>S10</td><td>숙소 예약관리 (기존)</td></tr>
+            <tr><td>티켓 예약·주문</td><td>S15</td><td>티켓 예약/주문 관리</td></tr>
+            <tr><td><b>티켓 주문 상세</b></td><td><b>S15-B</b></td><td><b>티켓 주문 상세 페이지</b> (<code>#/ticket-orders/:id</code>)</td></tr>
+            <tr><td>쿠폰 발급현황</td><td>S16</td><td>쿠폰 발급 현황</td></tr>
+            <tr><td rowspan="2">화면관리</td><td>메인관리</td><td>S12-A</td><td>메인 화면관리</td></tr>
+            <tr><td><b>이메일 템플릿 관리</b></td><td><b>S18-A</b></td><td><b>이메일 템플릿 관리 (신규 — 12.7절, 숙소+티켓 통합)</b></td></tr>
+            <tr><td rowspan="5">공통관리</td><td>카테고리관리</td><td>S07</td><td>카테고리관리 (기존)</td></tr>
+            <tr><td>시설관리</td><td>S08</td><td>시설관리 (기존)</td></tr>
+            <tr><td>객실유형관리</td><td>S09</td><td>객실유형관리 (기존)</td></tr>
+            <tr><td>티켓 카테고리관리</td><td>S17</td><td>티켓 카테고리관리 (신규)</td></tr>
+            <tr><td>마진관리</td><td>S11</td><td>마진관리 숙소·티켓 탭 통합 (기존+티켓 탭 추가)</td></tr>
           </table>
-          <div class="pd-warn"><b>v0.6 변경:</b> S15-B 티켓 주문 상세 페이지 추가(라우트 <code>#/ticket-orders/:id</code>). S16에서 VOID 기능 제거(9절).</div>
+          <div class="pd-warn"><b>변경 이력:</b> v0.6 S15-B 티켓 주문 상세 페이지 추가(라우트 <code>#/ticket-orders/:id</code>), S16 VOID 기능 제거(9절). v0.11 화면관리 LNB에 S18-A 이메일 템플릿 관리 신규 추가(12.7절). <b>v0.12 S17 티켓 카테고리관리는 공통관리 LNB에 배치(정책서 기준 · SoT).</b></div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">S13 — 쿠폰 스펙 관리</div>
           <div class="pd-desc"><b>탭 구조:</b> 탭A(업로드 &amp; 스펙 목록: CSV 업로드 영역 + 등록 스펙 목록) / 탭B(업로드 이력: 최근 50건·페이지네이션 + 인라인 펼침 상세 결과).<br>
           High1 엑셀 → 우리 CSV 템플릿 변환 후 업로드. <b>스펙 데이터 변경은 엑셀 재업로드(덮어쓰기)로 일원화, 개별 수정 없음.</b></div>
-          <div class="pd-rose"><b>v0.7 CSV 컬럼 재정의(한국어 10컬럼):</b> 카테고리(필수) · 상품유형 · 쿠폰코드(필수) · 이용권명(필수) · 레벨(필수) · 쿠폰명(필수) · 입금가(필수) · 할인대상내역 · 사용시작일(필수, YYYY-MM-DD) · 사용종료일(필수, YYYY-MM-DD). <b>ticket_type·사용인원 제거, 이용권명 신규 추가, 컬럼명 한국어화, 날짜 형식 명시.</b></div>
-          <div class="pd-warn"><b>v0.7 선행 필수 — S17 카테고리 등록:</b> CSV의 `카테고리`·`상품유형` 값에 해당하는 카테고리가 반드시 S17에 <b>선행 등록</b>되어 있어야 함. 불일치 시 해당 행 업로드 실패(사유: "카테고리 불일치"/"상품유형 불일치"). 실패 행은 탭B 인라인 상세에서 라인번호·오류사유 확인.</div>
+          <div class="pd-rose"><b>CSV 컬럼(한국어 10컬럼):</b> 카테고리(필수) · 상품유형 · 쿠폰코드(필수) · 이용권명(필수) · 레벨(필수) · 쿠폰명(필수) · 입금가(필수) · 할인대상내역 · 사용시작일(필수, YYYY-MM-DD) · 사용종료일(필수, YYYY-MM-DD). <b>ticket_type·사용인원 제거, 이용권명 신규 추가, 컬럼명 한국어화, 날짜 형식 명시(v0.7).</b></div>
+          <div class="pd-warn"><b>선행 필수 — S17 카테고리 등록:</b> CSV의 `카테고리`·`상품유형` 값에 해당하는 카테고리가 반드시 S17에 <b>선행 등록</b>되어 있어야 함. 불일치 시 해당 행 업로드 실패(사유: "카테고리 불일치"/"상품유형 불일치"). 실패 행은 탭B 인라인 상세에서 라인번호·오류사유 확인.</div>
           <div class="pd-desc"><b>재업로드:</b> 동일 쿠폰ID+레벨 존재 시 "N건 이미 존재, 덮어쓰시겠습니까?" 확인 필수.<br>
           <b>노출 ON/OFF(운영 토글):</b> 데이터와 분리. OFF → 연결 S14 상품 전체 강제 미노출 cascade(🔒). ON → 상품 개별 노출로 복귀.</div>
-          <div class="pd-rose"><b>v0.7 스펙 삭제 조건 변경:</b> 기존 "삭제 없음(토글 OFF 대체)" → <b>조건부 삭제 허용.</b> 연결 S14 상품 <b>0개</b> AND 발급 쿠폰(SOLD/USED/CANCELED) <b>0개</b>일 때만 삭제 가능. 미충족 시 버튼 비활성화(툴팁). 충족 시에도 관리자 확인 모달 필수.</div>
+          <div class="pd-rose"><b>스펙 삭제 조건(v0.7):</b> 기존 "삭제 없음(토글 OFF 대체)" → <b>조건부 삭제 허용.</b> 연결 S14 상품 <b>0개</b> AND 발급 쿠폰(SOLD/USED/CANCELED) <b>0개</b>일 때만 삭제 가능. 미충족 시 버튼 비활성화(툴팁). 충족 시에도 관리자 확인 모달 필수.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">S14 — 티켓 상품 관리 (S14-A/B/C)</div>
+          <div class="pd-warn"><b>v0.12 콘텐츠 소유 재정의 (A안 확정):</b> 상품(S14)과 카테고리/뎁스(S17)의 콘텐츠 소유를 명확히 분리한다.<br>
+          · <b>S17(카테고리/뎁스) 소유:</b> 히어로 이미지, 개요, 상세설명, 이용안내, 정책, 위치 정보<br>
+          · <b>S14(상품) 소유:</b> 판매 옵션(레벨·입금가), 연결 스펙, 판매기간, <b>썸네일</b>, 날짜 설정<br>
+          · <b>상품별 히어로 이미지·상세소개 필드 폐지</b> — 콘텐츠 중복 등록 방지, 카테고리 단위 공통 사용.<br>
+          · <b>프런트 상세보기 모달:</b> 카테고리 콘텐츠(히어로·설명)를 표시하고 <b>가격표(사용기간·옵션가)만</b> 모달 내 노출로 간소화.</div>
           <div class="pd-desc"><b>2단 계층:</b> S13 쿠폰 스펙(원본) → S14 티켓 상품(판매 단위, 1:N).<br>
-          <b>S14-B 상품 마스터:</b> 기본정보(상품명 EN 필수·ZH 선택 / 카테고리 뎁스 드롭다운(S17 기준) / 연결 스펙 선택 / 노출 토글) · <b>마진(읽기전용 — 연결 쿠폰ID의 S11 설정값 상속 표시, 레벨별 개별 없음, 판매가 미리보기)</b> · 취소정책(이용일 기준, 1구간 이상 필수, 노쇼 없음).</div>
-          <div class="pd-warn"><b>v0.6 — S14-B 마진은 읽기전용 표시.</b> 마진은 S11 티켓 탭에서 쿠폰ID 단위로 설정하므로(11절), S14-B는 연결 쿠폰ID 마진을 표시만 함. 종전 "레벨별 마진 개별 설정 / 일괄 적용 버튼" 제거.</div>
+          <b>S14-B 상품 마스터:</b> 기본정보(상품명 EN 필수·ZH 선택 / 카테고리 뎁스 드롭다운(S17 기준) / 연결 스펙 선택 / <b>썸네일 이미지(이미지 스토리지 업로드 → URL 저장)</b> / 노출 토글 / <b>판매기간(판매시작일·판매종료일)</b>) · <b>마진(읽기전용 — 연결 쿠폰ID에 실제 적용되는 마진(상속 또는 개별, 11절) 표시, 레벨별 개별 없음, 판매가 미리보기)</b> · 취소정책(이용일 기준, 1구간 이상 필수, 노쇼 없음).</div>
+          <div class="pd-rose"><b>판매기간(v0.9 신규):</b> High1 제공 사용기간(현장 입장)과 별개로, 우리 홈페이지 판매 가능 기간을 관리자가 직접 설정. 판매시작일 미설정 → 즉시 판매 / 판매종료일 미설정 → 노출 토글로만 제어. <b>판매종료일 자정(00:00) 경과 시 프런트 자동 미노출</b>(수동 조작 불필요). 미노출 조건(OR): 판매종료일 초과 / 노출 토글 OFF / 연결 스펙 토글(S13) OFF — 하나라도 해당되면 미노출.</div>
+          <div class="pd-warn"><b>S14-B 마진은 읽기전용 표시(v0.6).</b> 마진은 S11 티켓 탭에서 카테고리 마스터+쿠폰ID 오버라이드로 설정하므로(11절), S14-B는 연결 쿠폰ID에 실제 적용되는 마진을 표시만 함. 종전 "레벨별 마진 개별 설정 / 일괄 적용 버튼" 제거.</div>
           <div class="pd-desc"><b>S14-C 날짜 설정:</b> 날짜 방식 — <b>오픈형(날짜 미지정, 사용기간 내 자유 사용, 우선 운영)</b> / 날짜지정형(날짜별 한도·입금가·커트오프, 기능 유지·현재 미사용). 유효기간은 스펙 사용시작/종료일 기준 표시용, 실제 날짜 유효성 체크 미구현(4절). 커트오프: N일/N시간 전 + 기준 시각(HH:MM), 미설정 시 이용일 당일 자정까지 구매 가능.</div>
-          <div class="pd-warn"><b>v0.7 상품 뎁스 — 최대 2뎁스:</b> ticket_type(3뎁스: 4시간권·7시간권·종일권 등) 제거. 1뎁스(카테고리: 스키/워터파크/식사권/곤돌라) / 2뎁스(상품유형: 스키&gt;리프트권·장비렌탈, 없는 카테고리는 1뎁스만). 권종 구분은 쿠폰명·쿠폰코드 수준에서 관리. 카테고리는 S17에서 관리자가 직접 등록.</div>
+          <div class="pd-warn"><b>상품 뎁스 — 최대 2뎁스(v0.7):</b> ticket_type(3뎁스: 4시간권·7시간권·종일권 등) 제거. 1뎁스(카테고리: 스키/워터파크/식사권/곤돌라) / 2뎁스(상품유형: 스키&gt;리프트권·장비렌탈, 없는 카테고리는 1뎁스만). 권종 구분은 쿠폰명·쿠폰코드 수준에서 관리. 카테고리는 S17에서 관리자가 직접 등록.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">S15 / S15-B — 티켓 예약·주문 관리</div>
-          <div class="pd-desc"><b>S15 목록:</b> 주문번호 · 고객명/연락처 · 상품명 · 수량(레벨별) · 결제금액 · 결제수단 · 주문상태 · 주문일시 · <b>사용상태(미사용/일부사용/사용완료)</b>. 취소/환불 = <b>전체취소만</b>(자동·수동, 부분취소·부분환불 없음). [상세] 클릭 → S15-B 이동.</div>
-          <div class="pd-rose"><b>v0.6 — "사용날짜" 대신 사용상태 컬럼.</b> 오픈형 운영이라 한 주문에 여러 쿠폰 발급 → 전부 미사용=미사용 / 일부만 USED=일부사용 / 전부 USED=사용완료.</div>
-          <div class="pd-desc"><b>S15-B 주문 상세 페이지(v0.6 신규, <code>#/ticket-orders/:id</code>):</b> ① 주문 정보(번호·상태·일시·결제금액·수단) ② 고객 정보(명·연락처·이메일·국적) ③ 발급 쿠폰 목록(12자리 번호·쿠폰명/레벨·상태·사용기간) ④ 취소·환불(주문 단위 전체취소, 위약금율 적용 환불액 표시, 부분 없음) ⑤ 이력(발급·사용·사용취소·주문취소 시간순).</div>
+          <div class="pd-desc"><b>S15 목록:</b> 주문번호 · 고객명/연락처 · 상품명 · 수량(레벨별) · 결제금액 · 결제수단 · 주문상태(결제완료/취소완료) · 주문일시 · <b>사용상태(미사용/일부사용/사용완료)</b>. 필터: 주문번호/고객명/연락처, 상품, 주문상태, 사용상태, 주문일 범위. 취소/환불 = <b>전체취소만</b>(자동·수동, 부분취소·부분환불 없음). [상세] 클릭 → S15-B 이동.</div>
+          <div class="pd-rose"><b>"사용날짜" 대신 사용상태 컬럼(v0.6).</b> 오픈형 운영이라 한 주문에 여러 쿠폰 발급 → 전부 미사용=미사용 / 일부만 USED=일부사용 / 전부 USED=사용완료. 주문상태 값은 결제완료/취소완료 2종(v0.8, 5.3절).</div>
+          <div class="pd-desc"><b>S15-B 주문 상세 페이지(v0.6 신규, <code>#/ticket-orders/:id</code>):</b> ① 주문 정보(번호·상태·일시·결제금액·수단) ② 고객 정보(명·연락처·이메일·국적) ③ 발급 쿠폰 목록(아래 7컬럼) ④ 취소·환불(주문 단위 전체취소, 위약금율 적용 환불액 표시, 부분 없음) ⑤ 이력(발급·사용·사용취소·주문취소 시간순).</div>
+          <table class="pd-table">
+            <tr><th>발급 쿠폰 목록 컬럼</th><th>설명</th></tr>
+            <tr><td>쿠폰번호</td><td>12자리 고유번호</td></tr>
+            <tr><td>쿠폰명/레벨</td><td>레벨별 표시명 (예: 워터월드 종일권_성수기(대인/얼리) / LV.1)</td></tr>
+            <tr><td>쿠폰 상태</td><td>SOLD / USED / CANCELED</td></tr>
+            <tr><td>입금가</td><td>High1에 납부하는 원가 (<b>고객 미노출</b>, 정산 기준)</td></tr>
+            <tr><td>판매가</td><td>고객 청구 금액 = 입금가 + 마진</td></tr>
+            <tr><td>사용기간</td><td>현장 사용 가능 기간</td></tr>
+            <tr><td>사용일시</td><td>High1 /use 호출 시각. USED 상태인 경우에만 표시. SOLD/CANCELED는 공란.</td></tr>
+          </table>
+          <div class="pd-rose"><b>입금가·판매가·사용일시 컬럼 추가(v0.8).</b> 정산 시 어떤 쿠폰이 얼마에 납부됐고 언제 사용됐는지를 주문 상세 한 화면에서 확인. 종전 3컬럼(쿠폰명/레벨·상태·사용기간) → <b>7컬럼</b>으로 확장.</div>
           <div class="pd-rule"><b>미결(신규-3):</b> 사용완료(USED) 쿠폰 포함 주문의 전체취소 처리 규칙 운영정책 확정 필요.</div>
         </div>
         <div class="pd-item">
@@ -455,39 +575,123 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
           <b>S13 CSV 선행 요건:</b> S13 업로드 시 CSV `카테고리`/`상품유형` 값이 S17 등록값과 정확히 일치해야 함. 불일치 시 해당 행 실패(12.2 검증).<br>
           <b>레벨(대인/소인)은 카테고리에서 제외</b> — 레벨은 카테고리 뎁스가 아니라 <b>상품 구분자(옵션)</b>. 카테고리 트리에 레벨을 넣지 않음.<br>
           <b>최대 2뎁스:</b> 1뎁스(카테고리)/2뎁스(상품유형). 3뎁스 없음. 초기 등록 예시: 스키 / 스키&gt;리프트권 / 스키&gt;장비렌탈 / 워터파크 / 식사권 / 곤돌라.</div>
+          <div class="pd-warn"><b>v0.12 콘텐츠 소유 추가 (A안):</b> S17 카테고리/뎁스가 아래 콘텐츠를 소유한다. S14 상품은 썸네일만 소유하며, 나머지 콘텐츠는 카테고리 단위로 공통 관리한다.</div>
+          <table class="pd-table">
+            <tr><th>콘텐츠 항목</th><th>설명</th><th>다국어</th></tr>
+            <tr><td>히어로 이미지</td><td>카테고리 상세 화면 상단 대표 이미지</td><td>이미지 URL 저장</td></tr>
+            <tr><td>개요</td><td>카테고리 한 줄 소개</td><td>EN 필수 / ZH 선택</td></tr>
+            <tr><td>상세설명</td><td>카테고리 본문 설명 (HTML)</td><td>EN 필수 / ZH 선택</td></tr>
+            <tr><td>이용안내</td><td>현장 이용 시 주의사항·안내</td><td>EN 필수 / ZH 선택</td></tr>
+            <tr><td>정책</td><td>취소·환불 등 이용 정책 안내</td><td>EN 필수 / ZH 선택</td></tr>
+            <tr><td>위치 정보</td><td>영업장 위치·교통 안내</td><td>EN 필수 / ZH 선택</td></tr>
+          </table>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">S18-A — 이메일 템플릿 관리 (신규)</div>
+          <div class="pd-warn"><b>v0.11 신규 — 화면관리 LNB에 추가.</b> 숙소·티켓 예약/구매 완료 시 고객에게 발송하는 이메일 템플릿을 발송 유형별 탭으로 통합 관리. 나중에 투어 등 상품 유형이 추가되어도 탭 추가로 확장 가능한 구조.</div>
+          <table class="pd-table">
+            <tr><th>탭 (발송 유형)</th><th>발송 시점</th><th>시스템 자동 삽입 항목</th></tr>
+            <tr><td><b>숙소 예약확정</b></td><td>PMS 연동 상품: API 6 예약 완료 시 / 수기 상품: 관리자 확정 처리 시</td><td>예약번호, 숙소명, 체크인/아웃 일자, 객실명, 결제금액</td></tr>
+            <tr><td><b>숙소 대기 알림</b> (수기 전용)</td><td>수기 상품 예약 접수 직후 (대기 상태 진입 시)</td><td>예약번호, 숙소명, 체크인/아웃 일자, 대기 안내</td></tr>
+            <tr><td><b>숙소 취소완료</b></td><td>취소 처리 완료 시</td><td>예약번호, 취소일시, 환불 금액</td></tr>
+            <tr><td><b>티켓 구매완료</b></td><td>PG 결제 완료 즉시</td><td>주문번호, 상품명, 바코드 이미지, 사용기간</td></tr>
+            <tr><td><b>티켓 취소완료</b></td><td><i>(미결 신규-5 — 발송 여부 미확정)</i></td><td>—</td></tr>
+          </table>
+          <div class="pd-rule"><b>시스템 자동 삽입 항목은 편집 불가.</b> 위 자동 삽입 항목은 시스템이 자동으로 채운다. 관리자가 편집하는 것은 아래 안내 문구 영역만이다.</div>
+          <div class="pd-desc"><b>편집 항목(탭 공통):</b> 안내 문구 <b>EN(필수 — 미설정 시 저장 불가)</b> / <b>ZH(선택 — 미설정 시 EN으로 대체 발송)</b>.<br>
+          <b>티켓 구매완료 탭 한정:</b> 안내 문구 외에 <b>이용안내 문구(EN/ZH)</b> + <b>취소·환불 안내(EN/ZH)</b> 추가 관리. <b>카테고리(1뎁스)별 오버라이드</b> 가능(전체 기본 + 카테고리별 덮어쓰기).</div>
+          <table class="pd-table">
+            <tr><th>노출 채널</th><th>대상 탭</th><th>비고</th></tr>
+            <tr><td>이메일 자동 발송</td><td>전체 탭</td><td>각 발송 시점에 자동 발송</td></tr>
+            <tr><td>프런트 예약/주문 상세</td><td>숙소 예약확정 · 티켓 구매완료 (2탭만)</td><td>동일 안내 문구 표시 (별도 설정 불필요)</td></tr>
+          </table>
+          <div class="pd-rule"><b>미결(신규-5):</b> 티켓 취소완료 이메일 발송 여부 확정 필요. (13절 참고)</div>
         </div>
       </div>
     </div>
 
-    <!-- 13 -->
+    <!-- 13 (신규) -->
     <div class="pd-section">
-      <div class="pd-section-title"><span class="badge">13</span>미결 사항</div>
+      <div class="pd-section-title"><span class="badge">13</span>프런트 티켓 검색 정책 (신규)</div>
+      <div class="pd-body">
+        <div class="pd-item">
+          <div class="pd-item-title">13.1 사용일 기본값</div>
+          <div class="pd-rose"><b>v0.12 신규.</b> 프런트 검색바의 <b>티켓 사용일 기본값 = 오늘 +7일.</b></div>
+          <div class="pd-desc">검색 결과: <b>사용일 기준 그날 사용 가능한 판매 중 티켓만 노출.</b><br>
+          · <b>판매 중 조건:</b> 노출 ON AND 스펙 토글 ON AND 판매기간 유효<br>
+          · <b>사용일 기준:</b> 사용기간(use_start_date ≤ 사용일 ≤ use_end_date) 내인 상품만 노출 (날짜 유효성 체크 로직과 별개 — 노출 필터 목적)<br>
+          · 고객이 사용일을 직접 변경하면 해당 날짜 기준으로 재조회.</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">13.2 오픈형 vs 날짜지정형 노출 조건</div>
+          <table class="pd-table">
+            <tr><th>상품 방식</th><th>사용일 필터 적용</th></tr>
+            <tr><td>오픈형</td><td>사용기간(use_start_date ~ use_end_date) 내인 경우 노출</td></tr>
+            <tr><td>날짜지정형</td><td>선택한 날짜에 판매 한도 &gt; 0이고 커트오프 미경과인 경우 노출</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14 (신규) -->
+    <div class="pd-section">
+      <div class="pd-section-title"><span class="badge">14</span>이미지 저장 정책 (신규)</div>
+      <div class="pd-body">
+        <div class="pd-item">
+          <div class="pd-item-title">14.1 기본 원칙</div>
+          <div class="pd-warn"><b>v0.12 신규 — 이미지는 이미지 스토리지에 업로드 후 URL만 저장한다. base64 인라인 저장 절대 금지.</b></div>
+          <div class="pd-desc">어드민 내 모든 이미지 업로드 영역(카테고리 히어로·상품 썸네일·숙소 이미지·객실 이미지 등) 동일 적용.</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">14.2 환경별 구현</div>
+          <table class="pd-table">
+            <tr><th>환경</th><th>스토리지</th><th>업로드 방식</th></tr>
+            <tr><td>프로토타입</td><td>Cloudinary (무인증 업로드)</td><td>브라우저에서 직접 업로드. 자동 리사이즈 적용.</td></tr>
+            <tr><td>실서비스</td><td>자사 서버 또는 CDN 스토리지</td><td><b>서버 서명(signed) 업로드</b> 방식 구현 필요. 개발사가 구현.</td></tr>
+          </table>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">14.3 저장 형태</div>
+          <div class="pd-pre">// 올바른 저장 형태
+{ image_url: "https://res.cloudinary.com/xxx/image/upload/v1234/high1/hero.jpg" }
+
+// 금지 형태
+{ image_data: "data:image/jpeg;base64,/9j/4AAQ..." }  // base64 인라인 금지</div>
+          <div class="pd-desc">이미지 URL은 공개 접근 가능한 HTTPS URL이어야 한다. 실서비스 전환 시 Cloudinary URL → 자사 CDN URL로 마이그레이션 필요.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 16 -->
+    <div class="pd-section">
+      <div class="pd-section-title"><span class="badge">16</span>미결 사항</div>
       <div class="pd-body">
         <div class="pd-item">
           <table class="pd-table">
             <tr><th>#</th><th>항목</th><th>우선순위</th><th>확인 대상</th></tr>
-            <tr><td>M-01</td><td>HTTPS 필수 여부·SSL 인증서 요건</td><td>높음</td><td>High1 개발팀 (Q17 공란)</td></tr>
+            <tr><td>M-01</td><td>HTTPS 필수 여부·SSL 인증서 요건</td><td>높음</td><td>High1 개발팀 (Q17 공란 — 재확인 필요)</td></tr>
             <tr><td>M-02</td><td>API 응답 타임아웃 기준값</td><td>높음</td><td>High1 개발팀</td></tr>
             <tr><td>M-03</td><td>패키지 쿠폰-예약 매핑 API + 패키지 취소 통보 API 개발 일정</td><td>높음</td><td>High1 개발팀</td></tr>
             <tr><td>M-04</td><td>우리 전용 쿠폰 ID(코드) 발급 요청</td><td>높음</td><td>High1 해외마케팅 담당자</td></tr>
-            <tr><td>M-06</td><td>개발/테스트 환경 및 테스트 쿠폰 제공 여부</td><td>높음</td><td>High1 개발팀 (Q18 불완전)</td></tr>
+            <tr><td>M-06</td><td>개발/테스트 환경 및 테스트 쿠폰 제공 여부</td><td>높음</td><td>High1 개발팀 (Q18 답변 불완전)</td></tr>
             <tr><td>M-07</td><td>스키 시즌권 쿠폰 스펙 파일 수령</td><td>높음</td><td>High1 해외마케팅 담당자</td></tr>
             <tr><td>M-08</td><td>성인/소인 외 레벨 구성(청소년 등)</td><td>중간</td><td>High1 해외마케팅 담당자</td></tr>
             <tr><td>M-09</td><td>SLA / 서버 가용성 목표</td><td>중간</td><td>사업부</td></tr>
             <tr><td>M-10</td><td>취소된 쿠폰번호 재사용 상세 규칙</td><td>낮음</td><td>내부 결정</td></tr>
             <tr><td>M-12</td><td>판매 유형(얼리/상시/프로모션) 어드민 관리 방식</td><td>중간</td><td>내부 결정</td></tr>
-            <tr><td><b>신규-1</b></td><td>날짜별 입금가 조정 ↔ 실제 High1 납부액 관계</td><td>높음</td><td>High1 해외마케팅 담당자</td></tr>
-            <tr><td><b>신규-3</b></td><td>사용완료(USED) 쿠폰 포함 주문의 (전체)취소 처리 규칙</td><td>높음</td><td>내부 결정</td></tr>
+            <tr><td><b>신규-1</b></td><td>날짜별 입금가 조정 ↔ 실제 High1 납부액 관계 확정</td><td>높음</td><td>High1 해외마케팅 담당자</td></tr>
+            <tr><td><b>신규-3</b></td><td>사용완료(USED) 쿠폰이 포함된 주문의 (전체)취소 처리 규칙</td><td>높음</td><td>내부 결정 (운영정책 확정 필요)</td></tr>
             <tr><td><b>신규-4</b></td><td>티켓 마진 저장 키(<code>h1_ticket_margin_master_v1</code>) 확정</td><td>중간</td><td>내부 결정</td></tr>
+            <tr><td><b>신규-5</b></td><td>취소 완료 이메일 발송 여부 및 취소 이메일 템플릿 관리 필요 여부</td><td>중간</td><td>내부 결정 (S18-A 범위 결정에 영향)</td></tr>
           </table>
           <div class="pd-rule"><b>해소된 미결:</b> M-11(여권번호)→국적만 수집(v0.2) / 스펙 활성↔비활성→운영 토글(v0.3) / 신규-2(날짜지정형 한도 기본값)→오픈형 우선 운영(v0.4) / <b>M-13(BARCODE 자릿수)→12자리 확정(v0.5)</b> / <b>M-05(VOID/회수)→VOID 미운영 종결(v0.6)</b>.</div>
         </div>
       </div>
     </div>
 
-    <!-- 14 -->
+    <!-- 17 -->
     <div class="pd-section">
-      <div class="pd-section-title"><span class="badge">14</span>용어 정의</div>
+      <div class="pd-section-title"><span class="badge">17</span>용어 정의</div>
       <div class="pd-body">
         <div class="pd-item">
           <table class="pd-table">
@@ -495,22 +699,26 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
             <tr><td>쿠폰 스펙</td><td>High1 제공 쿠폰 정의 정보(쿠폰ID·레벨·입금가·사용기간). S13에서 관리.</td></tr>
             <tr><td>티켓 상품</td><td>스펙 기반으로 생성한 판매 단위(마진 표시·날짜·한도·취소정책). S14에서 관리.</td></tr>
             <tr><td>쿠폰번호</td><td>고객에게 발급되는 12자리 식별 코드. 우리 시스템이 <b>구매(결제 완료) 시점에 생성.</b></td></tr>
-            <tr><td>쿠폰ID (coupon_id)</td><td>쿠폰번호 앞 3자리 식별자. <b>티켓 관리·마진 설정의 관리 축.</b> 스펙 시트명과 동일.</td></tr>
+            <tr><td>쿠폰ID (coupon_id)</td><td>쿠폰번호 앞 3자리 식별자. <b>티켓 관리·마진 오버라이드의 관리 축.</b> 스펙 시트명과 동일.</td></tr>
             <tr><td>이용권명</td><td>스펙 파일 헤더의 쿠폰 식별명. 쿠폰ID와 1:1 대응. CSV `이용권명` 컬럼에 기재.</td></tr>
             <tr><td>입금가</td><td>High1에 납부하는 원가(스펙 적용금액). 고객 미노출.</td></tr>
             <tr><td>판매가</td><td>고객 청구 금액 = 입금가 + 마진. 소수점 버림.</td></tr>
             <tr><td>레벨</td><td>쿠폰 스펙 내 대인/소인 등 구분자(<b>옵션</b>). 카테고리 뎁스가 아님. 현장에서 성인/소인 별도 확인 없음 — 상품목록 표시 전용.</td></tr>
-            <tr><td>카테고리 (category)</td><td>스키/워터파크 등 1뎁스 분류. <b>S17에서 관리자가 직접 등록.</b> 마진 설정 시 <b>필터</b> 역할. S13 CSV 업로드 시 검증 기준.</td></tr>
-            <tr><td>상품유형 (product_type)</td><td>스키&gt;리프트권 등 2뎁스 분류. S17에서 1뎁스 하위에 등록. 해당 없는 카테고리는 공란.</td></tr>
-            <tr><td>마진 (티켓)</td><td><b>쿠폰ID(coupon_id) 단위</b>로 설정. 한 쿠폰ID의 모든 레벨 동일 마진. S11 티켓 탭에서 설정, S14-B는 읽기전용 표시.</td></tr>
+            <tr><td>카테고리 (category)</td><td>스키/워터파크 등 1뎁스 분류. <b>S17에서 관리자가 직접 등록.</b> 마진 마스터 설정 단위이자 S11 필터 역할. S13 CSV 업로드 시 검증 기준.</td></tr>
+            <tr><td>상품유형 (product_type)</td><td>스키&gt;리프트권 등 2뎁스 분류. S17에서 1뎁스 하위에 등록. 해당 없는 카테고리는 공란. 마진 마스터 설정 단위(2뎁스).</td></tr>
+            <tr><td>마진 (티켓)</td><td><b>카테고리 마스터(1/2뎁스) + 쿠폰ID 개별 오버라이드</b>로 설정. 적용 우선순위: 쿠폰ID 개별 &gt; 2뎁스 &gt; 1뎁스 &gt; 전역 디폴트(30,000원). 한 쿠폰ID의 모든 레벨 동일. S11 티켓 탭에서 설정, S14-B는 읽기전용 표시.</td></tr>
+            <tr><td>판매기간</td><td>S14-B에서 관리자가 직접 설정하는 홈페이지 판매 가능 기간(판매시작일~판매종료일). High1 스펙의 사용기간(현장 입장)과 별개. 판매종료일 자정이 지나면 프런트 자동 미노출.</td></tr>
             <tr><td>위약금율</td><td>취소 시 부과 비율. 0%=무료취소, 100%=환불불가.</td></tr>
             <tr><td>커트오프</td><td>이용일 기준 예약 마감 시점(N일/N시간 전 + HH:MM).</td></tr>
-            <tr><td>오픈형 / 날짜지정형</td><td>날짜 미지정 자유 사용(주 운영) / 이용일 선택 구매(기능 유지, 현재 미사용).</td></tr>
+            <tr><td>오픈 티켓 (오픈형) / 날짜지정형</td><td>날짜 미지정 자유 사용(주 운영) / 이용일 선택 구매(기능 유지, 현재 미사용).</td></tr>
             <tr><td>패키지 전용 쿠폰</td><td>패키지 상품(RM+CPN) 결합 쿠폰. 일반 쿠폰보다 낮은 입금가. 하이원 별도 스펙 제공.</td></tr>
             <tr><td>VOID</td><td><b>미운영.</b> 운영자 강제 무효화 기능 미도입. 취소 원복은 사용취소(cancel) 또는 주문취소로만 처리. (9절)</td></tr>
             <tr><td>회수</td><td>발행 쿠폰 회수 처리. High1 기준 "사용처리 완료된 쿠폰"으로 추정. 별도 어드민 기능 없음.</td></tr>
             <tr><td>AVAILABLE</td><td><b>발급된 쿠폰 행의 상태가 아님.</b> 스펙/재고 상 "발급 가능"의 개념적 표현. 쿠폰번호는 구매 시점 생성이므로 발급현황에 이 상태 행 없음.</td></tr>
             <tr><td>SOLD / USED / CANCELED</td><td>판매(발급) 완료·현장 사용 가능 / 현장 사용 완료 / 주문 취소로 무효화.</td></tr>
+            <tr><td>주문 상태</td><td>주문 단위 처리 상태. <b>결제완료</b>(PG 완료·쿠폰 발급) / <b>취소완료</b>(전체취소·환불 완료) 2종. (5.3절)</td></tr>
+            <tr><td>사용 상태</td><td>주문 레벨에서 쿠폰 사용 여부를 집계한 상태. <b>미사용</b>(전부 SOLD) / <b>일부사용</b>(일부 USED) / <b>사용완료</b>(전부 USED) 3종. (5.4절)</td></tr>
+            <tr><td>이메일 템플릿</td><td>S18-A에서 발송 유형별 탭으로 관리하는 고객 이메일 안내 문구. 숙소(예약확정·대기·취소완료) + 티켓(구매완료·취소완료) 통합. EN 필수/ZH 선택. 시스템 자동 삽입 항목(예약번호·바코드 등)은 편집 불가.</td></tr>
             <tr><td>Cascade</td><td>상위 항목 상태 변경이 하위에 자동 전파(스펙 OFF→상품 미노출).</td></tr>
           </table>
         </div>
@@ -523,11 +731,11 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
   <div class="lang-en">
 
     <div class="doc-head">
-      <div class="doc-title">Ticket Coupon Integration Policy <span class="badge">v0.7</span></div>
+      <div class="doc-title">Ticket Coupon Integration Policy <span class="badge">v0.12</span></div>
       <div class="doc-meta">
-        Created: 2026-07-09 · Status: In progress<br>
+        Created: 2026-07-09 · Updated: 2026-07-10 · Status: In progress<br>
         Source docs: High1 Social Integration Interface Spec v1.0 (2018) · High1 Dev Team Q&amp;A Response v0.2 · Coupon registration data (Water World peak season) sample · Lift full-day issuance data<br>
-        History: v0.5 BARCODE 12-digit confirmed · URL registration · v0.6 coupon_id refactor (margin per coupon-ID · VOID discontinued · AVAILABLE clarified · partial cancel removed · S15-B added) → <b>v0.7 S17 category switched to direct registration (auto-extract dropped · S13 pre-validation), S13 CSV columns redefined (ticket_type &amp; headcount removed · pass name added · Korean column names · tab A/B · conditional deletion), category max 2 depths (3rd-depth ticket_type removed)</b>
+        History: v0.8 order status (paid/canceled) · S15-B columns expanded → v0.9 sales-period policy added (S14-B) → v0.10 ticket margin fully redefined (category master 1/2 depth + coupon-ID override) → v0.11 open-type cancellation basis (use-period end date) added · Email Template Mgmt (S18-A) added → <b>v0.12 content-ownership redefined, Option A (S17 owns content · S14 content redefined) · adult-only ticket case (§2.3) · front ticket search policy added (default use date = today +7) · image storage policy added</b>
       </div>
     </div>
 
@@ -593,6 +801,12 @@ e.g. AML 1 000001 57  →  AML100000157</div>
           <div class="pd-desc">LV.1=adult / LV.2=child / LV.3–8 reserved. No separate adult/child verification on-site — only the level's product list is shown (Q23). <b>Coupon level = product-classifier role only.</b><br>
           Unique within the same coupon ID + level. <b>CANCELED numbers may be reused; USED numbers cannot</b> (Q14).</div>
           <div class="pd-rule">Level composition varies by category (ski/water park). To be confirmed after receiving the spec file.</div>
+          <div class="pd-rose"><b>v0.12 added — adult-only ticket case:</b> level composition may differ per product. Some products have <b>only the adult level</b>, not both adult and child. e.g. Gondola round-trip = LV.1 (adult) only, no LV.2 (child). The front card auto-detects the level composition to display the label, and if there is no child level, the UI prevents the customer from selecting a child quantity.</div>
+          <table class="pd-table">
+            <tr><th>Level composition</th><th>Front card label</th></tr>
+            <tr><td>Both LV.1 (adult) + LV.2 (child)</td><td>"Adult & child bookable"</td></tr>
+            <tr><td>LV.1 (adult) only (no child level)</td><td>"Adult bookable"</td></tr>
+          </table>
         </div>
       </div>
     </div>
@@ -615,10 +829,11 @@ e.g. AML 1 000001 57  →  AML100000157</div>
             <tr><td>Coupon name</td><td>Per-level display name (e.g. WaterWorld Day Pass_peak(adult/early))</td><td>Customer-facing name</td></tr>
             <tr><td>Applied amount (deposit)</td><td><b>Cost paid to High1</b></td><td>Hidden from customer</td></tr>
             <tr><td>Discount target list</td><td>Applicable PMS product list (e.g. Day Pass_adult_M_4-season + 15 others)</td><td></td></tr>
-            <tr><td>Use period (use_start/use_end)</td><td>On-site usable period. <b>Two columns; sales period not managed</b></td><td></td></tr>
+            <tr><td>Use period (use_start/use_end)</td><td>On-site usable period. <b>Two columns.</b> High1 source data pulled into the CSV.</td><td></td></tr>
+            <tr><td>Single/Group · Internal/External</td><td>Group = external-agency only / External = agency channel</td><td>Reference</td></tr>
             <tr><td>Credit ID</td><td>High1 internal settlement account ID (varies by agency)</td><td>Reference</td></tr>
           </table>
-          <div class="pd-warn"><b>Print period not used:</b> print period (sales-start window) not managed. Only the use period (2 columns) is managed.</div>
+          <div class="pd-warn"><b>Print period (High1-provided) not used:</b> the print-period column of the High1 spec is excluded from our CSV template. <b>The sales period is set by us directly in S14-B</b> — separate from High1's print period, per-product sales start/end dates are managed in our admin (see §12.3 sales-period policy).</div>
           <div class="pd-warn"><b>Headcount not used:</b> the source Excel has a headcount (1 coupon per person) column, but our CSV template excludes it. The 1-coupon-per-person rule is applied via §7 Inventory.</div>
         </div>
         <div class="pd-item">
@@ -637,7 +852,7 @@ e.g. AML 1 000001 57  →  AML100000157</div>
       <div class="pd-body">
         <div class="pd-item">
           <div class="pd-item-title">Overview</div>
-          <div class="pd-desc"><b>3 APIs</b> (unified across venues/products) · HTTP <b>GET</b> · <b>No auth</b> (Q16) · HTTPS TBD (M-01, Q17 blank). The legacy <code>lift_*</code>/<code>hiww_ent_*</code> split is unnecessary (Q15). No per-venue endpoint.</div>
+          <div class="pd-desc"><b>3 APIs</b> (unified across venues/products) · HTTP <b>GET</b> · <b>No auth</b> (Q16) · HTTPS TBD (M-01, Q17 blank). No ski-lift/water-world split needed in the URL (Q15). No per-venue endpoint.</div>
           <div class="pd-rule">Short URLs: search <code>/search?barcode=</code> · use <code>/use?barcode=</code> · cancel <code>/cancel?barcode=</code>. URL registration: send our server URLs to the High1 dev contact → applied as POS/KIOSK settings (§10).</div>
         </div>
         <div class="pd-item">
@@ -674,6 +889,7 @@ e.g. AML 1 000001 57  →  AML100000157</div>
       <div class="pd-section-title"><span class="badge">5</span>Coupon Status Management</div>
       <div class="pd-body">
         <div class="pd-item">
+          <div class="pd-item-title">Status Flow / Definitions (SOLD / USED / CANCELED, 3 only)</div>
           <div class="pd-rose"><b>The coupon number is generated at purchase (payment completion) (§2.2).</b> Issued coupon rows are created as <b>SOLD</b> from the start, and <b>the issuance view (S16) has no pre-sale (AVAILABLE) coupon rows.</b> AVAILABLE is only a conceptual "issuable" spec/inventory notion, not a status of an issued coupon row.</div>
           <div class="pd-pre">[Coupon no. generated at purchase (payment completion)]
    ▼
@@ -688,6 +904,28 @@ e.g. AML 1 000001 57  →  AML100000157</div>
             <tr><td>USED</td><td>Used on-site.</td></tr>
             <tr><td>CANCELED</td><td>Invalidated by order cancellation.</td></tr>
           </table>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">Order Status (order level · paid / canceled, 2 only)</div>
+          <div class="pd-rose"><b>Order status values (v0.8 new).</b> Coupon status (above) is per-coupon; order status is per-order. Because a ticket order issues coupons immediately on PG payment, there is <b>no pending state</b> (unlike lodging's pending→confirmed).</div>
+          <table class="pd-table">
+            <tr><th>Order Status</th><th>Meaning</th><th>Transition</th></tr>
+            <tr><td><b>Paid</b></td><td>PG payment succeeded, coupons issued. Initial/normal state.</td><td>Auto-set on PG payment completion</td></tr>
+            <tr><td><b>Canceled</b></td><td>Full order cancellation done, refunded. All issued coupons SOLD → CANCELED.</td><td>On auto-cancel (customer) or manual cancel (admin) completion</td></tr>
+          </table>
+          <div class="pd-rule"><b>Order status ≠ use status.</b> How much a paid order's coupons have been used is tracked separately by use status (below). The two are not conflated.</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">Use Status (order-level aggregation · unused / partly used / fully used)</div>
+          <div class="pd-desc">Since one order may issue multiple coupons, this aggregates the per-coupon SOLD/USED status at order level. Shown as a column in the S15 list.</div>
+          <table class="pd-table">
+            <tr><th>Use Status</th><th>Basis</th><th>Shown when</th></tr>
+            <tr><td><b>Unused</b></td><td>All issued coupons are SOLD</td><td>Paid orders only</td></tr>
+            <tr><td><b>Partly used</b></td><td>Some coupons USED, some SOLD</td><td>Paid orders only</td></tr>
+            <tr><td><b>Fully used</b></td><td>All issued coupons are USED</td><td>Paid orders only</td></tr>
+            <tr><td>—</td><td>(Canceled orders show no use status)</td><td>N/A when order status = Canceled</td></tr>
+          </table>
+          <div class="pd-rule"><b>Open (New-3):</b> the full-cancel rule for partly-used (contains USED) orders requires an operational-policy decision. (See §13)</div>
         </div>
       </div>
     </div>
@@ -732,13 +970,24 @@ e.g. AML 1 000001 57  →  AML100000157</div>
           <div class="pd-rule">Single-ticket customer cancellation can be automated: no High1 notice (DB status only) + policy preset + payment refund API auto-called.</div>
         </div>
         <div class="pd-item">
-          <div class="pd-item-title">Ticket Cancellation Policy (S14-B)</div>
+          <div class="pd-item-title">Ticket Cancellation Policy (S14-B) — date-specific: use-date based</div>
           <div class="pd-desc">Entered per product by admin in S14-B (manual). <b>Same structure as lodging policy (S06-A)</b>, but based on <b>use date</b> (lodging uses check-in date).<br>
           Tiers: reference-day select (3+ days before / 2 days / 1 day / before 24:00 same day) + <b>penalty rate (%)</b>. <b>Cannot save without at least 1 tier.</b></div>
           <div class="pd-rose"><b>Penalty-rate notation:</b> 0% = free cancel (full refund) / 1–99% = partial penalty / 100% = non-refundable. <b>At least 1 tier required</b>, <b>no fixed no-show row</b> (PO decision).</div>
           <div class="pd-pre">Tier 1: 3+ days before use  → penalty 0%   (free cancel)
 Tier 2: 2 days before use   → penalty 50%
 Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">Open-type Cancellation Rule (use-period end date) — Option A confirmed</div>
+          <div class="pd-warn"><b>v0.11 added — open-type cancellation basis.</b> Date-specific products use the use-date tiers above. <b>Open-type products have no use date, so use-date tiers cannot apply.</b> The cancellation basis for open-type products is below.</div>
+          <table class="pd-table">
+            <tr><th>Cancel timing</th><th>Coupon status</th><th>Refund</th></tr>
+            <tr><td><b>Before</b> use-period end date (use_end_date)</td><td>SOLD (unused)</td><td><b>Full refund</b></td></tr>
+            <tr><td><b>After</b> use-period end date (use_end_date)</td><td>SOLD (unused)</td><td><b>Non-refundable</b></td></tr>
+            <tr><td>After use</td><td>USED</td><td><b>Non-refundable</b> (use-cancel only via High1 /cancel)</td></tr>
+          </table>
+          <div class="pd-rule"><b>Open-type cancellation basis = use-period end date (use_end_date).</b> Sourced from the `Use end date` field of the S13 coupon spec. For open-type products the S14-B cancellation policy (use-date tiers) is <b>kept as a setting for a future switch to date-specific, but while operating open-type the special rule above prevails.</b></div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">Full Cancel Only (partial cancel/refund removed)</div>
@@ -798,28 +1047,82 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
       <div class="pd-section-title"><span class="badge">11</span>Margin Management Policy</div>
       <div class="pd-body">
         <div class="pd-item">
-          <div class="pd-item-title">Ticket Margin = per coupon-ID (coupon_id)</div>
-          <div class="pd-warn"><b>v0.6 change — ticket margin redefined to per coupon-ID.</b> The former "category (depth-1) master + per-level individual setting in S14-B" is dropped. Per the coupon_id=axis / category=filter / level=option refactor, margin is set <b>per coupon-ID</b>. All levels (adult·child) under one coupon-ID share the <b>same margin</b>. Managed under combined Lodging/Ticket tabs in S11.</div>
-          <div class="pd-pre">① S11 Ticket tab — per-coupon-ID margin
-    Select category (filter) → coupon-ID list in that category → margin per coupon-ID (all levels same)
-    Unset coupon-ID → global default margin
-   ▼
-② S14-B — margin read-only (shows linked coupon-ID margin only; no per-level UI)</div>
+          <div class="pd-item-title">Overview — category master + coupon-ID override</div>
+          <div class="pd-warn"><b>v0.10 change — ticket margin fully redefined.</b> The former (v0.6–v0.9) "single setting per coupon-ID" is dropped. Switched to a <b>category master (depth 1/2) + per-coupon-ID override</b> compromise. Managed under combined Lodging/Ticket tabs in S11.</div>
         </div>
         <div class="pd-item">
-          <div class="pd-item-title">Axes</div>
-          <div class="pd-desc"><b>Management axis = coupon-ID.</b> Margin is set per coupon-ID in the S11 Ticket tab.<br>
-          <b>Category is a filter</b> to narrow the coupon-ID list in S11.<br>
-          <b>Level is an option (classifier).</b> No per-level margin; one coupon-ID's margin applies to all its levels.<br>
-          <b>S14-B is read-only</b> — the product screen only displays the linked coupon-ID's margin.</div>
+          <div class="pd-item-title">Margin Setting Structure</div>
+          <div class="pd-pre">① S11 Ticket tab — select category/product type (Option-A UX)
+    ├── [Master margin area]
+    │    Set base margin for the selected category (depth-1) or product type (depth-2)
+    └── [Coupon-ID list]
+         Show all coupon-IDs under the selected category/product type
+         Each row: Inherited (master applied) / Override (individual set) badge
+         "Individual" toggle ON → per-coupon-ID margin editing enabled
+         Untoggle → revert to category master
+   ▼
+② S14-B — margin read-only
+       Shows only the actually-applied margin (inherited or override) for the linked coupon-ID</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">Margin Priority (4 levels)</div>
+          <div class="pd-desc">Among multiple conditions, the highest priority applies.</div>
+          <table class="pd-table">
+            <tr><th>Priority</th><th>Set at</th><th>Description</th></tr>
+            <tr><td>1 (highest)</td><td>Coupon-ID individual override</td><td>Margin set directly on that coupon-ID in S11</td></tr>
+            <tr><td>2</td><td>Depth-2 (product type) master</td><td>Margin set on that product type (e.g. Ski&gt;Lift pass)</td></tr>
+            <tr><td>3</td><td>Depth-1 (category) master</td><td>Margin set on that category (e.g. Ski)</td></tr>
+            <tr><td>4 (lowest)</td><td>Global default</td><td>Applied when no category is set (fixed amount ₩30,000)</td></tr>
+          </table>
+          <div class="pd-rule"><b>Example:</b> if coupon-ID <code>DBO</code> belongs to Ski &gt; Lift pass — use <code>DBO</code>'s individual setting if any; else the Lift-pass (depth-2) master; else the Ski (depth-1) master; else the global default (₩30,000).</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">S11 Ticket Tab UX (Option A)</div>
+          <div class="pd-pre">[Category select area]
+  Chips/dropdown: Ski / Water park / Meal / Gondola … (depth-1)
+  If the selected category has product types (depth-2) → show product-type chips
+      ↓ on selecting a category or product type
+[Master margin area]
+  Set base margin for the selected depth (margin type · value · selling-price example)  [Save master]
+[Coupon-ID list]
+  Columns: coupon-ID / pass name / Inherited|Override badge / margin type / margin value / selling-price example (per level) / individual toggle
+  - Inherited badge: current master value shown gray, read-only
+  - Override badge: editable override value
+  - Toggle ON → editing enabled + "Override" / Toggle OFF → revert to master + "Inherited"
+  [Save coupon-ID margin]</div>
+          <div class="pd-rule"><b>Save master → "Inherited" rows in the coupon-ID list update immediately.</b> <b>Bulk apply:</b> narrow scope via category filter → margin type·value → [Apply to all] → bulk-set displayed coupon-IDs to "Override".</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">Storage Structure</div>
+          <div class="pd-pre">h1_ticket_margin_master_v1 = {
+  categories: {
+    "Ski":            { type: "amount", value: 5000 },  // depth-1 master
+    "Ski&gt;Lift pass": { type: "amount", value: 4000 }  // depth-2 master
+  },
+  overrides: {
+    "DBO": { type: "amount", value: 6000 }              // coupon-ID individual override
+  }
+}</div>
+          <div class="pd-rule"><b>Open (New-4):</b> whether the storage key <code>h1_ticket_margin_master_v1</code> is finalized — this structure changes the schema, so the key name also needs reconfirmation.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">Margin Rules</div>
-          <div class="pd-desc">Choose margin rate (%) or fixed amount. Rate <b>-49% to +100% (integers only)</b>, results <b>floored</b>. Negative=discount / positive=markup. History required (timestamp·editor·before/after).</div>
+          <div class="pd-desc">Choose margin rate (%) or fixed amount. Rate <b>-49% to +100% (integers only, no decimals)</b>, results <b>floored</b>. Negative=discount / positive=markup. History required (timestamp·editor·before/after). <b>Level (adult/child) is not a margin unit</b> — a coupon-ID's (or category master's) margin applies equally to all levels.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">Margin for Open Tickets</div>
-          <div class="pd-desc"><b>v0.4</b> primary operation is open-type (date-specific feature retained). Since open-type has no date, <b>margin is fixed per coupon-ID (S11 Ticket tab)</b> — no per-date/per-level variation. <b>Selling price = deposit (spec applied amount) + coupon-ID margin.</b></div>
+          <div class="pd-desc">Since open-type has no date: <b>margin is fixed via the category master or coupon-ID override</b> — no per-date variation. <b>Selling price = deposit (spec applied amount) + applied margin (priority §11.3).</b></div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">11.8 S13 CSV Upload → S11 Margin Auto-Linkage (added v0.11)</div>
+          <div class="pd-desc">When a CSV upload completes in S13, the registered coupon-ID information is automatically reflected in the S11 ticket margin list.</div>
+          <table class="pd-table">
+            <tr><th>Case</th><th>Handling</th></tr>
+            <tr><td>New coupon-ID</td><td>Row added to the S11 ticket list. Margin initialized as unset (inherited).</td></tr>
+            <tr><td>Existing — same category/product type</td><td>No change. Existing margin value kept.</td></tr>
+            <tr><td>Existing — category/product type changed</td><td>Category/product-type mapping updated. Margin value kept, but the warning below applies.</td></tr>
+          </table>
+          <div class="pd-warn"><b>Category-change warning:</b> Among coupon-IDs whose category/product type changed, those with an <b>'inherited'</b> margin are recalculated against the new category master. If one or more exist, the upload result (below the Tab A success/failure summary) shows <b>"N coupon-IDs had their category changed; inherited margins were recalculated. Check S11 Margin Management."</b> <b>Individually overridden</b> coupon-IDs are kept and excluded from the warning.</div>
         </div>
       </div>
     </div>
@@ -831,42 +1134,65 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
         <div class="pd-item">
           <div class="pd-item-title">GNB / LNB Layout</div>
           <table class="pd-table">
-            <tr><th>GNB</th><th>Screen</th><th>Name</th></tr>
-            <tr><td rowspan="4">Ticket Mgmt</td><td>S13</td><td>Coupon Spec Mgmt</td></tr>
-            <tr><td>S14-A</td><td>Ticket Product List</td></tr>
-            <tr><td>S14-B</td><td>Product Master (basics·margin·cancellation)</td></tr>
-            <tr><td>S14-C</td><td>Date Settings (dates·limit·cutoff)</td></tr>
-            <tr><td rowspan="3">Booking Mgmt</td><td>S15</td><td>Ticket Order Mgmt</td></tr>
-            <tr><td><b>S15-B</b></td><td><b>Ticket Order Detail</b> (<code>#/ticket-orders/:id</code>)</td></tr>
-            <tr><td>S16</td><td>Coupon Issuance Status</td></tr>
-            <tr><td rowspan="2">Common Mgmt</td><td>S17</td><td>Ticket Category Mgmt (new)</td></tr>
-            <tr><td>S11</td><td>Margin Mgmt (Lodging·Ticket tabs)</td></tr>
+            <tr><th>GNB</th><th>LNB</th><th>Screen</th><th>Name</th></tr>
+            <tr><td rowspan="4">Ticket Mgmt</td><td>Coupon Spec Mgmt</td><td>S13</td><td>Coupon Spec Mgmt</td></tr>
+            <tr><td>Product List</td><td>S14-A</td><td>Ticket Product List</td></tr>
+            <tr><td>Product Master (tab 1)</td><td>S14-B</td><td>Ticket product basics·margin·cancellation</td></tr>
+            <tr><td>Date Settings (tab 2)</td><td>S14-C</td><td>Ticket product dates·limit·cutoff</td></tr>
+            <tr><td rowspan="4">Booking Mgmt</td><td>Lodging Booking</td><td>S10</td><td>Lodging Booking Mgmt (existing)</td></tr>
+            <tr><td>Ticket Booking·Order</td><td>S15</td><td>Ticket Order Mgmt</td></tr>
+            <tr><td><b>Ticket Order Detail</b></td><td><b>S15-B</b></td><td><b>Ticket Order Detail</b> (<code>#/ticket-orders/:id</code>)</td></tr>
+            <tr><td>Coupon Issuance</td><td>S16</td><td>Coupon Issuance Status</td></tr>
+            <tr><td rowspan="2">Screen Mgmt</td><td>Main Mgmt</td><td>S12-A</td><td>Main Screen Mgmt</td></tr>
+            <tr><td><b>Email Template Mgmt</b></td><td><b>S18-A</b></td><td><b>Email Template Mgmt (new — §12.7, Lodging+Ticket unified)</b></td></tr>
+            <tr><td rowspan="5">Common Mgmt</td><td>Category Mgmt</td><td>S07</td><td>Category Mgmt (existing)</td></tr>
+            <tr><td>Facility Mgmt</td><td>S08</td><td>Facility Mgmt (existing)</td></tr>
+            <tr><td>Room-type Mgmt</td><td>S09</td><td>Room-type Mgmt (existing)</td></tr>
+            <tr><td>Ticket Category Mgmt</td><td>S17</td><td>Ticket Category Mgmt (new)</td></tr>
+            <tr><td>Margin Mgmt</td><td>S11</td><td>Margin Mgmt, Lodging·Ticket tabs unified (existing + ticket tab)</td></tr>
           </table>
-          <div class="pd-warn"><b>v0.6 change:</b> added S15-B Ticket Order Detail (route <code>#/ticket-orders/:id</code>). Removed VOID from S16 (§9).</div>
+          <div class="pd-warn"><b>History:</b> v0.6 added S15-B Ticket Order Detail (route <code>#/ticket-orders/:id</code>), removed VOID from S16 (§9). v0.11 added S18-A Email Template Mgmt to the Screen-Mgmt LNB (§12.7). <b>v0.12 S17 Ticket Category Mgmt sits under the Common-Mgmt LNB (per the policy doc · SoT).</b></div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">S13 — Coupon Spec Mgmt</div>
           <div class="pd-desc"><b>Tabs:</b> Tab A (Upload &amp; spec list: CSV upload area + registered spec list) / Tab B (Upload history: last 50, paginated + inline expand for details).<br>
           High1 Excel → our CSV template, then upload. <b>Data changes unified via Excel re-upload (overwrite); no per-row edit.</b></div>
-          <div class="pd-rose"><b>v0.7 CSV columns redefined (Korean, 10 columns):</b> Category(req) · Product type · Coupon code(req) · Pass name(req) · Level(req) · Coupon name(req) · Deposit(req) · Discount target list · Use start date(req, YYYY-MM-DD) · Use end date(req, YYYY-MM-DD). <b>ticket_type &amp; headcount removed, pass name added, Korean column names, date format specified.</b></div>
-          <div class="pd-warn"><b>v0.7 prerequisite — S17 category registration:</b> the `Category`/`Product type` values in the CSV must be <b>pre-registered in S17</b>. On mismatch, that row fails upload (reason: "Category mismatch"/"Product-type mismatch"). Failed rows show line no. &amp; reason in the Tab B inline detail.</div>
+          <div class="pd-rose"><b>CSV columns (Korean, 10 columns):</b> Category(req) · Product type · Coupon code(req) · Pass name(req) · Level(req) · Coupon name(req) · Deposit(req) · Discount target list · Use start date(req, YYYY-MM-DD) · Use end date(req, YYYY-MM-DD). <b>ticket_type &amp; headcount removed, pass name added, Korean column names, date format specified (v0.7).</b></div>
+          <div class="pd-warn"><b>Prerequisite — S17 category registration:</b> the `Category`/`Product type` values in the CSV must be <b>pre-registered in S17</b>. On mismatch, that row fails upload (reason: "Category mismatch"/"Product-type mismatch"). Failed rows show line no. &amp; reason in the Tab B inline detail.</div>
           <div class="pd-desc"><b>Re-upload:</b> if the same coupon-ID+level exists, "N rows already exist. Overwrite?" confirmation is required.<br>
           <b>Visibility ON/OFF (operational toggle):</b> separate from data. OFF → forced hide cascade of linked S14 products (🔒). ON → back to per-product visibility.</div>
-          <div class="pd-rose"><b>v0.7 spec-deletion condition changed:</b> from "no deletion (toggle OFF instead)" → <b>conditional deletion allowed.</b> Deletable only when linked S14 products = <b>0</b> AND issued coupons (SOLD/USED/CANCELED) = <b>0</b>. Otherwise the button is disabled (tooltip). Even when eligible, an admin confirmation modal is required.</div>
+          <div class="pd-rose"><b>Spec-deletion condition (v0.7):</b> from "no deletion (toggle OFF instead)" → <b>conditional deletion allowed.</b> Deletable only when linked S14 products = <b>0</b> AND issued coupons (SOLD/USED/CANCELED) = <b>0</b>. Otherwise the button is disabled (tooltip). Even when eligible, an admin confirmation modal is required.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">S14 — Ticket Product Mgmt (S14-A/B/C)</div>
+          <div class="pd-warn"><b>v0.12 content-ownership redefined (Option A confirmed):</b> content ownership is clearly split between the product (S14) and the category/depth (S17).<br>
+          · <b>S17 (category/depth) owns:</b> hero image, overview, detailed description, usage guide, policy, location info<br>
+          · <b>S14 (product) owns:</b> sales options (level·deposit), linked spec, sales period, <b>thumbnail</b>, date settings<br>
+          · <b>Per-product hero image / detailed intro fields removed</b> — to avoid duplicate content entry; shared at the category level.<br>
+          · <b>Front detail modal:</b> shows category content (hero·description) and is simplified to show <b>only the price table (use period·option price)</b> inside the modal.</div>
           <div class="pd-desc"><b>Two-tier:</b> S13 coupon spec (source) → S14 ticket product (sellable unit, 1:N).<br>
-          <b>S14-B Master:</b> basics (name EN required·ZH optional / category depth dropdown (per S17) / linked spec select / visibility toggle) · <b>margin (read-only — inherits linked coupon-ID's S11 value, no per-level, selling-price preview)</b> · cancellation policy (use-date based, 1+ tier required, no no-show row).</div>
-          <div class="pd-warn"><b>v0.6 — S14-B margin is read-only.</b> Margin is set per coupon-ID in the S11 Ticket tab (§11), so S14-B only displays the linked coupon-ID's margin. The former "per-level margin / bulk-apply button" is removed.</div>
+          <b>S14-B Master:</b> basics (name EN required·ZH optional / category depth dropdown (per S17) / linked spec select / <b>thumbnail image (upload to image storage → store URL)</b> / visibility toggle / <b>sales period (sales start·end date)</b>) · <b>margin (read-only — shows the actually-applied margin for the linked coupon-ID (inherited or override, §11); no per-level; selling-price preview)</b> · cancellation policy (use-date based, 1+ tier required, no no-show row).</div>
+          <div class="pd-rose"><b>Sales period (v0.9 new):</b> separate from High1's use period (on-site entry), the admin directly sets our website sales window. Unset sales-start → sell immediately / unset sales-end → controlled by visibility toggle only. <b>After the sales-end date's midnight (00:00), auto-hidden on the front</b> (no manual action). Hide conditions (OR): past sales-end date / visibility OFF / linked spec toggle (S13) OFF — any one hides it.</div>
+          <div class="pd-warn"><b>S14-B margin is read-only (v0.6).</b> Margin is set in the S11 Ticket tab via category master + coupon-ID override (§11), so S14-B only displays the applied margin of the linked coupon-ID. The former "per-level margin / bulk-apply button" is removed.</div>
           <div class="pd-desc"><b>S14-C Date Settings:</b> date mode — <b>open (no date, free use within period, primary)</b> / date-specific (per-date limit·deposit·cutoff; feature retained, currently unused). Validity uses spec start/end dates for display only; actual date validity check not implemented (§4). Cutoff: N days/hours before + reference time (HH:MM); default = purchasable until midnight of the use date.</div>
-          <div class="pd-warn"><b>v0.7 product depth — max 2 depths:</b> ticket_type (depth-3: 4h/7h/day pass, etc.) removed. Depth-1 (category: ski/water park/meal/gondola) / depth-2 (product type: ski&gt;lift pass·equipment rental; 1 depth only if none). Pass type managed at coupon-name·coupon-code level. Categories are directly registered by admins in S17.</div>
+          <div class="pd-warn"><b>Product depth — max 2 depths (v0.7):</b> ticket_type (depth-3: 4h/7h/day pass, etc.) removed. Depth-1 (category: ski/water park/meal/gondola) / depth-2 (product type: ski&gt;lift pass·equipment rental; 1 depth only if none). Pass type managed at coupon-name·coupon-code level. Categories are directly registered by admins in S17.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">S15 / S15-B — Ticket Order Mgmt</div>
-          <div class="pd-desc"><b>S15 list:</b> order no. · customer/phone · product · qty (per level) · payment · method · order status · order time · <b>use status (unused/partly used/fully used)</b>. Cancel/refund = <b>full cancel only</b> (auto·manual; no partial). [Detail] → S15-B.</div>
-          <div class="pd-rose"><b>v0.6 — use-status column instead of "use date."</b> Under open-type operation, one order issues multiple coupons → all unused=unused / some USED=partly used / all USED=fully used.</div>
-          <div class="pd-desc"><b>S15-B Order Detail (v0.6 new, <code>#/ticket-orders/:id</code>):</b> ① order info (no.·status·time·payment·method) ② customer info (name·phone·email·nationality) ③ issued coupon list (12-digit no.·coupon name/level·status·use period) ④ cancel/refund (order-level full cancel, penalty-applied refund shown, no partial) ⑤ history (issue·use·use-cancel·order-cancel, chronological).</div>
+          <div class="pd-desc"><b>S15 list:</b> order no. · customer/phone · product · qty (per level) · payment · method · order status (Paid/Canceled) · order time · <b>use status (unused/partly used/fully used)</b>. Filters: order no./customer/phone, product, order status, use status, order-date range. Cancel/refund = <b>full cancel only</b> (auto·manual; no partial). [Detail] → S15-B.</div>
+          <div class="pd-rose"><b>Use-status column instead of "use date" (v0.6).</b> Under open-type operation, one order issues multiple coupons → all unused=unused / some USED=partly used / all USED=fully used. Order-status values are Paid/Canceled (v0.8, §5.3).</div>
+          <div class="pd-desc"><b>S15-B Order Detail (v0.6 new, <code>#/ticket-orders/:id</code>):</b> ① order info (no.·status·time·payment·method) ② customer info (name·phone·email·nationality) ③ issued coupon list (7 columns below) ④ cancel/refund (order-level full cancel, penalty-applied refund shown, no partial) ⑤ history (issue·use·use-cancel·order-cancel, chronological).</div>
+          <table class="pd-table">
+            <tr><th>Issued coupon list column</th><th>Description</th></tr>
+            <tr><td>Coupon no.</td><td>12-digit unique number</td></tr>
+            <tr><td>Coupon name/level</td><td>Per-level display name (e.g. WaterWorld Day Pass_peak(adult/early) / LV.1)</td></tr>
+            <tr><td>Coupon status</td><td>SOLD / USED / CANCELED</td></tr>
+            <tr><td>Deposit</td><td>Cost paid to High1 (<b>hidden from customer</b>, settlement basis)</td></tr>
+            <tr><td>Selling price</td><td>Amount charged = deposit + margin</td></tr>
+            <tr><td>Use period</td><td>On-site usable period</td></tr>
+            <tr><td>Use time</td><td>High1 /use call time. Shown only for USED; blank for SOLD/CANCELED.</td></tr>
+          </table>
+          <div class="pd-rose"><b>Deposit·selling-price·use-time columns added (v0.8).</b> So settlement can see, on one order-detail screen, which coupon was paid how much and when it was used. Expanded from the former 3 columns (name/level·status·use period) to <b>7 columns</b>.</div>
           <div class="pd-rule"><b>Open (New-3):</b> full-cancel rule for orders containing USED coupons requires an operational-policy decision.</div>
         </div>
         <div class="pd-item">
@@ -882,18 +1208,101 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
           <b>S13 CSV prerequisite:</b> on S13 upload, the CSV `Category`/`Product type` values must exactly match S17-registered values; mismatch fails that row (§12.2 validation).<br>
           <b>Level (adult/child) excluded from categories</b> — level is a <b>product classifier (option)</b>, not a category depth. Do not put levels in the category tree.<br>
           <b>Max 2 depths:</b> depth-1 (category) / depth-2 (product type). No depth-3. Initial examples: Ski / Ski&gt;Lift pass / Ski&gt;Equipment rental / Water park / Meal / Gondola.</div>
+          <div class="pd-warn"><b>v0.12 content ownership added (Option A):</b> S17 categories/depths own the content below. S14 products own only the thumbnail; the rest is managed commonly at the category level.</div>
+          <table class="pd-table">
+            <tr><th>Content item</th><th>Description</th><th>Localization</th></tr>
+            <tr><td>Hero image</td><td>Top hero image on the category detail screen</td><td>Store image URL</td></tr>
+            <tr><td>Overview</td><td>One-line category intro</td><td>EN required / ZH optional</td></tr>
+            <tr><td>Detailed description</td><td>Category body description (HTML)</td><td>EN required / ZH optional</td></tr>
+            <tr><td>Usage guide</td><td>On-site cautions·guidance</td><td>EN required / ZH optional</td></tr>
+            <tr><td>Policy</td><td>Cancellation·refund and other usage policy notice</td><td>EN required / ZH optional</td></tr>
+            <tr><td>Location info</td><td>Venue location·transit guidance</td><td>EN required / ZH optional</td></tr>
+          </table>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">S18-A — Email Template Mgmt (new)</div>
+          <div class="pd-warn"><b>v0.11 new — added to the Screen-Mgmt LNB.</b> Email templates sent to customers on lodging/ticket booking/purchase completion are managed together by send-type tabs. Extensible via new tabs as product types (e.g. tours) are added later.</div>
+          <table class="pd-table">
+            <tr><th>Tab (send type)</th><th>Send timing</th><th>System auto-inserted items</th></tr>
+            <tr><td><b>Lodging booking confirmed</b></td><td>PMS-linked: on API 6 booking / manual product: on admin confirmation</td><td>Booking no., property name, check-in/out dates, room name, payment</td></tr>
+            <tr><td><b>Lodging pending notice</b> (manual only)</td><td>Right after a manual-product booking is received (enters pending)</td><td>Booking no., property name, check-in/out dates, pending notice</td></tr>
+            <tr><td><b>Lodging cancellation done</b></td><td>On cancellation completion</td><td>Booking no., cancel time, refund amount</td></tr>
+            <tr><td><b>Ticket purchase done</b></td><td>Immediately on PG payment completion</td><td>Order no., product name, barcode image, use period</td></tr>
+            <tr><td><b>Ticket cancellation done</b></td><td><i>(Open New-5 — send decision pending)</i></td><td>—</td></tr>
+          </table>
+          <div class="pd-rule"><b>System auto-inserted items are not editable.</b> The system fills them in; the admin edits only the guidance-text area below.</div>
+          <div class="pd-desc"><b>Editable items (common):</b> guidance text <b>EN (required — cannot save if empty)</b> / <b>ZH (optional — falls back to EN if empty)</b>.<br>
+          <b>Ticket-purchase-done tab only:</b> besides guidance text, also manages <b>usage guide (EN/ZH)</b> + <b>cancellation/refund notice (EN/ZH)</b>. <b>Per-category (depth-1) override</b> supported (global default + per-category overwrite).</div>
+          <table class="pd-table">
+            <tr><th>Channel</th><th>Target tabs</th><th>Note</th></tr>
+            <tr><td>Auto email send</td><td>All tabs</td><td>Auto-sent at each send timing</td></tr>
+            <tr><td>Front booking/order detail</td><td>Lodging booking confirmed · Ticket purchase done (2 tabs only)</td><td>Shows the same guidance text (no separate setup)</td></tr>
+          </table>
+          <div class="pd-rule"><b>Open (New-5):</b> whether to send the ticket-cancellation-done email needs to be decided. (See §13)</div>
         </div>
       </div>
     </div>
 
-    <!-- 13 -->
+    <!-- 13 (new) -->
     <div class="pd-section">
-      <div class="pd-section-title"><span class="badge">13</span>Open Issues</div>
+      <div class="pd-section-title"><span class="badge">13</span>Front Ticket Search Policy (new)</div>
+      <div class="pd-body">
+        <div class="pd-item">
+          <div class="pd-item-title">13.1 Default Use Date</div>
+          <div class="pd-rose"><b>v0.12 new.</b> The default ticket use date in the front search bar = <b>today +7 days.</b></div>
+          <div class="pd-desc">Search results: <b>only tickets on sale that are usable on the given use date are shown.</b><br>
+          · <b>On-sale condition:</b> visibility ON AND spec toggle ON AND sales period valid<br>
+          · <b>Use-date basis:</b> only products within the use period (use_start_date ≤ use date ≤ use_end_date) are shown (separate from the date-validity check logic — for the visibility filter)<br>
+          · If the customer changes the use date, results are re-queried against that date.</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">13.2 Open-type vs Date-specific Visibility</div>
+          <table class="pd-table">
+            <tr><th>Product mode</th><th>Use-date filter</th></tr>
+            <tr><td>Open-type</td><td>Shown if within the use period (use_start_date ~ use_end_date)</td></tr>
+            <tr><td>Date-specific</td><td>Shown if the selected date has sales limit &gt; 0 and the cutoff has not passed</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14 (new) -->
+    <div class="pd-section">
+      <div class="pd-section-title"><span class="badge">14</span>Image Storage Policy (new)</div>
+      <div class="pd-body">
+        <div class="pd-item">
+          <div class="pd-item-title">14.1 Basic Principle</div>
+          <div class="pd-warn"><b>v0.12 new — images are uploaded to image storage and only the URL is stored. Inline base64 storage is strictly forbidden.</b></div>
+          <div class="pd-desc">Applies equally to all image-upload areas in the admin (category hero · product thumbnail · lodging image · room image, etc.).</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">14.2 Per-environment Implementation</div>
+          <table class="pd-table">
+            <tr><th>Environment</th><th>Storage</th><th>Upload method</th></tr>
+            <tr><td>Prototype</td><td>Cloudinary (unsigned upload)</td><td>Direct upload from the browser. Auto-resize applied.</td></tr>
+            <tr><td>Production</td><td>Own server or CDN storage</td><td><b>Server-side signed upload</b> to be implemented. Built by the vendor.</td></tr>
+          </table>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">14.3 Stored Form</div>
+          <div class="pd-pre">// Correct form
+{ image_url: "https://res.cloudinary.com/xxx/image/upload/v1234/high1/hero.jpg" }
+
+// Forbidden form
+{ image_data: "data:image/jpeg;base64,/9j/4AAQ..." }  // inline base64 forbidden</div>
+          <div class="pd-desc">The image URL must be a publicly accessible HTTPS URL. On moving to production, migrate Cloudinary URLs → own CDN URLs.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 16 -->
+    <div class="pd-section">
+      <div class="pd-section-title"><span class="badge">16</span>Open Issues</div>
       <div class="pd-body">
         <div class="pd-item">
           <table class="pd-table">
             <tr><th>#</th><th>Item</th><th>Priority</th><th>Owner</th></tr>
-            <tr><td>M-01</td><td>HTTPS requirement / SSL certificate</td><td>High</td><td>High1 Dev (Q17 blank)</td></tr>
+            <tr><td>M-01</td><td>HTTPS requirement / SSL certificate</td><td>High</td><td>High1 Dev (Q17 blank — recheck)</td></tr>
             <tr><td>M-02</td><td>API timeout threshold</td><td>High</td><td>High1 Dev</td></tr>
             <tr><td>M-03</td><td>Package coupon-booking mapping API + package cancel-notice API schedule</td><td>High</td><td>High1 Dev</td></tr>
             <tr><td>M-04</td><td>Issue our dedicated coupon ID (code)</td><td>High</td><td>High1 Global Marketing</td></tr>
@@ -904,17 +1313,18 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
             <tr><td>M-10</td><td>Canceled coupon-no. reuse rule</td><td>Low</td><td>Internal</td></tr>
             <tr><td>M-12</td><td>Sales-type (early/regular/promo) admin mgmt</td><td>Mid</td><td>Internal</td></tr>
             <tr><td><b>New-1</b></td><td>Per-date deposit ↔ actual High1 payment relation</td><td>High</td><td>High1 Global Marketing</td></tr>
-            <tr><td><b>New-3</b></td><td>Full-cancel rule for orders containing USED coupons</td><td>High</td><td>Internal</td></tr>
+            <tr><td><b>New-3</b></td><td>Full-cancel rule for orders containing USED coupons</td><td>High</td><td>Internal (operational policy)</td></tr>
             <tr><td><b>New-4</b></td><td>Ticket margin storage key (<code>h1_ticket_margin_master_v1</code>)</td><td>Mid</td><td>Internal</td></tr>
+            <tr><td><b>New-5</b></td><td>Whether to send the cancellation-done email &amp; need to manage a cancel email template</td><td>Mid</td><td>Internal (affects S18-A scope)</td></tr>
           </table>
           <div class="pd-rule"><b>Resolved:</b> M-11 (passport)→nationality only (v0.2) / spec active↔inactive→operational toggle (v0.3) / New-2 (date-specific limit default)→open-type primary (v0.4) / <b>M-13 (BARCODE digits)→12 digits confirmed (v0.5)</b> / <b>M-05 (VOID/recall)→VOID discontinued, closed (v0.6)</b>.</div>
         </div>
       </div>
     </div>
 
-    <!-- 14 -->
+    <!-- 17 -->
     <div class="pd-section">
-      <div class="pd-section-title"><span class="badge">14</span>Glossary</div>
+      <div class="pd-section-title"><span class="badge">17</span>Glossary</div>
       <div class="pd-body">
         <div class="pd-item">
           <table class="pd-table">
@@ -922,14 +1332,15 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
             <tr><td>Coupon Spec</td><td>Coupon definition from High1 (ID·level·deposit·use period). Managed in S13.</td></tr>
             <tr><td>Ticket Product</td><td>Sellable unit created from a spec (margin display·dates·limit·cancellation). Managed in S14.</td></tr>
             <tr><td>Coupon Number</td><td>12-digit code issued to the customer. Generated by us <b>at purchase (payment completion).</b></td></tr>
-            <tr><td>Coupon ID (coupon_id)</td><td>First 3 digits of the coupon no. <b>The management axis for ticket mgmt &amp; margin.</b> Same as the spec sheet name.</td></tr>
+            <tr><td>Coupon ID (coupon_id)</td><td>First 3 digits of the coupon no. <b>The management axis for ticket mgmt &amp; margin override.</b> Same as the spec sheet name.</td></tr>
             <tr><td>Pass name</td><td>Coupon ID name in the spec header. 1:1 with coupon ID. Entered in the CSV `Pass name` column.</td></tr>
             <tr><td>Deposit Price</td><td>Cost paid to High1 (spec applied amount). Hidden from customer.</td></tr>
             <tr><td>Selling Price</td><td>Amount charged to customer = deposit + margin. Floored.</td></tr>
             <tr><td>Level</td><td>Adult/child classifier in a spec (<b>option</b>). Not a category depth. No on-site adult/child verification — product-list display only.</td></tr>
-            <tr><td>Category</td><td>Depth-1 class (ski/water park). <b>Registered directly by admins in S17.</b> A <b>filter</b> for margin. Validation basis on S13 CSV upload.</td></tr>
-            <tr><td>Product type</td><td>Depth-2 class (ski&gt;lift pass). Registered under depth-1 in S17. Blank for categories without one.</td></tr>
-            <tr><td>Margin (ticket)</td><td>Set <b>per coupon-ID (coupon_id)</b>. Same margin for all levels of a coupon-ID. Set in the S11 Ticket tab; S14-B is read-only display.</td></tr>
+            <tr><td>Category</td><td>Depth-1 class (ski/water park). <b>Registered directly by admins in S17.</b> A margin-master unit and an S11 <b>filter</b>. Validation basis on S13 CSV upload.</td></tr>
+            <tr><td>Product type</td><td>Depth-2 class (ski&gt;lift pass). Registered under depth-1 in S17. Blank for categories without one. A depth-2 margin-master unit.</td></tr>
+            <tr><td>Margin (ticket)</td><td>Set via <b>category master (depth 1/2) + per-coupon-ID override</b>. Priority: coupon-ID override &gt; depth-2 &gt; depth-1 &gt; global default (₩30,000). Same for all levels of a coupon-ID. Set in the S11 Ticket tab; S14-B is read-only display.</td></tr>
+            <tr><td>Sales Period</td><td>Website sales window (sales start~end) set directly by admins in S14-B. Separate from the spec's use period (on-site entry). Auto-hidden on the front after the sales-end date's midnight.</td></tr>
             <tr><td>Penalty Rate</td><td>Rate charged on cancellation. 0%=free cancel, 100%=non-refundable.</td></tr>
             <tr><td>Cutoff</td><td>Booking deadline by use date (N days/hours before + HH:MM).</td></tr>
             <tr><td>Open / Date-specific</td><td>Free use without date (primary) / purchase by selected use date (feature retained, currently unused).</td></tr>
@@ -938,6 +1349,9 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
             <tr><td>Recall</td><td>Reclaiming an issued coupon. Presumed to be High1's "already use-processed coupons." No separate admin feature.</td></tr>
             <tr><td>AVAILABLE</td><td><b>Not a status of an issued coupon row.</b> A conceptual "issuable" spec/inventory notion. No such row in the issuance view (created at purchase).</td></tr>
             <tr><td>SOLD / USED / CANCELED</td><td>Sold (issued), usable on-site / used on-site / invalidated by order cancellation.</td></tr>
+            <tr><td>Order Status</td><td>Per-order processing state. <b>Paid</b> (PG done·coupons issued) / <b>Canceled</b> (full cancel·refunded), 2 only. (§5.3)</td></tr>
+            <tr><td>Use Status</td><td>Order-level aggregation of coupon use. <b>Unused</b> (all SOLD) / <b>Partly used</b> (some USED) / <b>Fully used</b> (all USED), 3 only. (§5.4)</td></tr>
+            <tr><td>Email Template</td><td>Customer email guidance text managed by send-type tabs in S18-A. Lodging (booking confirmed·pending·cancellation) + Ticket (purchase·cancellation) unified. EN required/ZH optional. System auto-inserted items (booking no.·barcode, etc.) are not editable.</td></tr>
             <tr><td>Cascade</td><td>Parent status change auto-propagates to children (spec OFF → product hidden).</td></tr>
           </table>
         </div>

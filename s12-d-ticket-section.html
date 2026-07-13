@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S12-D — 티켓 추천 섹션 설정 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+  .tk-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 7px;border-radius:99px;background:#fce7f3;color:#ec4899;vertical-align:middle}
+  .cc-flag{background:#fffbeb;border:1px solid #fde68a;border-left:3px solid #f59e0b;border-radius:4px;padding:8px 12px;font-size:11px;color:#78350f;line-height:1.6;margin-top:8px}
+  .opt-list{border:1px solid #e0e0da;border-radius:6px;padding:8px 12px;background:#fff;font-size:11px}
+  .opt-list label{display:flex;align-items:center;gap:6px;padding:4px 0}
+  .chk{width:13px;height:13px;border:1.5px solid #10b981;border-radius:3px;display:inline-block;flex-shrink:0}
+  .chk.on{background:#10b981;position:relative}
+  .chk.on::after{content:'✓';color:#fff;font-size:9px;position:absolute;top:-2px;left:1px}
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">S12-D — 티켓 추천 섹션 설정</span>
+  <span class="page-nav-route">#/main-management/section/new-ticket</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s12-c-recommend-form.html">← 이전</a>
+    <a class="page-nav-pager" href="s18-a-email-template.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge" style="background:#10b981">S12-D</span>
+    티켓 추천 섹션 설정 <span class="tk-badge">티켓</span>
+    <span style="font-size:12px;font-weight:400;color:#888">— #/main-management/section/new-ticket · 화면관리 &gt; 메인관리</span>
+  </div>
+  <div class="sec-sub">
+    프런트 메인에 노출되는 <b>티켓 전용 추천 섹션</b>을 등록·편집한다(숙소 섹션 S12-C와 분리). 카드=<b>썸네일·상품명·최저가</b>, 클릭 시 <b>해당 카테고리 브릿지</b>로 이동. 선택 방식은 <b>자동</b>(카테고리 필터+정렬) 또는 <b>수동</b>(상품 직접 선택).<br>
+    기준: 프로토타입 admin v0.7.11 (S12 메인관리 추천 섹션 유형 분기) · 정책서 v0.12
+  </div>
+
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <!-- GNB -->
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item on">화면관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">화면관리</div>
+          <div class="wf-lnb-item on">메인관리</div>
+          <div class="wf-lnb-item" style="color:rgba(255,255,255,.25)">배너관리 <span style="font-size:9px">(추후)</span></div>
+          <div class="wf-lnb-item" style="color:rgba(255,255,255,.25)">팝업관리 <span style="font-size:9px">(추후)</span></div>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="wf-main">
+          <div class="wf-page-title">티켓 추천 섹션 등록 <span class="wf-badge" style="font-size:11px;margin-left:8px;background:#ec4899">S12-D</span></div>
+
+          <!-- ① 기본정보 -->
+          <div class="wf-section-head">① 기본정보 <span class="wf-cn">1</span></div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">섹션 타이틀 (KO) <span class="wf-form-req">*</span></div>
+            <div class="wf-form-field"><input class="wf-input" value="여름 물놀이 티켓" /><div class="wf-hint">필수. 미입력 시 저장 불가.</div></div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">섹션 타이틀 (EN)</div>
+            <div class="wf-form-field"><input class="wf-input" value="Summer Water Fun" /></div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">서브타이틀 (KO / EN)</div>
+            <div class="wf-form-field">
+              <div style="display:flex;gap:6px"><input class="wf-input" value="시원한 여름을 즐기세요" /><input class="wf-input" value="Enjoy a cool summer" /></div>
+            </div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">노출 여부 / 순서</div>
+            <div class="wf-form-field">
+              <div style="display:flex;gap:10px;align-items:center">
+                <span class="wf-toggle on"></span><span style="font-size:11px">노출</span>
+                <span style="color:#888;font-size:11px;margin-left:10px">순서</span><input class="wf-input" value="1" style="width:60px" />
+              </div>
+            </div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">노출 기간 <span class="wf-cn">2</span></div>
+            <div class="wf-form-field">
+              <div style="display:flex;gap:6px;align-items:center"><input class="wf-input" type="date" style="width:150px" /><span style="font-size:11px;color:#888">~</span><input class="wf-input" type="date" style="width:150px" /></div>
+              <div class="wf-hint">시작일·종료일 <b>선택 입력</b>. 미설정 시 상시 노출(노출 토글로만 제어).</div>
+            </div>
+          </div>
+
+          <!-- ② 전체보기 버튼 -->
+          <div class="wf-section-head" style="margin-top:18px">② 전체보기 버튼 <span class="wf-cn">3</span></div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">사용 여부</div>
+            <div class="wf-form-field"><div style="display:flex;gap:10px;align-items:center"><span class="wf-toggle on"></span><span style="font-size:11px">사용</span></div></div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">라벨 (KO / EN)</div>
+            <div class="wf-form-field"><div style="display:flex;gap:6px"><input class="wf-input" value="전체보기" /><input class="wf-input" value="View all" /></div><div class="wf-hint">섹션 우측 상단 '전체보기' 링크 텍스트. 미입력 시 기본값(전체보기/View all).</div></div>
+          </div>
+
+          <!-- ③ 선택 방식 -->
+          <div class="wf-section-head" style="margin-top:18px">③ 선택 방식 <span class="wf-form-req">*</span> <span class="wf-cn">4</span></div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">방식</div>
+            <div class="wf-form-field">
+              <select class="wf-select" style="width:260px"><option>자동 (카테고리 필터 + 정렬)</option><option>수동 (상품 직접 선택)</option></select>
+            </div>
+          </div>
+
+          <!-- ③-자동 -->
+          <div style="border:1px solid #e0e0da;border-radius:6px;padding:12px;margin-bottom:12px;background:#fafafa">
+            <div style="font-size:11px;font-weight:700;color:#1a1f2e;margin-bottom:8px">자동 방식 <span class="wf-cn">5</span></div>
+            <div style="font-size:10px;color:#888;margin-bottom:4px">카테고리 필터 <span style="color:#bbb">(미선택 = 전체)</span></div>
+            <div class="opt-list" style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px">
+              <label><span class="chk on"></span> 워터파크</label>
+              <label><span class="chk"></span> 스키</label>
+              <label><span class="chk"></span> 식사권</label>
+              <label><span class="chk"></span> 곤돌라</label>
+            </div>
+            <div style="font-size:10px;color:#888;margin-bottom:3px">정렬 기준</div>
+            <select class="wf-select" style="width:180px"><option>최저가 낮은순</option><option>이름순</option></select>
+          </div>
+
+          <!-- ③-수동 (참고 표시) -->
+          <div style="border:1px dashed #d8b4c8;border-radius:6px;padding:12px;margin-bottom:12px;background:#fdf2f8;opacity:.85">
+            <div style="font-size:11px;font-weight:700;color:#9d174d;margin-bottom:8px">수동 방식 <span style="font-weight:400;color:#888">(방식=수동 선택 시 표시)</span> <span class="wf-cn">6</span></div>
+            <div style="font-size:10px;color:#888;margin-bottom:4px">티켓 상품 선택 <span style="color:#d33">*</span> — 선택 2개</div>
+            <div class="opt-list">
+              <label><span class="chk on"></span> <span class="tk-badge">워터파크</span> Water World Full-Day</label>
+              <label><span class="chk on"></span> <span class="tk-badge">스키 › 리프트권</span> Ski Lift 1-Day</label>
+              <label><span class="chk"></span> <span class="tk-badge">곤돌라</span> Gondola Round Trip</label>
+            </div>
+          </div>
+
+          <!-- 저장 -->
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+            <button class="wf-btn">취소</button>
+            <button class="wf-btn wf-btn-primary" style="background:#10b981;border-color:#10b981">저장 <span class="wf-cn">7</span></button>
+          </div>
+
+          <div class="cc-flag">※ 플래그: 프로토타입은 섹션 타이틀·서브·라벨을 <b>KO/EN</b>으로 받습니다. 글로벌 다국어 규칙(어드민 입력=EN 필수/ZH 선택, KO 미사용)과 <b>불일치</b> — S12 메인관리 전반(S12-B/C 포함) 언어 필드 정책 확인 필요.</div>
+
+        </div><!-- /wf-main -->
+      </div><!-- /wf-body -->
+    </div><!-- /wf -->
+
+
+    <!-- ── 주석 패널 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">기본정보 (숙소 섹션과 분리)</div>
+          <div class="ann-desc">티켓 전용 추천 섹션의 기본 정보. 섹션 타이틀(KO 필수/EN)·서브타이틀(KO/EN)·노출 여부·순서.</div>
+          <div class="ann-rule">S12-A [+ 티켓 섹션 추가]로 진입. 숙소 섹션(S12-C)과 저장·구조가 분리됨.</div>
+          <div class="ann-front">→ 프런트: 메인 티켓 추천 섹션의 제목/부제</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">노출 기간 (선택)</div>
+          <div class="ann-desc">시작일·종료일 모두 선택 입력. 미설정 시 상시 노출. 노출 토글 OFF면 기간과 무관하게 미노출.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">전체보기 버튼</div>
+          <div class="ann-desc">섹션 우측 상단 '전체보기' 링크. 사용 여부 토글 + 라벨(KO/EN). 미입력 시 기본값.</div>
+          <div class="ann-front">→ 프런트: 섹션 헤더 우측 전체보기 링크(해당 카테고리 목록으로)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">선택 방식 (자동 / 수동)</div>
+          <div class="ann-desc"><b>자동</b>: 카테고리 필터 + 정렬 기준으로 상품이 자동 채워짐. <b>수동</b>: 노출할 티켓 상품을 직접 고름.</div>
+          <div class="ann-rule">방식 선택에 따라 아래 영역(자동=CN5 / 수동=CN6)이 전환된다.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">자동 방식 — 카테고리 필터 + 정렬</div>
+          <div class="ann-desc"><b>카테고리 필터</b>(체크박스, 미선택=전체)로 대상 범위를 좁히고, <b>정렬 기준</b>(최저가 낮은순 / 이름순)으로 자동 배열.</div>
+          <div class="ann-rule">카테고리는 S17 등록 카테고리 기준. 자동 채워지므로 상품이 늘면 자동 반영.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">6</div>
+        <div class="ann-body">
+          <div class="ann-title">수동 방식 — 티켓 상품 직접 선택</div>
+          <div class="ann-desc">노출할 티켓 상품을 체크로 직접 고른다(1개 이상 필수). 각 상품에 카테고리 배지 표시.</div>
+          <div class="ann-rule">티켓 상품이 없으면 "티켓 상품 등록 후 이용" 안내. 선택 순서/구성은 저장값 기준.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">7</div>
+        <div class="ann-body">
+          <div class="ann-title">[저장] — 유효성</div>
+          <div class="ann-desc">필수: 섹션 타이틀(KO), 선택 방식(수동일 경우 상품 1개 이상). 저장 후 S12-A 섹션 목록에 티켓 유형으로 추가된다.</div>
+          <div class="ann-front">→ 프런트: 카드=썸네일(S14)·상품명·최저가, 카드 클릭 시 해당 카테고리 브릿지로 이동</div>
+        </div>
+      </div>
+
+    </div><!-- /ann -->
+
+  </div><!-- /two-col -->
+
+</div><!-- /page -->
+</body>
+</html>

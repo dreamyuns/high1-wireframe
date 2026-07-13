@@ -285,10 +285,18 @@ body {
   );
   display: flex;
   align-items: flex-end;
-  padding: 44px 48px;
+  padding: 44px 0;
 }
 
-.hero-text { color: #ffffff; }
+/* 히어로 텍스트를 상단 로고와 동일한 컨테이너(1280·좌우 32) 기준 좌측 정렬 */
+.hero-text {
+  color: #ffffff;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+  box-sizing: border-box;
+}
 
 .hero-place-name {
   font-size: 44px;
@@ -1259,7 +1267,8 @@ body {
 @media (max-width: 720px) {
   .topbar-inner { padding: 0 16px; }
   .hero-fullwidth { height: 320px; }
-  .hero-overlay { padding: 28px 24px; }
+  .hero-overlay { padding: 28px 0; }
+  .hero-text { padding: 0 16px; }
   .hero-place-name { font-size: 30px; }
   .content-wrap { padding: 0 16px 60px; }
   .place-selector-inner { padding: 0 16px; }
@@ -1282,3 +1291,169 @@ body {
 
 /* ─── Misc ─── */
 .empty { color: var(--muted); font-size: 13px; }
+
+/* ═══ 티켓 프런트 (검색결과·브릿지·상세) ═══ */
+.tkf-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.tkf-chip { border: 1px solid #d8dee8; background: #fff; border-radius: 18px; padding: 6px 14px; font-size: 13px; cursor: pointer; }
+.tkf-chip.on { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+.tkf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+.tkf-card { border: 1px solid #e6e8ee; border-radius: 12px; overflow: hidden; cursor: pointer; background: #fff; transition: box-shadow .15s, transform .15s; }
+.tkf-card:hover { box-shadow: 0 8px 22px rgba(0,0,0,.12); transform: translateY(-2px); }
+.tkf-card-img { height: 140px; background: #eef2f7; }
+.tkf-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tkf-noimg { display: flex; align-items: center; justify-content: center; height: 100%; color: #aab; font-size: 13px; }
+.tkf-card-body { padding: 12px 14px 14px; }
+.tkf-card-cat { font-size: 11px; color: #7c3aed; font-weight: 700; margin-bottom: 4px; }
+.tkf-card-title { font-size: 15px; font-weight: 700; line-height: 1.35; margin-bottom: 6px; }
+.tkf-card-use { font-size: 12px; color: #888; margin-bottom: 8px; }
+.tkf-card-price { font-size: 13px; color: #333; }
+.tkf-card-price strong { font-size: 17px; color: #1a1f2e; }
+.tkf-empty { color: #888; font-size: 14px; padding: 40px 0; text-align: center; grid-column: 1/-1; }
+.tkf-hero { min-height: 240px; background-size: cover; background-position: center; display: flex; align-items: flex-end; }
+.tkf-hero-inner { max-width: 1100px; width: 100%; margin: 0 auto; padding: 24px 16px 30px; color: #fff; }
+.tkf-hero-cat { font-size: 12px; font-weight: 700; letter-spacing: 2px; opacity: .85; }
+.tkf-hero-inner h1 { font-size: 30px; margin: 4px 0 2px; }
+.tkf-hero-inner p { margin: 0; opacity: .85; }
+.tkf-detail-hero { height: 300px; border-radius: 12px; overflow: hidden; background: #eef2f7; margin: 12px 0; }
+.tkf-detail-hero img { width: 100%; height: 100%; object-fit: cover; }
+.tkf-detail-cat { font-size: 12px; color: #7c3aed; font-weight: 700; }
+.tkf-detail-title { font-size: 24px; margin: 2px 0 4px; }
+.tkf-tabs { display: flex; gap: 4px; border-bottom: 2px solid #eee; margin: 16px 0 0; }
+.tkf-tab { border: none; background: none; padding: 12px 18px; font-size: 14px; font-weight: 600; color: #888; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.tkf-tab.on { color: #7c3aed; border-bottom-color: #7c3aed; }
+.tkf-panel { padding: 20px 4px; }
+.tkf-opt { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid #f0f0f4; }
+.tkf-opt-name { flex: 1; font-size: 14px; font-weight: 600; }
+.tkf-opt-price { font-size: 15px; font-weight: 700; min-width: 90px; text-align: right; }
+.tkf-step { display: flex; align-items: center; gap: 10px; }
+.tkf-qbtn { width: 30px; height: 30px; border: 1px solid #d8dee8; background: #fff; border-radius: 6px; font-size: 16px; cursor: pointer; }
+.tkf-step span { min-width: 22px; text-align: center; font-weight: 600; }
+.tkf-total { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; font-size: 15px; }
+.tkf-total strong { font-size: 22px; color: #1a1f2e; }
+.tkf-info { width: 100%; border-collapse: collapse; }
+.tkf-info th { text-align: left; padding: 10px 12px; background: #f7f8fb; font-size: 13px; color: #555; font-weight: 600; width: 42%; vertical-align: top; }
+.tkf-info td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #f0f0f4; }
+.tkf-detail-html img { max-width: 100%; height: auto; display: block; }
+.tkf-detail-html h3 { margin: 4px 0 8px; }
+.tkf-issued th { background: #1a1f2e; color: #fff; }
+
+/* ═══ 티켓 프런트 v0.7 — 숙소식 (검색결과·브릿지·모달·결제) ═══ */
+.tkf-listwrap { display: flex; gap: 24px; align-items: flex-start; }
+.tkf-aside { flex: 0 0 210px; position: sticky; top: 16px; }
+.tkf-fgroup { border: 1px solid #e6e8ee; border-radius: 10px; padding: 14px; margin-bottom: 12px; background: #fff; }
+.tkf-fgroup h4 { margin: 0 0 10px; font-size: 13px; }
+.tkf-fopt { display: block; font-size: 13px; padding: 4px 0; cursor: pointer; }
+.tkf-listmain { flex: 1; min-width: 0; }
+.tkf-hlist { display: flex; flex-direction: column; gap: 14px; }
+.tkf-hcard { display: flex; gap: 16px; border: 1px solid #e6e8ee; border-radius: 12px; overflow: hidden; background: #fff; cursor: pointer; transition: box-shadow .15s; }
+.tkf-hcard:hover { box-shadow: 0 6px 18px rgba(0,0,0,.1); }
+.tkf-hcard.tkf-focus { outline: 2px solid #7c3aed; }
+.tkf-hcard-img { flex: 0 0 200px; height: 140px; background: #eef2f7; }
+.tkf-hcard-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tkf-hcard-body { flex: 1; padding: 14px 8px; min-width: 0; }
+.tkf-hcard-title { font-size: 17px; font-weight: 700; margin: 2px 0 2px; }
+.tkf-hcard-sub { color: #999; font-size: 12px; margin-bottom: 6px; }
+.tkf-hcard-price { flex: 0 0 150px; border-left: 1px solid #f0f0f4; padding: 14px 16px; display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; }
+.tkf-hcard-detail { border: 1px solid #d8dee8; background: #fff; border-radius: 6px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
+.tkf-hcard-from { font-size: 12px; color: #888; }
+.tkf-hcard-amt { font-size: 19px; color: #1a1f2e; }
+.tkf-card-cat { font-size: 11px; color: #7c3aed; font-weight: 700; margin-bottom: 3px; }
+.tkf-card-use { font-size: 12px; color: #777; margin-top: 3px; }
+.tkf-noimg { display: flex; align-items: center; justify-content: center; height: 100%; color: #aab; font-size: 13px; }
+.tkf-empty { color: #888; font-size: 14px; padding: 40px 0; text-align: center; }
+/* 브릿지 */
+.tkf-hero { min-height: 260px; background-size: cover; background-position: center; display: flex; align-items: flex-end; }
+.tkf-hero-inner { max-width: 1100px; width: 100%; margin: 0 auto; padding: 24px 16px 32px; color: #fff; }
+.tkf-hero-cat { font-size: 12px; font-weight: 700; letter-spacing: 2px; opacity: .85; }
+.tkf-hero-inner h1 { font-size: 32px; margin: 4px 0 2px; }
+.tkf-hero-inner p { margin: 0; opacity: .85; }
+.tkf-stickynav { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #eee; z-index: 30; }
+.tkf-stickynav-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: center; gap: 8px; padding: 0 16px; }
+.tkf-stickynav a { padding: 16px 20px; font-size: 15px; font-weight: 600; color: #555; text-decoration: none; border-bottom: 2px solid transparent; }
+.tkf-stickynav a:hover { color: #111; border-bottom-color: #111; }
+.tkf-stickynav a:first-child { color: #111; border-bottom-color: #111; }
+.tkf-sec { padding: 40px 0 36px; border-bottom: 1px solid var(--border); scroll-margin-top: calc(var(--topbar-h) + var(--nav-h) + 12px); }
+.tkf-sec h2 { font-size: 20px; font-weight: 800; color: #1a1f2e; margin: 0 0 14px; }
+.pc-chip { display: inline-block; background: #f4f2ec; color: #6b6252; border-radius: 12px; padding: 3px 10px; font-size: 11.5px; font-weight: 600; }
+.tkf-map { height: 200px; background: #eef2f7; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #99a; font-size: 15px; }
+/* 상세 모달 */
+#tkfModalRoot .tkf-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; }
+#tkfModalRoot .tkf-modal { position: fixed; z-index: 201; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 680px; max-width: 94vw; max-height: 90vh; background: #fff; border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; }
+.tkf-modal-head { display: flex; justify-content: space-between; align-items: flex-start; padding: 18px 22px; border-bottom: 1px solid #eee; }
+.tkf-modal-title { font-size: 19px; font-weight: 700; margin-top: 2px; }
+.tkf-modal-close { border: none; background: none; font-size: 20px; cursor: pointer; color: #888; }
+.tkf-modal-body { padding: 18px 22px; overflow-y: auto; }
+.tkf-gallery { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 14px; }
+.tkf-gallery img { height: 200px; border-radius: 10px; flex: 0 0 auto; }
+.tkf-tabs { display: flex; gap: 4px; border-bottom: 2px solid #eee; margin-bottom: 4px; }
+.tkf-tab { border: none; background: none; padding: 12px 16px; font-size: 14px; font-weight: 600; color: #888; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.tkf-tab.on { color: #7c3aed; border-bottom-color: #7c3aed; }
+.tkf-panel { padding: 16px 2px; }
+.tkf-opt { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid #f0f0f4; }
+.tkf-opt-name { flex: 1; font-size: 14px; font-weight: 600; }
+.tkf-opt-price { font-size: 15px; font-weight: 700; min-width: 90px; text-align: right; }
+.tkf-step { display: flex; align-items: center; gap: 10px; }
+.tkf-qbtn { width: 30px; height: 30px; border: 1px solid #d8dee8; background: #fff; border-radius: 6px; font-size: 16px; cursor: pointer; }
+.tkf-step span { min-width: 22px; text-align: center; font-weight: 600; }
+.tkf-total { display: flex; justify-content: space-between; align-items: center; padding: 16px 0 0; font-size: 15px; }
+.tkf-total strong { font-size: 20px; }
+.tkf-modal-foot { display: flex; justify-content: space-between; align-items: center; padding: 14px 22px; border-top: 1px solid #eee; }
+.tkf-foot-total { font-size: 14px; color: #555; }
+.tkf-foot-total strong { font-size: 18px; color: #1a1f2e; margin-left: 6px; }
+.tkf-info { width: 100%; border-collapse: collapse; }
+.tkf-info th { text-align: left; padding: 9px 12px; background: #f7f8fb; font-size: 13px; color: #555; font-weight: 600; vertical-align: top; }
+.tkf-info td { padding: 9px 12px; font-size: 13px; border-bottom: 1px solid #f0f0f4; }
+.tkf-detail-html img { max-width: 100%; height: auto; display: block; }
+.tkf-detail-html h3 { margin: 4px 0 8px; }
+.tkf-issued th { background: #1a1f2e; color: #fff; }
+/* 결제 */
+.tkf-co-grid { display: grid; grid-template-columns: 1fr 300px; gap: 18px; align-items: start; }
+.tkf-co-card { border: 1px solid #e6e8ee; border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; background: #fff; }
+.tkf-co-card h3 { margin: 0 0 12px; font-size: 15px; }
+.tkf-co-prod { margin-bottom: 10px; font-size: 14px; }
+.tkf-co-sum { position: sticky; top: 16px; }
+.tkf-co-total { display: flex; justify-content: space-between; align-items: center; font-size: 15px; padding-top: 6px; }
+.tkf-co-total strong { font-size: 22px; }
+@media (max-width: 820px) { .tkf-co-grid { grid-template-columns: 1fr; } .tkf-listwrap { flex-direction: column; } .tkf-aside { position: static; flex: none; width: 100%; } }
+
+/* ═══ 티켓 브릿지 상품선택(장바구니형) v0.8 ═══ */
+/* 2뎁스 서브탭 — 숙소식 상단 다크바(히어로 위) */
+.tkf-subtabs { background: #1e2433; display: flex; justify-content: center; gap: 4px; }
+.tkf-subtab { border: 0; background: transparent; padding: 15px 28px; font-size: 15px; font-weight: 700; cursor: pointer; color: rgba(255,255,255,.6); border-bottom: 3px solid transparent; }
+.tkf-subtab:hover { color: rgba(255,255,255,.9); }
+.tkf-subtab.on { color: #fff; border-bottom-color: #f4b740; }
+/* 상품 행 실시간 소계 */
+.tkf-rowsub { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e2e6ef; font-size: 13px; color: #555; }
+.tkf-rowsub strong { font-size: 15px; color: #111; }
+.tkf-modal-subh { font-size: 15px; margin: 16px 0 8px; font-weight: 700; }
+.tkf-selwrap { display: flex; gap: 20px; align-items: flex-start; }
+.tkf-sellist { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.tkf-sellcart { flex: 0 0 300px; position: sticky; top: 60px; }
+.tkf-pcard { display: flex; gap: 16px; border: 1px solid #e6e8ee; border-radius: 12px; overflow: hidden; background: #fff; }
+.tkf-pcard.tkf-focus { outline: 2px solid #7c3aed; }
+.tkf-pcard-img { flex: 0 0 160px; background: #eef2f7; }
+.tkf-pcard-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tkf-pcard-main { flex: 1; padding: 14px 16px 14px 0; min-width: 0; }
+.tkf-optbox { margin: 10px 0 4px; border-top: 1px solid #f0f0f4; }
+.tkf-optrow { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f4f4f6; }
+.tkf-optlabel { flex: 1; font-size: 13px; font-weight: 600; }
+.tkf-optprice { font-size: 14px; font-weight: 700; min-width: 84px; text-align: right; }
+.tkf-pcard-foot { display: flex; justify-content: flex-end; margin-top: 12px; }
+/* 소계+버튼 블록: 카드 우측 절반만 사용, 상세보기:담기 = 3:7 */
+.tkf-foot-btns { display: grid; grid-template-columns: 3fr 7fr; gap: 8px; width: 50%; min-width: 260px; }
+.tkf-detailbtn { border: 1px solid #d8dee8; background: #fff; border-radius: 6px; padding: 10px 12px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.tkf-addbtn { padding: 10px 12px; font-size: 13px; white-space: nowrap; }
+@media (max-width: 720px) { .tkf-foot-btns { width: 100%; min-width: 0; } }
+.tkf-cart { border: 1px solid #e6e8ee; border-radius: 12px; padding: 16px; background: #fff; }
+.tkf-cart h3 { margin: 0 0 12px; font-size: 15px; }
+.tkf-cart-empty { color: #999; font-size: 13px; line-height: 1.7; padding: 10px 0; }
+.tkf-cart-line { display: flex; justify-content: space-between; gap: 8px; padding: 10px 0; border-bottom: 1px solid #f0f0f4; font-size: 13px; }
+.tkf-cart-l b { font-size: 13px; }
+.tkf-cart-l span { color: #888; font-size: 12px; }
+.tkf-cart-r { white-space: nowrap; text-align: right; }
+.tkf-cart-x { border: none; background: none; color: #c33; cursor: pointer; margin-left: 8px; font-size: 13px; }
+.tkf-cart-total { display: flex; justify-content: space-between; align-items: center; padding: 12px 0 2px; font-size: 14px; }
+.tkf-cart-total strong { font-size: 20px; }
+@media (max-width: 820px) { .tkf-selwrap { flex-direction: column; } .tkf-sellcart { position: static; width: 100%; flex: none; } .tkf-pcard-img { flex-basis: 120px; } }
+
+/* 메인 티켓 추천 카드는 숙소 추천 카드(.rec-card)와 동일 스타일 사용 (인라인) */

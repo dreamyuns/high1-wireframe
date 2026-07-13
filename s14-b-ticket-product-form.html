@@ -45,8 +45,8 @@
     <span style="font-size:12px;font-weight:400;color:#888">— 탭1 마스터 (기본정보·판매가·취소정책)</span>
   </div>
   <div class="sec-sub">
-    S13 스펙을 연결해 고객 판매용 티켓 상품을 생성·편집한다. 기본정보 · 레벨/판매가 · 취소정책. 마진은 S11 마진관리(티켓 탭)에서 쿠폰ID 단위로 관리한다. 날짜 설정은 탭2(S14-C).<br>
-    기준: 티켓 쿠폰 연동 정책서 v0.7 · 12.3절 / 인수인계 문서 S14-B
+    S13 스펙을 연결해 고객 판매용 티켓 상품을 생성·편집한다. 기본정보(판매기간·<b>썸네일</b> 포함) · 레벨/판매가 · 취소정책. <b>콘텐츠(상세·안내·정책·위치·히어로)는 카테고리(S17) 소유, 상품은 썸네일만</b>. 마진은 S11 마진관리(티켓 탭)에서 관리(읽기전용). 날짜 설정은 탭2(S14-C).<br>
+    기준: 티켓 쿠폰 연동 정책서 v0.12 · 12.3절 / 프로토타입 admin v0.7.11
   </div>
 
   <div class="two-col">
@@ -90,8 +90,11 @@
 
           <!-- 공통정책 블록 -->
           <div class="sec-policy">
-            <span class="ref">기준: v0.7 · 12.3절 · 마진(11절)</span><br>
+            <span class="ref">기준: v0.12 · 12.3절 · 12.6절(콘텐츠 소유) · 14절(이미지) · 마진(11절)</span><br>
             · <b>스펙 선행</b>: 연결할 S13 스펙이 있어야 등록 가능. 스펙의 레벨·입금가가 자동 로드된다.<br>
+            · <b>콘텐츠 소유(A안)</b>: 상품은 <b>썸네일만</b> 등록. 상세설명·이용안내·정책·위치·히어로 이미지는 <b>카테고리/컨텐츠 관리(S17)</b>에서 뎁스 단위로 관리한다(상품별 히어로·서브이미지·상세정보 탭 폐지). 이미지는 스토리지 업로드 후 <b>URL 저장</b>(§14).<br>
+            · <b>판매기간</b>: 판매시작일·판매종료일은 <b>선택 입력</b>. 시작일 미설정=<b>즉시 판매</b>, 종료일 미설정=<b>노출 토글로만 제어</b>. 종료일 설정 시 <b>자정(00:00) 초과하면 프런트 자동 미노출</b>(종료일 수정·토글 ON으로 재노출).<br>
+            · <b>프런트 미노출 조건(OR — 하나라도 해당 시 미노출)</b>: ① 판매종료일 초과(자동) ② 노출 토글 OFF(수동) ③ 연결 스펙 토글 OFF(Cascade, 🔒).<br>
             · 판매가 = 입금가 + 마진. 마진율 범위 <b>-49% ~ +100%(정수)</b>, 계산 결과 소수점 <b>버림(floor)</b>.<br>
             · 마진은 <b>이 화면에서 편집하지 않는다.</b> <b>S11 마진관리(티켓 탭)에서 쿠폰ID 단위로 설정</b>한 값을 여기서는 <b>읽기전용</b>으로 표시한다. (아래 판매가 = 입금가 + 그 마진 자동 계산)<br>
             · 취소정책은 <b>이용일(사용일) 기준 다구간 + 위약금율(%)</b>. 1구간 이상 필수, 노쇼 고정행 없음.<br>
@@ -128,12 +131,36 @@
             </div>
           </div>
           <div class="wf-form-row">
+            <div class="wf-form-label">판매 기간 <span class="wf-cn">14</span></div>
+            <div class="wf-form-field">
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                <input class="wf-input" type="date" style="width:150px" />
+                <span style="font-size:11px;color:#888;">~</span>
+                <input class="wf-input" type="date" style="width:150px" />
+              </div>
+              <div class="wf-hint"><b>판매시작일·판매종료일 모두 선택 입력.</b> 시작일 미설정 → <b>즉시 판매</b>. 종료일 미설정 → <b>노출 토글로만 제어</b>(종료일 자동 미노출 없음). 종료일 설정 시 <b>자정(00:00) 초과하면 프런트 자동 미노출</b> — 종료일 수정 또는 노출 토글 ON으로 재노출.</div>
+            </div>
+          </div>
+          <div class="wf-form-row">
             <div class="wf-form-label">노출 여부 <span class="wf-cn">5</span></div>
             <div class="wf-form-field">
               <div class="wf-toggle-row" style="margin-bottom:0;">
                 <span class="wf-toggle on"></span><span class="wf-toggle-label">노출</span>
               </div>
-              <div class="wf-hint">프런트 노출 = 연결 스펙 ON <b>AND</b> 상품 노출 ON. 스펙 OFF면 강제 미노출(🔒).</div>
+              <div class="wf-hint">프런트 노출 = 연결 스펙 ON <b>AND</b> 상품 노출 ON <b>AND 판매기간 내</b>. <b>미노출 조건(OR, 하나라도 해당 시 미노출)</b>: ① 판매종료일 초과(자동) ② 노출 토글 OFF(수동) ③ 연결 스펙 OFF(Cascade, 🔒).</div>
+            </div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">썸네일 이미지 <span class="wf-cn">16</span></div>
+            <div class="wf-form-field">
+              <div style="display:flex;gap:8px;align-items:center;">
+                <div style="width:90px;height:60px;border:1px dashed #d8b4c8;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#c98bb0;font-size:10px;background:#fdf2f8;">미리보기</div>
+                <button class="wf-btn wf-btn-sm">파일 선택</button>
+              </div>
+              <div class="wf-hint">상품 목록·검색결과·브릿지 카드·메인 추천에 쓰는 <b>대표 이미지</b>(첫 장이 대표). 업로드 시 자동 축소 → <b>스토리지 URL 저장</b>(base64 아님).</div>
+              <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:4px;padding:7px 10px;font-size:10px;color:#3730a3;line-height:1.6;margin-top:6px;">
+                <b>콘텐츠 소유(A안)</b>: 상세설명·이용안내·정책·위치·히어로 이미지는 <b>카테고리/컨텐츠 관리(S17)</b>에서 <b>뎁스 단위</b>로 관리합니다. 상품(S14)은 <b>썸네일만</b> 가집니다. (상품별 히어로·서브이미지·상세정보 탭 폐지 — 콘텐츠 중복 방지)
+              </div>
             </div>
           </div>
 
@@ -175,6 +202,11 @@
 
           <!-- ③ 취소/환불 정책 (숙소 S06-A 동일 구조 · 이용일 기준) -->
           <div class="wf-section-head tk" style="margin-top:20px;">③ 취소/환불 정책 <span class="wf-form-req">*</span> <span style="font-weight:400;color:#888;font-size:11px;">(이용일 기준)</span> <span class="wf-cn">10</span></div>
+          <!-- 오픈형 취소 특례 (v0.11 8.2절) -->
+          <div style="display:flex;align-items:flex-start;gap:8px;background:#fff8fb;border:1px solid #fbcfe8;border-left:3px solid #ec4899;border-radius:4px;padding:8px 12px;font-size:11px;color:#9d174d;margin-bottom:8px;">
+            <span>ℹ️</span>
+            <span style="line-height:1.6;color:#831843;"><b>오픈형 취소 특례</b> <span class="wf-cn">15</span> — 오픈형 상품은 이용일이 없으므로, 아래 <b>이용일 기준 취소 구간은 날짜지정형 전환 대비용으로 입력만</b> 받습니다. 실제 오픈형 운영 시에는 <b>사용기간 종료일 기준이 자동 적용</b>됩니다: <b>종료일 이전 미사용 = 전액 환불 / 종료일 이후 = 환불 불가</b>. (v0.11 8.2절 A안)</span>
+          </div>
           <table class="cxl-table">
             <thead>
               <tr>
@@ -267,8 +299,9 @@
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">5</span>
         <div class="ann-body">
-          <div class="ann-title">노출 여부 (2단 조건)</div>
-          <div class="ann-desc">상품 개별 노출 토글. 프런트 노출 = 연결 스펙 ON AND 상품 노출 ON. 스펙 OFF면 강제 미노출(🔒, S14-A에서 잠김 표시).</div>
+          <div class="ann-title">노출 여부 (미노출 OR 조건)</div>
+          <div class="ann-desc">상품 개별 노출 토글. <b>프런트 노출 = 연결 스펙 ON AND 상품 노출 ON AND 판매기간 내.</b></div>
+          <div class="ann-rule"><b>미노출 조건은 OR</b> — 아래 중 하나라도 해당하면 프런트에서 빠진다: ① <b>판매종료일 초과</b>(자동) ② <b>노출 토글 OFF</b>(수동) ③ <b>연결 스펙 OFF</b>(Cascade, 🔒 S14-A 잠김). 재노출: 종료일 수정 또는 토글 ON. (판매기간 상세는 CN14)</div>
         </div>
       </div>
 
@@ -341,6 +374,37 @@
           <div class="ann-title">저장 (유효성 검사)</div>
           <div class="ann-desc">필수: 상품명 EN·카테고리·연결 스펙·취소정책 1구간 이상. 누락 시 저장 불가 + 해당 섹션 안내. (EN 미입력 시 저장 불가 / ZH는 선택)</div>
           <div class="ann-rule">탭1 저장과 탭2(날짜) 저장은 같은 상품을 대상으로 하되 영역별로 동작.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">14</span>
+        <div class="ann-body">
+          <div class="ann-title">판매 기간 (선택 입력)</div>
+          <div class="ann-desc"><b>판매시작일 / 판매종료일 모두 선택 입력</b>입니다. <b>시작일을 비우면 즉시 판매</b>가 시작되고(등록하자마자 구매 가능), <b>종료일을 비우면 노출 토글로만</b> 노출을 제어합니다(종료일에 의한 자동 미노출 없음).</div>
+          <div class="ann-rule"><b>종료일을 설정하면</b> 그 날 <b>자정(00:00)을 넘기는 순간 프런트에서 자동 미노출</b>됩니다. 다시 보이게 하려면 <b>종료일을 수정</b>하거나 <b>노출 토글을 ON</b>으로 둡니다.</div>
+          <div class="ann-rule">미노출은 <b>OR 조건</b>(하나라도 해당이면 미노출): ① 판매종료일 초과(자동) ② 노출 토글 OFF(수동) ③ 연결 스펙 OFF(Cascade). — 노출 CN5 참고. 종료일은 시작일 이후여야 함(설정 시).</div>
+          <div class="ann-front">→ 프런트: 판매기간 밖이면 상품 카드 미노출</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">16</span>
+        <div class="ann-body">
+          <div class="ann-title">썸네일 이미지 (상품은 썸네일만 소유 · A안)</div>
+          <div class="ann-desc">상품 목록·검색결과·브릿지 카드·메인 추천에 노출되는 <b>대표 이미지</b>입니다(첫 장이 대표). 업로드 시 자동 축소 후 <b>스토리지 URL 저장</b>(base64 아님, §14).</div>
+          <div class="ann-rule"><b>콘텐츠 소유(A안, v0.12 §12.3·§12.6)</b>: 히어로 이미지·개요·상세설명·이용안내·정책·위치는 <b>카테고리(S17)가 뎁스 단위로 소유</b>하고, 상품은 <b>썸네일만</b> 가집니다. 상품별 히어로·서브이미지·상세정보 탭은 폐지(콘텐츠 중복 방지).</div>
+          <div class="ann-front">→ 프런트: 검색결과·브릿지·메인 추천 카드의 썸네일</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">15</span>
+        <div class="ann-body">
+          <div class="ann-title">오픈형 취소 특례 (v0.11 8.2절)</div>
+          <div class="ann-desc">현재 주 운영 방식인 <b>오픈형 상품은 이용일(사용일)이 없습니다.</b> 그래서 위 ③ 취소 구간(이용일 기준)은 <b>날짜지정형으로 전환할 때를 대비해 입력만 받아두고</b>, 실제 오픈형 운영에서는 적용되지 않습니다.</div>
+          <div class="ann-rule">오픈형 실제 적용 = <b>사용기간 종료일 기준</b>: <b>종료일 이전에 미사용이면 전액 환불</b>, <b>종료일 이후에는 환불 불가</b>. (정책서 8.2절 A안)</div>
+          <div class="ann-front">→ 프런트/고객 안내: "사용기간 종료일까지 미사용 시 전액 환불" 문구로 노출</div>
         </div>
       </div>
 
