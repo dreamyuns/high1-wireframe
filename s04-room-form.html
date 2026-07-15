@@ -239,39 +239,52 @@
           <!-- 카테고리 전환 병합 힌트 -->
           <div class="wf-hint">카테고리 전환 시 현재 체크 상태가 state에 자동 병합됩니다. 전환해도 선택값이 초기화되지 않습니다.</div>
 
-          <!-- 객실 정책·안내 섹션 -->
-          <div class="wf-section-head">객실 정책·안내 <span class="wf-cn">8</span></div>
+          <!-- 객실 설명·안내·정책 섹션 (콘텐츠=객실 소유 · 모두 선택) -->
+          <div class="wf-section-head">객실 설명·안내·정책 <span style="font-size:10px;font-weight:400;color:#888">(모두 선택 입력)</span> <span class="wf-cn">8</span></div>
 
-          <!-- v0.6: 국문 단일 3필드 → 정책/안내 각각 EN(필수)·ZH(선택) 2×2 필드로 교체. 객실소개(room_desc) 제거. -->
+          <!-- 개발사 MVP 반영(2026-07-10): 객실설명(Room desc) 신규 · 3종 모두 선택 · 상품설명/상품안내 폐지(콘텐츠 객실 통일) · 리치 에디터 · 프런트 Room Detail 매핑(설명ⓐ / 정책ⓑ / 안내ⓒ) -->
           <div class="wf-form-row">
-            <div class="wf-form-label">객실 정책(EN) <span class="wf-form-req">*</span></div>
+            <div class="wf-form-label">객실 설명(EN) <span style="color:#888;font-size:10px;font-weight:400">[선택]</span></div>
             <div class="wf-form-field">
-              <textarea class="wf-textarea" placeholder="HTML or plain text">Non-smoking room.</textarea>
-              <div class="wf-hint"><b>영문(EN) 필수 입력.</b> 금연 안내 등 정책 텍스트. 이미지 붙여넣기 지원.</div>
+              <textarea class="wf-textarea" placeholder="Room description (rich text) — e.g. High-floor ocean-view suite …"></textarea>
+              <div class="wf-hint"><b>객실 설명(Room desc) — 신규.</b> 리치 에디터. 프런트 <b>Room Detail 모달 최상단(ⓐ)</b> 노출. 선택 입력(미입력 가능).</div>
+            </div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">객실 설명(ZH) <span style="color:#888;font-size:10px;font-weight:400">[선택]</span></div>
+            <div class="wf-form-field">
+              <textarea class="wf-textarea" placeholder="房间说明（可选）"></textarea>
+              <div class="wf-hint">중문(ZH) 선택. 미입력 시 EN 대체.</div>
             </div>
           </div>
 
+          <div class="wf-form-row">
+            <div class="wf-form-label">객실 정책(EN) <span style="color:#888;font-size:10px;font-weight:400">[선택]</span></div>
+            <div class="wf-form-field">
+              <textarea class="wf-textarea" placeholder="Room policy (rich text) — e.g. Non-smoking room.">Non-smoking room.</textarea>
+              <div class="wf-hint"><b>객실 정책(Room Policy).</b> 프런트 Room Detail <b>ⓑ</b> 노출. 선택 입력. 금연 안내 등.</div>
+            </div>
+          </div>
           <div class="wf-form-row">
             <div class="wf-form-label">객실 정책(ZH) <span style="color:#888;font-size:10px;font-weight:400">[선택]</span></div>
             <div class="wf-form-field">
-              <textarea class="wf-textarea" placeholder="中文（可选）"></textarea>
-              <div class="wf-hint">중문(ZH) 선택 입력. 미입력 시 프런트에서 영문(EN)으로 대체 표시.</div>
+              <textarea class="wf-textarea" placeholder="房间政策（可选）"></textarea>
+              <div class="wf-hint">중문(ZH) 선택. 미입력 시 EN 대체.</div>
             </div>
           </div>
 
           <div class="wf-form-row">
-            <div class="wf-form-label">객실 안내(EN) <span class="wf-form-req">*</span></div>
+            <div class="wf-form-label">객실 안내(EN) <span style="color:#888;font-size:10px;font-weight:400">[선택]</span></div>
             <div class="wf-form-field">
-              <textarea class="wf-textarea" placeholder="HTML or plain text (e.g. Studio (1 double), bathroom, balcony)"></textarea>
-              <div class="wf-hint"><b>영문(EN) 필수 입력.</b> 관리자 직접 입력. PMS RM_TYP_INFO 자동 매핑 없음.</div>
+              <textarea class="wf-textarea" placeholder="Room guide (rich text)"></textarea>
+              <div class="wf-hint"><b>객실 안내(Room Guide).</b> 프런트 Room Detail <b>ⓒ</b> 노출. 선택 입력. 관리자 직접 입력(PMS RM_TYP_INFO 자동 매핑 없음).</div>
             </div>
           </div>
-
           <div class="wf-form-row">
             <div class="wf-form-label">객실 안내(ZH) <span style="color:#888;font-size:10px;font-weight:400">[선택]</span></div>
             <div class="wf-form-field">
-              <textarea class="wf-textarea" placeholder="中文（可选）"></textarea>
-              <div class="wf-hint">중문(ZH) 선택 입력. 미입력 시 프런트에서 영문(EN)으로 대체 표시.</div>
+              <textarea class="wf-textarea" placeholder="房间指南（可选）"></textarea>
+              <div class="wf-hint">중문(ZH) 선택. 미입력 시 EN 대체.</div>
             </div>
           </div>
 
@@ -387,14 +400,16 @@
       <div class="ann-item">
         <div class="cn">8</div>
         <div class="ann-body">
-          <div class="ann-title">객실 정책·안내 필드 (EN 필수 / ZH 선택)</div>
+          <div class="ann-title">객실 설명·안내·정책 필드 (3종 모두 선택 입력)</div>
           <div class="ann-desc">
-            <strong>객실 정책(policy_html)</strong>: 금연 안내 등 정책 텍스트. 자유 입력. 비어있으면 해당 섹션 미표시.<br>
-            <strong>객실 안내(guide_html)</strong>: 관리자 직접 입력. PMS RM_TYP_INFO 자동 매핑 없음.<br>
-            각 항목은 <b>영문(EN, 필수)·중문(ZH, 선택) 2개 입력칸</b>으로 구성. 국문(KO) 입력칸은 없음(외국인 전용). 중문 미입력 시 프런트에서 영문으로 대체 표시.<br>
-            <strong>v0.6:</strong> 기존 '객실 소개(room_desc)' 필드 제거(프로토타입 미보유). 국문 단일 입력 → EN/ZH 2×2 구조로 교체.
+            <strong>객실 설명(description_html) — 신규</strong>: 객실 소개. 프런트 Room Detail 모달 <b>최상단(ⓐ)</b> 노출.<br>
+            <strong>객실 정책(policy_html)</strong>: 금연 안내 등. 프런트 Room Detail <b>ⓑ</b>.<br>
+            <strong>객실 안내(guide_html)</strong>: 관리자 직접 입력(PMS RM_TYP_INFO 자동 매핑 없음). 프런트 Room Detail <b>ⓒ</b>.<br>
+            각 항목은 <b>영문(EN)·중문(ZH) 2개 입력칸</b>. 국문(KO) 없음(외국인 전용). 중문 미입력 시 EN 대체.<br>
+            <strong>모두 선택 입력(필수 아님)</strong> — 비어 있으면 프런트 해당 영역 미표시. (글로벌 "EN 필수" 규칙의 예외 — 콘텐츠 필드)<br>
+            <strong>개발사 MVP 반영(2026-07-10):</strong> 객실설명 신설 · <b>상품설명·상품안내(product) 폐지</b> → 콘텐츠는 객실(Room)로 통일. 서식·줄바꿈·이미지는 프런트에 동일 렌더.
           </div>
-          <div class="ann-front">→ policy_html: Room Detail 객실정책 섹션 / → guide_html: Room Detail 객실안내 섹션 (중문 접속 시 ZH, 없으면 EN 표시)</div>
+          <div class="ann-front">→ description_html: Room Detail ⓐ(최상단) / policy_html: ⓑ / guide_html: ⓒ (섹션 네비 없이 스택 노출, 중문 접속 시 ZH·없으면 EN)</div>
         </div>
       </div>
 

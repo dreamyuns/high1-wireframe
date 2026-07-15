@@ -124,7 +124,7 @@
           </div>
 
           <!-- ③ 상품명 · 설명 -->
-          <div class="wf-section-head">③ 상품명 · 설명 <span style="font-size:11px;font-weight:400;color:#888">(영문 필수 · 중문 선택 · 국문 미사용)</span> <span class="wf-cn">7</span></div>
+          <div class="wf-section-head">③ 상품명 <span style="font-size:11px;font-weight:400;color:#888">(영문 필수 · 중문 선택 · 국문 미사용)</span> <span class="wf-cn">7</span></div>
           <div class="wf-form-row">
             <div class="wf-form-label">상품명 (EN) <span class="wf-form-req">*</span></div>
             <div class="wf-form-field"><input class="wf-input" style="width:100%" value="Deluxe King Room Only" /></div>
@@ -133,28 +133,10 @@
             <div class="wf-form-label">상품명 (ZH)</div>
             <div class="wf-form-field"><input class="wf-input" style="width:100%" placeholder="中文（可选）" /></div>
           </div>
-          <div class="wf-form-row">
-            <div class="wf-form-label">상품 설명 (EN) <span class="wf-form-req">*</span></div>
-            <div class="wf-form-field"><textarea class="wf-input" style="width:100%;height:52px">King bed with panoramic mountain view.</textarea></div>
-          </div>
-          <div class="wf-form-row">
-            <div class="wf-form-label">상품 설명 (ZH)</div>
-            <div class="wf-form-field"><textarea class="wf-input" style="width:100%;height:52px" placeholder="中文（可选）"></textarea></div>
-          </div>
+          <!-- 상품 설명·안내/정책 폐지(2026-07-10, 개발사 MVP 반영) — 콘텐츠는 객실(Room)로 통일. 상품은 상품명·가격·재고·판매기간·취소정책만. 객실 설명/안내/정책은 S04. -->
 
-          <!-- ④ 상품 안내 / 정책 -->
-          <div class="wf-section-head">④ 상품 안내 / 정책 <span style="font-size:11px;font-weight:400;color:#888">(영문 필수 · 중문 선택)</span> <span class="wf-cn">8</span></div>
-          <div class="wf-form-row">
-            <div class="wf-form-label">안내/정책 (EN) <span class="wf-form-req">*</span></div>
-            <div class="wf-form-field"><textarea class="wf-input" style="width:100%;height:64px">Includes room only. Check-in from 15:00. Cancellation per policy below.</textarea></div>
-          </div>
-          <div class="wf-form-row">
-            <div class="wf-form-label">안내/정책 (ZH)</div>
-            <div class="wf-form-field"><textarea class="wf-input" style="width:100%;height:64px" placeholder="中文（可选）"></textarea></div>
-          </div>
-
-          <!-- ⑤ 취소 정책 -->
-          <div class="wf-section-head">⑤ 취소 정책 (상품 단위) <span class="wf-cn">9</span></div>
+          <!-- ④ 취소 정책 -->
+          <div class="wf-section-head">④ 취소 정책 (상품 단위) <span class="wf-cn">8</span></div>
           <!-- PMS연동 상품 -->
           <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:8px 12px;font-size:11px;color:#1a4fa0;margin-bottom:8px">
             <b>PMS 연동 상품</b> — 취소·환불 정책은 <b>PMS API 9/10</b> 규정 적용, 어드민 수정 불가(읽기전용). 적용 정책: <b>API 9</b>.
@@ -250,23 +232,15 @@
       <div class="ann-item">
         <div class="cn">7</div>
         <div class="ann-body">
-          <div class="ann-title">상품명 · 설명 (EN 필수 · ZH 선택)</div>
+          <div class="ann-title">상품명 (EN 필수 · ZH 선택)</div>
           <div class="ann-desc">국문 미사용. [누락된 필드 AI 번역](S05)으로 EN/ZH 자동 채움 가능. 프런트는 중문 접속 시 ZH, 없으면 EN.</div>
-          <div class="ann-front">→ 상품명=카드 상품명 / 상품설명=Room Detail 모달(카드 미노출).</div>
+          <div class="ann-front">→ 상품명=카드 상품명.</div>
+          <div class="ann-rule"><b>상품 설명·상품 안내/정책 폐지(2026-07-10, 개발사 MVP 반영).</b> 콘텐츠(설명·안내·정책)는 <b>객실(Room·S04)로 통일</b>. 상품은 상품명·가격·재고·판매기간·취소정책만.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <div class="cn">8</div>
-        <div class="ann-body">
-          <div class="ann-title">상품 안내 / 정책 (EN 필수 · ZH 선택)</div>
-          <div class="ann-desc">HTML 입력(이미지 붙여넣기 지원). guide_policy_html_en / _zh.</div>
-          <div class="ann-front">→ Room Detail 모달 '상품 안내' 섹션.</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <div class="cn">9</div>
         <div class="ann-body">
           <div class="ann-title">취소 정책 (상품 단위)</div>
           <div class="ann-desc">
