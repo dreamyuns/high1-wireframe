@@ -24,6 +24,11 @@ const STORAGE_TICKET_MARGIN     = "high1_ticket_margin_master_v1";
 const STORAGE_TICKET_ORDERS     = "high1_ticket_orders_v1";   // 구매 주문(프런트 쓰기)
 const STORAGE_TICKET_COUPONS    = "high1_coupons_v1";          // 발급 쿠폰(프런트 쓰기)
 const DEFAULT_TICKET_MARGIN_FRONT = { type: "amount", value: "30000" }; // 전역 디폴트 (정책 v0.11 §11)
+/* 로그인/회원 (프로토타입 목업) */
+const STORAGE_MEMBERS = "high1_members_v1";   // [{email, password}]
+const STORAGE_SESSION = "high1_session_v1";    // { email } 로그인 세션
+const STORAGE_RESV    = "high1_reservations_v1"; // 숙소 예약(프런트 쓰기)
+const STORAGE_PROFILE = "high1_profile_v1";      // 회원 프로필(이메일별)
 
 const PRODUCT_CANCEL_POLICY = {
   FREE_N_DAYS:    "FREE_N_DAYS",
@@ -151,7 +156,7 @@ const I18N = {
 const uiState = {
   selectedPlaceByCategory: {},   // category -> placeId (v0.3: flat place selection)
   heroIndexByPlace: {},
-  lang: localStorage.getItem("high1_front_v02_lang") === "en" ? "en" : "ko",
+  lang: ["en", "zh", "ko"].includes(localStorage.getItem("high1_front_v02_lang")) ? localStorage.getItem("high1_front_v02_lang") : "ko",
   searchCheckin: "",
   searchCheckout: "",
   cardImgIdx: {},
@@ -161,7 +166,26 @@ const uiState = {
   ticketUseDate: "",          // 티켓 검색 사용일(하루)
   ticketDetailTab: "select",  // 티켓 상세 탭
   ticketQty: {},              // 상세: coupon level별 수량 { level: n }
+  auth: { step: "email", email: "", isNew: false, next: "", err: "" }, // 로그인 흐름 상태
+  booking: null,              // 숙소 예약 진행 컨텍스트 {productId,ci,co,pax,guest,agree,holdUntil,result}
+  myFilter: { domain: "all", tab: "current" }, // 마이페이지 목록 필터
+  pwVerified: false,          // 비밀번호 변경 세션 인증 여부
 };
+
+/* ─── 로그인/회원 (프로토타입 목업) ─── */
+function loadMembers() { return ldJson(STORAGE_MEMBERS, []); }
+function saveMembers(v) { localStorage.setItem(STORAGE_MEMBERS, JSON.stringify(v || [])); }
+function findMember(email) { const e = String(email || "").trim().toLowerCase(); return loadMembers().find((m) => String(m.email || "").toLowerCase() === e) || null; }
+function currentUser() { const s = ldJson(STORAGE_SESSION, null); return s && s.email ? s : null; }
+function setSession(email) { localStorage.setItem(STORAGE_SESSION, JSON.stringify({ email })); }
+function logout() { localStorage.removeItem(STORAGE_SESSION); }
+/** 로그인 필요 화면 진입 시 호출 — 미로그인이면 로그인으로 유도(next 저장) */
+function requireLogin(nextHash) {
+  if (currentUser()) return true;
+  uiState.auth = { step: "email", email: "", isNew: false, next: nextHash || location.hash, err: "" };
+  location.hash = "#/login";
+  return false;
+}
 
 /* ─── i18n helpers ─── */
 function t(key, vars = {}) {
@@ -616,7 +640,7 @@ function productCardHtml(place, room, product, maps, bedById) {
     ${priceHtml}
   </div>`;
 
-  return `<article class="product-card" id="pcard-${escapeHtml(product.id)}">
+  return `<article class="product-card js-book-card" id="pcard-${escapeHtml(product.id)}" data-product-id="${escapeHtml(product.id)}">
     ${thumbHtml}
     ${contentHtml}
     ${pricePanelHtml}
@@ -1000,14 +1024,15 @@ function showLoadingOverlay(text) {
 function hideLoadingOverlay() { const ov = document.getElementById("loadingOverlay"); if (ov) ov.remove(); }
 
 /* ─── 공용 검색바 (메인·검색결과 공유) ─── */
-function renderSearchBar(pax, draft, minYmd, L, topMargin) {
+function renderSearchBar(pax, draft, minYmd, L, topMargin, opts) {
   const tt = paxTotals(pax);
   const dateLabel = `${draft.ci || L("체크인", "Check-in")}  →  ${draft.co || L("체크아웃", "Check-out")}`;
   const fieldLabel = (txt) => `<div style="color:rgba(255,255,255,.6);font-size:11px;margin-bottom:4px">${txt}</div>`;
   const calPopover = uiState.calOpen ? calendarPopoverHtml(draft.ci, draft.co, minYmd, L, uiState.lang) : "";
   const paxPopover = uiState.paxOpen ? paxPopoverHtml(pax, L) : "";
   const isTicket = uiState.searchDomain === "ticket";
-  const domainSel = `<div style="flex:0 0 auto">
+  // 브릿지(숙소 상세)는 도메인 고정이므로 셀렉트 숨김
+  const domainSel = (opts && opts.hideDomain) ? "" : `<div style="flex:0 0 auto">
       ${fieldLabel(L("구분", "Domain"))}
       <select id="domainSel" style="background:#fff;border:none;border-radius:6px;padding:10px 12px;font-size:13px;font-weight:700;cursor:pointer">
         <option value="acc" ${!isTicket ? "selected" : ""}>Accommodation</option>
@@ -1311,7 +1336,8 @@ function renderListing(app, mode) {
   }));
   app.querySelector("#sfReset")?.addEventListener("click", () => { uiState[fKey] = { order: "low", places: [], roomTypes: [] }; rerender(); });
   // canonical 카드 이벤트: 상세보기 + 이미지 이전/다음
-  app.querySelectorAll(".js-open-rd").forEach((btn) => btn.addEventListener("click", () => openRoomDetail(btn.getAttribute("data-product-id"))));
+  app.querySelectorAll(".js-open-rd").forEach((btn) => btn.addEventListener("click", (e) => { e.stopPropagation(); openRoomDetail(btn.getAttribute("data-product-id")); }));
+  app.querySelectorAll(".js-book-card").forEach((card) => card.addEventListener("click", () => startBooking(card.getAttribute("data-product-id"), { loading: true })));
   const cardImgStep = (id, delta) => {
     const products = loadJson(STORAGE_PRODUCTS, []); const rooms = loadJson(STORAGE_ROOMS, []);
     const pr = products.find((x) => x.id === id); const room = rooms.find((r) => r.id === pr?.room_id);
@@ -1423,11 +1449,14 @@ function renderBridge(app, category) {
           <div><div class="overview-item-label">${escapeHtml(t("checkinOut"))}</div><div class="overview-item-value">${checkinOut}</div></div>
           <div><div class="overview-item-label">${escapeHtml(t("featured"))}</div><div class="overview-chips">${featuredChipHtml(selectedPlace, maps)}</div></div>
         </div>
-        ${desc ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0ea;font-size:13px;color:#666;line-height:1.6">${escapeHtml(desc)}</div>` : ""}
+        ${desc ? `<div class="place-desc" style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0ea">
+          <div class="overview-item-label">Description</div>
+          <div class="place-desc-html" style="font-size:13px;color:#666;line-height:1.6">${richTextOrParagraph(desc, "")}</div>
+        </div>` : ""}
       </section>
       <section id="sec-rooms" class="sec-rooms">
         <div style="padding:16px 0 4px"><h2 style="font-size:20px;font-weight:800;color:#1a1f2e;margin:0">${escapeHtml(t("navRooms"))}</h2></div>
-        ${renderSearchBar(pax, uiState.searchDraft, minYmd, L, "8px 0 0")}
+        ${renderSearchBar(pax, uiState.searchDraft, minYmd, L, "8px 0 0", { hideDomain: true })}
         <div style="display:flex;gap:24px;align-items:flex-start;margin-top:20px">
           ${filterPanel}
           <div style="flex:1;display:flex;flex-direction:column;gap:16px;min-width:0">
@@ -1474,7 +1503,8 @@ function renderBridge(app, category) {
   }));
   app.querySelector("#bfReset")?.addEventListener("click", () => { uiState.bridgeFilter = { order: "low", roomTypes: [] }; renderBridge(app, category); });
   // 카드 이벤트
-  app.querySelectorAll(".js-open-rd").forEach((btn) => btn.addEventListener("click", () => openRoomDetail(btn.getAttribute("data-product-id"))));
+  app.querySelectorAll(".js-open-rd").forEach((btn) => btn.addEventListener("click", (e) => { e.stopPropagation(); openRoomDetail(btn.getAttribute("data-product-id")); }));
+  app.querySelectorAll(".js-book-card").forEach((card) => card.addEventListener("click", () => startBooking(card.getAttribute("data-product-id"), { loading: true })));
   const cardImgStep = (id, delta) => {
     const products = loadJson(STORAGE_PRODUCTS, []); const rooms = loadJson(STORAGE_ROOMS, []);
     const pr = products.find((x) => x.id === id); const room = rooms.find((r) => r.id === pr?.room_id);
@@ -1670,21 +1700,21 @@ function renderRoomDetailModal() {
     </li>
   `;
 
-  /* ─ 섹션 목록 구성 (데이터 없으면 섹션 자체 미생성) ─ */
-  const rdSections = [];
-
-  // ① 상품안내/정책
-  const productGuideHtml =
-    (uiState.lang === "zh" && product.guide_policy_html_zh) || product.guide_policy_html_en || product.guide_policy_html || "";
-  if (String(productGuideHtml).trim()) {
-    rdSections.push({
-      id: "rd-sec-product",
-      label: "상품안내/정책",
-      html: richTextOrParagraph(productGuideHtml, ""),
-    });
+  /* ─ 객실 설명 (최상단, 콘텐츠=객실 통일 v1.3) — INFORMATION 위에 렌더 ─ */
+  const roomDescHtml =
+    (uiState.lang === "zh" && room.description_zh) || room.description_en || room.description_zh || "";
+  const descEl = document.getElementById("rdDesc");
+  if (descEl) {
+    if (String(roomDescHtml).trim()) {
+      descEl.innerHTML = `<h3 class="rd-section-title">Room Description</h3><div class="rd-desc-body">${richTextOrParagraph(roomDescHtml, "")}</div>`;
+      descEl.style.display = "";
+    } else { descEl.innerHTML = ""; descEl.style.display = "none"; }
   }
 
-  // ② 객실정책 (v0.5: 부가요금 표시 제거 · 국문 미사용 — 중문 접속 시 중문, 없으면 영문. 구버전 policy_html 폴백)
+  /* ─ 섹션 목록 구성 (데이터 없으면 섹션 자체 미생성) — 상품 콘텐츠 폐지, 모두 객실에서 ─ */
+  const rdSections = [];
+
+  // ① 객실정책 (국문 미사용 — 중문 접속 시 중문, 없으면 영문. 구버전 policy_html 폴백)
   const roomPolicyHtml =
     (uiState.lang === "zh" && room.policy_html_zh) || room.policy_html_en || room.policy_html_zh || room.policy_html || "";
   if (String(roomPolicyHtml || "").trim()) {
@@ -1716,25 +1746,7 @@ function renderRoomDetailModal() {
     });
   }
 
-  /* ─ 내비 탭 ─ */
-  const nav = document.getElementById("rdSectionsNav");
-  if (nav) {
-    nav.innerHTML = rdSections
-      .map((s, i) =>
-        `<button type="button" class="rd-sec-nav-btn${i === 0 ? " active" : ""}" data-rd-sec="${escapeHtml(s.id)}">${escapeHtml(s.label)}</button>`
-      )
-      .join("");
-    nav.querySelectorAll("[data-rd-sec]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        nav.querySelectorAll(".rd-sec-nav-btn").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        document.getElementById(btn.getAttribute("data-rd-sec"))
-          ?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    });
-  }
-
-  /* ─ 섹션 콘텐츠 ─ */
+  /* ─ 섹션 콘텐츠 ─ (섹션 점프 내비게이션은 제거 — 콘텐츠가 아래 전부 노출됨) */
   const svc = document.getElementById("rdServices");
   svc.innerHTML = rdSections
     .map((s) =>
@@ -1757,7 +1769,7 @@ function renderRoomDetailModal() {
   backdrop.onclick = close;
   document.getElementById("rdSelectRoom").onclick = () => {
     close();
-    document.getElementById(`pcard-${product.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    startBooking(product.id);
   };
 }
 
@@ -2362,17 +2374,869 @@ function renderTicketDone(app) {
   </div>`;
 }
 
+/* ─── 로그인 (프로토타입 목업) — 이메일 → 인증번호(신규)/패스워드(기존) → 로그인 ─── */
+function renderLogin(app) {
+  const L = (ko, en) => (uiState.lang === "en" ? en || ko : ko || en);
+  const a = uiState.auth || (uiState.auth = { step: "email", email: "", isNew: false, next: "", err: "" });
+  const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || "").trim());
+  const box = (inner) => `<div class="login-wrap"><div class="login-card">${inner}</div></div>`;
+  const errHtml = a.err ? `<p class="login-err">${escapeHtml(a.err)}</p>` : "";
+
+  if (a.step === "verify") {
+    app.innerHTML = box(`
+      <h2 class="login-title">${L("이메일 인증", "Verify your email")}</h2>
+      <p class="login-sub">${L("인증번호를 이메일로 보냈습니다.", "We sent a verification code to your email.")}<br><span style="color:#7c3aed">${escapeHtml(a.email)}</span></p>
+      <div class="login-note">${L("프로토타입: 아무 6자리 숫자나 입력하면 통과합니다.", "Prototype: enter any 6 digits.")}</div>
+      <input id="lg_code" class="login-input" inputmode="numeric" maxlength="6" placeholder="000000" style="letter-spacing:8px;text-align:center;font-size:18px">
+      ${errHtml}
+      <button id="lg_verify" class="btn-cta login-btn">${L("인증하기", "Verify email")}</button>
+      <div class="login-links"><a id="lg_back" href="javascript:void(0)">${L("← 이메일 다시 입력", "← Back to sign in")}</a></div>`);
+    app.querySelector("#lg_verify").addEventListener("click", () => {
+      const code = (app.querySelector("#lg_code").value || "").trim();
+      if (!/^\d{6}$/.test(code)) { a.err = L("6자리 숫자를 입력하세요.", "Enter 6 digits."); render(); return; }
+      a.err = ""; a.step = "password"; render();
+    });
+    app.querySelector("#lg_back").addEventListener("click", () => { a.step = "email"; a.err = ""; render(); });
+    return;
+  }
+
+  if (a.step === "password") {
+    const heading = a.isNew ? L("비밀번호 설정", "Set your password") : L("비밀번호 입력", "Enter your password");
+    app.innerHTML = box(`
+      <h2 class="login-title">${heading}</h2>
+      <label class="login-label">${L("이메일", "Email")}</label>
+      <input class="login-input" value="${escapeHtml(a.email)}" readonly style="background:#f5f5f2;color:#888">
+      <label class="login-label">${a.isNew ? L("새 비밀번호 (8자 이상)", "New password (8+ chars)") : L("비밀번호", "Password")}</label>
+      <input id="lg_pw" class="login-input" type="password" placeholder="Password">
+      ${errHtml}
+      <button id="lg_submit" class="btn-cta login-btn">${a.isNew ? L("가입하고 로그인", "Register and sign in") : L("로그인", "Sign in")}</button>
+      <div class="login-links"><a id="lg_back" href="javascript:void(0)">${L("← 이메일 다시 입력", "← Back to sign in")}</a></div>`);
+    app.querySelector("#lg_submit").addEventListener("click", () => {
+      const pw = app.querySelector("#lg_pw").value || "";
+      if (a.isNew) {
+        if (pw.length < 8) { a.err = L("비밀번호는 8자 이상이어야 합니다.", "Password must be at least 8 characters."); render(); return; }
+        const members = loadMembers(); members.push({ email: a.email, password: pw }); saveMembers(members);
+      } else {
+        const m = findMember(a.email);
+        if (m && m.password && m.password !== pw) { a.err = L("비밀번호가 일치하지 않습니다.", "Incorrect password."); render(); return; }
+      }
+      loginSuccess(a.email);
+    });
+    app.querySelector("#lg_back").addEventListener("click", () => { a.step = "email"; a.err = ""; render(); });
+    return;
+  }
+
+  // step: email
+  app.innerHTML = box(`
+    <h2 class="login-title">${L("로그인 또는 회원가입", "Sign in or create an account")}</h2>
+    <label class="login-label">${L("이메일", "Email")}</label>
+    <input id="lg_email" class="login-input" type="email" value="${escapeHtml(a.email)}" placeholder="you@example.com">
+    ${errHtml}
+    <button id="lg_continue" class="btn-cta login-btn">${L("이메일로 계속하기", "Continue with email")}</button>
+    <p class="login-terms">${L("로그인·가입 시 High1 이용약관 및 개인정보처리방침에 동의하는 것으로 간주됩니다.", "By continuing you agree to High1's Terms and Privacy Policy.")}</p>`);
+  const go = () => {
+    const email = (app.querySelector("#lg_email").value || "").trim();
+    if (!emailOk(email)) { a.err = L("올바른 이메일을 입력하세요.", "Enter a valid email."); render(); return; }
+    a.email = email; a.err = "";
+    a.isNew = !findMember(email);
+    a.step = a.isNew ? "verify" : "password";
+    render();
+  };
+  app.querySelector("#lg_continue").addEventListener("click", go);
+  app.querySelector("#lg_email").addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+}
+
+function loginSuccess(email) {
+  setSession(email);
+  const next = (uiState.auth && uiState.auth.next) || "#/";
+  uiState.auth = { step: "email", email: "", isNew: false, next: "", err: "" };
+  location.hash = next && next !== "#/login" ? next : "#/";
+  render();
+}
+
+/** GNB 상태 반영 — 로그인 시 Sign in/up 버튼 미노출(Figma), Mypage의 Log out 노출 */
+function renderAuthGnb() {
+  const u = currentUser();
+  const btn = document.getElementById("signinBtn");
+  if (btn) btn.style.display = u ? "none" : "";           // 로그인 완료 시 버튼 미노출
+  const logoutItem = document.getElementById("myLogout");
+  if (logoutItem) logoutItem.style.display = u ? "block" : "none"; // Log out은 로그인 시만
+}
+
+/* ═══════════════════ 숙소 예약 흐름 (프런트) — 로그인 필수 ═══════════════════ */
+const NATIONALITIES = ["Korea", "China", "Japan", "United States", "Taiwan", "Hong Kong", "Singapore", "Thailand", "Vietnam", "Philippines", "Malaysia", "Indonesia", "Other"];
+const PHONE_CCS = ["+82", "+86", "+81", "+886", "+852", "+65", "+66", "+84", "+63", "+60", "+62", "+1", "+44"];
+const RESV_HOLD_MINUTES = 10;
+
+/* 회원 프로필(이메일별) */
+function loadProfiles() { return ldJson(STORAGE_PROFILE, {}); }
+function loadProfile(email) { const all = loadProfiles(); return (email && all[email]) || null; }
+function saveProfile(email, p) { const all = loadProfiles(); all[email] = p; localStorage.setItem(STORAGE_PROFILE, JSON.stringify(all)); }
+/** 투숙자 전체 이름 (First Middle Last) */
+function guestFullName(g) { return [g && g.firstName, g && g.middleName, g && g.lastName].filter(Boolean).join(" "); }
+
+/** 예약 컨텍스트(상품/객실/숙소/요금/취소정책) 계산 */
+function bookingContext(b) {
+  if (!b || !b.productId) return null;
+  const products = loadJson(STORAGE_PRODUCTS, []);
+  const rooms    = loadJson(STORAGE_ROOMS, []);
+  const places   = loadJson(STORAGE_PLACES, []);
+  const product  = products.find((p) => p.id === b.productId);
+  if (!product) return null;
+  const room  = rooms.find((r) => r.id === product.room_id) || null;
+  const place = room ? places.find((pl) => pl.id === room.place_id) : null;
+  const ev = evaluateProductForStay(product, b.ci, b.co);
+  let deposit = 0; // 입금가(원가) 합계 — 판매가와 별도 집계
+  for (const ymd of (ev.nights || [])) {
+    const row = inventoryRow(product, ymd);
+    if (row) deposit += Math.max(0, parseInt(String(row.price).replace(/\D/g, ""), 10) || 0);
+  }
+  return { product, room, place, ev, deposit, nights: (ev.nights || []).length };
+}
+
+/** 카드/[Select Room] → 예약 진입(날짜·재고 확인 + 로그인 필수 + 선택적 로딩) */
+function startBooking(productId, opts) {
+  const ci = uiState.searchDraft && uiState.searchDraft.ci;
+  const co = uiState.searchDraft && uiState.searchDraft.co;
+  if (!ci || !co) { alert("체크인·체크아웃 날짜를 먼저 선택해 주세요."); return; }
+  const pax = JSON.parse(JSON.stringify(normalizePax()));
+  const b = { productId, ci, co, pax, guest: null, agree: false, holdUntil: null, result: null };
+  const ctx = bookingContext(b);
+  if (!ctx) { alert("상품 정보를 찾을 수 없습니다."); return; }
+  if (ctx.ev.state !== "ok") { alert("현재 예약할 수 없는 상품입니다. (마감·재고·판매기간 확인)"); return; }
+  uiState.booking = b;
+  if (!requireLogin("#/booking")) return; // 미로그인 → 로그인 후 #/booking 복귀
+  if (opts && opts.loading) {
+    const L = (ko, en) => (uiState.lang === "en" ? en : ko);
+    showLoadingOverlay(L("예약 페이지로 이동 중…", "Opening booking…"));
+    setTimeout(() => { hideLoadingOverlay(); location.hash = "#/booking"; }, 1000);
+  } else {
+    location.hash = "#/booking";
+  }
+}
+
+/** 예약 요약 카드 (booking / payment 공용) */
+function bookingSummaryHtml(ctx, b, L) {
+  const placeName = escapeHtml(ctx.place ? (localizeField(ctx.place, "place_name") || ctx.place.place_name || "") : "");
+  const roomName  = escapeHtml(ctx.room ? (ctx.room.room_name || ctx.room.room_code || "") : "");
+  const prodName  = escapeHtml((uiState.lang === "zh" && ctx.product.name_zh) || ctx.product.name_en || ctx.product.name || "");
+  const rooms = (b.pax && b.pax.rooms) || [];
+  const adults = rooms.reduce((s, r) => s + (r.adults || 0), 0);
+  const children = rooms.reduce((s, r) => s + (r.children || 0), 0);
+  const paxLine = `${L("성인", "Adults")} ${adults} · ${L("아동", "Children")} ${children} · ${rooms.length} ${L("객실", "room(s)")}`;
+  const cancel = ctx.ev.cancelLine || "";
+  const isFree = /무료취소/.test(cancel);
+  return `<div class="bk-summary">
+    <div class="bk-sum-head">${placeName}</div>
+    <div class="bk-sum-room">${roomName} · ${prodName}</div>
+    <table class="bk-sum-tbl">
+      <tr><th>${L("체크인", "Check-in")}</th><td>${escapeHtml(b.ci)}</td></tr>
+      <tr><th>${L("체크아웃", "Check-out")}</th><td>${escapeHtml(b.co)}</td></tr>
+      <tr><th>${L("숙박", "Nights")}</th><td>${ctx.nights} ${L("박", "night(s)")}</td></tr>
+      <tr><th>${L("인원", "Guests")}</th><td>${paxLine}</td></tr>
+    </table>
+    <div class="bk-cancel ${isFree ? "free" : "no"}">${escapeHtml(cancel || L("취소 및 환불불가", "Non-refundable"))}</div>
+    <div class="bk-total"><span>${L("결제 금액", "Total")}</span><strong>${formatWon(ctx.ev.totalPrice)}</strong></div>
+  </div>`;
+}
+
+/** 1. 예약 (Who's staying) — 투숙자만 입력 */
+function renderBooking(app) {
+  const L = (ko, en) => (uiState.lang === "en" ? en || ko : ko || en);
+  if (!requireLogin("#/booking")) return;
+  const b = uiState.booking;
+  const ctx = b && bookingContext(b);
+  if (!ctx) { location.hash = "#/"; return; }
+  if (ctx.ev.state !== "ok") { alert(L("예약할 수 없는 상품입니다.", "This product is not bookable.")); location.hash = "#/"; return; }
+  window.scrollTo(0, 0);
+  const u = currentUser();
+  // 프로필 기본 투숙객 정보 자동채움 (토글 ON) — 이미 입력 중이면 그 값 우선
+  const prof = (u && loadProfile(u.email)) || null;
+  const auto = (prof && prof.useAsDefault) ? prof : null;
+  const g = b.guest || {
+    nationality: (auto && auto.nationality) || "Korea",
+    firstName: (auto && auto.firstName) || "",
+    middleName: (auto && auto.middleName) || "",
+    lastName: (auto && auto.lastName) || "",
+    email: (auto && auto.email) || (u && u.email) || "",
+    phoneCc: (auto && auto.phoneCc) || "+82",
+    phone: (auto && auto.phone) || "",
+  };
+  const natOpts = NATIONALITIES.map((n) => `<option value="${escapeHtml(n)}" ${g.nationality === n ? "selected" : ""}>${escapeHtml(n)}</option>`).join("");
+  const ccOpts = PHONE_CCS.map((c) => `<option value="${escapeHtml(c)}" ${g.phoneCc === c ? "selected" : ""}>${escapeHtml(c)}</option>`).join("");
+  const autoNote = auto ? `<div class="bk-autofill">✓ ${L("프로필의 기본 투숙객 정보를 불러왔습니다. 필요 시 수정하세요.", "Loaded default guest info from your profile. Edit if needed.")}</div>` : "";
+
+  app.innerHTML = `<div class="bk-wrap">
+    <div class="bk-steps"><span class="on">1 ${L("투숙자 정보", "Guest")}</span><span>2 ${L("결제", "Payment")}</span><span>3 ${L("완료", "Done")}</span></div>
+    <div class="bk-grid">
+      <div class="bk-main">
+        <h2 class="bk-title">${L("투숙자 정보", "Who's staying?")}</h2>
+        <p class="bk-note">${L("예약자와 투숙자는 동일하게 처리됩니다. 여권 표기와 동일하게 영문으로 입력해 주세요.", "The booker is the guest. Please enter your name in English as shown on your passport.")}</p>
+        ${autoNote}
+        <label class="bk-label">${L("국적", "Nationality")}</label>
+        <select id="bk_nat" class="bk-input">${natOpts}</select>
+        <div class="bk-row3">
+          <div><label class="bk-label">${L("영문 이름 (First)", "First name")}</label><input id="bk_first" class="bk-input" value="${escapeHtml(g.firstName)}" placeholder="GILDONG"></div>
+          <div><label class="bk-label">${L("미들네임 (선택)", "Middle name")}</label><input id="bk_middle" class="bk-input" value="${escapeHtml(g.middleName || "")}" placeholder="—"></div>
+          <div><label class="bk-label">${L("영문 성 (Last)", "Last name")}</label><input id="bk_last" class="bk-input" value="${escapeHtml(g.lastName)}" placeholder="HONG"></div>
+        </div>
+        <label class="bk-label">${L("이메일", "Email")}</label>
+        <input id="bk_email" class="bk-input" type="email" value="${escapeHtml(g.email)}" placeholder="you@example.com">
+        <label class="bk-label">${L("휴대폰 번호 (선택)", "Mobile (optional)")}</label>
+        <div class="bk-phone"><select id="bk_cc" class="bk-input bk-cc">${ccOpts}</select><input id="bk_phone" class="bk-input" inputmode="tel" value="${escapeHtml(g.phone)}" placeholder="10-0000-0000"></div>
+        <label class="bk-agree"><input type="checkbox" id="bk_agree" ${b.agree ? "checked" : ""}> ${L("예약 조건 및 취소·환불 정책에 동의합니다.", "I agree to the booking terms and cancellation policy.")}</label>
+        <p class="bk-err" id="bk_err" style="display:none"></p>
+        <button id="bk_next" class="btn-cta bk-btn">${L("결제하기", "Continue to payment")}</button>
+      </div>
+      <aside class="bk-side">${bookingSummaryHtml(ctx, b, L)}</aside>
+    </div>
+  </div>`;
+
+  app.querySelector("#bk_next").addEventListener("click", () => {
+    const guest = {
+      nationality: app.querySelector("#bk_nat").value,
+      firstName: (app.querySelector("#bk_first").value || "").trim(),
+      middleName: (app.querySelector("#bk_middle").value || "").trim(),
+      lastName: (app.querySelector("#bk_last").value || "").trim(),
+      email: (app.querySelector("#bk_email").value || "").trim(),
+      phoneCc: app.querySelector("#bk_cc").value,
+      phone: (app.querySelector("#bk_phone").value || "").trim(),
+    };
+    b.agree = app.querySelector("#bk_agree").checked;
+    const errEl = app.querySelector("#bk_err");
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest.email);
+    let msg = "";
+    if (!guest.firstName || !guest.lastName) msg = L("영문 이름과 성을 입력하세요.", "Enter first and last name.");
+    else if (!emailOk) msg = L("올바른 이메일을 입력하세요.", "Enter a valid email.");
+    else if (!b.agree) msg = L("예약 조건에 동의해 주세요.", "Please agree to the terms.");
+    if (msg) { errEl.textContent = msg; errEl.style.display = "block"; return; }
+    b.guest = guest;
+    b.holdUntil = Date.now() + RESV_HOLD_MINUTES * 60 * 1000;
+    location.hash = "#/payment";
+  });
+}
+
+/** 2. 결제 (홀딩 타이머 + 카드정보 목업) */
+function renderPayment(app) {
+  const L = (ko, en) => (uiState.lang === "en" ? en || ko : ko || en);
+  if (!requireLogin("#/payment")) return;
+  const b = uiState.booking;
+  const ctx = b && b.guest && bookingContext(b);
+  if (!ctx) { location.hash = "#/"; return; }
+  if (!b.holdUntil) b.holdUntil = Date.now() + RESV_HOLD_MINUTES * 60 * 1000;
+  window.scrollTo(0, 0);
+
+  app.innerHTML = `<div class="bk-wrap">
+    <div class="bk-steps"><span class="done">1 ${L("투숙자 정보", "Guest")}</span><span class="on">2 ${L("결제", "Payment")}</span><span>3 ${L("완료", "Done")}</span></div>
+    <div class="bk-hold" id="bk_hold"></div>
+    <div class="bk-grid">
+      <div class="bk-main">
+        <h2 class="bk-title">${L("결제", "Payment")}</h2>
+        <div class="bk-note">${L("프로토타입입니다. 실제로 결제되지 않습니다 (PG 목업).", "Prototype only — no real charge (PG mock).")}</div>
+        <label class="bk-label">${L("카드 번호", "Card number")}</label>
+        <input id="pay_card" class="bk-input" inputmode="numeric" placeholder="0000 0000 0000 0000" maxlength="19">
+        <div class="bk-row2">
+          <div><label class="bk-label">${L("유효기간", "Expiry")}</label><input id="pay_exp" class="bk-input" placeholder="MM/YY" maxlength="5"></div>
+          <div><label class="bk-label">CVC</label><input id="pay_cvc" class="bk-input" inputmode="numeric" placeholder="000" maxlength="4"></div>
+        </div>
+        <label class="bk-label">${L("카드 소유자명", "Cardholder name")}</label>
+        <input id="pay_name" class="bk-input" placeholder="GILDONG HONG" value="${escapeHtml(guestFullName(b.guest))}">
+        <p class="bk-err" id="pay_err" style="display:none"></p>
+        <button id="pay_do" class="btn-cta bk-btn">${L("결제하기", "Pay")} ${formatWon(ctx.ev.totalPrice)}</button>
+        <div class="bk-links"><a href="javascript:void(0)" id="pay_back">${L("← 투숙자 정보로", "← Back to guest info")}</a></div>
+      </div>
+      <aside class="bk-side">${bookingSummaryHtml(ctx, b, L)}</aside>
+    </div>
+  </div>`;
+
+  const holdEl = app.querySelector("#bk_hold");
+  const tick = () => {
+    const remain = Math.max(0, (b.holdUntil || 0) - Date.now());
+    const mm = String(Math.floor(remain / 60000)).padStart(2, "0");
+    const ss = String(Math.floor((remain % 60000) / 1000)).padStart(2, "0");
+    if (holdEl) holdEl.innerHTML = `⏳ ${L("재고 확보 시간", "Hold time")} <strong>${mm}:${ss}</strong> — ${L("시간 내 결제를 완료해 주세요.", "Please complete payment within the time.")}`;
+    if (remain <= 0) {
+      if (window.__holdTimer) { clearInterval(window.__holdTimer); window.__holdTimer = null; }
+      alert(L("홀딩 시간이 만료되어 예약이 해제되었습니다. 다시 시도해 주세요.", "Hold time expired. The reservation was released. Please try again."));
+      uiState.booking = null;
+      location.hash = "#/search";
+    }
+  };
+  tick();
+  window.__holdTimer = setInterval(tick, 1000);
+
+  app.querySelector("#pay_card").addEventListener("input", (e) => {
+    const v = e.target.value.replace(/\D/g, "").slice(0, 16);
+    e.target.value = v.replace(/(.{4})/g, "$1 ").trim();
+  });
+  app.querySelector("#pay_exp").addEventListener("input", (e) => {
+    const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+    e.target.value = v.length > 2 ? v.slice(0, 2) + "/" + v.slice(2) : v;
+  });
+  app.querySelector("#pay_back").addEventListener("click", () => { location.hash = "#/booking"; });
+  app.querySelector("#pay_do").addEventListener("click", () => {
+    const card = (app.querySelector("#pay_card").value || "").replace(/\s/g, "");
+    const exp = app.querySelector("#pay_exp").value || "";
+    const cvc = app.querySelector("#pay_cvc").value || "";
+    const errEl = app.querySelector("#pay_err");
+    let msg = "";
+    if (card.length < 15) msg = L("카드 번호를 입력하세요.", "Enter a valid card number.");
+    else if (!/^\d{2}\/\d{2}$/.test(exp)) msg = L("유효기간(MM/YY)을 입력하세요.", "Enter expiry (MM/YY).");
+    else if (cvc.length < 3) msg = L("CVC를 입력하세요.", "Enter CVC.");
+    if (msg) { errEl.textContent = msg; errEl.style.display = "block"; return; }
+    if (window.__holdTimer) { clearInterval(window.__holdTimer); window.__holdTimer = null; }
+    b.result = createReservation(b, ctx);
+    location.hash = "#/booking-done";
+  });
+}
+
+/** 예약 레코드 생성 (예약번호 BK-YYYYMMDD-NNNNN / 거래번호 TEST-xxxxxxxxxxxx) */
+function createReservation(b, ctx) {
+  const list = loadJson(STORAGE_RESV, []);
+  const ymd = todayKstYmd().replace(/-/g, "");
+  const seq = String(list.filter((r) => String(r.code || "").startsWith("BK-" + ymd)).length + 1).padStart(5, "0");
+  const code = `BK-${ymd}-${seq}`;
+  const hex = () => Math.floor(Math.random() * 16).toString(16).toUpperCase();
+  const txnId = "TEST-" + Array.from({ length: 12 }, hex).join("");
+  const pmsLinked = ctx.product.pms_linked === true;
+  const rec = {
+    code, txn_id: txnId,
+    member_email: (currentUser() || {}).email || "",
+    domain: "acc",
+    place_name: ctx.place ? (ctx.place.place_name || "") : "",
+    room_name: ctx.room ? (ctx.room.room_name || ctx.room.room_code || "") : "",
+    room_image: (roomImages(ctx.room)[0] || {}).data_url || "",
+    product_id: ctx.product.id,
+    product_name: ctx.product.name_en || ctx.product.name || "",
+    checkin: b.ci, checkout: b.co, nights: ctx.nights,
+    pax: b.pax,
+    guest: b.guest,
+    amount_deposit: ctx.deposit,        // 입금가 합계(원가, 내부)
+    amount_sell: ctx.ev.totalPrice,     // 판매가 합계(고객 청구)
+    cancel_policy_type: ctx.product.cancel_policy_type || "NON_REFUNDABLE",
+    cancel_free_days_before: ctx.product.cancel_free_days_before != null ? ctx.product.cancel_free_days_before : null,
+    source_mode: pmsLinked ? "PMS" : "MANUAL",
+    status: pmsLinked ? "CONFIRMED" : "PENDING",   // PMS 연동=확정 / 수기=대기
+    created_at: new Date().toISOString(),
+  };
+  list.push(rec);
+  localStorage.setItem(STORAGE_RESV, JSON.stringify(list));
+  return rec;
+}
+
+/** 3. 예약완료 (확정/대기 상태 + 예약번호) */
+function renderBookingDone(app) {
+  const L = (ko, en) => (uiState.lang === "en" ? en || ko : ko || en);
+  const b = uiState.booking;
+  const rec = b && b.result;
+  if (!rec) { location.hash = "#/"; return; }
+  window.scrollTo(0, 0);
+  const confirmed = rec.status === "CONFIRMED";
+  const badge = confirmed
+    ? `<span class="bk-badge ok">${L("예약 확정", "Confirmed")}</span>`
+    : `<span class="bk-badge wait">${L("예약 대기", "Pending")}</span>`;
+  const stateNote = confirmed
+    ? L("예약이 확정되었습니다.", "Your reservation is confirmed.")
+    : L("수기 상품은 호텔 확인 후 확정됩니다. 확정 시 이메일로 안내드립니다.", "This is a manually managed product. It will be confirmed after the hotel checks availability. You'll be notified by email.");
+  const guestName = escapeHtml(guestFullName(rec.guest));
+  app.innerHTML = `<div class="bk-wrap bk-done">
+    <div class="bk-steps"><span class="done">1</span><span class="done">2</span><span class="on">3 ${L("완료", "Done")}</span></div>
+    <div class="bk-done-card ${confirmed ? "ok" : "wait"}">
+      <div class="bk-done-emoji">${confirmed ? "✅" : "🕓"}</div>
+      <h2>${L("예약이 접수되었습니다", "Reservation received")}</h2>
+      <div class="bk-done-badge">${badge}</div>
+      <div class="bk-done-code">${L("예약번호", "Reservation No.")} <strong>${escapeHtml(rec.code)}</strong></div>
+      <div class="bk-done-note">${stateNote}</div>
+    </div>
+    <table class="bk-sum-tbl bk-done-tbl">
+      <tr><th>${L("숙소", "Accommodation")}</th><td>${escapeHtml(rec.place_name)}</td></tr>
+      <tr><th>${L("객실·상품", "Room · Product")}</th><td>${escapeHtml(rec.room_name)} · ${escapeHtml(rec.product_name)}</td></tr>
+      <tr><th>${L("일정", "Dates")}</th><td>${escapeHtml(rec.checkin)} → ${escapeHtml(rec.checkout)} (${rec.nights}${L("박", "N")})</td></tr>
+      <tr><th>${L("투숙자", "Guest")}</th><td>${guestName} · ${escapeHtml(rec.guest.email)}</td></tr>
+      <tr><th>${L("결제 금액", "Paid")}</th><td><strong>${formatWon(rec.amount_sell)}</strong> · <span style="font-family:monospace;font-size:11px">${escapeHtml(rec.txn_id)}</span></td></tr>
+    </table>
+    <div class="bk-done-actions">
+      <a href="#/" class="btn-cta" style="text-decoration:none">${L("홈으로", "Home")}</a>
+      <a href="javascript:void(0)" id="bk_my" class="btn-outline">${L("예약확인", "View booking")}</a>
+    </div>
+  </div>`;
+  app.querySelector("#bk_my").addEventListener("click", () => {
+    location.hash = "#/mypage";
+  });
+}
+
+/* ═══════════════════ 마이페이지 (예약 통합 목록·상세·취소) — 로그인 필수 ═══════════════════ */
+/** 고객센터 정보 (프로토타입 — 실제 값은 정책 확정 후 반영) */
+const SUPPORT_INFO = { phone: "1588-7789", email: "help@high1.com", hours_ko: "연중무휴 09:00 ~ 18:00", hours_en: "Daily 09:00 – 18:00" };
+
+function fmtDateTime(iso) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso).slice(0, 16).replace("T", " ");
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function daysBetweenYmd(fromYmd, toYmd) {
+  const ok = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s);
+  if (!ok(fromYmd) || !ok(toYmd)) return null;
+  const p = (s) => { const a = s.split("-"); return Date.UTC(+a[0], (+a[1]) - 1, +a[2]); };
+  return Math.round((p(toYmd) - p(fromYmd)) / 86400000);
+}
+/** 체크인 D-day 뱃지 텍스트 (오늘 이후만) */
+function checkinDdayLabel(checkin, L) {
+  const dd = daysBetweenYmd(todayKstYmd(), checkin);
+  if (dd == null || dd < 0) return "";
+  if (dd === 0) return L("체크인 D-DAY", "Check-in D-DAY");
+  return L(`체크인 D-${dd}`, `Check-in D-${dd}`);
+}
+function paxSummary(pax, L) {
+  const rooms = (pax && pax.rooms) || [];
+  const a = rooms.reduce((s, r) => s + (r.adults || 0), 0);
+  const c = rooms.reduce((s, r) => s + (r.children || 0), 0);
+  return `${L("성인", "Adults")} ${a}${c ? ` · ${L("아동", "Children")} ${c}` : ""} · ${rooms.length} ${L("객실", "room")}`;
+}
+/** 예약 객실 이미지 (스냅샷 우선, 없으면 상품→객실 조회) */
+function accResvImage(r) {
+  if (r.room_image) return r.room_image;
+  const p = loadJson(STORAGE_PRODUCTS, []).find((x) => x.id === r.product_id);
+  if (!p) return "";
+  const room = loadJson(STORAGE_ROOMS, []).find((x) => x.id === p.room_id);
+  return (roomImages(room)[0] || {}).data_url || "";
+}
+/** 티켓 상품 썸네일 */
+function ticketResvImage(o) {
+  const pid = (o.items && o.items[0] && o.items[0].product_id) || "";
+  const p = loadTicketProducts().find((x) => x.id === pid);
+  return p ? ticketImg(p) : "";
+}
+
+/** 회원 예약(숙소+티켓) 통합 아이템 목록 */
+function myBookingItems(email) {
+  const today = todayKstYmd();
+  const resv = loadJson(STORAGE_RESV, []).filter((r) => (r.member_email || "") === email);
+  const orders = loadTicketOrders().filter((o) => ((o.buyer && o.buyer.email) || "") === email);
+  const coupons = loadTicketCoupons();
+  const items = [];
+  resv.forEach((r) => {
+    const tab = r.status === "CANCELLED" ? "cancelled" : ((r.checkout && r.checkout >= today) ? "current" : "past");
+    const rooms = (r.pax && r.pax.rooms) || [];
+    const a = rooms.reduce((s, x) => s + (x.adults || 0), 0);
+    const c = rooms.reduce((s, x) => s + (x.children || 0), 0);
+    items.push({ kind: "acc", id: r.code, tab, status: r.status,
+      title: r.place_name || "-", sub: `${r.room_name || ""} · ${r.product_name || ""}`,
+      dateLabel: `${r.checkin} → ${r.checkout}`, amount: r.amount_sell, created: r.created_at || "",
+      img: accResvImage(r), adults: a, children: c, roomCount: rooms.length, checkin: r.checkin });
+  });
+  orders.forEach((o) => {
+    const ocs = coupons.filter((c) => c.order_no === o.order_no);
+    const ended = ocs.length ? ocs.every((c) => c.use_end_date && c.use_end_date < today) : false;
+    const allUsed = ocs.length ? ocs.every((c) => c.status === "USED") : false;
+    const tab = o.status === "취소완료" ? "cancelled" : ((ended || allUsed) ? "past" : "current");
+    const first = (o.items && o.items[0]) || {};
+    const more = (o.items && o.items.length > 1) ? ` 외 ${o.items.length - 1}` : "";
+    const validRange = ocs.length ? `${ocs[0].use_start_date}~${ocs[0].use_end_date}` : (o.use_date || "");
+    items.push({ kind: "ticket", id: o.order_no, tab, status: o.status,
+      title: (first.product_name || "티켓 주문") + more, sub: `${ocs.length}매`,
+      dateLabel: validRange, amount: o.total, created: o.created_at || "",
+      img: ticketResvImage(o), qty: ocs.length, checkin: "" });
+  });
+  items.sort((a, b) => (b.created || "").localeCompare(a.created || ""));
+  return items;
+}
+
+function renderMyPage(app, parts) {
+  const L = (ko, en) => (uiState.lang === "en" ? en || ko : ko || en);
+  if (!requireLogin("#/mypage")) return;
+  window.scrollTo(0, 0);
+  if (parts[1] === "profile") { renderMyProfile(app); return; }
+  if (parts[1] === "acc")    { renderMyAccDetail(app, decodeURIComponent(parts[2] || "")); return; }
+  if (parts[1] === "ticket") { renderMyTicketDetail(app, decodeURIComponent(parts[2] || "")); return; }
+
+  const email = (currentUser() || {}).email || "";
+  const f = uiState.myFilter || (uiState.myFilter = { domain: "all", tab: "current" });
+  let items = myBookingItems(email);
+  if (f.domain !== "all") items = items.filter((it) => it.kind === f.domain);
+  const counts = { current: 0, past: 0, cancelled: 0 };
+  items.forEach((it) => { counts[it.tab]++; });
+  const tabItems = items.filter((it) => it.tab === f.tab);
+
+  const domBtn = (v, label) => `<button type="button" class="my-dom ${f.domain === v ? "on" : ""}" data-dom="${v}">${label}</button>`;
+  const tabBtn = (v, label) => `<button type="button" class="my-tab ${f.tab === v ? "on" : ""}" data-tab="${v}">${label} (${counts[v]})</button>`;
+  const badge = (it) => {
+    if (it.kind === "acc") {
+      if (it.status === "CANCELLED") return `<span class="my-badge cx">${L("취소완료", "Cancelled")}</span>`;
+      if (it.status === "PENDING") return `<span class="my-badge wait">${L("대기", "Pending")}</span>`;
+      return `<span class="my-badge ok">${L("확정", "Confirmed")}</span>`;
+    }
+    if (it.status === "취소완료") return `<span class="my-badge cx">${L("취소완료", "Cancelled")}</span>`;
+    return `<span class="my-badge ok">${L("결제완료", "Paid")}</span>`;
+  };
+  const cards = tabItems.length ? tabItems.map((it) => {
+    const dday = (it.kind === "acc" && f.tab === "current") ? checkinDdayLabel(it.checkin, L) : "";
+    const paxLine = it.kind === "acc"
+      ? `👥 ${L("성인", "Adults")} ${it.adults}${it.children ? ` · ${L("아동", "Children")} ${it.children}` : ""} · ${it.roomCount} ${L("객실", "room")}`
+      : `🎫 ${it.qty} ${L("매", "ea")}`;
+    const thumb = it.img
+      ? `<div class="my-card-thumb"><img src="${escapeHtml(it.img)}" alt="" />${dday ? `<span class="my-dday">${dday}</span>` : ""}</div>`
+      : `<div class="my-card-thumb my-no-img">No Image${dday ? `<span class="my-dday">${dday}</span>` : ""}</div>`;
+    return `
+    <a class="my-card" href="#/mypage/${it.kind}/${encodeURIComponent(it.id)}">
+      <div class="my-card-head"><span class="my-kind ${it.kind}">${it.kind === "acc" ? L("숙소", "Stay") : L("티켓", "Ticket")}</span>${badge(it)}<span class="my-card-bno">${escapeHtml(it.id)}</span></div>
+      <div class="my-card-body">
+        ${thumb}
+        <div class="my-card-info">
+          <div class="my-card-title">${escapeHtml(it.title)}</div>
+          <div class="my-card-sub">${escapeHtml(it.sub)}</div>
+          <div class="my-card-meta">${paxLine}</div>
+          <div class="my-card-meta">📅 ${escapeHtml(it.dateLabel)}</div>
+          <div class="my-card-foot"><span class="my-card-bdate">${L("예약일", "Booked")} ${escapeHtml(fmtDateTime(it.created))}</span><strong>${formatWon(it.amount)}</strong></div>
+        </div>
+      </div>
+    </a>`;
+  }).join("") : `<div class="my-empty">${L("해당 내역이 없습니다.", "No bookings here.")}</div>`;
+
+  app.innerHTML = `<div class="my-wrap">
+    <h2 class="my-title">${L("나의 예약", "My Bookings")}</h2>
+    <div class="my-doms">${domBtn("all", L("전체", "All"))}${domBtn("acc", L("숙소", "Stay"))}${domBtn("ticket", L("티켓", "Ticket"))}</div>
+    <div class="my-tabs">${tabBtn("current", L("예정", "Current"))}${tabBtn("past", L("지난", "Past"))}${tabBtn("cancelled", L("취소", "Cancelled"))}</div>
+    <div class="my-list">${cards}</div>
+  </div>`;
+
+  app.querySelectorAll(".my-dom").forEach((b) => b.addEventListener("click", () => { uiState.myFilter.domain = b.getAttribute("data-dom"); render(); }));
+  app.querySelectorAll(".my-tab").forEach((b) => b.addEventListener("click", () => { uiState.myFilter.tab = b.getAttribute("data-tab"); render(); }));
+}
+
+/** 고객센터 안내 블록 (숙소·티켓 상세 공용) */
+function supportBlockHtml(L) {
+  return `<div class="my-support">
+    <h3 class="my-sec-title">${L("고객센터", "Customer Support")}</h3>
+    <div class="my-support-grid">
+      <div><span>${L("전화", "Phone")}</span><strong>${SUPPORT_INFO.phone}</strong></div>
+      <div><span>${L("이메일", "E-mail")}</span><strong>${SUPPORT_INFO.email}</strong></div>
+      <div><span>${L("운영시간", "Hours")}</span><strong>${L(SUPPORT_INFO.hours_ko, SUPPORT_INFO.hours_en)}</strong></div>
+    </div>
+  </div>`;
+}
+/** 숙소 취소규정 상세(무료취소 기한 날짜 또는 환불불가) */
+function accCancelPolicyDetail(r, L) {
+  if (r.cancel_policy_type === PRODUCT_CANCEL_POLICY.FREE_N_DAYS) {
+    const N = Math.max(0, parseInt(r.cancel_free_days_before, 10) || 0);
+    const firstBlocked = addCalendarDaysYmd(r.checkin, -N);
+    const lastFree = firstBlocked ? addCalendarDaysYmd(firstBlocked, -1) : "";
+    if (lastFree) return { free: true, text: L(`${lastFree} 23:59까지 무료취소 가능 (전액 환불) · 이후 환불불가`, `Free cancellation until ${lastFree} 23:59 (full refund); non-refundable after.`) };
+  }
+  return { free: false, text: L("환불 불가 상품입니다.", "This booking is non-refundable.") };
+}
+
+/** 숙소 환불액 = 무료취소 기한 이내 전액 / 이후·환불불가 0 */
+function computeAccRefund(r) {
+  if (r.status === "CANCELLED") return r.refund_amount || 0;
+  if (r.cancel_policy_type === PRODUCT_CANCEL_POLICY.FREE_N_DAYS) {
+    const N = Math.max(0, parseInt(r.cancel_free_days_before, 10) || 0);
+    const freeBlock = addCalendarDaysYmd(r.checkin, -N); // 이 날짜부터 환불불가
+    if (freeBlock && todayKstYmd() < freeBlock) return r.amount_sell || 0;
+  }
+  return 0;
+}
+
+function renderMyAccDetail(app, code) {
+  const L = (ko, en) => (uiState.lang === "en" ? en || ko : ko || en);
+  const email = (currentUser() || {}).email || "";
+  const list = loadJson(STORAGE_RESV, []);
+  const r = list.find((x) => x.code === code && (x.member_email || "") === email);
+  if (!r) { location.hash = "#/mypage"; return; }
+  const cancelled = r.status === "CANCELLED";
+  const canCancel = !cancelled && r.checkout >= todayKstYmd();
+  const refund = computeAccRefund(r);
+  const g = r.guest || {};
+  const statusBadge = cancelled ? `<span class="my-badge cx">${L("취소완료", "Cancelled")}</span>`
+    : (r.status === "PENDING" ? `<span class="my-badge wait">${L("예약 대기", "Pending")}</span>` : `<span class="my-badge ok">${L("예약 확정", "Confirmed")}</span>`);
+  const img = accResvImage(r);
+  const dday = (!cancelled && r.checkout >= todayKstYmd()) ? checkinDdayLabel(r.checkin, L) : "";
+  const pol = accCancelPolicyDetail(r, L);
+  const metaLine = `${L("예약번호", "Booking no.")} <strong>${escapeHtml(r.code)}</strong>`
+    + ` &nbsp;|&nbsp; ${L("예약일", "Booked")} ${escapeHtml(fmtDateTime(r.created_at))}`
+    + (cancelled ? ` &nbsp;|&nbsp; ${L("취소일", "Cancelled")} ${escapeHtml(fmtDateTime(r.cancelled_at))}` : "");
+  app.innerHTML = `<div class="my-wrap my-detail">
+    <a class="my-back" href="#/mypage">← ${L("목록으로", "Back to list")}</a>
+    <div class="my-det-head"><h2>${escapeHtml(r.place_name || "")}</h2>${statusBadge}</div>
+    <div class="my-det-meta">${metaLine}</div>
+    ${cancelled ? `<div class="my-cancelled-box">${L("취소완료", "Cancelled")} · ${L("환불액", "Refund")} <strong>${formatWon(r.refund_amount || 0)}</strong></div>` : ""}
+    <div class="my-det-card">
+      ${img ? `<div class="my-det-thumb"><img src="${escapeHtml(img)}" alt="" />${dday ? `<span class="my-dday">${dday}</span>` : ""}</div>` : `<div class="my-det-thumb my-no-img">No Image${dday ? `<span class="my-dday">${dday}</span>` : ""}</div>`}
+      <div class="my-det-sum">
+        <div class="my-det-room">${escapeHtml(r.room_name || "")} · ${escapeHtml(r.product_name || "")}</div>
+        <div class="my-det-line">📅 ${escapeHtml(r.checkin)} → ${escapeHtml(r.checkout)} (${r.nights}${L("박", "N")})</div>
+        <div class="my-det-line">👥 ${escapeHtml(paxSummary(r.pax, L))}</div>
+        <div class="my-det-line">💳 <strong>${formatWon(r.amount_sell)}</strong></div>
+      </div>
+    </div>
+    <h3 class="my-sec-title">${L("투숙자 정보", "Guest info")}</h3>
+    <table class="bk-sum-tbl bk-done-tbl">
+      <tr><th>${L("성명", "Name")}</th><td>${escapeHtml(guestFullName(g))}</td></tr>
+      <tr><th>${L("이메일", "E-mail")}</th><td>${escapeHtml(g.email || "")}</td></tr>
+      <tr><th>${L("휴대폰", "Mobile")}</th><td>${escapeHtml(g.phone ? ((g.phoneCc ? g.phoneCc + " " : "") + g.phone) : "-")}</td></tr>
+      <tr><th>${L("국적", "Nationality")}</th><td>${escapeHtml(g.nationality || "-")}</td></tr>
+    </table>
+    ${supportBlockHtml(L)}
+    <h3 class="my-sec-title">${L("취소 규정", "Cancellation policy")}</h3>
+    <div class="my-cancel-policy ${pol.free ? "free" : "no"}">${escapeHtml(pol.text)}</div>
+    ${canCancel ? `<button id="my_cancel" class="btn-outline my-cancel-btn">${L("예약 취소", "Cancel reservation")}</button>` : ""}
+  </div>`;
+  if (canCancel) {
+    document.getElementById("my_cancel").addEventListener("click", () => {
+      showCancelModal({
+        title: L("예약을 취소하시겠습니까?", "Cancel this reservation?"),
+        refund,
+        note: refund > 0 ? L("무료취소 기한 이내 — 전액 환불됩니다.", "Within free-cancel period — full refund.")
+                         : L("환불 불가 대상 — 환불액은 0원입니다.", "Non-refundable — no refund."),
+      }, L, () => {
+        r.status = "CANCELLED"; r.refund_amount = refund; r.cancelled_at = new Date().toISOString();
+        localStorage.setItem(STORAGE_RESV, JSON.stringify(list));
+        render();
+      });
+    });
+  }
+}
+
+/** 티켓 환불액 = 사용기간 종료 전 미사용(SOLD) 쿠폰 판매가 합 */
+function computeTicketRefund(order, coupons) {
+  const today = todayKstYmd();
+  let refund = 0;
+  coupons.filter((c) => c.order_no === order.order_no).forEach((c) => {
+    if (c.status === "SOLD" && c.use_end_date && today <= c.use_end_date) refund += (c.sell || 0);
+  });
+  return refund;
+}
+
+function renderMyTicketDetail(app, orderNo) {
+  const L = (ko, en) => (uiState.lang === "en" ? en || ko : ko || en);
+  const email = (currentUser() || {}).email || "";
+  const orders = loadTicketOrders();
+  const o = orders.find((x) => x.order_no === orderNo && ((x.buyer && x.buyer.email) || "") === email);
+  if (!o) { location.hash = "#/mypage"; return; }
+  const coupons = loadTicketCoupons();
+  const ocs = coupons.filter((c) => c.order_no === o.order_no);
+  const cancelled = o.status === "취소완료";
+  const refund = computeTicketRefund(o, coupons);
+  const canCancel = !cancelled && ocs.some((c) => c.status === "SOLD");
+  const cpLabel = (s) => ({ SOLD: L("미사용", "Unused"), USED: L("사용완료", "Used"), CANCELLED: L("취소", "Cancelled") }[s] || s);
+  const rows = ocs.map((c) => `<tr><td style="font-family:monospace;font-size:11px">${escapeHtml(c.coupon_no)}</td><td>${escapeHtml(c.coupon_name || "")}</td><td>${cpLabel(c.status)}</td><td>${formatWon(c.sell)}</td><td style="font-size:11px">${escapeHtml(c.use_start_date || "")}~${escapeHtml(c.use_end_date || "")}</td></tr>`).join("");
+  const statusBadge = cancelled ? `<span class="my-badge cx">${L("취소완료", "Cancelled")}</span>` : `<span class="my-badge ok">${L("결제완료", "Paid")}</span>`;
+  const img = ticketResvImage(o);
+  const first = (o.items && o.items[0]) || {};
+  const more = (o.items && o.items.length > 1) ? L(` 외 ${o.items.length - 1}종`, ` +${o.items.length - 1} more`) : "";
+  const validRange = ocs.length ? `${ocs[0].use_start_date || ""} ~ ${ocs[0].use_end_date || ""}` : (o.use_date || "-");
+  const buyer = o.buyer || {};
+  const metaLine = `${L("주문번호", "Order no.")} <strong>${escapeHtml(o.order_no)}</strong>`
+    + ` &nbsp;|&nbsp; ${L("주문일", "Ordered")} ${escapeHtml(fmtDateTime(o.created_at))}`
+    + (cancelled ? ` &nbsp;|&nbsp; ${L("취소일", "Cancelled")} ${escapeHtml(fmtDateTime(o.cancelled_at))}` : "");
+  app.innerHTML = `<div class="my-wrap my-detail">
+    <a class="my-back" href="#/mypage">← ${L("목록으로", "Back to list")}</a>
+    <div class="my-det-head"><h2>${L("티켓 주문", "Ticket order")}</h2>${statusBadge}</div>
+    <div class="my-det-meta">${metaLine}</div>
+    ${cancelled ? `<div class="my-cancelled-box">${L("취소완료", "Cancelled")} · ${L("환불액", "Refund")} <strong>${formatWon(o.refund_amount || 0)}</strong></div>` : ""}
+    <div class="my-det-card">
+      ${img ? `<div class="my-det-thumb"><img src="${escapeHtml(img)}" alt="" /></div>` : `<div class="my-det-thumb my-no-img">No Image</div>`}
+      <div class="my-det-sum">
+        <div class="my-det-room">${escapeHtml((first.product_name || "티켓 주문") + more)}</div>
+        <div class="my-det-line">🎫 ${L("수량", "Quantity")} ${ocs.length} ${L("매", "ea")}</div>
+        <div class="my-det-line">📅 ${L("사용기간", "Valid")} ${escapeHtml(validRange)}</div>
+        <div class="my-det-line">💳 <strong>${formatWon(o.total)}</strong></div>
+      </div>
+    </div>
+    <h3 class="my-sec-title">${L("구매자 정보", "Buyer info")}</h3>
+    <table class="bk-sum-tbl bk-done-tbl">
+      <tr><th>${L("성명", "Name")}</th><td>${escapeHtml(buyer.name || "-")}</td></tr>
+      <tr><th>${L("이메일", "E-mail")}</th><td>${escapeHtml(buyer.email || "")}</td></tr>
+      <tr><th>${L("휴대폰", "Mobile")}</th><td>${escapeHtml(buyer.phone || "-")}</td></tr>
+    </table>
+    <h3 class="my-sec-title">${L("발급 쿠폰", "Coupons")} (${ocs.length})</h3>
+    <div style="overflow-x:auto"><table class="tkf-info my-coupon-tbl"><thead><tr><th>${L("쿠폰번호", "Coupon No.")}</th><th>${L("쿠폰명", "Coupon")}</th><th>${L("상태", "Status")}</th><th>${L("판매가", "Price")}</th><th>${L("사용기간", "Valid")}</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${supportBlockHtml(L)}
+    <h3 class="my-sec-title">${L("취소 규정", "Cancellation policy")}</h3>
+    <div class="my-cancel-policy free">${L("사용기간 종료 전 미사용 쿠폰은 전액 환불, 사용완료·기간 경과분은 환불불가", "Unused coupons before the valid period ends are fully refunded; used/expired are non-refundable.")}</div>
+    ${canCancel ? `<button id="my_cancel" class="btn-outline my-cancel-btn">${L("주문 취소", "Cancel order")}</button>` : ""}
+  </div>`;
+  if (canCancel) {
+    document.getElementById("my_cancel").addEventListener("click", () => {
+      showCancelModal({
+        title: L("주문을 취소하시겠습니까?", "Cancel this order?"),
+        refund,
+        note: L("미사용 쿠폰만 환불되며, 취소 후 되돌릴 수 없습니다.", "Only unused coupons are refunded. This cannot be undone."),
+      }, L, () => {
+        const all = loadTicketCoupons();
+        all.forEach((c) => { if (c.order_no === o.order_no && c.status === "SOLD") c.status = "CANCELLED"; });
+        saveTicketCoupons(all);
+        o.status = "취소완료"; o.refund_amount = refund; o.cancelled_at = new Date().toISOString();
+        saveTicketOrders(orders);
+        render();
+      });
+    });
+  }
+}
+
+/** 취소 확인 모달 (환불액 표시) */
+function showCancelModal(opt, L, onConfirm) {
+  const wrap = document.createElement("div");
+  wrap.className = "my-modal-back";
+  wrap.innerHTML = `<div class="my-modal">
+    <h3>${escapeHtml(opt.title)}</h3>
+    <div class="my-modal-refund"><span>${L("예상 환불액", "Estimated refund")}</span><strong>${formatWon(opt.refund)}</strong></div>
+    <p class="my-modal-note">${escapeHtml(opt.note || "")}</p>
+    <div class="my-modal-actions">
+      <button class="btn-outline" id="mm_close">${L("닫기", "Close")}</button>
+      <button class="btn-cta" id="mm_ok">${L("취소하기", "Confirm cancel")}</button>
+    </div>
+  </div>`;
+  document.body.appendChild(wrap);
+  const close = () => wrap.remove();
+  wrap.addEventListener("click", (e) => { if (e.target === wrap) close(); });
+  wrap.querySelector("#mm_close").addEventListener("click", close);
+  wrap.querySelector("#mm_ok").addEventListener("click", () => { close(); onConfirm(); });
+}
+
+/** 내 계정정보 관리 (My Profile) — 기본 투숙객 정보 + 비밀번호 변경 */
+function renderMyProfile(app) {
+  const L = (ko, en) => (uiState.lang === "en" ? en || ko : ko || en);
+  if (!requireLogin("#/mypage/profile")) return;
+  window.scrollTo(0, 0);
+  const u = currentUser();
+  const email = (u && u.email) || "";
+  const saved = loadProfile(email) || {};
+  const p = {
+    useAsDefault: saved.useAsDefault === true,
+    nationality: saved.nationality || "",
+    firstName: saved.firstName || "", middleName: saved.middleName || "", lastName: saved.lastName || "",
+    email: saved.email || email,
+    phoneCc: saved.phoneCc || "+82", phone: saved.phone || "",
+  };
+  const natOpts = `<option value="">${L("선택", "Select")}</option>` + NATIONALITIES.map((n) => `<option value="${escapeHtml(n)}" ${p.nationality === n ? "selected" : ""}>${escapeHtml(n)}</option>`).join("");
+  const ccOpts = PHONE_CCS.map((c) => `<option value="${escapeHtml(c)}" ${p.phoneCc === c ? "selected" : ""}>${escapeHtml(c)}</option>`).join("");
+
+  app.innerHTML = `<div class="my-wrap my-profile">
+    <a class="my-back" href="#/mypage">← ${L("나의 예약", "My Bookings")}</a>
+    <h2 class="my-title">${L("내 계정정보", "My Profile")}</h2>
+
+    <div class="mp-toggle-row">
+      <div>
+        <div class="mp-toggle-title">${L("기본 투숙객 정보로 사용", "Set as default guest information for reservation")}</div>
+        <div class="mp-toggle-sub">${L("켜면 예약 단계에서 아래 정보가 자동으로 채워집니다. (제출 전 수정 가능)", "When on, the info below auto-fills at booking. You can still edit before submit.")}</div>
+      </div>
+      <label class="mp-switch"><input type="checkbox" id="mp_default" ${p.useAsDefault ? "checked" : ""}><span class="mp-slider"></span></label>
+    </div>
+
+    <div class="mp-form">
+      <label class="bk-label">${L("국적", "Nationality")}</label>
+      <select id="mp_nat" class="bk-input">${natOpts}</select>
+      <div class="bk-row3">
+        <div><label class="bk-label">${L("영문 이름 (First)", "First name")}</label><input id="mp_first" class="bk-input" value="${escapeHtml(p.firstName)}" placeholder="Use only English letters"></div>
+        <div><label class="bk-label">${L("미들네임 (선택)", "Middle name")}</label><input id="mp_middle" class="bk-input" value="${escapeHtml(p.middleName)}" placeholder="Use only English letters"></div>
+        <div><label class="bk-label">${L("영문 성 (Last)", "Last name")}</label><input id="mp_last" class="bk-input" value="${escapeHtml(p.lastName)}" placeholder="Use only English letters"></div>
+      </div>
+      <label class="bk-label">${L("이메일", "Email")}</label>
+      <input id="mp_email" class="bk-input" type="email" value="${escapeHtml(p.email)}" placeholder="you@example.com">
+      <div class="mp-hint">${L("예약 확인 메일이 이 주소로 발송됩니다.", "Booking confirmation will be sent to this email.")}</div>
+      <label class="bk-label">${L("휴대폰 번호 (선택)", "Phone number")}</label>
+      <div class="bk-phone"><select id="mp_cc" class="bk-input bk-cc">${ccOpts}</select><input id="mp_phone" class="bk-input" inputmode="tel" value="${escapeHtml(p.phone)}" placeholder="Phone number"></div>
+      <div class="mp-links"><a href="javascript:void(0)" id="mp_chpw">${L("비밀번호 변경", "Change password")}</a></div>
+      <p class="bk-err" id="mp_err" style="display:none"></p>
+      <div class="mp-actions">
+        <button id="mp_cancel" class="btn-outline">${L("취소", "Cancel")}</button>
+        <button id="mp_save" class="btn-cta">${L("저장", "Save")}</button>
+      </div>
+    </div>
+  </div>`;
+
+  app.querySelector("#mp_cancel").addEventListener("click", () => { location.hash = "#/mypage"; });
+  app.querySelector("#mp_chpw").addEventListener("click", () => showChangePwModal(email, L));
+  app.querySelector("#mp_save").addEventListener("click", () => {
+    const np = {
+      useAsDefault: app.querySelector("#mp_default").checked,
+      nationality: app.querySelector("#mp_nat").value,
+      firstName: (app.querySelector("#mp_first").value || "").trim(),
+      middleName: (app.querySelector("#mp_middle").value || "").trim(),
+      lastName: (app.querySelector("#mp_last").value || "").trim(),
+      email: (app.querySelector("#mp_email").value || "").trim(),
+      phoneCc: app.querySelector("#mp_cc").value,
+      phone: (app.querySelector("#mp_phone").value || "").trim(),
+    };
+    const errEl = app.querySelector("#mp_err");
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(np.email);
+    let msg = "";
+    if (!np.firstName || !np.lastName) msg = L("영문 이름과 성을 입력하세요.", "Enter first and last name.");
+    else if (!emailOk) msg = L("올바른 이메일을 입력하세요.", "Enter a valid email.");
+    if (msg) { errEl.textContent = msg; errEl.style.display = "block"; return; }
+    saveProfile(email, np);
+    alert(L("저장되었습니다.", "Saved."));
+    location.hash = "#/mypage";
+  });
+}
+
+/** 비밀번호 변경 모달 — 로그인의 이메일 인증 → 비번 입력 재사용(세션 인증 시 생략) */
+function showChangePwModal(email, L) {
+  const verified = uiState.pwVerified === true;
+  const wrap = document.createElement("div");
+  wrap.className = "my-modal-back";
+  const close = () => wrap.remove();
+  const drawVerify = () => {
+    wrap.innerHTML = `<div class="my-modal">
+      <h3>${L("본인 확인", "Verify your identity")}</h3>
+      <p class="my-modal-note">${L("인증번호를 이메일로 보냈습니다.", "We sent a verification code to your email.")}<br><span style="color:#7c3aed">${escapeHtml(email)}</span><br>${L("프로토타입: 아무 6자리 숫자나 입력하면 통과합니다.", "Prototype: enter any 6 digits.")}</p>
+      <input id="cp_code" class="bk-input" inputmode="numeric" maxlength="6" placeholder="000000" style="letter-spacing:6px;text-align:center">
+      <p class="bk-err" id="cp_err1" style="display:none"></p>
+      <div class="my-modal-actions"><button class="btn-outline" id="cp_close">${L("닫기", "Close")}</button><button class="btn-cta" id="cp_verify">${L("인증하기", "Verify")}</button></div>
+    </div>`;
+    wrap.querySelector("#cp_close").addEventListener("click", close);
+    wrap.querySelector("#cp_verify").addEventListener("click", () => {
+      const code = (wrap.querySelector("#cp_code").value || "").trim();
+      if (!/^\d{6}$/.test(code)) { const e = wrap.querySelector("#cp_err1"); e.textContent = L("6자리 숫자를 입력하세요.", "Enter 6 digits."); e.style.display = "block"; return; }
+      uiState.pwVerified = true;
+      drawNewPw();
+    });
+  };
+  const drawNewPw = () => {
+    wrap.innerHTML = `<div class="my-modal">
+      <h3>${L("새 비밀번호 설정", "Set a new password")}</h3>
+      <label class="bk-label">${L("새 비밀번호 (8자 이상)", "New password (8+ chars)")}</label>
+      <input id="cp_pw" class="bk-input" type="password" placeholder="Password">
+      <label class="bk-label">${L("새 비밀번호 확인", "Confirm password")}</label>
+      <input id="cp_pw2" class="bk-input" type="password" placeholder="Confirm password">
+      <p class="bk-err" id="cp_err2" style="display:none"></p>
+      <div class="my-modal-actions"><button class="btn-outline" id="cp_close2">${L("닫기", "Close")}</button><button class="btn-cta" id="cp_save">${L("변경하기", "Update")}</button></div>
+    </div>`;
+    wrap.querySelector("#cp_close2").addEventListener("click", close);
+    wrap.querySelector("#cp_save").addEventListener("click", () => {
+      const pw = wrap.querySelector("#cp_pw").value || "";
+      const pw2 = wrap.querySelector("#cp_pw2").value || "";
+      const e = wrap.querySelector("#cp_err2");
+      if (pw.length < 8) { e.textContent = L("비밀번호는 8자 이상이어야 합니다.", "Password must be at least 8 characters."); e.style.display = "block"; return; }
+      if (pw !== pw2) { e.textContent = L("비밀번호가 일치하지 않습니다.", "Passwords do not match."); e.style.display = "block"; return; }
+      const members = loadMembers();
+      const m = members.find((x) => String(x.email || "").toLowerCase() === String(email).toLowerCase());
+      if (m) { m.password = pw; saveMembers(members); }
+      close();
+      alert(L("비밀번호가 변경되었습니다.", "Your password has been changed."));
+    });
+  };
+  document.body.appendChild(wrap);
+  wrap.addEventListener("click", (e) => { if (e.target === wrap) close(); });
+  if (verified) drawNewPw(); else drawVerify();
+}
+
 /* ─── Main render ─── */
 function render() {
   const app = document.getElementById("app");
   if (!app) return;
 
-  document.documentElement.lang = uiState.lang === "en" ? "en" : "ko";
-  document.getElementById("langKo")?.classList.toggle("active", uiState.lang === "ko");
-  document.getElementById("langEn")?.classList.toggle("active", uiState.lang === "en");
+  document.documentElement.lang = uiState.lang;
+  const langSel = document.getElementById("langSelect");
+  if (langSel && langSel.value !== uiState.lang) langSel.value = uiState.lang;
   renderTicketGnb();
+  renderAuthGnb();
 
   if (window.__heroTimer) { clearInterval(window.__heroTimer); window.__heroTimer = null; }
+  if (window.__holdTimer) { clearInterval(window.__holdTimer); window.__holdTimer = null; }
   const { parts, path } = parseHash();
   const prevPath = uiState._lastHash;
   // 페이지 이동(해시 변경) 시 티켓 상세 모달 닫힘
@@ -2394,6 +3258,16 @@ function render() {
   } else if (parts[0] === "search") {
     uiState.searchDomain = "acc";
     renderSearch(app);
+  } else if (parts[0] === "login") {
+    renderLogin(app);
+  } else if (parts[0] === "booking") {
+    renderBooking(app);
+  } else if (parts[0] === "payment") {
+    renderPayment(app);
+  } else if (parts[0] === "booking-done") {
+    renderBookingDone(app);
+  } else if (parts[0] === "mypage") {
+    renderMyPage(app, parts);
   } else {
     renderMain(app);
   }
@@ -2422,18 +3296,41 @@ window.addEventListener("DOMContentLoaded", () => {
     uiState.roomDetail.open = false;
     renderRoomDetailModal();
   });
-  document.getElementById("langKo")?.addEventListener("click", () => {
-    uiState.lang = "ko";
-    localStorage.setItem("high1_front_v02_lang", "ko");
-    render();
-  });
-  document.getElementById("langEn")?.addEventListener("click", () => {
-    uiState.lang = "en";
-    localStorage.setItem("high1_front_v02_lang", "en");
+  document.getElementById("langSelect")?.addEventListener("change", (e) => {
+    const v = e.target.value;
+    uiState.lang = ["en", "zh", "ko"].includes(v) ? v : "ko";
+    localStorage.setItem("high1_front_v02_lang", uiState.lang);
     render();
   });
   document.getElementById("signinBtn")?.addEventListener("click", () => {
-    alert("로그인 / 회원가입은 프로토타입 범위 밖입니다. (목업 버튼)");
+    uiState.auth = { step: "email", email: "", isNew: false, next: location.hash, err: "" };
+    location.hash = "#/login";
+  });
+  // Mypage 드롭다운 — 비로그인 시 로그인 유도 / Log out / (Profile·My Bookings·Event·CS는 Phase3)
+  document.getElementById("myNavMenu")?.addEventListener("click", (e) => {
+    const a = e.target.closest("a[data-my]"); if (!a) return;
+    const menu = a.getAttribute("data-my");
+    if (menu === "logout") {
+      if (currentUser() && confirm("로그아웃 하시겠습니까?")) { logout(); location.hash = "#/"; render(); }
+      return;
+    }
+    if (menu === "bookings") { // 나의 예약 목록
+      if (!requireLogin("#/mypage")) return;
+      location.hash = "#/mypage";
+      return;
+    }
+    if (menu === "profile") { // 내 계정정보
+      if (!requireLogin("#/mypage/profile")) return;
+      location.hash = "#/mypage/profile";
+      return;
+    }
+    if (!currentUser()) { // 비로그인 → 로그인 페이지로 유도
+      uiState.auth = { step: "email", email: "", isNew: false, next: "#/", err: "" };
+      location.hash = "#/login";
+      return;
+    }
+    // 로그인 상태 — Event·CS는 후속 단계 예정
+    alert("마이페이지 '" + a.textContent.trim() + "'는 준비 중입니다.");
   });
   // 팝오버(캘린더·인원) 바깥 클릭 시 닫힘 — 메인·검색결과·브릿지
   document.addEventListener("click", (e) => {

@@ -13,6 +13,46 @@
 
 ---
 
+## 프로토타입 — 어드민 숙소 Description 에디터 추가 (admin v0.7.30) — 2026-07-15
+
+- **[누락 수정] 어드민 숙소 등록/수정(S02) Step4에 '숙소 설명(Description)' 리치 에디터 추가**(KO·영문). 그동안 프런트 브릿지 Overview는 `place.description`을 읽는데 **어드민 입력란이 없어** 값을 넣을 수 없던 문제 해결. (Figma node 214-4333)
+  - `renderPlaceWizard` 상태·persist(step4)·저장 레코드에 `description`·`description_en` 추가.
+- **프런트 렌더 충실도(P1, front v0.8.24에서 수정 완료 재확인)**: 브릿지 Overview DESCRIPTION = 어드민 입력과 **동일 렌더**(HTML·줄바꿈·이미지, `richTextOrParagraph`). 이미지 폭맞춤(`.place-desc-html`).
+- **검증**: Selenium — 어드민 Description 에디터 입력·저장(description=입력값)·프런트 Overview HTML/줄바꿈/이미지 렌더(5/5)·에디터 입력버그 수정 재확인·콘솔0.
+
+---
+
+## 프로토타입 — 브릿지 Overview 숙소설명 섹션명 + 배경 정리 (front v0.8.27) — 2026-07-15
+
+- **브릿지 Overview 숙소 설명에 "Description" 섹션명 추가**(CHECK-IN/FEATURED와 동일 `overview-item-label` 스타일).
+- **[버그픽스] 리치 콘텐츠에 붙여넣기로 딸려온 흰색 배경 제거** → 페이지 배경(투명)에 맞춤. `.place-desc-html`·`.rd-sec`·`.rd-desc`·`.layer-body` 및 하위 요소 `background-color: transparent !important`.
+- **검증**: Selenium 5/5(Description 라벨·본문·자식/컨테이너 배경 투명·콘솔0) + 스크린샷.
+
+---
+
+## 프로토타입 — Room Detail 객실설명 하단 구분선 (front v0.8.26) — 2026-07-15
+
+- Room Detail 모달에서 **ROOM DESCRIPTION ↔ INFORMATION 사이 구분선 추가**(`.rd-desc` border-bottom). 나머지 섹션(INFORMATION·객실정책·객실안내·객실시설) 구분선은 기존 유지 → 전 섹션 일관 구분.
+- **검증**: Selenium 3/3(구분선 존재·설명 표시·콘솔0) + 스크린샷.
+
+---
+
+## 프로토타입 — 프런트 Room Detail 객실설명 섹션명 추가 (front v0.8.25) — 2026-07-15
+
+- Room Detail 모달 최상단 객실설명(`rdDesc`)에 **"Room Description" 섹션명** 추가(INFORMATION·객실정책·객실안내와 동일 `rd-section-title` 스타일). 설명 미입력 시 영역·타이틀 함께 미노출.
+- **검증**: Selenium 4/4(섹션명 표시·본문 유지·INFORMATION 위 순서·콘솔0).
+
+---
+
+## 프로토타입 — [버그픽스] 리치 에디터 입력 불가 (admin v0.7.29) — 2026-07-15
+
+- **증상**: 어드민 리치 에디터(객실 설명·안내·정책 등)에서 클릭 후 키보드 입력이 안 됨.
+- **원인**: 리치 에디터가 `<label>`로 감싸져 있고 툴바에 `<button>`이 있어, **label이 첫 번째 `<button>`과 암묵적으로 연결** → 에디터 영역 클릭 시 포커스가 툴바 버튼으로 튀고 contenteditable에 포커스가 안 잡힘. (객실·숙소·티켓 등 모든 리치 에디터 공통)
+- **수정**(`wireRichEditors` 공통): 감싼 `label.for`를 contenteditable(비-labelable) id로 지정해 버튼 연결 해제 + 에디터 `mousedown` 시 label 활성화 전파 차단. → 클릭 시 에디터에 정상 포커스.
+- **검증**: Selenium — 클릭 후 activeElement=에디터, 실제 키보드 입력 반영(객실 설명·안내), 툴바 굵게 정상, 콘솔0.
+
+---
+
 ## 프로토타입 — 콘텐츠=객실 통일 · Room Detail 재편 (front v0.8.24 / admin v0.7.28) — 2026-07-15
 
 - **기준**: 개발사 MVP 피드백 · 화면기획서 v0.9.21 · 정책서 v0.12. **콘텐츠 소유를 객실(Room)로 통일** — 상품(Product)은 가격·재고·판매기간·취소정책만.

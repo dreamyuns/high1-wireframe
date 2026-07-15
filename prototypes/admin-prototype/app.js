@@ -862,10 +862,7 @@ function syncPmsProducts() {
       // 다국어 (국문 미사용 · EN 필수 · ZH 선택)
       name_en: prev?.name_en || `${baseName} Room Only`,
       name_zh: prev?.name_zh || "",
-      description_en: prev?.description_en || "",
-      description_zh: prev?.description_zh || "",
-      guide_policy_html_en: prev?.guide_policy_html_en || "",
-      guide_policy_html_zh: prev?.guide_policy_html_zh || "",
+      // v1.3: 상품 콘텐츠(설명·안내/정책) 폐지 — 객실이 소유
       // PMS 수신 / 정책
       visibility: prev ? prev.visibility : "Y",
       sale_start_date: prev?.sale_start_date || "2026-07-01",
@@ -1288,7 +1285,17 @@ const NAV_SECTIONS = [
     ],
   },
   { id: "tour", label: "투어관리", mock: true, match: ["tours"], lnb: [], placeholder: "tours" },
-  { id: "booking", label: "예약관리", match: ["reservations", "ticket-orders"], lnb: [], placeholder: "reservations" },
+  {
+    id: "booking", label: "예약관리", match: ["reservations", "reservations-cancelled", "ticket-orders", "ticket-orders-cancelled"],
+    lnb: [
+      { head: "숙소 예약" },
+      { label: "예약 목록", route: "reservations" },
+      { label: "취소 목록", route: "reservations-cancelled" },
+      { head: "티켓 예약" },
+      { label: "주문 목록", route: "ticket-orders" },
+      { label: "취소 목록", route: "ticket-orders-cancelled" },
+    ],
+  },
   {
     id: "screen", label: "화면관리", match: ["main-management"],
     lnb: [{ label: "메인관리", route: "main-management" }],
@@ -1358,6 +1365,474 @@ function renderComingSoon(main, label, mock) {
   main.innerHTML = `
     <h2 class="page-title">${escapeHtml(label)}${mock ? ` <span class="badge" style="background:#fef3c7;color:#92610e">MOCK</span>` : ""}</h2>
     <div class="card"><div class="empty"><strong>준비 중입니다.</strong> 이 메뉴는 아직 프로토타입에 구현되지 않았습니다${mock ? " (MOCK)" : ""}.</div></div>`;
+}
+
+/* ═══════════════════ S10 예약관리 (프런트 실예약 연동 + 더미 보강) ═══════════════════ */
+const STORAGE_RESERVATIONS = "high1_reservations_v1"; // 프런트가 저장하는 숙소 예약 (읽기)
+const RESV_STATUS_LABEL = { PENDING: "확정대기", CONFIRMED: "예약확정", FAILED: "예약실패", CANCEL_REQ: "취소요청", CANCELLED: "취소완료", NOSHOW: "노쇼" };
+const RESV_STATUS_CLS = { PENDING: "rsv-pending", CONFIRMED: "rsv-confirmed", FAILED: "rsv-failed", CANCEL_REQ: "rsv-cancelreq", CANCELLED: "rsv-cancelled", NOSHOW: "rsv-noshow" };
+const RESV_STATUS_ICON = { FAILED: "⚠ ", CANCEL_REQ: "⚠ " };
+
+function loadReservations() {
+  try { const r = localStorage.getItem(STORAGE_RESERVATIONS); const a = r ? JSON.parse(r) : []; return Array.isArray(a) ? a : []; } catch { return []; }
+}
+/** 프런트 상태 → 어드민 6상태 */
+function frontToAdminStatus(s) { return ({ CONFIRMED: "CONFIRMED", PENDING: "PENDING", CANCELLED: "CANCELLED" })[s] || "CONFIRMED"; }
+/** 어드민 6상태 → 프런트 3상태(매핑 가능한 것만; 나머지는 프런트 status 유지) */
+function adminToFrontStatus(a) { return ({ CONFIRMED: "CONFIRMED", PENDING: "PENDING", CANCELLED: "CANCELLED" })[a]; }
+
+const STORAGE_ADMIN_RESV_EDITS = "high1_admin_resv_edits_v1"; // 데모 예약의 어드민 편집 오버라이드(실 데이터 오염 방지)
+function loadAdminResvEdits() { try { const r = localStorage.getItem(STORAGE_ADMIN_RESV_EDITS); const o = r ? JSON.parse(r) : {}; return o && typeof o === "object" ? o : {}; } catch { return {}; } }
+function saveAdminResvEdits(o) { localStorage.setItem(STORAGE_ADMIN_RESV_EDITS, JSON.stringify(o || {})); }
+function saveReservationsRaw(list) { localStorage.setItem(STORAGE_RESERVATIONS, JSON.stringify(list || [])); }
+
+/** code로 예약 원본 조회 — {rec, isReal}. 데모는 상수+어드민 오버라이드 병합 */
+function findReservation(code) {
+  const real = loadReservations();
+  const rr = real.find((r) => r.code === code);
+  if (rr) return { rec: rr, isReal: true };
+  const demo = DEMO_RESERVATIONS.find((d) => d.code === code);
+  if (demo) return { rec: Object.assign({}, demo, loadAdminResvEdits()[code] || {}), isReal: false };
+  return null;
+}
+/** 예약 편집 저장(상태·메모 등) + 변경이력 추가. 실 데이터는 localStorage, 데모는 오버라이드 */
+function updateReservation(code, patch, historyEntry) {
+  const real = loadReservations();
+  const idx = real.findIndex((r) => r.code === code);
+  if (idx >= 0) {
+    const rec = real[idx];
+    Object.assign(rec, patch);
+    if (historyEntry) { rec.history = Array.isArray(rec.history) ? rec.history : []; rec.history.unshift(historyEntry); }
+    saveReservationsRaw(real);
+    return;
+  }
+  const edits = loadAdminResvEdits();
+  const cur = edits[code] || {};
+  Object.assign(cur, patch);
+  if (historyEntry) { cur.history = Array.isArray(cur.history) ? cur.history : []; cur.history.unshift(historyEntry); }
+  edits[code] = cur;
+  saveAdminResvEdits(edits);
+}
+function rsvStatusBadge(st) { return `<span class="rsv-badge ${RESV_STATUS_CLS[st]}">${(RESV_STATUS_ICON[st] || "") + RESV_STATUS_LABEL[st]}</span>`; }
+function rsvModeBadge(m) { return m === "MANUAL" ? `<span class="rsv-badge rsv-manual">수기</span>` : `<span class="rsv-badge rsv-pms">PMS</span>`; }
+function rsvNowIso() { return new Date().toISOString(); }
+function rsvTodayYmd() { const d = new Date(); const p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; }
+function rsvAddDaysYmd(ymd, delta) { if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd || "")) return ""; const a = ymd.split("-").map(Number); const d = new Date(Date.UTC(a[0], a[1] - 1, a[2])); d.setUTCDate(d.getUTCDate() + delta); const p = (n) => String(n).padStart(2, "0"); return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`; }
+
+/** 취소 위약금·환불액 계산 — 예약실패=전액환불 / PMS 위약금율(목업) / 수기 2택 */
+function computeCancel(rec, statusAdmin) {
+  const sell = rec.amount_sell || 0;
+  if (statusAdmin === "FAILED") return { free: true, penalty: 0, refund: sell, section: "예약실패 — 전액 환불", rate: null };
+  if (rec.penalty_rate != null) { // PMS API 10 위약금율(목업)
+    const rate = Number(rec.penalty_rate) || 0;
+    const penalty = Math.round((rate / 100) * sell); // 소수점 첫째자리 반올림
+    return { free: penalty === 0, penalty, refund: Math.max(0, sell - penalty), section: rec.penalty_section || `위약금율 ${rate}%`, rate };
+  }
+  const N = Math.max(0, parseInt(rec.cancel_free_days_before, 10) || 0);
+  if (rec.cancel_policy_type === PRODUCT_CANCEL_POLICY.FREE_N_DAYS) {
+    const freeBlock = rsvAddDaysYmd(rec.checkin, -N); // 이 날짜부터 환불불가
+    if (freeBlock && rsvTodayYmd() < freeBlock) return { free: true, penalty: 0, refund: sell, section: `무료취소 기한(체크인 ${N}일 전) 이내`, rate: null };
+    return { free: false, penalty: sell, refund: 0, section: "무료취소 기한 경과 → 환불불가", rate: null };
+  }
+  return { free: false, penalty: sell, refund: 0, section: "환불불가 상품", rate: null };
+}
+
+/** S10-C 취소 처리 모달 */
+function openReservationCancelModal(main, code) {
+  const ctx = findReservation(code); if (!ctx) return;
+  const rec = ctx.rec;
+  const statusAdmin = rec.status_admin || frontToAdminStatus(rec.status);
+  const sell = rec.amount_sell || 0;
+  const c = computeCancel(rec, statusAdmin);
+  const won = (n) => Number(n || 0).toLocaleString() + "원";
+  const wrap = document.createElement("div");
+  wrap.className = "rsv-modal-back";
+  wrap.innerHTML = `<div class="rsv-modal">
+    <div class="rsv-modal-head"><span>취소 처리 확인</span><span class="rsv-modal-x" id="cm_x">✕</span></div>
+    <div class="rsv-modal-body">
+      <div class="rsv-modal-sec">
+        <div class="rsv-modal-sectitle">예약 정보</div>
+        <div class="rsv-modal-row"><span>예약번호</span><b>${escapeHtml(code)}</b></div>
+        <div class="rsv-modal-row"><span>상품명</span><b>${escapeHtml(rec.product_name || "-")}</b></div>
+        <div class="rsv-modal-row"><span>투숙자</span><b>${escapeHtml(rsvGuestName(rec.guest))}</b></div>
+        <div class="rsv-modal-row"><span>체크인~아웃</span><b>${escapeHtml(rec.checkin || "-")} ~ ${escapeHtml(rec.checkout || "-")}</b></div>
+      </div>
+      <div class="rsv-modal-sec">
+        <div class="rsv-modal-sectitle">위약금 ${rec.penalty_rate != null ? "(API 10 조회)" : "(취소정책)"}</div>
+        <div class="rsv-modal-row"><span>취소 구간</span><b>${escapeHtml(c.section)}</b></div>
+        ${c.rate != null ? `<div class="rsv-modal-row"><span>위약금율</span><b>${c.rate}%</b></div>` : ""}
+        <div class="rsv-modal-row"><span>위약금</span><b class="rsv-penalty">-${won(c.penalty)}</b></div>
+      </div>
+      <div class="rsv-modal-sec">
+        <div class="rsv-modal-sectitle">환불금액</div>
+        <div class="rsv-modal-row"><span>판매가</span><b>${won(sell)}</b></div>
+        <div class="rsv-modal-row"><span>위약금</span><b class="rsv-penalty">-${won(c.penalty)}</b></div>
+        <div class="rsv-modal-total"><span>환불 금액</span><b>${won(c.refund)}</b></div>
+        <label class="rsv-modal-ovr"><input type="checkbox" id="cm_ovr"> 환불금액 직접 수정</label>
+        <div id="cm_ovr_box" style="display:none">
+          <div class="rsv-modal-ovr-in"><input type="text" id="cm_ovr_val" inputmode="numeric" value="${c.refund}"><span>원</span></div>
+          <textarea id="cm_ovr_reason" placeholder="수정 사유 입력 (필수)"></textarea>
+          <div class="rsv-modal-ovr-note">※ 변경 시 사유 필수 · 변경이력 자동 기록. (PMS 납부 위약금 원금은 그대로, 차액은 우리 수취)</div>
+        </div>
+      </div>
+    </div>
+    <div class="rsv-modal-foot">
+      <button class="btn btn-sm" id="cm_close">닫기</button>
+      <button class="btn btn-sm" id="cm_ok" style="background:#dc2626;color:#fff;border-color:#dc2626">취소 확정</button>
+    </div>
+  </div>`;
+  document.body.appendChild(wrap);
+  const close = () => wrap.remove();
+  wrap.addEventListener("click", (e) => { if (e.target === wrap) close(); });
+  wrap.querySelector("#cm_x").addEventListener("click", close);
+  wrap.querySelector("#cm_close").addEventListener("click", close);
+  const ovr = wrap.querySelector("#cm_ovr"), box = wrap.querySelector("#cm_ovr_box");
+  ovr.addEventListener("change", () => { box.style.display = ovr.checked ? "block" : "none"; });
+  wrap.querySelector("#cm_ok").addEventListener("click", () => {
+    let refund = c.refund, penalty = c.penalty, reason = "";
+    if (ovr.checked) {
+      const v = parseInt((wrap.querySelector("#cm_ovr_val").value || "").replace(/\D/g, ""), 10);
+      reason = (wrap.querySelector("#cm_ovr_reason").value || "").trim();
+      if (isNaN(v)) { alert("환불금액을 입력하세요."); return; }
+      if (!reason) { alert("환불금액 수정 사유를 입력하세요."); return; }
+      refund = Math.max(0, Math.min(v, sell)); penalty = sell - refund;
+    }
+    if (!confirm(`취소를 확정합니다.\n\n  위약금  ${won(penalty)}\n  환불액  ${won(refund)}\n\n진행하시겠습니까? (예약취소 + 환불 처리)`)) return;
+    const now = rsvNowIso();
+    updateReservation(code, { status_admin: "CANCELLED", status: "CANCELLED", refund_amount: refund, penalty_amount: penalty, cancelled_at: now },
+      { dt: now, type: "취소완료", detail: `취소 처리 — 위약금 ${won(penalty)} / 환불 ${won(refund)}${reason ? ` · 환불 수정사유: ${reason}` : ""}`, by: "admin" });
+    updateReservation(code, {}, { dt: now, type: "환불완료", detail: `환불 ${won(refund)} 처리 (PG 목업)`, by: "SYSTEM" });
+    close();
+    renderReservationDetail(main, code);
+  });
+}
+
+/** 어드민 표시용 데모 예약 (프런트가 생성하지 못하는 상태 보강 — localStorage 미저장, 표시 전용) */
+const DEMO_RESERVATIONS = [
+  { code: "BK-20260516-00003", source_mode: "PMS", product_name: "스탠다드 트윈 룸온리", place_name: "그랜드 호텔", room_name: "스탠다드 트윈", checkin: "2026-05-25", checkout: "2026-05-26", nights: 1, pax: { rooms: [{ adults: 2, children: 0 }] }, guest: { firstName: "Cheol Su", lastName: "Kim" }, amount_sell: 150000, status_admin: "FAILED", created_at: "2026-05-16T09:11:00", _demo: true },
+  { code: "BK-20260510-00007", source_mode: "PMS", product_name: "디럭스 킹 룸온리", place_name: "그랜드 호텔", room_name: "디럭스 킹", checkin: "2026-05-30", checkout: "2026-06-01", nights: 2, pax: { rooms: [{ adults: 2, children: 0 }] }, guest: { firstName: "Min Su", lastName: "Park" }, amount_deposit: 300000, amount_sell: 320000, status_admin: "CANCEL_REQ", penalty_rate: 30, penalty_section: "취소 3일 전 (DFLT_NM)", created_at: "2026-05-10T16:22:00", cancelled_at: "2026-05-20T11:30:00", _demo: true },
+  { code: "HM-20260516-00001", source_mode: "MANUAL", product_name: "디럭스 킹 특가", place_name: "그랜드 호텔", room_name: "디럭스 킹", checkin: "2026-06-01", checkout: "2026-06-03", nights: 2, pax: { rooms: [{ adults: 2, children: 0 }] }, guest: { firstName: "Young Hee", lastName: "Lee" }, amount_deposit: 260000, amount_sell: 280000, cancel_policy_type: "FREE_N_DAYS", cancel_free_days_before: 3, status_admin: "PENDING", created_at: "2026-05-16T10:45:00", _demo: true },
+  { code: "BK-20260415-00009", source_mode: "PMS", product_name: "디럭스 킹 룸온리", place_name: "그랜드 호텔", room_name: "디럭스 킹", checkin: "2026-05-01", checkout: "2026-05-02", nights: 1, pax: { rooms: [{ adults: 2, children: 0 }] }, guest: { firstName: "Tae Il", lastName: "Jung" }, amount_sell: 160000, status_admin: "NOSHOW", created_at: "2026-04-15T09:00:00", _demo: true },
+  { code: "BK-20260420-00005", source_mode: "PMS", product_name: "디럭스 킹 룸온리", place_name: "그랜드 호텔", room_name: "디럭스 킹", checkin: "2026-04-25", checkout: "2026-04-26", nights: 1, pax: { rooms: [{ adults: 2, children: 0 }] }, guest: { firstName: "Ji Hun", lastName: "Kang" }, amount_sell: 160000, status_admin: "CANCELLED", created_at: "2026-04-20T09:00:00", cancelled_at: "2026-04-22T09:10:00", refund_amount: 123333, penalty_amount: 36667, _demo: true },
+];
+
+function rsvGuestName(g) { if (!g) return "-"; const n = [g.firstName, g.lastName].filter(Boolean).join(" "); return n || "-"; }
+function rsvFmtDT(iso) {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso).slice(0, 16).replace("T", " ");
+  const p = (n) => String(n).padStart(2, "0");
+  return `${String(d.getFullYear()).slice(2)}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function rsvFmtDate(ymd) { return ymd ? String(ymd).slice(5) : "-"; } // MM-DD
+
+/** 예약 레코드 → 목록 행 정규화 */
+function rsvRow(r) {
+  const rooms = (r.pax && r.pax.rooms) || [];
+  const statusAdmin = r.status_admin || frontToAdminStatus(r.status);
+  return {
+    code: r.code || "-", source_mode: r.source_mode || "PMS",
+    product_name: r.product_name || "-", place_name: r.place_name || "", room_name: r.room_name || "",
+    checkin: r.checkin || "", checkout: r.checkout || "", nights: r.nights || 0, roomCount: rooms.length || 1,
+    guestName: rsvGuestName(r.guest),
+    amount_sell: r.amount_sell || 0, statusAdmin,
+    created_at: r.created_at || "", cancelled_at: r.cancelled_at || "",
+    refund_amount: r.refund_amount, penalty_amount: r.penalty_amount,
+    _demo: !!r._demo,
+  };
+}
+/** 전체 예약 행(실 예약 + 데모) — 생성일 내림차순 */
+function allReservationRows() {
+  const real = loadReservations().filter((r) => (r.domain || "acc") === "acc").map(rsvRow);
+  const realCodes = new Set(real.map((r) => r.code));
+  const edits = loadAdminResvEdits();
+  const demo = DEMO_RESERVATIONS.filter((d) => !realCodes.has(d.code)).map((d) => rsvRow(Object.assign({}, d, edits[d.code] || {})));
+  return real.concat(demo).sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
+}
+
+let _rsvFilter = { view: "all", createdFrom: "", createdTo: "", ciFrom: "", ciTo: "", status: "", mode: "", name: "" };
+
+function renderReservationList(main, view) {
+  // 뷰 전환 시 필터 초기화(취소목록 진입 등)
+  if (_rsvFilter.view !== view) _rsvFilter = { view, createdFrom: "", createdTo: "", ciFrom: "", ciTo: "", status: "", mode: "", name: "" };
+  const f = _rsvFilter;
+  const cancelledView = view === "cancelled";
+  let rows = allReservationRows();
+  // 취소목록 뷰 = 취소요청 + 취소완료 한정
+  if (cancelledView) rows = rows.filter((r) => r.statusAdmin === "CANCEL_REQ" || r.statusAdmin === "CANCELLED");
+
+  // 문제예약 집계 (전체 기준)
+  const allRows = allReservationRows();
+  const failCnt = allRows.filter((r) => r.statusAdmin === "FAILED").length;
+  const reqCnt = allRows.filter((r) => r.statusAdmin === "CANCEL_REQ").length;
+
+  // 필터 적용
+  const inRange = (v, from, to) => { if (!v) return false; if (from && v < from) return false; if (to && v > to) return false; return true; };
+  let list = rows.filter((r) => {
+    if (f.status && r.statusAdmin !== f.status) return false;
+    if (f.mode && r.source_mode !== f.mode) return false;
+    if (f.name && !r.guestName.toLowerCase().includes(f.name.toLowerCase())) return false;
+    const dateBase = cancelledView ? (r.cancelled_at || "").slice(0, 10) : (r.created_at || "").slice(0, 10);
+    if (f.createdFrom || f.createdTo) { if (!inRange(dateBase, f.createdFrom, f.createdTo)) return false; }
+    if (f.ciFrom || f.ciTo) { if (!inRange(r.checkin, f.ciFrom, f.ciTo)) return false; }
+    return true;
+  });
+
+  const badge = (st) => `<span class="rsv-badge ${RESV_STATUS_CLS[st]}">${(RESV_STATUS_ICON[st] || "") + RESV_STATUS_LABEL[st]}</span>`;
+  const modeBadge = (m) => m === "MANUAL" ? `<span class="rsv-badge rsv-manual">수기</span>` : `<span class="rsv-badge rsv-pms">PMS</span>`;
+  const statusOpts = ["", "PENDING", "CONFIRMED", "FAILED", "CANCEL_REQ", "CANCELLED", "NOSHOW"];
+  const statusSel = statusOpts.map((s) => `<option value="${s}" ${f.status === s ? "selected" : ""}>${s === "" ? "전체 상태" : RESV_STATUS_LABEL[s]}</option>`).join("");
+  const modeSel = [["", "전체"], ["PMS", "PMS연동"], ["MANUAL", "수기"]].map(([v, l]) => `<option value="${v}" ${f.mode === v ? "selected" : ""}>${l}</option>`).join("");
+
+  const rowsHtml = list.length ? list.map((r) => {
+    const rowCls = r.statusAdmin === "FAILED" ? "rsv-row-failed" : (r.statusAdmin === "CANCEL_REQ" ? "rsv-row-cancelreq" : "");
+    const extraCols = cancelledView
+      ? `<td class="rsv-td-r">${r.cancelled_at ? rsvFmtDT(r.cancelled_at) : "—"}</td>
+         <td class="rsv-td-r">${r.penalty_amount != null ? Number(r.penalty_amount).toLocaleString() : (r.statusAdmin === "CANCEL_REQ" ? "—" : "0")}</td>
+         <td class="rsv-td-r">${r.refund_amount != null ? Number(r.refund_amount).toLocaleString() : (r.statusAdmin === "CANCEL_REQ" ? "—" : Number(r.amount_sell).toLocaleString())}</td>`
+      : `<td class="rsv-td-r" style="color:#888">${rsvFmtDT(r.created_at)}</td>`;
+    return `<tr class="${rowCls}">
+      <td class="rsv-td-code">${escapeHtml(r.code)}${r._demo ? ` <span class="rsv-demo" title="데모 데이터(표시 전용)">데모</span>` : ""}</td>
+      <td>${modeBadge(r.source_mode)}</td>
+      <td>${escapeHtml(r.place_name || "-")}</td>
+      <td>${escapeHtml(r.product_name)}</td>
+      <td class="rsv-td-c">${rsvFmtDate(r.checkin)} ~ ${rsvFmtDate(r.checkout)}</td>
+      <td class="rsv-td-c">${r.nights}박 / ${r.roomCount}개</td>
+      <td>${escapeHtml(r.guestName)}</td>
+      <td>${badge(r.statusAdmin)}</td>
+      ${extraCols}
+      <td class="rsv-td-r">${Number(r.amount_sell).toLocaleString()}</td>
+      <td class="rsv-td-c"><button type="button" class="btn btn-ghost btn-sm js-rsv-detail" data-code="${escapeAttr(r.code)}">상세</button></td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="${cancelledView ? 12 : 10}" class="empty" style="padding:24px">조회 조건에 맞는 예약이 없습니다.</td></tr>`;
+
+  const dateLabel = cancelledView ? "취소일" : "예약일";
+  const cancelExtraHead = cancelledView
+    ? `<th style="width:110px">취소일시</th><th style="width:80px">위약금</th><th style="width:88px">환불금액</th>`
+    : `<th style="width:104px">예약일시</th>`;
+
+  main.innerHTML = `
+    <h2 class="page-title">${cancelledView ? "취소 목록" : "예약 목록"} <span class="badge" style="background:#ede9fe;color:#6d28d9">예약관리 · S10-A</span></h2>
+    <p class="page-desc">${cancelledView
+      ? "취소요청·취소완료 예약 전용 뷰. 취소일 기준 조회 · 위약금·환불금액 컬럼 표시."
+      : "전체 예약 조회. 프런트에서 접수된 실제 예약 + 상태 데모를 함께 표시합니다."} 저장소(읽기): <code>${STORAGE_RESERVATIONS}</code></p>
+
+    <div class="rsv-filter card">
+      <div class="rsv-filter-row">
+        <span class="rsv-flabel">${dateLabel}</span>
+        <input class="input rsv-date" type="date" id="rf-cfrom" value="${f.createdFrom}">
+        <span class="rsv-sep">~</span>
+        <input class="input rsv-date" type="date" id="rf-cto" value="${f.createdTo}">
+        <span class="rsv-flabel" style="margin-left:10px">체크인일</span>
+        <input class="input rsv-date" type="date" id="rf-cifrom" value="${f.ciFrom}">
+        <span class="rsv-sep">~</span>
+        <input class="input rsv-date" type="date" id="rf-cito" value="${f.ciTo}">
+      </div>
+      <div class="rsv-filter-row">
+        <span class="rsv-flabel">상태</span>
+        <select class="input rsv-sel" id="rf-status">${statusSel}</select>
+        <span class="rsv-flabel" style="margin-left:10px">연동</span>
+        <select class="input rsv-sel" id="rf-mode">${modeSel}</select>
+        <span class="rsv-flabel" style="margin-left:10px">투숙자명</span>
+        <input class="input" style="width:130px" type="text" id="rf-name" value="${escapeAttr(f.name)}" placeholder="이름 검색">
+        <button type="button" class="btn btn-primary btn-sm js-rsv-search" style="margin-left:8px">검색</button>
+        <button type="button" class="btn btn-ghost btn-sm js-rsv-reset">초기화</button>
+      </div>
+    </div>
+
+    <div class="rsv-meta">
+      총 <strong>${list.length}</strong>건
+      ${failCnt ? `<span class="rsv-pill rsv-pill-red">⚠ 예약실패 ${failCnt}건</span>` : ""}
+      ${reqCnt ? `<span class="rsv-pill rsv-pill-amber">⚠ 취소요청 ${reqCnt}건</span>` : ""}
+    </div>
+
+    <div class="card" style="padding:0;overflow-x:auto">
+      <table class="rsv-table">
+        <thead><tr>
+          <th style="width:150px">예약번호</th>
+          <th style="width:52px">연동</th>
+          <th style="width:120px">숙소명</th>
+          <th>상품명</th>
+          <th style="width:96px">체크인~아웃</th>
+          <th style="width:80px">박수/객실</th>
+          <th style="width:88px">투숙자명</th>
+          <th style="width:82px">상태</th>
+          ${cancelExtraHead}
+          <th style="width:84px">판매가</th>
+          <th style="width:56px">상세</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>`;
+
+  const commit = () => {
+    f.createdFrom = main.querySelector("#rf-cfrom").value;
+    f.createdTo = main.querySelector("#rf-cto").value;
+    f.ciFrom = main.querySelector("#rf-cifrom").value;
+    f.ciTo = main.querySelector("#rf-cito").value;
+    f.status = main.querySelector("#rf-status").value;
+    f.mode = main.querySelector("#rf-mode").value;
+    f.name = main.querySelector("#rf-name").value.trim();
+    renderReservationList(main, view);
+  };
+  main.querySelector(".js-rsv-search").addEventListener("click", commit);
+  main.querySelector("#rf-name").addEventListener("keydown", (e) => { if (e.key === "Enter") commit(); });
+  main.querySelector(".js-rsv-reset").addEventListener("click", () => {
+    _rsvFilter = { view, createdFrom: "", createdTo: "", ciFrom: "", ciTo: "", status: "", mode: "", name: "" };
+    renderReservationList(main, view);
+  });
+  main.querySelectorAll(".js-rsv-detail").forEach((b) => {
+    b.addEventListener("click", () => navigate("reservations/" + encodeURIComponent(b.getAttribute("data-code"))));
+  });
+}
+
+/** S10-B 예약 상세 */
+function renderReservationDetail(main, code) {
+  const ctx = findReservation(code);
+  if (!ctx) { renderComingSoon(main, "예약을 찾을 수 없습니다.", false); return; }
+  const rec = ctx.rec;
+  const rooms = (rec.pax && rec.pax.rooms) || [];
+  const adults = rooms.reduce((s, x) => s + (x.adults || 0), 0);
+  const children = rooms.reduce((s, x) => s + (x.children || 0), 0);
+  const statusAdmin = rec.status_admin || frontToAdminStatus(rec.status);
+  const g = rec.guest || {};
+  const name = rsvGuestName(g);
+  const phone = g.phone ? ((g.phoneCc ? g.phoneCc + " " : "") + g.phone) : "-";
+  const deposit = rec.amount_deposit;
+  const sell = rec.amount_sell || 0;
+  const margin = (deposit != null) ? (sell - deposit) : null;
+  const won = (n) => Number(n || 0).toLocaleString() + "원";
+
+  const isManualPending = rec.source_mode === "MANUAL" && statusAdmin === "PENDING";
+  const canCancelBtn = ["PENDING", "CONFIRMED", "CANCEL_REQ", "FAILED"].includes(statusAdmin);
+  const actions = [];
+  if (isManualPending) {
+    actions.push(`<button type="button" class="btn btn-primary btn-sm js-rd-confirm">예약 확정</button>`);
+    actions.push(`<button type="button" class="btn btn-ghost btn-sm js-rd-reject" style="color:#dc2626">예약 거절</button>`);
+  }
+  if (statusAdmin === "CONFIRMED") actions.push(`<button type="button" class="btn btn-ghost btn-sm js-rd-email" title="확정 이메일을 못 받은 고객에게 재발송">✉ 확정이메일 발송</button>`);
+  if (canCancelBtn) actions.push(`<button type="button" class="btn btn-sm js-rd-cancel" style="background:#dc2626;color:#fff;border-color:#dc2626">취소하기</button>`);
+
+  const statusOrder = ["PENDING", "CONFIRMED", "FAILED", "CANCEL_REQ", "CANCELLED", "NOSHOW"];
+  const statusSel = statusOrder.map((s) => `<option value="${s}" ${statusAdmin === s ? "selected" : ""}>${RESV_STATUS_LABEL[s]}</option>`).join("");
+
+  const hist = Array.isArray(rec.history) && rec.history.length
+    ? rec.history
+    : [{ dt: rec.created_at, type: "예약 생성", detail: rec.source_mode === "MANUAL" ? "수기 상품 예약 접수(확정대기)" : "프런트 예약 접수", by: "고객" }];
+  const histRows = hist.map((h) => `<tr><td style="color:#888;white-space:nowrap">${rsvFmtDT(h.dt)}</td><td style="white-space:nowrap">${escapeHtml(h.type || "")}</td><td>${escapeHtml(h.detail || "")}</td><td style="white-space:nowrap">${escapeHtml(h.by || "SYSTEM")}</td></tr>`).join("");
+
+  main.innerHTML = `
+    <div class="rd-breadcrumb"><a href="#/reservations">예약 목록</a> › ${escapeHtml(code)}</div>
+    <div class="rd-head">
+      <div>
+        <div class="rd-head-badges">
+          <span class="rd-no">${escapeHtml(code)}</span>
+          ${rsvModeBadge(rec.source_mode || "PMS")}
+          ${rsvStatusBadge(statusAdmin)}
+          ${ctx.isReal ? "" : `<span class="rsv-demo">데모</span>`}
+        </div>
+        <div class="rd-meta">예약일시: ${rsvFmtDT(rec.created_at)}${rec.cancelled_at ? ` · 취소일시: ${rsvFmtDT(rec.cancelled_at)}` : ""}</div>
+        <div class="rd-status-row">예약상태
+          <select class="rd-status-sel" id="rd_status">${statusSel}</select>
+          <button type="button" class="btn btn-ghost btn-sm js-rd-apply">적용</button>
+        </div>
+      </div>
+      <div class="rd-actions">${actions.join("")}</div>
+    </div>
+
+    <div class="card rd-sec">
+      <div class="rd-sec-title">예약 기본 정보</div>
+      <div class="rd-grid rd-grid-1col">
+        <div><span>숙소명</span><b>${escapeHtml(rec.place_name || "-")}</b></div>
+        <div><span>객실유형</span><b>${escapeHtml(rec.room_name || "-")}</b></div>
+        <div><span>상품명</span><b>${escapeHtml(rec.product_name || "-")}</b></div>
+        <div><span>체크인 ~ 체크아웃</span><b>${escapeHtml(rec.checkin || "-")} ~ ${escapeHtml(rec.checkout || "-")}</b></div>
+        <div><span>박수</span><b>${rec.nights || 0}박</b></div>
+        <div><span>성인 / 아동</span><b>${adults}명 / ${children}명</b></div>
+        <div><span>객실수</span><b>${rooms.length || 1}개</b></div>
+      </div>
+    </div>
+
+    <div class="rd-cols">
+      <div class="card rd-sec rd-sec-primary">
+        <div class="rd-sec-title">투숙자 정보 <span class="rd-hint">실제 체크인 · 실명 대조 기준</span></div>
+        <div class="rd-grid">
+          <div><span>영문 이름 (First)</span><b>${escapeHtml(g.firstName || "-")}</b></div>
+          <div><span>미들네임 (Middle)</span><b>${escapeHtml(g.middleName || "-")}</b></div>
+          <div><span>영문 성 (Last)</span><b>${escapeHtml(g.lastName || "-")}</b></div>
+          <div><span>국적</span><b>${escapeHtml(g.nationality || "-")}</b></div>
+          <div><span>연락처</span><b>${escapeHtml(phone)}</b></div>
+          <div><span>이메일</span><b>${escapeHtml(g.email || "-")}</b></div>
+        </div>
+      </div>
+      <div class="card rd-sec">
+        <div class="rd-sec-title">예약자 정보 <span class="rd-hint">예약자=투숙자(프런트 동일 입력)</span></div>
+        <div class="rd-grid">
+          <div><span>성명</span><b>${escapeHtml(name)}</b></div>
+          <div><span>이메일</span><b>${escapeHtml(g.email || rec.member_email || "-")}</b></div>
+          <div><span>연락처</span><b>${escapeHtml(phone)}</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card rd-sec">
+      <div class="rd-sec-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>요금 정보</span>
+        <button type="button" class="btn btn-ghost btn-sm js-rd-partial" style="color:#dc2626">부분취소</button>
+      </div>
+      <div class="rd-price">
+        ${deposit != null ? `<div class="rd-price-row"><span>입금가 합계 <span class="rd-admin-only">관리자 전용</span></span><b style="color:#6d28d9">${won(deposit)}</b></div>` : ""}
+        ${margin != null ? `<div class="rd-price-row"><span>마진</span><b style="color:#059669">${margin >= 0 ? "+" : ""}${Number(margin).toLocaleString()}원${deposit ? ` (${(margin / deposit * 100).toFixed(1)}%)` : ""}</b></div>` : ""}
+        <div class="rd-price-total"><span>판매가 (고객 결제금액)</span><b>${won(sell)}</b></div>
+        ${["CANCELLED", "NOSHOW"].includes(statusAdmin) ? `<div class="rd-price-row" style="margin-top:6px"><span>${statusAdmin === "NOSHOW" ? "위약금 (노쇼 100%)" : "환불금액"}</span><b style="color:${statusAdmin === "NOSHOW" ? "#dc2626" : "#1a1f2e"}">${statusAdmin === "NOSHOW" ? won(sell) : won(rec.refund_amount != null ? rec.refund_amount : sell)}</b></div>` : ""}
+      </div>
+      <div class="rd-note">※ 프런트 프로토타입 예약은 날짜별 입금가 내역 미제공(합계 기준). PMS 연동 시 API 8 DAILYPRICE로 일자별 표시 예정.</div>
+    </div>
+
+    <div class="card rd-sec">
+      <div class="rd-sec-title">관리자 전용</div>
+      <label class="hf-field"><span>관리자 메모 (고객 미노출)</span>
+        <textarea id="rd_memo" style="min-height:60px" placeholder="내부 메모">${escapeHtml(rec.admin_memo || "")}</textarea>
+      </label>
+      <button type="button" class="btn btn-ghost btn-sm js-rd-memo" style="margin-top:6px">메모 저장</button>
+    </div>
+
+    <div class="card rd-sec">
+      <div class="rd-sec-title">변경 이력</div>
+      <table class="rsv-table"><thead><tr><th style="width:120px">일시</th><th style="width:90px">구분</th><th>내용</th><th style="width:80px">처리자</th></tr></thead><tbody>${histRows}</tbody></table>
+    </div>
+  `;
+
+  const reRender = () => renderReservationDetail(main, code);
+  const applyStatus = (newAdmin, extraPatch, histText) => {
+    const patch = Object.assign({ status_admin: newAdmin }, extraPatch || {});
+    const front = adminToFrontStatus(newAdmin); if (front) patch.status = front;
+    updateReservation(code, patch, { dt: rsvNowIso(), type: "상태변경", detail: histText || `${RESV_STATUS_LABEL[statusAdmin]} → ${RESV_STATUS_LABEL[newAdmin]}`, by: "admin" });
+    reRender();
+  };
+  main.querySelector(".js-rd-apply")?.addEventListener("click", () => {
+    const v = main.querySelector("#rd_status").value;
+    if (v === statusAdmin) { alert("현재 상태와 동일합니다."); return; }
+    // 예약상태 변경은 민감 작업 — 확인 알럿
+    const ok = confirm(`예약 상태를 변경합니다.\n\n  ${RESV_STATUS_LABEL[statusAdmin]}  →  ${RESV_STATUS_LABEL[v]}\n\n정말 변경하시겠습니까? (변경 이력에 기록됩니다)`);
+    if (!ok) { reRender(); return; } // 취소 시 드롭다운 원상복구
+    applyStatus(v);
+  });
+  main.querySelector(".js-rd-confirm")?.addEventListener("click", () => { if (confirm("이 예약을 확정할까요?")) applyStatus("CONFIRMED", null, "수기 예약 확정 (관리자)"); });
+  main.querySelector(".js-rd-reject")?.addEventListener("click", () => { if (confirm("예약을 거절할까요? (전액 환불 처리)")) applyStatus("CANCELLED", { refund_amount: sell, cancelled_at: rsvNowIso() }, "수기 예약 거절 → 취소완료(전액 환불)"); });
+  main.querySelector(".js-rd-memo")?.addEventListener("click", () => {
+    updateReservation(code, { admin_memo: main.querySelector("#rd_memo").value }, { dt: rsvNowIso(), type: "메모", detail: "관리자 메모 저장", by: "admin" });
+    reRender();
+  });
+  main.querySelector(".js-rd-email")?.addEventListener("click", () => {
+    const to = g.email || rec.member_email || "";
+    if (!confirm(`확정 이메일을 재발송할까요?\n\n받는 사람: ${to || "(이메일 없음)"}`)) return;
+    updateReservation(code, {}, { dt: rsvNowIso(), type: "이메일", detail: `확정 이메일 재발송 (관리자) → ${to}`, by: "admin" });
+    alert("확정 이메일을 발송했습니다.\n(프로토타입 목업 — 실제 발송·문구는 이메일 템플릿 관리 단계에서 고도화 예정)");
+    reRender();
+  });
+  main.querySelector(".js-rd-cancel")?.addEventListener("click", () => openReservationCancelModal(main, code));
+  main.querySelector(".js-rd-partial")?.addEventListener("click", () => alert("부분취소(PG 부분 환불)는 다음 단계 S10-C에서 제공됩니다."));
 }
 
 let _marginTab = "lodging"; // 마진관리 탭 상태 (lodging | ticket)
@@ -1794,9 +2269,30 @@ function renderHeroForm(main, editId) {
   function render() {
     const mediaBlock =
       state.media_type === "image"
-        ? `<label class="field"><span>PC 이미지 URL</span><input id="hf_pc" type="text" value="${escapeAttr(state.pc_image)}" placeholder="https://... (권장 1920×600)" /></label>
-           <label class="field"><span>모바일 이미지 URL</span><input id="hf_mo" type="text" value="${escapeAttr(state.mobile_image)}" placeholder="https://... (권장 768×450, 미입력 시 PC 이미지 사용)" /></label>
-           ${state.pc_image ? `<div style="margin:4px 0 8px"><img src="${escapeAttr(state.pc_image)}" alt="미리보기" style="max-width:360px;max-height:130px;border:1px solid #ddd;border-radius:4px" onerror="this.style.display='none'" /></div>` : ""}`
+        ? `<div class="hf-field">
+             <span>PC 이미지 <span style="color:#e74c3c">*</span></span>
+             <div>
+               <div class="hf-upload">
+                 <input type="file" id="hf_pc_file" accept="image/*" style="display:none" />
+                 <button type="button" class="btn" id="hf_pc_btn">${state.pc_image ? "이미지 변경" : "이미지 업로드"}</button>
+                 ${state.pc_image ? `<button type="button" class="btn btn-ghost" id="hf_pc_clear">제거</button>` : ""}
+                 <span class="hf-hint">권장 1920×600 · 업로드 시 자동 리사이즈·용량 축소</span>
+               </div>
+               ${state.pc_image ? `<div class="hf-preview"><img src="${escapeAttr(state.pc_image)}" alt="PC 미리보기" /></div>` : ""}
+             </div>
+           </div>
+           <div class="hf-field">
+             <span>모바일 이미지</span>
+             <div>
+               <div class="hf-upload">
+                 <input type="file" id="hf_mo_file" accept="image/*" style="display:none" />
+                 <button type="button" class="btn" id="hf_mo_btn">${state.mobile_image ? "이미지 변경" : "이미지 업로드"}</button>
+                 ${state.mobile_image ? `<button type="button" class="btn btn-ghost" id="hf_mo_clear">제거</button>` : ""}
+                 <span class="hf-hint">권장 768×450 · 미업로드 시 PC 이미지 사용</span>
+               </div>
+               ${state.mobile_image ? `<div class="hf-preview hf-preview-mo"><img src="${escapeAttr(state.mobile_image)}" alt="모바일 미리보기" /></div>` : ""}
+             </div>
+           </div>`
         : `<label class="field"><span>동영상 URL</span><input id="hf_video" type="text" value="${escapeAttr(state.video_url)}" placeholder="https://....mp4" /></label>
            <label class="field"><span>자동 재생</span><select id="hf_autoplay"><option value="on" ${state.video_autoplay ? "selected" : ""}>ON</option><option value="off" ${!state.video_autoplay ? "selected" : ""}>OFF</option></select></label>
            <div class="notice" style="background:#fff9e6;border:1px solid #f0d98c;border-radius:6px;padding:8px 12px;font-size:12px;color:#7a5c00">동영상은 폼에서 관리만 하며, 프런트 실제 재생 연동은 제외됩니다(용량 이슈). 프런트는 이미지 슬라이드만 렌더링됩니다.</div>`;
@@ -1810,7 +2306,7 @@ function renderHeroForm(main, editId) {
 
     main.innerHTML = `
       <h2 class="page-title">히어로 슬라이드 ${isEdit ? "수정" : "등록"}</h2>
-      <p class="page-desc">프런트 메인 최상단 슬라이드. 이미지는 <strong>URL 입력</strong> 방식(용량 이슈로 파일 업로드 대신).</p>
+      <p class="page-desc">프런트 메인 최상단 슬라이드. 이미지는 <strong>로컬 업로드</strong> 방식(업로드 시 자동 리사이즈·용량 축소 후 저장).</p>
 
       <div class="card">
         <h3 class="section-title">① 미디어</h3>
@@ -1862,8 +2358,31 @@ function renderHeroForm(main, editId) {
       persist();
       render();
     });
-    const pcInp = document.getElementById("hf_pc");
-    if (pcInp) pcInp.addEventListener("change", () => { persist(); render(); }); // 미리보기 갱신
+    // 이미지 업로드(자동 리사이즈·용량 축소) — PC/모바일
+    const wireHeroUpload = (btnId, fileId, clearId, key) => {
+      const btn = document.getElementById(btnId), file = document.getElementById(fileId);
+      if (btn && file) {
+        btn.addEventListener("click", () => file.click());
+        file.addEventListener("change", async () => {
+          const f = file.files && file.files[0];
+          if (!f) return;
+          const orig = btn.textContent;
+          btn.disabled = true; btn.textContent = "업로드 중…";
+          try {
+            persist();
+            state[key] = await resolveImageSrc(f); // Cloudinary URL(우선) / 실패 시 압축 base64
+            render();
+          } catch (e) {
+            alert((e && e.message) || "이미지 업로드에 실패했습니다.");
+            btn.disabled = false; btn.textContent = orig;
+          }
+        });
+      }
+      const clr = document.getElementById(clearId);
+      if (clr) clr.addEventListener("click", () => { persist(); state[key] = ""; render(); });
+    };
+    wireHeroUpload("hf_pc_btn", "hf_pc_file", "hf_pc_clear", "pc_image");
+    wireHeroUpload("hf_mo_btn", "hf_mo_file", "hf_mo_clear", "mobile_image");
 
     document.getElementById("hf_save")?.addEventListener("click", () => {
       persist();
@@ -2186,7 +2705,16 @@ function route() {
 
   // ── 미구현(MOCK) 섹션 ──
   if (parts[0] === "tours") { renderComingSoon(main, "투어관리", true); return; }
-  if (parts[0] === "reservations") { renderComingSoon(main, "예약관리", false); return; }
+
+  // ── 예약관리 (S10) — 숙소 예약 ──
+  if (parts[0] === "reservations-cancelled") { renderReservationList(main, "cancelled"); return; }
+  if (parts[0] === "reservations") {
+    if (parts[1]) { renderReservationDetail(main, decodeURIComponent(parts[1])); return; }
+    renderReservationList(main, "all"); return;
+  }
+  // ── 예약관리 — 티켓 예약 (티켓 단계에서 구현 예정) ──
+  if (parts[0] === "ticket-orders") { renderComingSoon(main, "티켓 주문 목록 — 티켓 단계에서 구현 예정", false); return; }
+  if (parts[0] === "ticket-orders-cancelled") { renderComingSoon(main, "티켓 취소 목록 — 티켓 단계에서 구현 예정", false); return; }
 
   // ── 티켓 도메인 ──
   if (parts[0] === "ticket-categories") {
@@ -2598,6 +3126,8 @@ function renderPlaceWizard(main, editId) {
     location_detail: existing?.location_detail || "",
     image_meta: existing?.image_meta || [],
     image_storage_warning: "",
+    description: existing?.description || "",
+    description_en: existing?.description_en || "",
     guide_html: existing?.guide_html || "",
     guide_html_en: existing?.guide_html_en || "",
     policy_html: existing?.policy_html || "",
@@ -2791,6 +3321,12 @@ function renderPlaceWizard(main, editId) {
         : `<p style="font-size:12px;color:var(--muted);margin:0 0 6px">등록된 추가요금 안내가 없습니다. [+ 항목 추가]로 입력하세요.</p>`;
       body = `
         <div class="dual">
+          <label class="field"><span>숙소 설명 (Description)</span>
+            ${richEditorHtml("f_desc", state.description, { minHeight: 200 })}
+          </label>
+          <label class="field"><span>숙소 설명 (영문, 선택)</span>
+            ${richEditorHtml("f_desc_en", state.description_en, { minHeight: 200 })}
+          </label>
           <label class="field"><span>숙소 안내</span>
             ${richEditorHtml("f_guide", state.guide_html, { minHeight: 200 })}
           </label>
@@ -3154,6 +3690,10 @@ function renderPlaceWizard(main, editId) {
       state.address_en = document.getElementById("f_addr_en")?.value.trim() || "";
       { const ld = document.getElementById("f_loc_detail"); if (ld) state.location_detail = ld.innerHTML.trim(); }
     } else if (step === 4) {
+      const dsc = document.getElementById("f_desc");
+      const dscEn = document.getElementById("f_desc_en");
+      if (dsc) state.description = dsc.innerHTML.trim();
+      if (dscEn) state.description_en = dscEn.innerHTML.trim();
       const g = document.getElementById("f_guide");
       const p = document.getElementById("f_policy");
       if (g) state.guide_html = g.innerHTML.trim();
@@ -3205,6 +3745,8 @@ function renderPlaceWizard(main, editId) {
       address_en: state.address_en,
       location_detail: state.location_detail,
       image_meta: state.image_meta,
+      description: state.description,
+      description_en: state.description_en,
       guide_html: state.guide_html,
       guide_html_en: state.guide_html_en,
       policy_html: state.policy_html,
@@ -3948,6 +4490,8 @@ function renderRoomForm(main, editId, presetPlaceId) {
     ),
     pickerCategoryId: "",
     room_size_sqm: existing?.room_size_sqm ?? "",
+    description_en: existing?.description_en || "",
+    description_zh: existing?.description_zh || "",
     policy_html_en: existing?.policy_html_en || "",
     policy_html_zh: existing?.policy_html_zh || "",
     guide_html_en: existing?.guide_html_en || "",
@@ -4032,6 +4576,8 @@ function renderRoomForm(main, editId, presetPlaceId) {
     state.standard_occupancy = parseInt(document.getElementById("rf_std_occ")?.value, 10) || 1;
     state.max_occupancy = parseInt(document.getElementById("rf_max_occ")?.value, 10) || 1;
     state.room_size_sqm = sanitizeRoomSizeSqmInput(document.getElementById("rf_size")?.value ?? "");
+    state.description_en = document.getElementById("rf_desc_en")?.innerHTML.trim() ?? "";
+    state.description_zh = document.getElementById("rf_desc_zh")?.innerHTML.trim() ?? "";
     state.policy_html_en = document.getElementById("rf_policy_en")?.innerHTML.trim() ?? "";
     state.policy_html_zh = document.getElementById("rf_policy_zh")?.innerHTML.trim() ?? "";
     state.guide_html_en = document.getElementById("rf_guide_en")?.innerHTML.trim() ?? "";
@@ -4244,16 +4790,23 @@ function renderRoomForm(main, editId, presetPlaceId) {
       </div>
 
       <div class="card">
-        <h3 class="section-title">객실정책 · 객실안내</h3>
-        <p class="field-hint" style="margin:-6px 0 12px;font-size:12px;">영문(필수)·중문(선택)으로 입력합니다. (외국인 전용 · 국문 미사용) 프런트는 중문 접속 시 중문, 없으면 영문으로 표시됩니다.</p>
-        <label class="field"><span>객실정책 (영문, 필수)</span>
+        <h3 class="section-title">객실 설명 · 정책 · 안내 <span style="font-size:12px;font-weight:400;color:#888">(콘텐츠=객실 통일)</span></h3>
+        <p class="field-hint" style="margin:-6px 0 12px;font-size:12px;">모두 <strong>선택 입력</strong>(빈 값 허용). 영문·중문 입력, 프런트는 중문 접속 시 중문·없으면 영문 표시. 프런트 Room Detail에 <strong>설명(최상단) → 정보 → 정책 → 안내 → 시설</strong> 순으로 그대로 렌더됩니다.</p>
+        <label class="field"><span>객실 설명 (영문, 선택)</span>
+          ${richEditorHtml("rf_desc_en", state.description_en, { minHeight: 140 })}
+        </label>
+        <label class="field"><span>객실 설명 (중문, 선택)</span>
+          ${richEditorHtml("rf_desc_zh", state.description_zh, { minHeight: 120 })}
+        </label>
+        <hr style="border:0;border-top:1px solid var(--border);margin:12px 0;" />
+        <label class="field"><span>객실정책 (영문, 선택)</span>
           ${richEditorHtml("rf_policy_en", state.policy_html_en, { minHeight: 140 })}
         </label>
         <label class="field"><span>객실정책 (중문, 선택)</span>
           ${richEditorHtml("rf_policy_zh", state.policy_html_zh, { minHeight: 120 })}
         </label>
         <hr style="border:0;border-top:1px solid var(--border);margin:12px 0;" />
-        <label class="field"><span>객실안내 (영문, 필수)</span>
+        <label class="field"><span>객실안내 (영문, 선택)</span>
           ${richEditorHtml("rf_guide_en", state.guide_html_en, { minHeight: 140 })}
         </label>
         <label class="field"><span>객실안내 (중문, 선택)</span>
@@ -4587,6 +5140,8 @@ function renderRoomForm(main, editId, presetPlaceId) {
           String(sanitizeRoomSizeSqmInput(state.room_size_sqm || "")).trim() === ""
             ? ""
             : Number(String(sanitizeRoomSizeSqmInput(state.room_size_sqm)).trim()),
+        description_en: state.description_en,
+        description_zh: state.description_zh,
         policy_html_en: state.policy_html_en,
         policy_html_zh: state.policy_html_zh,
         guide_html_en: state.guide_html_en,
@@ -4821,10 +5376,7 @@ function renderProductForm(main, editId, presetRoomId) {
     stay_end_date: existing?.stay_end_date || "",
     name_en: existing?.name_en || "",
     name_zh: existing?.name_zh || "",
-    description_en: existing?.description_en || "",
-    description_zh: existing?.description_zh || "",
-    guide_policy_html_en: existing?.guide_policy_html_en || "",
-    guide_policy_html_zh: existing?.guide_policy_html_zh || "",
+    // v1.3(콘텐츠=객실 통일): 상품 설명·안내/정책 폐지 — 콘텐츠는 객실(Room)이 소유
     visibility: existing?.visibility === "N" ? "N" : "Y",
     sale_start_date: String(existing?.sale_start_date || today).slice(0, 10),
     sale_end_date: String(
@@ -4987,14 +5539,7 @@ function renderProductForm(main, editId, presetRoomId) {
     if (nmEn) state.name_en = String(nmEn.value || "").trim();
     const nmZh = el("pf_name_zh");
     if (nmZh) state.name_zh = String(nmZh.value || "").trim();
-    const descEn = el("pf_desc_en");
-    if (descEn) state.description_en = descEn.value || "";
-    const descZh = el("pf_desc_zh");
-    if (descZh) state.description_zh = descZh.value || "";
-    const guideEn = el("pf_guide_en");
-    if (guideEn) state.guide_policy_html_en = guideEn.innerHTML.trim() || "";
-    const guideZh = el("pf_guide_zh");
-    if (guideZh) state.guide_policy_html_zh = guideZh.innerHTML.trim() || "";
+    // v1.3: 상품 설명·안내/정책 폐지 (콘텐츠=객실 통일)
     const ct = el("pf_cancel_t");
     if (ct) state.cancel_policy_type = ct.value || PRODUCT_CANCEL_POLICY.NON_REFUNDABLE;
     const cn = el("pf_cancel_n");
@@ -5137,10 +5682,6 @@ function renderProductForm(main, editId, presetRoomId) {
         });
       });
     }
-    const pkgDescHint =
-      state.product_type === PRODUCT_TYPE.PACKAGE
-        ? `<p class="field-hint" style="margin-top:-6px;">패키지 포함 내역·구성은 <strong>상품 설명</strong>에 함께 적어 주세요.</p>`
-        : "";
     const nClamped = Math.min(CANCEL_N_SELECT_MAX, Math.max(0, parseInt(String(state.cancel_free_days_before), 10) || 0));
     const cancelNOptions = Array.from({ length: CANCEL_N_SELECT_MAX + 1 }, (_, i) => {
       const sel = i === nClamped ? "selected" : "";
@@ -5232,35 +5773,18 @@ function renderProductForm(main, editId, presetRoomId) {
       </div>
 
       <div class="card">
-        <h3 class="section-title">③ 상품명 · 설명 <span style="font-size:12px;font-weight:400;color:#888">(영문 필수 · 중문 선택)</span></h3>
-        <p class="field-hint" style="margin:0 0 8px;font-size:12px;">국문 미사용. 프런트는 중문 접속 시 중문, 없으면 영문 표시.</p>
+        <h3 class="section-title">③ 상품명 <span style="font-size:12px;font-weight:400;color:#888">(영문 필수 · 중문 선택)</span></h3>
+        <p class="field-hint" style="margin:0 0 8px;font-size:12px;">국문 미사용. 프런트는 중문 접속 시 중문, 없으면 영문 표시. <strong>상품 설명·안내/정책은 폐지 → 콘텐츠는 객실(Room)에서 관리</strong>합니다.</p>
         <label class="field"><span>상품명 (영문, 필수)</span>
           <input type="text" id="pf_name_en" value="${escapeAttr(state.name_en)}" placeholder="e.g. Deluxe King Room Only" />
         </label>
         <label class="field"><span>상품명 (중문, 선택)</span>
           <input type="text" id="pf_name_zh" value="${escapeAttr(state.name_zh)}" placeholder="中文（可选）" />
         </label>
-        <label class="field"><span>상품 설명 (영문, 필수)</span>
-          <textarea id="pf_desc_en" rows="3" placeholder="Summary / inclusions">${escapeForTextarea(state.description_en)}</textarea>
-        </label>
-        <label class="field"><span>상품 설명 (중문, 선택)</span>
-          <textarea id="pf_desc_zh" rows="3" placeholder="中文（可选）">${escapeForTextarea(state.description_zh)}</textarea>
-        </label>
       </div>
 
       <div class="card">
-        <h3 class="section-title">④ 상품 안내 / 정책 <span style="font-size:12px;font-weight:400;color:#888">(영문 필수 · 중문 선택)</span></h3>
-        ${pkgDescHint}
-        <label class="field"><span>상품 안내/정책 (영문, 필수)</span>
-          ${richEditorHtml("pf_guide_en", state.guide_policy_html_en, { minHeight: 130 })}
-        </label>
-        <label class="field"><span>상품 안내/정책 (중문, 선택)</span>
-          ${richEditorHtml("pf_guide_zh", state.guide_policy_html_zh, { minHeight: 120 })}
-        </label>
-      </div>
-
-      <div class="card">
-        <h3 class="section-title">⑤ 취소 정책 (상품)</h3>
+        <h3 class="section-title">④ 취소 정책 (상품)</h3>
         ${
           state.pms_linked
             ? `<div class="notice" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:9px 12px;font-size:13px;color:#1a4fa0;">
@@ -5493,11 +6017,7 @@ function renderProductForm(main, editId, presetRoomId) {
         pms_linked: state.pms_linked,
         name_en: state.name_en,
         name_zh: state.name_zh,
-        description_en: state.description_en,
-        description_zh: state.description_zh,
-        package_inclusions_text: "",
-        guide_policy_html_en: state.guide_policy_html_en,
-        guide_policy_html_zh: state.guide_policy_html_zh,
+        // v1.3: 상품 설명·안내/정책 폐지 (콘텐츠=객실)
         visibility: state.visibility,
         sale_start_date: state.sale_start_date,
         sale_end_date: state.sale_end_date,
@@ -6597,6 +7117,7 @@ function richEditorHtml(id, html, opts) {
         <input type="file" class="rich-file" accept="image/*" multiple hidden />
       </div>
       <div id="${id}" class="rich-area" contenteditable="true" style="min-height:${minH}px">${html || ""}</div>
+      <div class="rich-imghint">🖼 이미지는 프런트에서 <b>화면 폭에 맞춰 자동 축소</b> 표시됩니다. 가로가 긴 이미지 권장(권장 폭 800px 이상) · <b>세로로 매우 긴 이미지·문서/화면 캡처는 피해주세요</b>.</div>
     </div>`;
 }
 
@@ -6700,6 +7221,12 @@ function wireRichEditors(scope) {
   scope.querySelectorAll(".rich-ed").forEach((ed) => {
     const area = ed.querySelector(".rich-area");
     const file = ed.querySelector(".rich-file");
+    // [FIX] 에디터를 감싼 <label>이 툴바의 첫 <button>과 연결돼 클릭 시 포커스가 버튼으로 튀어
+    //       contenteditable에 입력이 안 되는 문제 → label.for를 contenteditable(비-labelable) id로 지정해 연결 해제.
+    //       추가 안전장치: 에디터 클릭 시 label 활성화(포커스 리다이렉트) 차단 + 직접 포커스.
+    const lab = ed.closest("label");
+    if (lab && area && area.id && !lab.getAttribute("for")) lab.setAttribute("for", area.id);
+    if (area) area.addEventListener("mousedown", (e) => { e.stopPropagation(); });
     // 서식 버튼 (mousedown로 선택영역 유지)
     ed.querySelectorAll(".rich-btn[data-cmd]").forEach((b) => {
       b.addEventListener("mousedown", (e) => {

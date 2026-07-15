@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>High1 Front Bridge v0.8.9</title>
+    <title>High1 Front Bridge v0.8.27</title>
     <link rel="stylesheet" href="styles.css" />
     <style>
       .topbar-right { margin-left: auto; }
@@ -19,8 +19,13 @@
   <body>
     <header class="topbar">
       <div class="topbar-inner">
-        <a href="#/" class="logo">high<span>1</span></a>
+        <a href="#/" class="logo"><img src="logo.png" alt="high1 resort" class="logo-img" /></a>
         <div class="topbar-right">
+          <select id="langSelect" class="lang-select" aria-label="Language">
+            <option value="en">English</option>
+            <option value="zh">中文</option>
+            <option value="ko">한국어</option>
+          </select>
           <div class="gnb-acc">
             <a class="gnb-acc-btn" href="#/bridge/HOTEL">Accommodation <span style="font-size:9px">▾</span></a>
             <div class="gnb-acc-menu">
@@ -32,9 +37,15 @@
             <a class="gnb-acc-btn" href="#/ticket/search">Ticket <span style="font-size:9px">▾</span></a>
             <div class="gnb-acc-menu" id="ticketNavMenu"></div>
           </div>
-          <div class="lang-switch">
-            <button type="button" class="lang-btn" id="langKo">KO</button>
-            <button type="button" class="lang-btn" id="langEn">EN</button>
+          <div class="gnb-acc" id="myNav">
+            <a class="gnb-acc-btn" href="javascript:void(0)">Mypage <span style="font-size:9px">▾</span></a>
+            <div class="gnb-acc-menu" id="myNavMenu">
+              <a href="javascript:void(0)" data-my="profile">Profile</a>
+              <a href="javascript:void(0)" data-my="bookings">My Bookings</a>
+              <a href="javascript:void(0)" data-my="event">Event</a>
+              <a href="javascript:void(0)" data-my="cs">CS Center</a>
+              <a href="javascript:void(0)" data-my="logout" id="myLogout">Log out</a>
+            </div>
           </div>
           <button type="button" class="signin-btn" id="signinBtn" style="background:#7c3aed;color:#fff;border:none;border-radius:14px;font-size:11px;padding:5px 12px;margin-left:4px;cursor:pointer">Sign in / up</button>
         </div>
@@ -67,9 +78,9 @@
         <div class="rd-body">
           <div id="rdGallery" class="rd-gallery"></div>
           <div class="rd-aside">
+            <div id="rdDesc" class="rd-desc"></div>
             <h3 class="rd-section-title">Information</h3>
             <ul id="rdInfo" class="rd-info"></ul>
-            <nav id="rdSectionsNav" class="rd-sections-nav"></nav>
             <div id="rdServices" class="rd-services"></div>
           </div>
         </div>
