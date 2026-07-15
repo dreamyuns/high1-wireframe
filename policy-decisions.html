@@ -169,6 +169,10 @@ body { padding-left:200px; box-sizing:border-box; }
     <span><span class="toc-ko-text">복사 기능 정책</span><span class="toc-en-text">Copy Feature</span></span>
   </a>
   <a class="toc-item" href="#ko-16">
+    <span class="toc-num">16</span>
+    <span><span class="toc-ko-text">콘텐츠 소유 구조</span><span class="toc-en-text">Content Ownership</span></span>
+  </a>
+  <a class="toc-item" href="#ko-17">
     <span class="toc-num">⏳</span>
     <span><span class="toc-ko-text">미결 사항</span><span class="toc-en-text">Pending</span></span>
   </a>
@@ -1037,8 +1041,8 @@ body { padding-left:200px; box-sizing:border-box; }
             <thead><tr><th>항목</th><th>복사 여부</th><th>비고</th></tr></thead>
             <tbody>
               <tr><td>상품명</td><td><span style="color:#059669;font-weight:700">포함</span></td><td>pre-fill (변경 가능)</td></tr>
-              <tr><td>상품 설명</td><td><span style="color:#059669;font-weight:700">포함</span></td><td>pre-fill (변경 가능)</td></tr>
-              <tr><td>상품 안내·정책</td><td><span style="color:#059669;font-weight:700">포함</span></td><td>pre-fill (변경 가능)</td></tr>
+              <tr><td><s>상품 설명</s></td><td><span style="color:#6b7280;font-weight:700">폐기</span></td><td>콘텐츠=객실 통일(2026-07-15) — Room Description(객실설명)으로 이전. 상품 필드에서 삭제.</td></tr>
+              <tr><td><s>상품 안내·정책</s></td><td><span style="color:#6b7280;font-weight:700">폐기</span></td><td>콘텐츠=객실 통일(2026-07-15) — Room.guide_html·policy_html로 통합. 상품 필드에서 삭제.</td></tr>
               <tr><td>판매기간</td><td><span style="color:#059669;font-weight:700">포함</span></td><td>pre-fill (변경 가능)</td></tr>
               <tr><td>상품코드</td><td><span style="color:#dc2626;font-weight:700">제외</span></td><td>자동 채번 (PR-####)</td></tr>
               <tr><td>연동 모드</td><td><span style="color:#dc2626;font-weight:700">제외</span></td><td>관리자 직접 선택 필수</td></tr>
@@ -1058,7 +1062,58 @@ body { padding-left:200px; box-sizing:border-box; }
       </div>
     </div>
 
-    <!-- 16. 미결 사항 -->
+    <!-- 16. 콘텐츠 소유 구조 -->
+    <div class="pd-section">
+      <div class="pd-section-title"><span class="badge">16</span> 콘텐츠 소유 구조 — 콘텐츠는 객실(Room)이 소유</div>
+      <div class="pd-body">
+        <div class="pd-item">
+          <div class="pd-item-title">확정 원칙 <span class="badge" style="background:#059669;font-size:9px">확정 (2026-07-15)</span></div>
+          <div class="pd-desc">
+            사진·설명·안내·정책 등 고객에게 보이는 <strong>콘텐츠는 모두 객실(Room) 단위로 관리</strong>합니다.<br>
+            상품(Product)은 가격·재고·판매기간·취소정책만 소유하며, 콘텐츠 필드를 갖지 않습니다.
+          </div>
+          <div class="pd-rule">
+            <strong>배경</strong>: 같은 객실에 여러 상품이 연결될 수 있습니다. 콘텐츠를 상품 단위로 관리하면 동일 내용을 중복 입력해야 하므로, 객실에 한 번 입력하여 모든 연결 상품에 자동 적용합니다.
+          </div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">객실이 소유하는 콘텐츠 3종</div>
+          <table class="pd-table" style="margin-top:8px">
+            <thead><tr><th>콘텐츠</th><th>설명</th><th>입력 조건</th><th>프런트 노출 위치</th></tr></thead>
+            <tbody>
+              <tr><td><strong>객실설명 (Room Description)</strong></td><td>객실 소개 문구 (신규)</td><td>선택 입력(미입력 허용)</td><td>Room Detail 모달 최상단</td></tr>
+              <tr><td><strong>객실안내 (Room Guide)</strong></td><td>이용 안내 HTML 콘텐츠</td><td>선택 입력(미입력 허용)</td><td>Room Detail 모달 — 객실정책 하단</td></tr>
+              <tr><td><strong>객실정책 (Room Policy)</strong></td><td>취소·환불·운영 정책 HTML</td><td>선택 입력(미입력 허용)</td><td>Room Detail 모달 — 객실설명 하단</td></tr>
+            </tbody>
+          </table>
+          <div class="pd-warn" style="margin-top:8px">
+            <strong>EN 필수 예외</strong>: 객실 콘텐츠 3종은 글로벌 "EN 필수" 규칙의 예외입니다. EN 미입력 시에도 저장 가능. 미입력 시 프런트에서 해당 섹션 미노출.
+          </div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">Room Detail 모달 콘텐츠 표시 순서</div>
+          <div class="pd-desc">
+            갤러리 → <strong>객실설명</strong>(선택) → 기본 정보(인원·크기·침대) → 객실정책(선택) → 객실안내(선택) → 객실시설<br>
+            섹션 점프 네비게이션 없음(전체 스택형 노출·섹션별 구분선). 상품 레벨 안내 영역 없음.
+          </div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">이미지 없음 처리</div>
+          <div class="pd-desc">
+            숙소·객실 이미지 없음 시 프런트는 빈 화면(placeholder)을 표시합니다. 깨진 이미지 링크(<code>&lt;img src=""&gt;</code> 등)는 절대 허용하지 않습니다.
+          </div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">렌더 충실도 (P1)</div>
+          <div class="pd-desc">
+            어드민에 입력한 이미지·줄바꿈·서식(굵기·목록 등)이 프런트에 100% 동일하게 렌더되어야 합니다.<br>
+            리치텍스트/HTML 파싱 + 줄바꿈 파싱(<code>\n → &lt;br&gt;</code>) 구현 필수. 숙소(Places)·객실(Room) 콘텐츠 공통.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 17. 미결 사항 -->
     <div class="pd-section">
       <div class="pd-section-title"><span class="badge">⏳</span> 미결 사항</div>
       <div class="pd-body">
@@ -1852,7 +1907,8 @@ body { padding-left:200px; box-sizing:border-box; }
           <table class="pd-table" style="margin-top:8px">
             <thead><tr><th>Field</th><th>Copied</th><th>Notes</th></tr></thead>
             <tbody>
-              <tr><td>Product Name / Description / Guide·Policy / Sale Period</td><td><span style="color:#059669;font-weight:700">Yes</span></td><td>Pre-filled, editable</td></tr>
+              <tr><td>Product Name / Sale Period</td><td><span style="color:#059669;font-weight:700">Yes</span></td><td>Pre-filled, editable</td></tr>
+              <tr><td><s>Description / Guide·Policy</s></td><td><span style="color:#6b7280;font-weight:700">Deprecated</span></td><td>Content = Room ownership (2026-07-15) — moved to Room entity. Removed from Product.</td></tr>
               <tr><td>Product Code</td><td><span style="color:#dc2626;font-weight:700">No</span></td><td>Auto-generated (PR-####)</td></tr>
               <tr><td>Integration Mode / Room / Cancellation Policy / Margin</td><td><span style="color:#dc2626;font-weight:700">No</span></td><td>PMS cancellation policy is not stored in DB (real-time API 9). Margin resets to master inheritance.</td></tr>
               <tr><td>Visibility</td><td><span style="color:#dc2626;font-weight:700">No</span></td><td>Defaults to HIDE(N)</td></tr>
@@ -1868,7 +1924,58 @@ body { padding-left:200px; box-sizing:border-box; }
       </div>
     </div>
 
-    <!-- 16. Pending Decisions -->
+    <!-- 16. Content Ownership -->
+    <div class="pd-section">
+      <div class="pd-section-title"><span class="badge">16</span> Content Ownership — Content belongs to Room</div>
+      <div class="pd-body">
+        <div class="pd-item">
+          <div class="pd-item-title">Confirmed Rule <span class="badge" style="background:#059669;font-size:9px">Confirmed (2026-07-15)</span></div>
+          <div class="pd-desc">
+            All customer-facing content (images, descriptions, guides, policies) is owned and managed at the <strong>Room level</strong>.<br>
+            A Product owns only price, inventory, sale period, and cancellation policy — no content fields.
+          </div>
+          <div class="pd-rule">
+            <strong>Rationale</strong>: Multiple products can be linked to the same room. Managing content per product would require duplicate entry. Entering it once at the room level applies to all linked products automatically.
+          </div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">3 Content Types Owned by Room</div>
+          <table class="pd-table" style="margin-top:8px">
+            <thead><tr><th>Content</th><th>Description</th><th>Input</th><th>Front Display</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Room Description</strong></td><td>Intro text (new)</td><td>Optional</td><td>Room Detail modal — top</td></tr>
+              <tr><td><strong>Room Guide</strong></td><td>Usage guide HTML</td><td>Optional</td><td>Room Detail modal — below policy</td></tr>
+              <tr><td><strong>Room Policy</strong></td><td>Cancellation/ops policy HTML</td><td>Optional</td><td>Room Detail modal — below description</td></tr>
+            </tbody>
+          </table>
+          <div class="pd-warn" style="margin-top:8px">
+            <strong>EN Required Exception</strong>: Room content (description/guide/policy) is exempt from the global "EN required" rule. Saving is allowed even without EN input. If left blank, the corresponding section is hidden on the front end.
+          </div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">Room Detail Modal — Content Display Order</div>
+          <div class="pd-desc">
+            Gallery → <strong>Room Description</strong> (optional) → Basic Info (occupancy/size/bed) → Room Policy (optional) → Room Guide (optional) → Room Facilities<br>
+            No section-jump navigation (full stack layout with dividers). No product-level content area.
+          </div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">Missing Image Handling</div>
+          <div class="pd-desc">
+            When no image is available for a property or room, the front end displays a blank placeholder. Broken image links (<code>&lt;img src=""&gt;</code>) are strictly prohibited.
+          </div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">Render Fidelity (P1)</div>
+          <div class="pd-desc">
+            Images, line breaks, and formatting (bold, lists, etc.) entered in the admin must render identically on the front end.<br>
+            Rich text / HTML parsing + line break parsing (<code>\n → &lt;br&gt;</code>) must be implemented. Applies to both Place and Room content fields.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 17. Pending Decisions -->
     <div class="pd-section">
       <div class="pd-section-title"><span class="badge">⏳</span> Pending Decisions</div>
       <div class="pd-body">
