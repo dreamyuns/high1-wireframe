@@ -20,6 +20,7 @@ const STORAGE_MARGIN_MASTER = "high1_margin_master_v1"; // 공통관리 마진 �
 const STORAGE_MAIN_HERO = "high1_main_hero_v1"; // 화면관리 > 메인관리 히어로 슬라이드
 const STORAGE_MAIN_HERO_CFG = "high1_main_hero_cfg_v1"; // 히어로 전역 설정(자동슬라이드·주기)
 const STORAGE_MAIN_SECTION = "high1_main_section_v1"; // 추천 섹션
+const STORAGE_NOTICES = "high1_notices_v1"; // 화면관리 > 공지사항 (프런트 팝업 · 마이페이지 공지)
 
 /* ── 티켓 도메인 (Phase 1: S17 카테고리 · S13 스펙 · S14 상품) ── */
 const STORAGE_TICKET_CATEGORIES = "high1_ticket_categories_v1"; // S17 티켓 카테고리(최대 2뎁스)
@@ -1053,6 +1054,192 @@ function loadMainSection() {
 function saveMainSection(list) {
   localStorage.setItem(STORAGE_MAIN_SECTION, JSON.stringify(list || []));
 }
+
+/* =====================================================================
+ * 화면관리 > 공지사항 (Notice) — 개발사 어드민 대응 우리 To-be 프로토
+ *  - 목록: 제목 / 상태 / 게시기간 / 팝업(대상) / 수정일 / 작업
+ *  - 폼:  제목 EN(필수)·ZH(선택) / 본문 EN(필수)·ZH(선택, 리치에디터)
+ *         게시(Published·시작·종료) / 팝업(사용·대상 페이지) / 버전
+ *  - 언어: EN 필수 + ZH 선택(미입력 시 EN 대체) — 개발사 방식 유지(2026-07-30 PO 확정)
+ *  - 프런트: 팝업(대상 페이지) + 마이페이지 공지 목록/상세에서 read (Step 2)
+ *  - 저장키: high1_notices_v1 (어드민 write → 프런트 read)
+ * ===================================================================== */
+const NOTICE_TARGETS = [
+  { key: "main", label: "메인", abbr: "M" },
+  { key: "search", label: "검색결과", abbr: "S" },
+  { key: "property", label: "숙소상세", abbr: "P" },
+];
+function loadNotices() {
+  try { const r = localStorage.getItem(STORAGE_NOTICES); const a = r ? JSON.parse(r) : []; return Array.isArray(a) ? a : []; }
+  catch { return []; }
+}
+function saveNotices(list) { localStorage.setItem(STORAGE_NOTICES, JSON.stringify(list || [])); }
+/** 게시(노출) 상태: Published AND 시작 지남 AND 종료 안 지남 */
+function noticeLive(n, now) {
+  now = now || new Date();
+  if (!n.published) return false;
+  if (n.start && new Date(n.start) > now) return false;
+  if (n.end && new Date(n.end) < now) return false;
+  return true;
+}
+/** 저장 문자열(datetime-local "YYYY-MM-DDTHH:MM") → 표시용 "YYYY-MM-DD HH:MM" */
+function fmtNoticeDt(s) {
+  if (!s) return "-";
+  const d = new Date(s);
+  if (isNaN(d)) return escapeHtml(String(s));
+  const p = (x) => String(x).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+/** 임의 문자열 → datetime-local input value("YYYY-MM-DDTHH:MM") */
+function toDtLocal(s) {
+  if (!s) return "";
+  if (String(s).includes("T")) return String(s).slice(0, 16);
+  const d = new Date(s);
+  if (isNaN(d)) return "";
+  const p = (x) => String(x).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+function renderNoticeList(main) {
+  const list = loadNotices().slice().sort((a, b) => String(b.updated || "").localeCompare(String(a.updated || "")));
+  const now = new Date();
+  const rows = list.length
+    ? list.map((n) => {
+        const live = noticeLive(n, now);
+        const statusLabel = live ? "게시중" : (n.published ? "대기/종료" : "미게시");
+        const period = (n.start || n.end) ? `${fmtNoticeDt(n.start)} ~ ${fmtNoticeDt(n.end)}` : "상시";
+        const popup = n.popup_enabled
+          ? `<span class="badge on">ON</span> ` +
+            NOTICE_TARGETS.filter((t) => (n.target_pages || []).includes(t.key))
+              .map((t) => `<span class="badge" style="background:#ede9fe;color:#5b21b6" title="${t.label}">${t.abbr}</span>`)
+              .join(" ")
+          : `<span class="badge off">OFF</span>`;
+        return `<tr>
+          <td style="font-weight:600">${escapeHtml(n.title_en || "-")}${n.title_zh ? `<div style="font-size:11px;color:#888;font-weight:400">${escapeHtml(n.title_zh)}</div>` : ""}</td>
+          <td><span class="badge ${live ? "on" : "off"}">${statusLabel}</span></td>
+          <td style="font-size:11px">${period}</td>
+          <td style="white-space:nowrap">${popup}</td>
+          <td style="font-size:11px">${fmtNoticeDt(n.updated)}</td>
+          <td style="white-space:nowrap"><button type="button" class="btn btn-ghost js-nt-edit" data-id="${escapeAttr(n.id)}">수정</button> <button type="button" class="btn btn-ghost js-nt-del" data-id="${escapeAttr(n.id)}">삭제</button></td>
+        </tr>`;
+      }).join("")
+    : `<tr><td colspan="6" class="muted" style="padding:12px">등록된 공지가 없습니다. [+ 공지 등록]으로 등록하세요.</td></tr>`;
+
+  main.innerHTML = `
+    <h2 class="page-title">공지사항 <span style="font-size:12px;font-weight:400;color:#888">— 화면관리 &gt; 공지사항</span></h2>
+    <p class="page-desc">고객 공지와 <strong>프런트 팝업 노출</strong>을 관리합니다. 프런트 마이페이지 공지 목록/상세 + 팝업(대상 페이지)에 반영됩니다. <span style="color:#888">언어: EN 필수 · ZH 선택(미입력 시 EN 대체).</span></p>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:10px;color:#888">공지 목록 (${list.length}개)</div>
+        <a href="#/notices/new" class="btn btn-primary" style="background:#10b981;border-color:#10b981">+ 공지 등록</a>
+      </div>
+      <div class="product-inv-wrap"><table class="room-list-table"><thead><tr><th>제목</th><th>상태</th><th>게시기간</th><th>팝업(대상)</th><th>수정일</th><th>작업</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <p class="field-hint" style="margin-top:8px">팝업 대상 배지: <b>M</b>=메인 · <b>S</b>=검색결과 · <b>P</b>=숙소상세</p>
+    </div>`;
+  main.querySelectorAll(".js-nt-edit").forEach((b) => b.addEventListener("click", () => navigate("notices/edit/" + b.getAttribute("data-id"))));
+  main.querySelectorAll(".js-nt-del").forEach((b) =>
+    b.addEventListener("click", () => {
+      if (!confirm("이 공지를 삭제할까요?")) return;
+      saveNotices(loadNotices().filter((x) => x.id !== b.getAttribute("data-id")));
+      renderNoticeList(main);
+    })
+  );
+}
+
+function renderNoticeForm(main, editId) {
+  const list = loadNotices();
+  const existing = editId ? list.find((n) => n.id === editId) : null;
+  const isEdit = !!existing;
+  const n = {
+    id: existing?.id || uid(),
+    title_en: existing?.title_en || "",
+    title_zh: existing?.title_zh || "",
+    body_en: existing?.body_en || "",
+    body_zh: existing?.body_zh || "",
+    published: existing?.published ?? true,
+    start: existing?.start || "",
+    end: existing?.end || "",
+    popup_enabled: existing?.popup_enabled ?? false,
+    target_pages: existing?.target_pages ? existing.target_pages.slice() : ["main"],
+    version: existing?.version || 1,
+  };
+  const targetChecks = NOTICE_TARGETS.map(
+    (t) => `<label style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;font-size:13px"><input type="checkbox" class="nt-target" value="${t.key}" ${n.target_pages.includes(t.key) ? "checked" : ""}/> ${t.label}</label>`
+  ).join("");
+
+  main.innerHTML = `
+    <h2 class="page-title">공지 ${isEdit ? "수정" : "등록"}</h2>
+    <p class="page-desc">고객 공지 본문과 <strong>프런트 팝업 노출 조건</strong>을 설정합니다.</p>
+
+    <div class="card">
+      <h3 class="section-title">① 공지 내용 <span style="font-size:12px;font-weight:400;color:#888">(EN 필수 · ZH 선택)</span></h3>
+      <label class="field"><span>제목 (EN) <span style="color:#e74c3c">*</span></span><input id="nt_title_en" type="text" value="${escapeAttr(n.title_en)}" placeholder="Notice title (English)" /></label>
+      <label class="field"><span>제목 (ZH) <span style="color:#888;font-weight:400">선택 · 미입력 시 EN</span></span><input id="nt_title_zh" type="text" value="${escapeAttr(n.title_zh)}" placeholder="标题 (中文, 可选)" /></label>
+      <div style="margin:12px 0 4px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">본문 (EN) <span style="color:#e74c3c">*</span></div>${richEditorHtml("nt_body_en", n.body_en, { minHeight: 180 })}</div>
+      <div style="margin:14px 0 4px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">본문 (ZH) <span style="color:#888;font-weight:400">선택 · 미입력 시 EN</span></div>${richEditorHtml("nt_body_zh", n.body_zh, { minHeight: 140 })}</div>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">② 게시 설정</h3>
+      <label class="field"><span>게시 여부</span><select id="nt_pub"><option value="on" ${n.published ? "selected" : ""}>게시(Published)</option><option value="off" ${!n.published ? "selected" : ""}>미게시</option></select></label>
+      <div class="form-grid">
+        <label class="field"><span>시작</span><input id="nt_start" type="datetime-local" value="${escapeAttr(toDtLocal(n.start))}" /></label>
+        <label class="field"><span>종료</span><input id="nt_end" type="datetime-local" value="${escapeAttr(toDtLocal(n.end))}" /></label>
+      </div>
+      <p class="field-hint">비워두면 상시 노출. 시작 전·종료 경과 시 자동 미노출.</p>
+    </div>
+
+    <div class="card">
+      <h3 class="section-title">③ 프런트 팝업</h3>
+      <label class="field"><span>팝업 사용</span><select id="nt_popup"><option value="off" ${!n.popup_enabled ? "selected" : ""}>미사용</option><option value="on" ${n.popup_enabled ? "selected" : ""}>사용</option></select></label>
+      <div style="margin:6px 0 4px"><div style="font-size:13px;font-weight:600;margin-bottom:8px">노출 대상 페이지</div><div>${targetChecks}</div></div>
+      <p class="field-hint">팝업 사용 시 선택한 페이지에 노출됩니다. (마이페이지 공지 목록/상세는 팝업과 무관하게 게시중 공지를 노출)</p>
+      <label class="field" style="margin-top:10px"><span>버전</span><input id="nt_ver" type="number" min="1" value="${n.version}" style="width:80px" /></label>
+    </div>
+
+    <div class="wizard-actions wizard-actions--sticky">
+      <a href="#/notices" class="btn">목록</a>
+      <div class="wizard-actions-trailing">
+        <a href="#/notices" class="btn">취소</a>
+        ${isEdit ? `<button type="button" class="btn btn-ghost" id="nt_del" style="color:#dc2626;border-color:#dc2626">삭제</button>` : ""}
+        <button type="button" class="btn btn-primary" id="nt_save" style="background:#10b981;border-color:#10b981">${isEdit ? "저장" : "등록"}</button>
+      </div>
+    </div>
+    <p id="nt_err" class="error" style="min-height:20px"></p>`;
+  wireRichEditors(main);
+
+  document.getElementById("nt_save").addEventListener("click", () => {
+    const err = document.getElementById("nt_err");
+    const title_en = document.getElementById("nt_title_en").value.trim();
+    const body_en = readRichEditor(main, "nt_body_en");
+    if (!title_en) { err.textContent = "제목(EN)은 필수입니다."; return; }
+    if (!body_en || body_en === "<br>") { err.textContent = "본문(EN)은 필수입니다."; return; }
+    if (!confirm("공지를 저장할까요?")) return;
+    n.title_en = title_en;
+    n.title_zh = document.getElementById("nt_title_zh").value.trim();
+    n.body_en = body_en;
+    n.body_zh = readRichEditor(main, "nt_body_zh");
+    n.published = document.getElementById("nt_pub").value === "on";
+    n.start = document.getElementById("nt_start").value || "";
+    n.end = document.getElementById("nt_end").value || "";
+    n.popup_enabled = document.getElementById("nt_popup").value === "on";
+    n.target_pages = Array.from(main.querySelectorAll(".nt-target:checked")).map((c) => c.value);
+    n.version = Math.max(1, parseInt(document.getElementById("nt_ver").value, 10) || 1);
+    n.updated = new Date().toISOString();
+    const all = loadNotices();
+    const idx = all.findIndex((x) => x.id === n.id);
+    if (idx >= 0) all[idx] = n; else all.push(n);
+    saveNotices(all);
+    alert("저장되었습니다.");
+    navigate("notices");
+  });
+  const del = document.getElementById("nt_del");
+  if (del) del.addEventListener("click", () => {
+    if (!confirm("이 공지를 삭제할까요?")) return;
+    saveNotices(loadNotices().filter((x) => x.id !== n.id));
+    navigate("notices");
+  });
+}
 /** 히어로 슬라이드 상태 계산: 강제종료 OR 노출기간 경과 → OFF */
 function heroSlideOn(h, todayStr) {
   if (h.force_off) return false;
@@ -1297,8 +1484,11 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    id: "screen", label: "화면관리", match: ["main-management"],
-    lnb: [{ label: "메인관리", route: "main-management" }],
+    id: "screen", label: "화면관리", match: ["main-management", "notices"],
+    lnb: [
+      { label: "메인관리", route: "main-management" },
+      { label: "공지사항", route: "notices" },
+    ],
   },
   {
     id: "common", label: "공통관리", match: ["categories", "facilities", "room-masters", "margin-management"],
@@ -2741,6 +2931,13 @@ function route() {
 
   if (parts[0] === "margin-management") {
     renderMarginMaster(main);
+    return;
+  }
+
+  if (parts[0] === "notices") {
+    if (parts[1] === "new") { renderNoticeForm(main, null); return; }
+    if (parts[1] === "edit" && parts[2]) { renderNoticeForm(main, decodeURIComponent(parts[2])); return; }
+    renderNoticeList(main);
     return;
   }
 
