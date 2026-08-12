@@ -230,10 +230,11 @@ function buildMap(){
       var fill = (on && hl[id]) ? r.color : "#fff";
       svg+='<circle cx="'+x+'" cy="'+y+'" r="6.5" fill="'+fill+'" stroke="'+r.color+'" stroke-width="3.5" opacity="'+(dim?0.22:1)+'"/>';
     });
-    var mainLane=LANE[serv[0].id];
-    if(id===ORI) svg+='<circle cx="'+mainLane+'" cy="'+y+'" r="12" fill="none" stroke="var(--go)" stroke-width="3.5"/>';
-    if(id===DST) svg+='<circle cx="'+mainLane+'" cy="'+y+'" r="12" fill="none" stroke="var(--stop)" stroke-width="3.5"/>';
-    if(SEL && id===SEL) svg+='<circle cx="'+mainLane+'" cy="'+y+'" r="14" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="3 2"/>';
+    // 출발/도착/선택 링 레인 = 매칭 노선 중 노선번호 최소(ROUTES 순), 없으면 경유 노선 중 첫번째
+    var ringLane = (matched.length && matched[0].stops.indexOf(id)>=0) ? LANE[matched[0].id] : LANE[serv[0].id];
+    if(id===ORI) svg+='<circle cx="'+ringLane+'" cy="'+y+'" r="12" fill="none" stroke="var(--go)" stroke-width="3.5"/>';
+    if(id===DST) svg+='<circle cx="'+ringLane+'" cy="'+y+'" r="12" fill="none" stroke="var(--stop)" stroke-width="3.5"/>';
+    if(SEL && id===SEL) svg+='<circle cx="'+ringLane+'" cy="'+y+'" r="14" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="3 2"/>';
     var cond=CONDITIONAL[id]?' <tspan fill="'+ROUTES[1].color+'" font-size="11">＊'+UI[LANG].cond+'</tspan>':'';
     var weight=(id===SEL||hl[id])?"700":"600";
     var lop = dim?0.34:1;
