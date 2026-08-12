@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>High1 Resort Shuttle Bus</title>
+<style>
+  :root{
+    --palace:#E0A400; --sabuk:#D6006E; --high1:#7A2A8F;
+    --ink:#1f2430; --sub:#6b7280; --line:#e7e8ec; --bg:#f5f6f8; --card:#fff;
+    --accent:#2563eb; --go:#16a34a; --stop:#dc2626;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;font-family:"Malgun Gothic",-apple-system,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.6}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 20px 60px}
+
+  header{background:linear-gradient(135deg,#3a1a4a,#5a2a6e);color:#fff;padding:11px 0 9px}
+  header .wrap{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  header h1{margin:0;font-size:27px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:11px}
+  header h1 .ico{font-size:30px}
+  header p{margin:5px 0 0;font-size:15px;color:#e6d8ef;font-weight:500}
+  .lang{display:flex;gap:4px;background:rgba(255,255,255,.12);padding:3px;border-radius:22px}
+  .lang button{border:0;background:transparent;color:#e6d8ef;font-size:13px;padding:6px 14px;border-radius:18px;cursor:pointer}
+  .lang button.on{background:#fff;color:#5a2a6e;font-weight:700}
+
+  h2{font-size:16px;margin:26px 0 10px;display:flex;align-items:center;gap:7px}
+  h2 .bar{width:4px;height:17px;background:var(--accent);border-radius:2px}
+
+  .planner{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .planner .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+  .planner .fld{flex:1;min-width:150px}
+  .planner label{display:block;font-size:12px;color:var(--sub);margin-bottom:4px;font-weight:600}
+  .planner select{width:100%;padding:11px 10px;border:1px solid #d6d8de;border-radius:8px;font-size:14px;background:#fff}
+  .planner .arrow{font-size:20px;color:var(--sub);padding:0 2px 8px}
+  .result{margin-top:14px;display:none}
+  .result.show{display:block}
+  .result .res-h{font-size:12.5px;font-weight:700;color:var(--sub);margin-bottom:7px}
+  .result .rt-chips{display:flex;gap:6px;flex-wrap:wrap}
+  .rt-chip{display:inline-flex;align-items:center;gap:6px;color:#fff;font-weight:700;font-size:13px;padding:5px 13px;border-radius:15px}
+  .result .msg{font-size:13.5px;color:var(--sub);background:#fff5f5;border:1px solid #ffd6d6;border-radius:8px;padding:10px 13px}
+
+  /* 노선도 + 이미지 = 2열 */
+  .board{display:grid;grid-template-columns:440px 1fr;gap:16px;align-items:start}
+  .mapcard,.imgcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .mapcard{padding:14px 20px}
+  .mini-legend{display:flex;gap:12px;flex-wrap:wrap;padding:2px 4px 12px;margin-bottom:6px;border-bottom:1px dashed var(--line)}
+  .mini-legend span{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#444}
+  .mini-legend i{width:11px;height:11px;border-radius:50%}
+  .mapcard svg{width:100%;height:auto;display:block}
+  .mapcard .maplabel{cursor:pointer}
+  .mapcard .maplabel:hover text{fill:var(--accent)}
+
+  .imgcard{position:sticky;top:12px}
+  .imgcard .ttl{font-weight:700;font-size:17px;margin:2px 2px 2px}
+  .imgcard .en{font-size:12.5px;color:var(--sub);margin:0 2px 6px}
+  .imgcard .serv{display:flex;gap:5px;margin:0 2px 10px}
+  .servdot{width:15px;height:15px;border-radius:50%;display:inline-block}
+  .imgwrap{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+  .imgwrap img{width:100%;display:block}
+  .pinlabel{position:absolute;background:#1f2a44;border:1px solid #0f1626;
+    border-radius:8px;padding:5px 11px;font-size:15px;font-weight:700;color:#fff;max-width:192px;white-space:normal;
+    box-shadow:0 2px 9px rgba(0,0,0,.32);pointer-events:none;line-height:1.25;text-align:left}
+  .pinlabel span{display:block;font-size:11px;font-weight:600;color:#a9c7ff;margin-top:2px}
+  .map-ph{min-height:300px;background:repeating-linear-gradient(45deg,#eef0f4,#eef0f4 10px,#e8eaef 10px,#e8eaef 20px);
+    display:flex;align-items:center;justify-content:center;color:#9aa1ad;font-size:13px;text-align:center;padding:16px}
+  .cond{font-size:12px;color:var(--sabuk);margin:0 2px 8px}
+
+  .note{font-size:12px;color:var(--sub);background:#fff;border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:0 8px 8px 0;padding:10px 13px;margin-top:16px}
+  footer{margin-top:24px;font-size:11.5px;color:#9aa1ad;text-align:center}
+
+  @media(max-width:760px){
+    .board{grid-template-columns:1fr}          /* 모바일: 노선도 먼저 → 이미지 아래 */
+    .imgcard{position:static}
+    .planner .arrow{display:none}.planner .fld{min-width:100%}
+    header h1{font-size:25px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div>
+      <h1><span class="ico">🚌</span><span id="t-title"></span></h1>
+      <p id="t-sub"></p>
+    </div>
+    <div class="lang" id="lang">
+      <button data-l="en" class="on">EN</button>
+      <button data-l="zh">中文</button>
+      <button data-l="ko">한국어</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <h2><span class="bar"></span><span id="t-plan"></span></h2>
+  <div class="planner">
+    <div class="row">
+      <div class="fld"><label id="t-from"></label><select id="from"></select></div>
+      <div class="arrow">→</div>
+      <div class="fld"><label id="t-to"></label><select id="to"></select></div>
+    </div>
+    <div class="result" id="result"></div>
+  </div>
+
+  <h2><span class="bar"></span><span id="t-routes"></span></h2>
+  <div class="board">
+    <div class="mapcard" id="mapcard"></div>
+    <div class="imgcard" id="imgcard"></div>
+  </div>
+
+  <div class="note" id="t-note"></div>
+  <!-- 시간표: 데이터 슬롯(times[])만 예약, UI 미노출 — 추후 추가 -->
+  <footer id="t-foot"></footer>
+</div>
+
+<script>
+/* ===== 데이터 ===== */
+var STOPS={
+  ms:{ko:"마운틴 스키하우스",en:"Mountain Ski House",zh:"山地滑雪之家"},
+  mf:{ko:"마운틴콘도 F동",en:"Mountain Condo F",zh:"山地公寓F栋"},
+  hp:{ko:"언덕 주차장",en:"Hill Parking Lot",zh:"山坡停车场"},
+  cg:{ko:"카지노 & 그랜드호텔",en:"Casino & Grand Hotel",zh:"赌场&大酒店"},
+  ww:{ko:"워터월드",en:"Water World",zh:"水上世界"},
+  hill:{ko:"힐콘도",en:"Hill Condo",zh:"山丘公寓"},
+  val:{ko:"밸리콘도",en:"Valley Condo",zh:"溪谷公寓"},
+  gh:{ko:"고한역",en:"Gohan Station",zh:"古汉站"},
+  cc:{ko:"하이원 CC",en:"High1 CC (Golf)",zh:"High1高尔夫"},
+  pal:{ko:"팰리스호텔",en:"Palace Hotel",zh:"宫殿酒店"},
+  sb:{ko:"사북역",en:"Sabuk Station",zh:"舍北站"}
+};
+var CONDITIONAL={hill:true,val:true};
+/* 번역 라벨 — 이미지의 '한글 텍스트 박스' 좌상단(%)에 맞춰 얹음(핀 아님). 2핀(상/하행)은 배열 2개. */
+var LABELS={
+  ms:[{x:18,y:45}],
+  mf:[{x:33,y:40}],
+  hp:[{x:56,y:21}],
+  cg:[{x:61,y:37,to:["mf"]},{x:9,y:44,to:["pal","sb","ww"]}],
+  ww:[{x:50,y:47}],
+  hill:[{x:37,y:54}],
+  val:[{x:38,y:48}],
+  gh:[{x:52,y:27,to:["mf","cg"]},{x:42,y:60,to:["pal"]}],
+  cc:[{x:52,y:30,to:["mf","cg","ww"]},{x:8,y:43,to:["pal"]}],
+  pal:[{x:30,y:40}],
+  sb:[{x:30,y:65},{x:72,y:73,plain:true}]
+};
+var ROUTES=[
+  {id:"palace",color:"#E0A400",num:"1",name:{ko:"팰리스 순환",en:"Palace Circular",zh:"宫殿循环"},
+   stops:["ms","mf","hp","cg","ww","hill","val","gh","cc","pal"],times:[]},
+  {id:"sabuk",color:"#D6006E",num:"2",name:{ko:"사북 순환",en:"Sabuk Circular",zh:"舍北循环"},
+   stops:["ms","mf","hp","cg","ww","sb"],times:[]},
+  {id:"high1",color:"#7A2A8F",num:"3",name:{ko:"하이원 순환",en:"high1 Circular",zh:"high1循环"},
+   stops:["ms","mf","hp","cg","ww","hill","val"],times:[]}
+];
+var ROW=["ms","mf","hp","cg","ww","sb","hill","val","gh","cc","pal"];
+var LANE={sabuk:42,palace:74,high1:106};
+
+var UI={
+ en:{title:"High1 Resort Shuttle Bus",sub:"Free circular shuttle · 3 routes · 11 stops",
+     plan:"Find your route",from:"From",to:"To",routes:"Route map & boarding location",
+     cond:"seasonal (when open)",same:"Departure and arrival are the same stop.",
+     none:"No single route connects these stops. Transfer at Water World.",
+     mapph:"Boarding map / photo to be added",placeholder:"Select a stop",tapstop:"Tap a stop on the map to see its boarding location.",boarding:"Boarding point",avail:"Available routes",
+     note:"Timetables change by season and are not shown here — they will be added later. For current times call +82-1588-7789.",
+     foot:"High1 Resort Shuttle · prototype v3 · Chinese labels & boarding images are placeholders (pending)"},
+ zh:{title:"High1度假村循环巴士",sub:"免费循环巴士 · 3条线路 · 11个站点",
+     plan:"查找您的线路",from:"出发",to:"到达",routes:"线路图与乘车位置",
+     cond:"旺季经停（营业时）",same:"出发站与到达站相同。",
+     none:"没有直达线路，请在水上世界换乘。",
+     mapph:"乘车地图 / 照片（稍后添加）",placeholder:"请选择站点",tapstop:"点击线路图上的站点查看乘车位置。",boarding:"上车点",avail:"可乘线路",
+     note:"时刻表按季节变动，暂未显示，稍后添加。查询班次请拨打 +82-1588-7789。",
+     foot:"High1度假村循环巴士 · 原型 v3 · 中文标签与乘车图为占位（待补）"},
+ ko:{title:"하이원 리조트 셔틀버스",sub:"무료 순환 셔틀 · 3개 노선 · 11개 정류장",
+     plan:"노선 찾기",from:"출발",to:"도착",routes:"통합 노선도 & 탑승장소",
+     cond:"영업 시 경유",same:"출발지와 도착지가 같습니다.",
+     none:"직접 잇는 단일 노선이 없습니다. 워터월드에서 환승하세요.",
+     mapph:"탑승장소 지도 / 사진 (추후 추가)",placeholder:"장소를 선택해 주세요",tapstop:"노선도에서 정류장을 선택하세요.",boarding:"승강장",avail:"탑승 가능 노선",
+     note:"시간표는 시즌별로 변동되어 현재는 미표시입니다(추후 추가). 현재 운행 시간은 1588-7789로 문의하세요.",
+     foot:"하이원 리조트 셔틀버스 · 프로토타입 v3 · 중문 라벨·탑승 이미지는 자리표시(예정)"}
+};
+
+var LANG="en", SEL=null, ORI=null, DST=null;
+function nm(id){return STOPS[id][LANG];}
+function servingRoutes(id){return ROUTES.filter(function(r){return r.stops.indexOf(id)>=0;});}
+
+/* ===== 통합 세로 노선도 (SVG, 경로 하이라이트) ===== */
+function buildMap(){
+  var top=34,rowH=58,W=410,labelX=138;
+  var yOf={}; ROW.forEach(function(id,i){yOf[id]=top+i*rowH;});
+  var H=top+(ROW.length-1)*rowH+40;
+
+  var active = ORI && DST && ORI!==DST;
+  var matched = active ? ROUTES.filter(function(r){return r.stops.indexOf(ORI)>=0 && r.stops.indexOf(DST)>=0;}) : [];
+  var hl={}, segs=[];
+  matched.forEach(function(r){
+    var a=r.stops.indexOf(ORI), b=r.stops.indexOf(DST); if(a>b){var t=a;a=b;b=t;}
+    var sl=r.stops.slice(a,b+1); sl.forEach(function(s){hl[s]=true;});
+    for(var i=0;i<sl.length-1;i++) segs.push({from:sl[i],to:sl[i+1],color:r.color,lane:LANE[r.id]});
+  });
+  var on = matched.length>0;
+
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" role="img">';
+  // 기본 노선 라인 (활성 시 흐리게)
+  ROUTES.forEach(function(r){
+    var pts=r.stops.map(function(id){return LANE[r.id]+","+yOf[id];}).join(" ");
+    svg+='<polyline points="'+pts+'" fill="none" stroke="'+r.color+'" stroke-width="4" stroke-linejoin="round" opacity="'+(on?0.16:0.9)+'"/>';
+  });
+  // 하이라이트 구간 (출발~도착)
+  segs.forEach(function(s){
+    svg+='<line x1="'+s.lane+'" y1="'+yOf[s.from]+'" x2="'+s.lane+'" y2="'+yOf[s.to]+'" stroke="'+s.color+'" stroke-width="7" stroke-linecap="round"/>';
+  });
+  // 진행 방향 셰브론 (출발→도착) — 구간마다 연속, 라인과 대비색으로 항상 표시
+  var down = active ? (yOf[DST] > yOf[ORI]) : true;
+  segs.forEach(function(s){
+    var x=s.lane, m=(yOf[s.from]+yOf[s.to])/2;
+    var pts = down ? (x-8)+","+(m-5)+" "+x+","+(m+5)+" "+(x+8)+","+(m-5)
+                   : (x-8)+","+(m+5)+" "+x+","+(m-5)+" "+(x+8)+","+(m+5);
+    // 흰 테두리(대비) + 진한 심
+    svg+='<polyline points="'+pts+'" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>';
+    svg+='<polyline points="'+pts+'" fill="none" stroke="#111827" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+  });
+  // 노드 + 라벨
+  ROW.forEach(function(id){
+    var y=yOf[id], serv=servingRoutes(id);
+    var dim = on && !hl[id];
+    serv.forEach(function(r){
+      var x=LANE[r.id];
+      var fill = (on && hl[id]) ? r.color : "#fff";
+      svg+='<circle cx="'+x+'" cy="'+y+'" r="6.5" fill="'+fill+'" stroke="'+r.color+'" stroke-width="3.5" opacity="'+(dim?0.22:1)+'"/>';
+    });
+    var mainLane=LANE[serv[0].id];
+    if(id===ORI) svg+='<circle cx="'+mainLane+'" cy="'+y+'" r="12" fill="none" stroke="var(--go)" stroke-width="3.5"/>';
+    if(id===DST) svg+='<circle cx="'+mainLane+'" cy="'+y+'" r="12" fill="none" stroke="var(--stop)" stroke-width="3.5"/>';
+    if(SEL && id===SEL) svg+='<circle cx="'+mainLane+'" cy="'+y+'" r="14" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="3 2"/>';
+    var cond=CONDITIONAL[id]?' <tspan fill="'+ROUTES[1].color+'" font-size="11">＊'+UI[LANG].cond+'</tspan>':'';
+    var weight=(id===SEL||hl[id])?"700":"600";
+    var lop = dim?0.34:1;
+    svg+='<g class="maplabel" onclick="selectStop(\''+id+'\')" opacity="'+lop+'">'+
+      '<rect x="'+(labelX-8)+'" y="'+(y-15)+'" width="'+(W-labelX-2)+'" height="30" fill="transparent"/>'+
+      '<text x="'+labelX+'" y="'+(y+5)+'" font-size="15" font-weight="'+weight+'" fill="'+(id===SEL?'#111':'#333')+'">'+nm(id)+cond+'</text></g>';
+  });
+  svg+='</svg>';
+
+  var legend='<div class="mini-legend">'+ROUTES.map(function(r){
+    return '<span><i style="background:'+r.color+'"></i>'+r.num+' '+r.name[LANG]+'</span>';}).join("")+'</div>';
+  document.getElementById("mapcard").innerHTML=legend+svg;
+}
+
+/* ===== 탑승장소 이미지 패널 ===== */
+function buildPanel(){
+  var id=SEL;
+  if(!id){document.getElementById("imgcard").innerHTML='<div class="map-ph" style="border-radius:10px">🚏&nbsp; '+UI[LANG].tapstop+'</div>';return;}
+  var serv=servingRoutes(id);
+  var dots=serv.map(function(r){return '<span class="servdot" style="background:'+r.color+'" title="'+r.name[LANG]+'"></span>';}).join("");
+  var cond=CONDITIONAL[id]?'<div class="cond">＊'+UI[LANG].cond+'</div>':'';
+  document.getElementById("imgcard").innerHTML='<div class="ttl">'+STOPS[id][LANG]+'</div>'+
+    '<div class="en">'+STOPS[id].en+'</div>'+cond+
+    '<div class="serv">'+dots+'</div>'+
+    '<div class="imgwrap">'+
+      '<img src="stops/'+id+'.jpg" alt="" data-id="'+id+'" data-try="jpg" onerror="imgFallback(this)">'+
+      buildPinLabels(id)+
+      '<div class="map-ph" style="display:none">🗺 '+UI[LANG].mapph+'</div>'+
+    '</div>';
+}
+/* 핀 라벨 — 한국어는 원본 유지(오버레이 없음), EN·ZH만 번역 오버레이 */
+function buildPinLabels(id){
+  if(LANG==="ko" || !LABELS[id]) return "";
+  return LABELS[id].map(function(L){
+    var sub = L.plain ? "" : (L.to ? '→ '+L.to.map(function(s){return STOPS[s][LANG];}).join(", ") : UI[LANG].boarding);
+    return '<div class="pinlabel" style="left:'+L.x+'%;top:'+L.y+'%">'+STOPS[id][LANG]+(sub?'<span>'+sub+'</span>':'')+'</div>';
+  }).join("");
+}
+function imgFallback(img){
+  var t=img.getAttribute("data-try");
+  if(t==="jpg"){img.setAttribute("data-try","png");img.src="stops/"+img.getAttribute("data-id")+".png";return;}
+  var wrap=img.parentNode; img.style.display="none";
+  wrap.querySelectorAll(".pinlabel").forEach(function(p){p.style.display="none";});
+  var ph=wrap.querySelector(".map-ph"); if(ph)ph.style.display="flex";
+}
+function selectStop(id){SEL=id;buildMap();buildPanel();}
+
+/* ===== 검색 ===== */
+function buildSelectors(){
+  var ph=UI[LANG].placeholder;
+  var f=document.getElementById("from"),t=document.getElementById("to");
+  var fv=f.value||"",tv=t.value||"";
+  function opts(other,cur){
+    return '<option value="" disabled'+(cur?'':' selected')+'>'+ph+'</option>'+
+      ROW.map(function(id){
+        return '<option value="'+id+'"'+(id===other?' disabled':'')+(id===cur?' selected':'')+'>'+nm(id)+'</option>';
+      }).join("");
+  }
+  f.innerHTML=opts(tv,fv); t.innerHTML=opts(fv,tv);
+}
+function onPick(){
+  var o=document.getElementById("from").value,d=document.getElementById("to").value;
+  buildSelectors(); // 동일 정류장 비활성 갱신(값 보존)
+  var box=document.getElementById("result"),u=UI[LANG];
+  if(o) SEL=o;                 // 출발지 탑승 이미지 표시
+  if(o&&d){
+    ORI=o;DST=d;box.className="result show";
+    var m=ROUTES.filter(function(r){return r.stops.indexOf(o)>=0&&r.stops.indexOf(d)>=0;});
+    box.innerHTML = m.length
+      ? '<div class="res-h">'+u.avail+'</div><div class="rt-chips">'+m.map(function(r){return '<span class="rt-chip" style="background:'+r.color+'">'+r.num+' '+r.name[LANG]+'</span>';}).join("")+'</div>'
+      : '<div class="msg">'+u.none+'</div>';
+  } else { ORI=null;DST=null;box.className="result";box.innerHTML=""; }
+  buildMap(); buildPanel();
+}
+
+function renderStatic(){
+  var u=UI[LANG];document.documentElement.lang=LANG;
+  var set=function(id,v){document.getElementById(id).textContent=v;};
+  set("t-title",u.title);set("t-sub",u.sub);set("t-plan",u.plan);set("t-from",u.from);
+  set("t-to",u.to);set("t-routes",u.routes);set("t-note",u.note);set("t-foot",u.foot);
+}
+function renderAll(){renderStatic();buildSelectors();buildPanel();onPick();}
+
+document.getElementById("lang").addEventListener("click",function(e){
+  if(e.target.tagName!=="BUTTON")return;LANG=e.target.getAttribute("data-l");
+  Array.prototype.forEach.call(this.children,function(b){b.classList.toggle("on",b.getAttribute("data-l")===LANG);});
+  renderAll();});
+document.getElementById("from").addEventListener("change",onPick);
+document.getElementById("to").addEventListener("change",onPick);
+renderAll();
+</script>
+</body>
+</html>
