@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>High1 Resort Full Map · High1</title>
+<style>
+button{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;line-height:1;}
+@charset "UTF-8";
+body{position:relative;background:#fff;font-size:15px;line-height:1;color:#555;font-family:NotoKr,'Malgun Gothic','맑은 고딕',Dotum,'돋움',Helvetica,"Apple SD Gothic Neo","애플 SD 산돌고딕 Neo",sans-serif;-webkit-text-size-adjust:none;-webkit-font-smoothing:antialiased}
+
+#wrapper{position: relative; overflow: auto; width: 100%; height: 100%;}
+#wrapper:before{display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url(img/fullmap.jpg) no-repeat center; background-size: cover;  opacity:0.2;}
+
+
+#jpn .fullmap button {letter-spacing:-0.05em}
+.fullmap{position: relative; width: 1200px; height: 820px; margin: 0 auto; border: 5px solid #42a65b; box-sizing:border-box; background: url(img/fullmap.jpg) no-repeat center top;}
+.fullmap.info_active:before{display: block; position: absolute; top: 0; left: 0; z-index: 10; width: 100%; height: 100%; background-color: #000; opacity:0.5;}
+.fullmap.info_active .spot_group button{z-index: 0;}
+
+.fullmap[data-tab="waterworld"]{background-image: url(img/tab_waterworld.jpg);}
+.fullmap[data-tab="ski"]{background-image: url(img/tab_ski.jpg);}
+.fullmap[data-tab="golf"]{background-image: url(img/tab_golf.jpg);}
+.fullmap[data-tab="casino"]{background-image: url(img/tab_casino.jpg);}
+.fullmap[data-tab="hotelncondo"]{background-image: url(img/tab_hotelncondo.jpg);}
+
+.fullmap.area_active .spot_group button{display: none; z-index: 20;}
+.fullmap .undo{display: none;  position: absolute; width: 100%; height: 100%; z-index: 10; font-size: 1px; color: transparent;} 
+.fullmap.area_active .undo{display: block;} 
+
+.fullmap[data-tab="waterworld"] .spot_group button.waterworld{display: block;}
+.fullmap[data-tab="ski"] .spot_group button.ski{display: block;}
+.fullmap[data-tab="golf"] .spot_group button.golf{display: block;}
+.fullmap[data-tab="casino"] .spot_group button.casino{display: block;}
+.fullmap[data-tab="hotelncondo"] .spot_group button.hotelncondo{display: block;}
+
+.fullmap .tabmenu {position: absolute; top: 35px; right:40px; z-index: 20; padding: 0 5px; border-radius:3px; background-color: #1e963c;}
+.fullmap .tabmenu li {float: left; position: relative;}
+.fullmap .tabmenu li:not(:first-child):before{display: block; position: absolute; top: calc(50% - 6px); left: 0; width: 1px; height: 12px; background-color: #fff; opacity:0.2;}
+.fullmap .tabmenu li button{display: block;  padding: 10px 15px; color: #fff; font-size: 16px;}
+.fullmap .tabmenu li button.on{color: #fffb8f; font-weight: 600;}
+.fullmap .tabmenu li button[data-tab="golf"]{width:60px;}
+.fullmap .tabmenu li button.chn_golf {width:100px}
+.fullmap .tabmenu li button.jp_golf {width:100px}
+.fullmap .tabmenu li button.jp_hotel {width:205px !important}
+.fullmap .tabmenu li button[data-tab="hotelncondo"]{width: 110px;}
+:not(:lang(ko)) .fullmap .tabmenu li button[data-tab="hotelncondo"]{width: 190px;}
+
+.spot_info{display: none; overflow: hidden; position: absolute; z-index: 20; width: 251px;  border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,1); background-color: #fff; box-shadow:0 0 15px rgba(0,0,0,0.5);} 
+.spot_info .img_area{overflow: hidden; height: 117px; border-radius:10px 10px 0 0; line-height: 0;}
+.spot_info .text_area{padding: 15px;}
+.spot_info .text_area .title{margin-bottom: 10px; font-size: 16px; font-weight: 600; color: #000;}
+.spot_info .text_area ul li{padding: 3px 0; font-size: 12px; line-height: 1.2;}
+.spot_info .text_area ul li .juso2{padding-top: 4px;}
+.spot_info .text_area ul li .juso2 span{display: inline-block; margin-right: 3px; padding: 2px; border:1px solid #ccc; vertical-align: middle;} 
+.spot_info .text_area .btn_area{margin-top: 10px;}
+.spot_info .text_area .btn_area .spot_btn{display: inline-block; width: 67px; height: 21px; border-radius:3px; background: linear-gradient(to bottom, #308bed 0%,#2b7cd4 100%); font-size: 12px; color:#fff; text-align: center; line-height: 20px; text-decoration: none; }
+.spot_info .close{display: block; overflow: hidden; position: absolute; top: 0; right: 0; width:36px; height: 36px; background: url(img/spot_info_close.png) no-repeat; font-size: 2px; color:transparent; text-indent: 100%;}
+
+.spot_info[data-place="hotel_main"]{left:792px; top:471px; }
+.spot_info[data-place="hotel_convetion"]{left: 852px; top: 399px;}
+.spot_info[data-place="hotel_palace"]{left:108px; top: 264px;}
+.spot_info[data-place="condo_mountain"]{left: 707px; top: 321px;}
+.spot_info[data-place="condo_valley"]{left: 451px; top: 331px;}
+.spot_info[data-place="condo_hill"]{left:591px; top: 388px;}
+.spot_info[data-place="cc"]{left: 48px; top:193px;}
+.spot_info[data-place="valley_top"]{left: 317px; top: 151px;}
+.spot_info[data-place="high1_top"]{left: 516px; top: 80px;}
+.spot_info[data-place="mountain_hub"]{left:701px; top: 226px;}
+.spot_info[data-place="valley_hub"]{left:523px; top: 265px;}
+.spot_info[data-place="mountain_ski"]{left:754px; top:407px;}
+.spot_info[data-place="valley_ski"]{left: 546px; top: 500px;}
+.spot_info[data-place="unamjeong"]{left: 779px; top: 245px;}
+.spot_info[data-place="waterworld"]{left: 878px; top: 290px;}
+.spot_info[data-place="casino"]{left: 796px; top: 354px;}
+
+
+/*시설안내 감추기*/
+.spot_info[data-place="valley_top"] .spot_btn.facilities,
+.spot_info[data-place="high1_top"] .spot_btn.facilities,
+.spot_info[data-place="mountain_hub"] .spot_btn.facilities,
+.spot_info[data-place="valley_hub"] .spot_btn.facilities,
+.spot_info[data-place="mountain_ski"] .spot_btn.facilities,
+.spot_info[data-place="valley_ski"] .spot_btn.facilities,
+.spot_info[data-place="unamjeong"] .spot_btn.facilities{display: none; opacity:0;}
+
+
+.spot_group button{display: block; position: absolute;}
+.spot_group button.hotelncondo{padding: 5px 15px; border: 3px solid #085a93; border-radius:6px; background-color: #fff; font-size: 15px; font-weight: 600; color: #085a93; line-height: 17px;}
+.spot_group button.spot{padding: 5px 18px; border-radius:6px; background-color: #5b3912; font-size: 15px; font-weight: 600; color: #fff;}
+.spot_group button[data-place="hotel_main"]{left:792px; top:471px; padding: 5px;}
+.spot_group button[data-place="hotel_convetion"]{left: 971px; top: 626px; padding: 5px;}
+.spot_group button[data-place="hotel_palace"]{left:108px; top: 264px;}
+.spot_group button[data-place="condo_mountain"]{left: 707px; top: 560px;}
+.spot_group button[data-place="condo_valley"]{left: 457px; top: 574px;}
+.spot_group button[data-place="condo_hill"]{left: 595px; top: 631px;}
+.spot_group button[data-place="cc"]{left: 48px; top:193px;}
+.spot_group button[data-place="valley_top"]{left: 317px; top: 151px;}
+.spot_group button[data-place="high1_top"]{left: 516px; top: 80px;}
+.spot_group button[data-place="mountain_hub"]{left:701px; top: 226px;}
+.spot_group button[data-place="valley_hub"]{left:523px; top: 265px;}
+.spot_group button[data-place="mountain_ski"]{left:754px; top:407px;}
+.spot_group button[data-place="valley_ski"]{left: 546px; top: 500px;}
+.spot_group button[data-place="unamjeong"]{left: 950px; top: 491px;}
+.spot_group button[data-place="waterworld"]{left: 1030px; top: 536px;}
+.spot_group button.jp_water	{left:980px}
+.spot_group button[data-place="casino"]{left: 796px; top: 597px;}
+
+@media only screen and (max-width:1200px){
+    .wrap{width:100%; padding: 0 2%;}
+}
+
+.mobile_popup{position: fixed; top: 0; left: 0; z-index: 999; width: 100vw; height: 100vh; padding-top:calc(50% - 100px); box-sizing:border-box; background-color:rgba(0,0,0,0.7); text-align: center;}
+.mobile_popup p{margin-bottom: 30px; color: #fff; font-size: 17px; word-break:keep-all; line-height:1.5;}
+.mpopup_close{display: inline-block; width: 120px; height: 40px; box-shadow:0 0 5px rgba(0,0,0,0.8); background-color: #fff; color:#333; font-size: 14px; line-height: 35px;}
+
+@media only screen and (min-width:641px){
+	.mobile_popup{display: none;}
+}
+
+/* --- 상단바 --- */
+.topbar{max-width:1200px;margin:0 auto 8px;display:flex;align-items:center}
+.topbar h1{font-size:20px;color:#1e963c;font-weight:700}
+.draft-note{max-width:1200px;margin:8px auto 0;font-size:12px;color:#888}
+.map-wrap{position:relative;margin:0 auto}
+.map-scaler{position:relative;width:100%;overflow:visible}
+.zoom-ctrl{display:none;position:absolute;left:12px;bottom:12px;z-index:45;flex-direction:column;gap:8px}
+.zoom-ctrl button{width:42px;height:42px;font-size:22px;line-height:1;color:#fff;background:rgba(24,29,44,.9);border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+@media (max-width:1240px){ #wrapper{padding:10px} }
+
+/* --- 우측 상단 통합 카드 (언어 + 카테고리) --- */
+.map-menu{position:absolute;top:16px;right:16px;z-index:40;width:186px;background:rgba(24,29,44,.92);color:#fff;border-radius:12px;box-shadow:0 8px 26px rgba(0,0,0,.45);padding:10px;font-size:13px}
+.map-menu .mm-toggle{display:none;align-items:center;justify-content:center;gap:8px;width:100%;height:38px;font-size:14px;font-weight:700;color:#fff;border-radius:8px;background:rgba(255,255,255,.12)}
+.map-menu .mm-toggle .mm-ic{font-size:16px}
+.map-menu .mm-header{display:none;align-items:center;justify-content:space-between;margin-bottom:8px}
+.map-menu .mm-header .mm-title{font-size:15px;font-weight:700;color:#fff}
+.map-menu .mm-close{width:28px;height:28px;font-size:16px;color:#fff;border-radius:6px;background:rgba(255,255,255,.12)}
+.map-menu .lang-row{display:flex;gap:4px;margin-bottom:8px}
+.map-menu .lang-row button{flex:1;padding:6px 0;border-radius:6px;background:rgba(255,255,255,.10);color:#cbd5e1;font-size:12px}
+.map-menu .lang-row button.on{background:#fff;color:#181d2c;font-weight:700}
+.map-menu .mm-div{height:1px;background:rgba(255,255,255,.15);margin:2px 0 8px}
+.map-menu .cat-list{display:flex;flex-direction:column;gap:2px}
+.map-menu .cat-item{display:flex;align-items:center;gap:9px;width:100%;padding:8px 10px;border-radius:8px;font-size:14px;color:#e5e7eb;text-align:left;line-height:1.2;white-space:nowrap}
+.map-menu .cat-item .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;background:var(--c);box-shadow:0 0 0 2px rgba(255,255,255,.18)}
+.map-menu .cat-item:hover{background:rgba(255,255,255,.08)}
+.map-menu .cat-item.on{background:rgba(255,255,255,.14);font-weight:700;box-shadow:inset 3px 0 0 var(--c)}
+
+/* --- 핀 --- */
+.spot_group button{position:absolute}
+.spot_group button.labelpin{padding:5px 12px;border-radius:6px;font-size:14px;font-weight:700;line-height:1.2;white-space:nowrap;background:var(--c);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);box-shadow:0 1px 6px rgba(0,0,0,.35)}
+.spot_group button.dot-pin{width:18px;height:18px;border-radius:50%;background:var(--c);border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.5)}
+.spot_group button.dot-pin .lbl{position:absolute;bottom:130%;left:50%;transform:translateX(-50%);background:#181d2c;color:#fff;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap;display:none;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.spot_group button.dot-pin:hover .lbl,.spot_group button.dot-pin:focus .lbl{display:block}
+
+/* --- 정보 팝업 --- */
+.fullmap.info_active:before{content:"";display:block;position:absolute;inset:0;z-index:10;background:rgba(0,0,0,.45)}
+.spot_info{z-index:60}
+.spot_info .img_area{height:auto}
+.spot_info .img_area img{width:100%;height:auto;display:block}
+.spot_info .book-btn{display:block;width:100%;box-sizing:border-box;margin-top:12px;padding:11px 12px;border-radius:9px;background:linear-gradient(180deg,#2f8bed,#2b6fd4);color:#fff;text-align:center;font-size:14px;font-weight:700;text-decoration:none}
+.spot_info .book-btn:hover{filter:brightness(1.06)}
+
+/* --- 모바일 --- */
+@media (max-width:700px){
+  .map-scaler{height:72vh;overflow:auto;-webkit-overflow-scrolling:touch}
+  .map-menu{width:auto;padding:6px}
+  .map-menu .mm-toggle{display:inline-flex}
+  .map-menu .mm-body{display:none}
+  .map-menu.open{width:186px}
+  .map-menu.open .mm-toggle{display:none}
+  .map-menu.open .mm-body{display:block}
+  .map-menu.open .mm-header{display:flex}
+  .spot_info{position:fixed !important;left:12px !important;right:12px !important;top:50% !important;bottom:auto !important;transform:translateY(-50%);width:auto !important;max-width:330px;margin:0 auto;max-height:86vh;overflow:auto;border-radius:14px}
+}
+
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <div class="topbar"><h1 data-i18n="title">High1 Resort Full Map</h1></div>
+  <div class="map-wrap">
+    <div class="map-scaler">
+    <div class="map-inner">
+      <div class="fullmap">
+        <div class="spot_group"></div>
+      </div>
+    </div>
+    </div>
+    <div class="map-menu">
+      <button class="mm-toggle" type="button" aria-label="menu"><span>Menu</span><span class="mm-ic">&#9776;</span></button>
+      <div class="mm-body">
+        <div class="mm-header"><span class="mm-title">Menu</span><button class="mm-close" type="button" aria-label="close">&#10005;</button></div>
+        <div class="lang-row">
+          <button type="button" data-lang="en" class="on">EN</button>
+          <button type="button" data-lang="zh">中文</button>
+          <button type="button" data-lang="ko">한국어</button>
+        </div>
+        <div class="mm-div"></div>
+        <div class="cat-list"></div>
+      </div>
+    </div>
+    <div class="zoom-ctrl"><button type="button" data-z="in" aria-label="zoom in">+</button><button type="button" data-z="out" aria-label="zoom out">&minus;</button></div>
+    <div class="spot_info" tabindex="0">
+      <div class="img_area"><img id="si-img" src="" alt=""></div>
+      <div class="text_area">
+        <div class="title" id="si-title"></div>
+        <ul>
+          <li><div id="si-road"></div></li>
+          <li id="si-tel"></li>
+        </ul>
+        <a id="si-btn" class="book-btn" href="" target="_blank" rel="noopener"></a>
+      </div>
+      <button class="close" type="button" aria-label="close"></button>
+    </div>
+  </div>
+  <p class="draft-note" data-i18n="draft">※ EN/ZH names & addresses are draft (need native review) · Map image © High1 official</p>
+</div>
+<script>
+var PLACES=[{"id": "hotel_main", "cat": "hotelncondo", "pin": {"l": 792, "t": 471}, "info": {"l": 792, "t": 471}, "name": {"ko": "하이원 그랜드호텔<br>[메인타워]", "en": "High1 Grand Hotel<br>(Main Tower)", "zh": "High1大酒店<br>(主塔)"}, "road": {"ko": "강원 정선군 사북읍 하이원길 265", "en": "265 High1-gil, Sabuk-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡舍北邑High1路265"}, "jibun": {"ko": "강원 정선군 사북읍 사북리 424", "en": "Sabuk-ri 424, Sabuk-eup, Jeongseon-gun", "zh": "旌善郡舍北邑舍北里424"}, "tel": "1588-7789", "link": null}, {"id": "hotel_convetion", "cat": "hotelncondo", "pin": {"l": 971, "t": 626}, "info": {"l": 852, "t": 399}, "name": {"ko": "하이원 그랜드호텔<br>[컨벤션타워]", "en": "High1 Grand Hotel<br>(Convention Tower)", "zh": "High1大酒店<br>(会展塔)"}, "road": {"ko": "강원 정선군 사북읍 하이원길 265", "en": "265 High1-gil, Sabuk-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡舍北邑High1路265"}, "jibun": {"ko": "강원 정선군 사북읍 사북리 424", "en": "Sabuk-ri 424, Sabuk-eup, Jeongseon-gun", "zh": "旌善郡舍北邑舍北里424"}, "tel": "1588-7789", "link": null}, {"id": "hotel_palace", "cat": "hotelncondo", "pin": {"l": 108, "t": 264}, "info": {"l": 108, "t": 264}, "name": {"ko": "하이원 팰리스호텔", "en": "High1 Palace Hotel", "zh": "High1宫殿酒店"}, "road": {"ko": "강원도 정선군 고한읍 고한7길 399", "en": "399 Gohan 7-gil, Gohan-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡古汗邑古汗7街399"}, "jibun": {"ko": "강원 정선군 고한읍 고한리 424", "en": "Gohan-ri 424, Gohan-eup, Jeongseon-gun", "zh": "旌善郡古汗邑古汗里424"}, "tel": "033-590-7111", "link": null}, {"id": "condo_mountain", "cat": "hotelncondo", "pin": {"l": 707, "t": 560}, "info": {"l": 707, "t": 321}, "name": {"ko": "마운틴콘도", "en": "Mountain Condo", "zh": "山地公寓"}, "road": {"ko": "강원 정선군 고한읍 하이원길 265-1", "en": "265-1 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡古汗邑High1路265-1"}, "jibun": {"ko": "강원 정선군 고한읍 고한리 438", "en": "Gohan-ri 438, Gohan-eup, Jeongseon-gun", "zh": "旌善郡古汗邑古汗里438"}, "tel": "1588-7789", "link": null}, {"id": "condo_valley", "cat": "hotelncondo", "pin": {"l": 457, "t": 574}, "info": {"l": 451, "t": 331}, "name": {"ko": "밸리콘도", "en": "Valley Condo", "zh": "溪谷公寓"}, "road": {"ko": "강원 정선군 고한읍 하이원길 500", "en": "500 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡古汗邑High1路500"}, "jibun": {"ko": "강원 정선군 고한읍 고한리 130-38", "en": "Gohan-ri 130-38, Gohan-eup, Jeongseon-gun", "zh": "旌善郡古汗邑古汗里130-38"}, "tel": "1588-7789", "link": null}, {"id": "condo_hill", "cat": "hotelncondo", "pin": {"l": 595, "t": 631}, "info": {"l": 591, "t": 388}, "name": {"ko": "힐 콘도", "en": "Hill Condo", "zh": "山丘公寓"}, "road": {"ko": "강원 정선군 고한읍 하이원길 424", "en": "424 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡古汗邑High1路424"}, "jibun": {"ko": "강원 정선군 고한읍 고한리 산 1-239", "en": "San 1-239, Gohan-ri, Gohan-eup, Jeongseon-gun", "zh": "旌善郡古汗邑古汗里山1-239"}, "tel": "1588-7789", "link": null}, {"id": "cc", "cat": "golf", "pin": {"l": 48, "t": 193}, "info": {"l": 48, "t": 193}, "name": {"ko": "하이원 CC", "en": "High1 CC (Golf)", "zh": "High1高尔夫球场"}, "road": {"ko": "강원도 정선군 고한읍 고한7길 399", "en": "399 Gohan 7-gil, Gohan-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡古汗邑古汗7街399"}, "jibun": {"ko": "강원 정선군 고한읍 고한리 424", "en": "Gohan-ri 424, Gohan-eup, Jeongseon-gun", "zh": "旌善郡古汗邑古汗里424"}, "tel": "033-590-7111", "link": null}, {"id": "valley_top", "cat": "ski", "pin": {"l": 317, "t": 151}, "info": {"l": 317, "t": 151}, "name": {"ko": "밸리 탑", "en": "Valley Top", "zh": "溪谷顶"}, "road": {"ko": "", "en": "", "zh": ""}, "jibun": {"ko": "강원 정선군 고한읍 고한리 산 1-279", "en": "San 1-279, Gohan-ri, Gohan-eup, Jeongseon-gun", "zh": "旌善郡古汗邑古汗里山1-279"}, "tel": "1588-7789", "link": null}, {"id": "high1_top", "cat": "ski", "pin": {"l": 516, "t": 80}, "info": {"l": 516, "t": 80}, "name": {"ko": "하이원 탑", "en": "High1 Top", "zh": "High1顶"}, "road": {"ko": "강원 정선군 고한읍 고한리 산 343", "en": "San 343, Gohan-ri, Gohan-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡古汗邑古汗里山343"}, "jibun": {"ko": "", "en": "", "zh": ""}, "tel": "1588-7789", "link": null}, {"id": "mountain_hub", "cat": "ski", "pin": {"l": 701, "t": 226}, "info": {"l": 701, "t": 226}, "name": {"ko": "마운틴 허브", "en": "Mountain Hub", "zh": "山地中心"}, "road": {"ko": "", "en": "", "zh": ""}, "jibun": {"ko": "강원 정선군 고한읍 고한리 산 350", "en": "San 350, Gohan-ri, Gohan-eup, Jeongseon-gun", "zh": "旌善郡古汗邑古汗里山350"}, "tel": "1588-7789", "link": null}, {"id": "valley_hub", "cat": "ski", "pin": {"l": 523, "t": 265}, "info": {"l": 523, "t": 265}, "name": {"ko": "밸리 허브", "en": "Valley Hub", "zh": "溪谷中心"}, "road": {"ko": "", "en": "", "zh": ""}, "jibun": {"ko": "강원 정선군 고한읍 고한리 산 1-279", "en": "San 1-279, Gohan-ri, Gohan-eup, Jeongseon-gun", "zh": "旌善郡古汗邑古汗里山1-279"}, "tel": "1588-7789", "link": null}, {"id": "mountain_ski", "cat": "ski", "pin": {"l": 754, "t": 407}, "info": {"l": 754, "t": 407}, "name": {"ko": "마운틴 스키하우스", "en": "Mountain Ski House", "zh": "山地滑雪屋"}, "road": {"ko": "강원 정선군 고한읍 하이원길 265-1", "en": "265-1 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡古汗邑High1路265-1"}, "jibun": {"ko": "강원 정선군 고한읍 고한리 438", "en": "Gohan-ri 438, Gohan-eup, Jeongseon-gun", "zh": "旌善郡古汗邑古汗里438"}, "tel": "1588-7789", "link": null}, {"id": "valley_ski", "cat": "ski", "pin": {"l": 546, "t": 500}, "info": {"l": 546, "t": 500}, "name": {"ko": "밸리 스키하우스", "en": "Valley Ski House", "zh": "溪谷滑雪屋"}, "road": {"ko": "강원 정선군 고한읍 하이원길 500", "en": "500 High1-gil, Gohan-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡古汗邑High1路500"}, "jibun": {"ko": "강원 정선군 고한읍 고한리 130-38", "en": "Gohan-ri 130-38, Gohan-eup, Jeongseon-gun", "zh": "旌善郡古汗邑古汗里130-38"}, "tel": "1588-7789", "link": null}, {"id": "unamjeong", "cat": "", "pin": {"l": 950, "t": 491}, "info": {"l": 779, "t": 245}, "name": {"ko": "운암정", "en": "Unamjeong", "zh": "云岩亭"}, "road": {"ko": "강원도 정선군 사북읍 사북리", "en": "Sabuk-ri, Sabuk-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡舍北邑舍北里"}, "jibun": {"ko": "", "en": "", "zh": ""}, "tel": "033-590-7631", "link": null}, {"id": "waterworld", "cat": "waterworld", "pin": {"l": 1030, "t": 536}, "info": {"l": 878, "t": 290}, "name": {"ko": "하이원 워터월드", "en": "High1 Water World", "zh": "High1 Water World"}, "road": {"ko": "강원 정선군 사북읍 하이원길 175", "en": "175 High1-gil, Sabuk-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡舍北邑High1路175"}, "jibun": {"ko": "강원 정선군 사북읍 사북리 산 155-58", "en": "San 155-58, Sabuk-ri, Sabuk-eup, Jeongseon-gun", "zh": "旌善郡舍北邑舍北里山155-58"}, "tel": "1588-7789", "link": null}, {"id": "casino", "cat": "casino", "pin": {"l": 796, "t": 597}, "info": {"l": 796, "t": 354}, "name": {"ko": "강원랜드 카지노", "en": "Kangwon Land Casino", "zh": "江原乐园赌场"}, "road": {"ko": "강원 정선군 사북읍 하이원길 265", "en": "265 High1-gil, Sabuk-eup, Jeongseon-gun, Gangwon-do", "zh": "江原道旌善郡舍北邑High1路265"}, "jibun": {"ko": "강원 정선군 사북읍 사북리 424", "en": "Sabuk-ri 424, Sabuk-eup, Jeongseon-gun", "zh": "旌善郡舍北邑舍北里424"}, "tel": "1588-7789", "link": null}];
+var TABS=[{"k": "hotelncondo", "ko": "호텔&콘도", "en": "Hotel & Condo", "zh": "酒店&公寓"}, {"k": "waterworld", "ko": "워터월드", "en": "Water World", "zh": "Water World"}, {"k": "ski", "ko": "스키", "en": "Ski", "zh": "滑雪"}, {"k": "golf", "ko": "골프", "en": "Golf", "zh": "高尔夫"}, {"k": "casino", "ko": "카지노", "en": "Casino", "zh": "赌场"}];
+var I18N={"title": {"ko": "하이원리조트 전체 지도", "en": "High1 Resort Full Map", "zh": "High1度假村全景地图"}, "undo": {"ko": "일부지역보기 해제", "en": "Reset area view", "zh": "重置区域视图"}, "details": {"ko": "상세보기", "en": "Details", "zh": "详情"}, "soon": {"ko": "준비 중", "en": "Coming soon", "zh": "即将开放"}, "close": {"ko": "닫기", "en": "Close", "zh": "关闭"}, "jusoLabel": {"ko": "지번주소", "en": "Lot address", "zh": "地番地址"}, "mobile": {"ko": "모바일에서는 가로 모드로 보시면 더 편합니다.", "en": "For a better view on mobile, please use landscape mode.", "zh": "移动端建议横屏查看。"}, "mclose": {"ko": "닫기", "en": "Close", "zh": "关闭"}, "all": {"ko": "전체", "en": "All", "zh": "全部"}, "book": {"ko": "예약 상세보기", "en": "Book Details", "zh": "预订详情"}, "draft": {"ko": "※ EN/中文 명칭·주소는 초안(원어민 검수 필요) · 지도 이미지 출처 High1 공식", "en": "※ EN/ZH names & addresses are draft (need native review) · Map image © High1 official", "zh": "※ EN/中文 名称与地址为初稿（需母语校对）· 地图图片来源 High1 官方"}};
+var LINKS={"condo_valley": "https://www.high1global.com/accommodation/condominium?property=05%3A1401&variant=legacy", "condo_hill": "https://www.high1global.com/accommodation/condominium?property=05%3A1701&variant=legacy", "condo_mountain": "https://www.high1global.com/accommodation/condominium?property=05%3A1501&variant=legacy", "hotel_palace": "https://www.high1global.com/accommodation/hotel?property=02%3A1201&variant=legacy", "hotel_convetion": "https://www.high1global.com/accommodation/hotel?property=01%3A1301&variant=legacy"}; // ★ 숙소 예약 링크 관리(여기서 수정) — main tower 공사중이라 미포함(버튼 미노출)
+var CAT_COLORS={"hotelncondo":"#3b82f6","waterworld":"#22d3ee","ski":"#a78bfa","golf":"#f59e0b","casino":"#f43f5e","":"#9ca3af"};
+var CATS=[{"cat":"","color":"#cbd5e1"},{"cat":"hotelncondo","color":"#3b82f6"},{"cat":"waterworld","color":"#22d3ee"},{"cat":"ski","color":"#a78bfa"},{"cat":"golf","color":"#f59e0b"},{"cat":"casino","color":"#f43f5e"}];
+var lang="en", activeCat="";
+
+function t(key){ return (I18N[key]&&(I18N[key][lang]||I18N[key].en))||""; }
+function catLabel(cat){ if(!cat) return t("all"); var tb=TABS.filter(function(x){return x.k===cat;})[0]; return tb?(tb[lang]||tb.en):cat; }
+
+function renderMenu(){
+  var list=document.querySelector('.cat-list'); list.innerHTML='';
+  CATS.forEach(function(c){
+    var b=document.createElement('button');
+    b.type='button'; b.className='cat-item'+(c.cat===activeCat?' on':'');
+    b.style.setProperty('--c',c.color); b.setAttribute('data-cat',c.cat);
+    b.innerHTML='<span class="dot"></span><span class="lbl"></span>';
+    b.querySelector('.lbl').textContent=catLabel(c.cat);
+    b.addEventListener('click',function(){ selectCat(c.cat); });
+    list.appendChild(b);
+  });
+}
+function renderPins(){
+  var g=document.querySelector('.spot_group'); g.innerHTML='';
+  PLACES.forEach(function(p){
+    if(activeCat && p.cat!==activeCat) return;
+    var labeled = !!activeCat || p.cat==='hotelncondo';
+    var b=document.createElement('button');
+    b.type='button'; b.setAttribute('data-place',p.id);
+    b.style.left=p.pin.l+'px'; b.style.top=p.pin.t+'px';
+    var nm=p.name[lang]||p.name.en;
+    if(labeled){
+      b.className='labelpin'; b.style.setProperty('--c',CAT_COLORS[p.cat]||'#9ca3af');
+      b.innerHTML=nm;
+    } else {
+      b.className='dot-pin'; b.style.setProperty('--c',CAT_COLORS[p.cat]||'#9ca3af');
+      b.innerHTML='<span class="lbl">'+nm+'</span>';
+    }
+    b.addEventListener('click',function(e){ e.stopPropagation(); openInfo(p); });
+    g.appendChild(b);
+  });
+}
+function setMapBg(tab){ document.querySelector('.fullmap').style.backgroundImage = tab ? ("url('img/tab_"+tab+".jpg')") : "url('img/fullmap.jpg')"; }
+function selectCat(cat){
+  activeCat=cat;
+  document.querySelectorAll('.cat-item').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-cat')===cat); });
+  setMapBg(cat||null); closeInfo(); renderPins();
+}
+function openInfo(p){
+  var fm=document.querySelector('.fullmap'), si=document.querySelector('.spot_info');
+  si.setAttribute('data-place',p.id);
+  document.getElementById('si-img').src='img/'+p.id+'.jpg';
+  document.getElementById('si-img').alt=p.name[lang]||'';
+  document.getElementById('si-title').innerHTML=p.name[lang]||p.name.en;
+  document.getElementById('si-road').innerHTML=(p.road[lang]||p.road.en||'');
+  document.getElementById('si-tel').innerHTML='TEL : '+p.tel;
+  var btn=document.getElementById('si-btn'); var link=LINKS[p.id];
+  if(link){ btn.style.display='block'; btn.href=link; btn.textContent=t('book'); }
+  else { btn.style.display='none'; }
+  si.style.display='block'; fm.classList.add('info_active'); si.focus();
+}
+function closeInfo(){
+  var si=document.querySelector('.spot_info');
+  si.style.display='none'; si.removeAttribute('data-place');
+  document.querySelector('.fullmap').classList.remove('info_active');
+}
+function applyLang(){
+  document.documentElement.setAttribute('lang',lang);
+  document.querySelectorAll('[data-i18n]').forEach(function(e){ var k=e.getAttribute('data-i18n'); if(I18N[k]) e.innerHTML=I18N[k][lang]||I18N[k].en; });
+  document.querySelectorAll('.lang-row button').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-lang')===lang); });
+  renderMenu(); renderPins(); closeInfo();
+}
+// 언어 토글
+document.querySelector('.lang-row').addEventListener('click',function(ev){
+  var b=ev.target.closest('button[data-lang]'); if(!b) return;
+  lang=b.getAttribute('data-lang'); applyLang();
+});
+// 팝업 닫기: X + 바깥 클릭
+document.querySelector('.spot_info .close').addEventListener('click',function(e){ e.stopPropagation(); closeInfo(); });
+document.addEventListener('click',function(e){
+  if(!document.querySelector('.fullmap').classList.contains('info_active')) return;
+  if(e.target.closest('.spot_info')) return;
+  if(e.target.closest('.spot_group button')) return;
+  if(e.target.closest('.map-menu')) return;
+  closeInfo();
+});
+// 모바일 메뉴 펼침/접기 (Menu ☰ → 열기, 헤더 ✕ → 닫기)
+document.querySelector('.mm-toggle').addEventListener('click',function(){ document.querySelector('.map-menu').classList.add('open'); });
+var _mmClose=document.querySelector('.mm-close'); if(_mmClose) _mmClose.addEventListener('click',function(){ document.querySelector('.map-menu').classList.remove('open'); });
+// 반응형: 데스크톱=폭맞춤 / 모바일=팬(스크롤)+줌(A)
+var mzoom=0.85;
+function isMobile(){ return window.innerWidth<=700; }
+function fit(){
+  var inner=document.querySelector('.map-inner'), wrap=document.querySelector('.map-wrap'), zc=document.querySelector('.zoom-ctrl');
+  inner.style.transform='none';
+  if(isMobile()){
+    wrap.style.width='100%'; inner.style.zoom=mzoom; zc.style.display='flex';
+  } else {
+    var avail=Math.min(document.getElementById('wrapper').clientWidth, window.innerWidth-20);
+    var scale=Math.min(1, avail/1210);
+    inner.style.zoom=scale; wrap.style.width=(1210*scale)+'px'; zc.style.display='none';
+  }
+}
+function setMZoom(z){ mzoom=Math.max(0.5,Math.min(1.7,z)); document.querySelector('.map-inner').style.zoom=mzoom; }
+document.querySelector('.zoom-ctrl').addEventListener('click',function(ev){
+  var b=ev.target.closest('button[data-z]'); if(!b) return;
+  setMZoom(mzoom*(b.getAttribute('data-z')==='in'?1.25:0.8));
+});
+(function(){ // 핀치 줌
+  var sc=document.querySelector('.map-scaler'); var startD=0, startZ=1;
+  function dist(t){ var dx=t[0].clientX-t[1].clientX, dy=t[0].clientY-t[1].clientY; return Math.sqrt(dx*dx+dy*dy); }
+  sc.addEventListener('touchstart',function(e){ if(e.touches.length===2){ startD=dist(e.touches); startZ=mzoom; } },{passive:true});
+  sc.addEventListener('touchmove',function(e){ if(e.touches.length===2&&startD){ e.preventDefault(); setMZoom(startZ*dist(e.touches)/startD); } },{passive:false});
+  sc.addEventListener('touchend',function(e){ if(e.touches.length<2) startD=0; });
+})();
+window.addEventListener('resize',fit);
+applyLang(); fit();
+</script>
+</body>
+</html>
