@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>티켓 쿠폰 연동 정책서 v0.12 | High1</title>
+<title>티켓 쿠폰 연동 정책서 v0.13 | High1</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:"Segoe UI","Malgun Gothic",Arial,sans-serif;background:#f0f0eb;color:#1a1a1a;font-size:14px;padding-left:210px}
@@ -73,7 +73,7 @@
 <!-- 좌측 TOC -->
 <nav class="toc">
   <div class="toc-logo">high<span>1</span></div>
-  <div class="toc-ver">티켓 쿠폰 정책서 v0.12</div>
+  <div class="toc-ver">티켓 쿠폰 정책서 v0.13</div>
   <a class="toc-link" data-idx="0"><span class="toc-num">1</span><span class="toc-ko-text">전체 연동 아키텍처</span><span class="toc-en-text" style="display:none">Integration Architecture</span></a>
   <a class="toc-link" data-idx="1"><span class="toc-num">2</span><span class="toc-ko-text">쿠폰번호 구조·생성</span><span class="toc-en-text" style="display:none">Coupon Number</span></a>
   <a class="toc-link" data-idx="2"><span class="toc-num">3</span><span class="toc-ko-text">쿠폰 스펙 파일 구조</span><span class="toc-en-text" style="display:none">Spec File Structure</span></a>
@@ -98,11 +98,11 @@
   <div class="lang-ko show">
 
     <div class="doc-head">
-      <div class="doc-title">티켓 쿠폰 연동 정책서 <span class="badge">v0.12</span></div>
+      <div class="doc-title">티켓 쿠폰 연동 정책서 <span class="badge">v0.13</span></div>
       <div class="doc-meta">
         작성일: 2026-07-09 · 최종수정: 2026-07-10 · 상태: 진행 중<br>
         기준 문서: 하이원 소셜연동 인터페이스규격서 v1.0(2018) · High1 개발팀 확인질문 답변서 v0.2 · 쿠폰등록정보(워터월드) 성수기 샘플 · 리프트 종일권 발급 데이터<br>
-        변경 이력: v0.8 주문상태(결제완료/취소완료) 정의·S15-B 컬럼 확장 → v0.9 판매기간 정책 신설(S14-B) → v0.10 티켓 마진 구조 전면 변경(카테고리 마스터 1/2뎁스 + 쿠폰ID 오버라이드) → v0.11 오픈형 취소 기준(사용기간 종료일) 추가 · 이메일 템플릿 관리(S18-A) 신설 → <b>v0.12 콘텐츠 소유 재정의 A안(S17 콘텐츠 소유 추가 · S14 콘텐츠 재정의) · 성인 전용 티켓 케이스(2.3절) · 프런트 티켓 검색 정책 신규(사용일 기본값 오늘+7일) · 이미지 저장 정책 신규</b>
+        변경 이력: v0.8 주문상태(결제완료/취소완료) 정의·S15-B 컬럼 확장 → v0.9 판매기간 정책 신설(S14-B) → v0.10 티켓 마진 구조 전면 변경(카테고리 마스터 1/2뎁스 + 쿠폰ID 오버라이드) → v0.11 오픈형 취소 기준(사용기간 종료일) 추가 · 이메일 템플릿 관리(S18-A) 신설 → <b>v0.12 콘텐츠 소유 재정의 A안(S17 콘텐츠 소유 추가 · S14 콘텐츠 재정의) · 성인 전용 티켓 케이스(2.3절) · 프런트 티켓 검색 정책 신규(사용일 기본값 오늘+7일) · 이미지 저장 정책 신규</b> → <b>v0.13 레벨 구조 재정의(성수기/비수기 4레벨, DDB·DDC 실측) · 사용기간 레벨별 관리(3.3) · S14-A 레벨 N/M 노출표시 · S14-B 레벨별 노출여부·판매기간(레벨 전체 OFF 시 카드 제거)</b>
       </div>
     </div>
 
@@ -168,6 +168,22 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
           <div class="pd-desc">LV.1=대인 / LV.2=소인 / LV.3~8 미사용 예약. 현장에서 성인·소인 별도 확인 없이 레벨별 상품 목록만 표시(Q23 답변). <b>쿠폰 레벨 = 상품 구분자 역할만 함.</b><br>
           동일 쿠폰ID+레벨 내 유니크. <b>CANCELED 번호는 재사용 가능, USED 번호는 재사용 불가</b>(Q14 답변).</div>
           <div class="pd-rule">레벨 구성은 카테고리(스키/워터파크)에 따라 상이. 스펙 파일 수령 후 확정.</div>
+          <div class="pd-desc"><b>(v0.13) 레벨 구조 재정의 — 성수기/비수기 포함.</b> 레벨 = 상품 구분자이며, 구성은 상품 종류에 따라 달라진다. 대인/소인 2레벨 외에, 시즌 내 성수기/비수기까지 구분하는 <b>4레벨 구조</b>도 존재한다.</div>
+          <table class="pd-table">
+            <tr><th>레벨 구성 패턴</th><th>레벨 구성</th><th>예시 상품</th></tr>
+            <tr><td>2레벨 (대인/소인)</td><td>LV.1=대인, LV.2=소인</td><td>워터월드 종일권</td></tr>
+            <tr><td>4레벨 (대인·소인 × 성수기/비수기)</td><td>LV.1=대인 성수기, LV.2=소인 성수기, LV.3=대인 비수기, LV.4=소인 비수기</td><td>스키 리프트권</td></tr>
+            <tr><td>1레벨 (대인 전용)</td><td>LV.1=대인</td><td>곤돌라 왕복권</td></tr>
+          </table>
+          <table class="pd-table">
+            <tr><th colspan="4">DDB(리프트 4시간)·DDC(리프트 7시간) 실측 (하이원 제공)</th></tr>
+            <tr><th>레벨</th><th>의미</th><th>DDB 입금가</th><th>DDC 입금가</th></tr>
+            <tr><td>LV.1</td><td>대인 성수기</td><td>36,244원</td><td>43,706원</td></tr>
+            <tr><td>LV.2</td><td>소인 성수기</td><td>29,848원</td><td>37,310원</td></tr>
+            <tr><td>LV.3</td><td>대인 비수기</td><td>33,456원</td><td>40,344원</td></tr>
+            <tr><td>LV.4</td><td>소인 비수기</td><td>27,552원</td><td>34,440원</td></tr>
+          </table>
+          <div class="pd-warn"><b>성수기/비수기 날짜 기준 = 하이원 담당자 제공.</b> S13 CSV의 레벨별 <code>use_start_date</code>/<code>use_end_date</code>로 등록한다. (3.3절·12.3절 참고)</div>
           <div class="pd-rose"><b>v0.12 추가 — 성인 전용 티켓 케이스:</b> 상품마다 레벨 구성이 다를 수 있다. 대인·소인 2레벨이 아닌 <b>대인 레벨만 존재하는</b> 경우가 있다. 예) 곤돌라 왕복권 = LV.1(대인)만 제공, LV.2(소인) 없음. 프런트 카드는 레벨 구성을 자동 판별하여 문구를 표시하고, 소인 레벨이 없으면 고객이 아동 수량을 선택할 수 없도록 UI를 제한한다.</div>
           <table class="pd-table">
             <tr><th>레벨 구성</th><th>프런트 카드 표시</th></tr>
@@ -196,7 +212,7 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
             <tr><td>쿠폰명</td><td>레벨별 노출 이름 (예: 워터월드 종일권_성수기(대인/얼리))</td><td>고객 표시명</td></tr>
             <tr><td>적용금액(입금가)</td><td><b>High1에 납부하는 원가</b></td><td>고객 미노출</td></tr>
             <tr><td>할인대상 내역</td><td>적용 가능 PMS 상품 목록 (예: 종일권_대인_남_4계절 상품 외 15종)</td><td></td></tr>
-            <tr><td>사용기간 (use_start/use_end)</td><td>고객 현장 사용 가능 기간. <b>2컬럼 관리.</b> CSV에서 가져오는 High1 원본 데이터.</td><td></td></tr>
+            <tr><td>사용기간 (use_start/use_end)</td><td>고객 현장 사용 가능 기간. <b>레벨별로 각각 2컬럼 관리 (성수기/비수기처럼 레벨마다 사용기간 상이).</b> S14-B 레벨 테이블에 읽기전용 표시. CSV에서 가져오는 High1 원본 데이터.</td><td></td></tr>
             <tr><td>단일/그룹 · 내부/외부</td><td>그룹 = 외부 대행사 전용 / 외부 = 대행사 채널</td><td>참고용</td></tr>
             <tr><td>여신ID</td><td>High1 내부 정산 계정 식별자 (대행사별 상이)</td><td>참고용</td></tr>
           </table>
@@ -537,10 +553,43 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
           · <b>S14(상품) 소유:</b> 판매 옵션(레벨·입금가), 연결 스펙, 판매기간, <b>썸네일</b>, 날짜 설정<br>
           · <b>상품별 히어로 이미지·상세소개 필드 폐지</b> — 콘텐츠 중복 등록 방지, 카테고리 단위 공통 사용.<br>
           · <b>프런트 상세보기 모달:</b> 카테고리 콘텐츠(히어로·설명)를 표시하고 <b>가격표(사용기간·옵션가)만</b> 모달 내 노출로 간소화.</div>
+          <div class="pd-desc"><b>(v0.13) S14-A 목록 노출 상태 = 레벨 단위 표시.</b> 상품 목록에서 노출 상태를 레벨 몇 개가 켜져 있는지(N/M) 함께 표시한다.</div>
+          <table class="pd-table">
+            <tr><th>노출 상태</th><th>표시</th><th>조건</th></tr>
+            <tr><td>전체 노출</td><td><code>노출 (레벨 4/4)</code></td><td>상품 노출 ON AND 모든 레벨 ON AND 판매기간 유효</td></tr>
+            <tr><td>일부 노출</td><td><code>노출 (레벨 2/4)</code></td><td>일부 레벨만 ON</td></tr>
+            <tr><td>전체 미노출</td><td><code>미노출</code></td><td>상품 노출 OFF 또는 모든 레벨 OFF 또는 판매기간 초과</td></tr>
+            <tr><td>스펙 잠김</td><td><code>🔒 미노출</code></td><td>S13 스펙 토글 OFF (Cascade)</td></tr>
+          </table>
           <div class="pd-desc"><b>2단 계층:</b> S13 쿠폰 스펙(원본) → S14 티켓 상품(판매 단위, 1:N).<br>
           <b>S14-B 상품 마스터:</b> 기본정보(상품명 EN 필수·ZH 선택 / 카테고리 뎁스 드롭다운(S17 기준) / 연결 스펙 선택 / <b>썸네일 이미지(이미지 스토리지 업로드 → URL 저장)</b> / 노출 토글 / <b>판매기간(판매시작일·판매종료일)</b>) · <b>마진(읽기전용 — 연결 쿠폰ID에 실제 적용되는 마진(상속 또는 개별, 11절) 표시, 레벨별 개별 없음, 판매가 미리보기)</b> · 취소정책(이용일 기준, 1구간 이상 필수, 노쇼 없음).</div>
           <div class="pd-rose"><b>판매기간(v0.9 신규):</b> High1 제공 사용기간(현장 입장)과 별개로, 우리 홈페이지 판매 가능 기간을 관리자가 직접 설정. 판매시작일 미설정 → 즉시 판매 / 판매종료일 미설정 → 노출 토글로만 제어. <b>판매종료일 자정(00:00) 경과 시 프런트 자동 미노출</b>(수동 조작 불필요). 미노출 조건(OR): 판매종료일 초과 / 노출 토글 OFF / 연결 스펙 토글(S13) OFF — 하나라도 해당되면 미노출.</div>
           <div class="pd-warn"><b>S14-B 마진은 읽기전용 표시(v0.6).</b> 마진은 S11 티켓 탭에서 카테고리 마스터+쿠폰ID 오버라이드로 설정하므로(11절), S14-B는 연결 쿠폰ID에 실제 적용되는 마진을 표시만 함. 종전 "레벨별 마진 개별 설정 / 일괄 적용 버튼" 제거.</div>
+          <div class="pd-rose"><b>(v0.13 신규) 레벨 구성 &amp; 판매가 — 레벨별 노출여부 및 판매기간.</b> S14-B에서 연결 스펙(S13)을 선택하면 해당 스펙의 레벨이 자동 로드된다. 레벨별로 판매기간·노출여부를 개별 관리한다.</div>
+          <table class="pd-table">
+            <tr><th>컬럼</th><th>편집 여부</th><th>설명</th></tr>
+            <tr><td>레벨</td><td>읽기전용</td><td>연결 스펙에서 자동 로드 (대인 성수기·소인 성수기 등)</td></tr>
+            <tr><td>사용기간(시작~종료)</td><td>읽기전용</td><td>S13 자동, 레벨별</td></tr>
+            <tr><td>입금가</td><td>읽기전용</td><td>S13 자동, 레벨별</td></tr>
+            <tr><td>마진</td><td>읽기전용</td><td>S11 쿠폰ID 마진 (상속/개별)</td></tr>
+            <tr><td>판매가</td><td>읽기전용</td><td>자동 계산 (입금가 + 마진)</td></tr>
+            <tr><td>판매기간</td><td><b>편집</b></td><td>관리자 입력, 레벨별</td></tr>
+            <tr><td>노출</td><td><b>편집</b></td><td>관리자 입력, 레벨별</td></tr>
+          </table>
+          <table class="pd-table">
+            <tr><th colspan="2">레벨별 판매기간 정책</th></tr>
+            <tr><td>레벨별 판매기간</td><td>선택 입력. 미설정 시 상품 단위 판매기간을 따름.</td></tr>
+            <tr><td>레벨별 판매종료 초과</td><td>레벨 판매종료일 자정(00:00) 경과 시 <b>해당 레벨만 자동 미노출</b> (상품 전체 아님).</td></tr>
+            <tr><td>우선 적용</td><td>상품 판매기간 AND 레벨 판매기간 중 <b>더 제한적인 조건</b> 적용.</td></tr>
+          </table>
+          <table class="pd-table">
+            <tr><th colspan="2">레벨별 노출여부 정책</th></tr>
+            <tr><td>레벨 OFF</td><td>해당 레벨만 미노출.</td></tr>
+            <tr><td><b>레벨 전체 OFF</b></td><td><b>프런트 상품 카드 자체 제거 (비시즌).</b></td></tr>
+            <tr><td>상품 단위 OFF</td><td>모든 레벨 일괄 미노출.</td></tr>
+            <tr><td>재노출</td><td>레벨 토글 ON 또는 판매기간 수정.</td></tr>
+          </table>
+          <div class="pd-warn"><b>미노출 조건 (OR — 하나라도 해당되면 프런트 미노출):</b> ① 상품 노출 OFF ② 상품 판매종료 초과 ③ S13 스펙 토글 OFF (🔒 Cascade) ④ 레벨 노출 OFF (v0.13) ⑤ 레벨 판매종료 초과 (v0.13).</div>
           <div class="pd-desc"><b>S14-C 날짜 설정:</b> 날짜 방식 — <b>오픈형(날짜 미지정, 사용기간 내 자유 사용, 우선 운영)</b> / 날짜지정형(날짜별 한도·입금가·커트오프, 기능 유지·현재 미사용). 유효기간은 스펙 사용시작/종료일 기준 표시용, 실제 날짜 유효성 체크 미구현(4절). 커트오프: N일/N시간 전 + 기준 시각(HH:MM), 미설정 시 이용일 당일 자정까지 구매 가능.</div>
           <div class="pd-warn"><b>상품 뎁스 — 최대 2뎁스(v0.7):</b> ticket_type(3뎁스: 4시간권·7시간권·종일권 등) 제거. 1뎁스(카테고리: 스키/워터파크/식사권/곤돌라) / 2뎁스(상품유형: 스키&gt;리프트권·장비렌탈, 없는 카테고리는 1뎁스만). 권종 구분은 쿠폰명·쿠폰코드 수준에서 관리. 카테고리는 S17에서 관리자가 직접 등록.</div>
         </div>
@@ -731,11 +780,11 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
   <div class="lang-en">
 
     <div class="doc-head">
-      <div class="doc-title">Ticket Coupon Integration Policy <span class="badge">v0.12</span></div>
+      <div class="doc-title">Ticket Coupon Integration Policy <span class="badge">v0.13</span></div>
       <div class="doc-meta">
         Created: 2026-07-09 · Updated: 2026-07-10 · Status: In progress<br>
         Source docs: High1 Social Integration Interface Spec v1.0 (2018) · High1 Dev Team Q&amp;A Response v0.2 · Coupon registration data (Water World peak season) sample · Lift full-day issuance data<br>
-        History: v0.8 order status (paid/canceled) · S15-B columns expanded → v0.9 sales-period policy added (S14-B) → v0.10 ticket margin fully redefined (category master 1/2 depth + coupon-ID override) → v0.11 open-type cancellation basis (use-period end date) added · Email Template Mgmt (S18-A) added → <b>v0.12 content-ownership redefined, Option A (S17 owns content · S14 content redefined) · adult-only ticket case (§2.3) · front ticket search policy added (default use date = today +7) · image storage policy added</b>
+        History: v0.8 order status (paid/canceled) · S15-B columns expanded → v0.9 sales-period policy added (S14-B) → v0.10 ticket margin fully redefined (category master 1/2 depth + coupon-ID override) → v0.11 open-type cancellation basis (use-period end date) added · Email Template Mgmt (S18-A) added → <b>v0.12 content-ownership redefined, Option A (S17 owns content · S14 content redefined) · adult-only ticket case (§2.3) · front ticket search policy added (default use date = today +7) · image storage policy added</b> → <b>v0.13 level structure redefined (peak/off-season 4 levels, DDB·DDC measured) · per-level use period (§3.3) · S14-A level N/M visibility display · S14-B per-level visibility·sales period (front card removed when all levels OFF)</b>
       </div>
     </div>
 
@@ -801,6 +850,22 @@ e.g. AML 1 000001 57  →  AML100000157</div>
           <div class="pd-desc">LV.1=adult / LV.2=child / LV.3–8 reserved. No separate adult/child verification on-site — only the level's product list is shown (Q23). <b>Coupon level = product-classifier role only.</b><br>
           Unique within the same coupon ID + level. <b>CANCELED numbers may be reused; USED numbers cannot</b> (Q14).</div>
           <div class="pd-rule">Level composition varies by category (ski/water park). To be confirmed after receiving the spec file.</div>
+          <div class="pd-desc"><b>(v0.13) Level structure redefined — including peak/off season.</b> Level = product classifier, and its composition varies by product. Besides the 2-level adult/child, a <b>4-level structure</b> that also distinguishes peak/off season within a season exists.</div>
+          <table class="pd-table">
+            <tr><th>Level pattern</th><th>Level composition</th><th>Example product</th></tr>
+            <tr><td>2 levels (adult/child)</td><td>LV.1=adult, LV.2=child</td><td>WaterWorld Day Pass</td></tr>
+            <tr><td>4 levels (adult·child × peak/off season)</td><td>LV.1=adult peak, LV.2=child peak, LV.3=adult off-season, LV.4=child off-season</td><td>Ski lift pass</td></tr>
+            <tr><td>1 level (adult only)</td><td>LV.1=adult</td><td>Gondola round-trip</td></tr>
+          </table>
+          <table class="pd-table">
+            <tr><th colspan="4">DDB (lift 4h)·DDC (lift 7h) measured (High1-provided)</th></tr>
+            <tr><th>Level</th><th>Meaning</th><th>DDB deposit</th><th>DDC deposit</th></tr>
+            <tr><td>LV.1</td><td>Adult / Peak season</td><td>₩36,244</td><td>₩43,706</td></tr>
+            <tr><td>LV.2</td><td>Child / Peak season</td><td>₩29,848</td><td>₩37,310</td></tr>
+            <tr><td>LV.3</td><td>Adult / Off season</td><td>₩33,456</td><td>₩40,344</td></tr>
+            <tr><td>LV.4</td><td>Child / Off season</td><td>₩27,552</td><td>₩34,440</td></tr>
+          </table>
+          <div class="pd-warn"><b>Peak/off-season date basis = provided by the High1 contact.</b> Registered via per-level <code>use_start_date</code>/<code>use_end_date</code> in the S13 CSV. (See §3.3, §12.3)</div>
           <div class="pd-rose"><b>v0.12 added — adult-only ticket case:</b> level composition may differ per product. Some products have <b>only the adult level</b>, not both adult and child. e.g. Gondola round-trip = LV.1 (adult) only, no LV.2 (child). The front card auto-detects the level composition to display the label, and if there is no child level, the UI prevents the customer from selecting a child quantity.</div>
           <table class="pd-table">
             <tr><th>Level composition</th><th>Front card label</th></tr>
@@ -829,7 +894,7 @@ e.g. AML 1 000001 57  →  AML100000157</div>
             <tr><td>Coupon name</td><td>Per-level display name (e.g. WaterWorld Day Pass_peak(adult/early))</td><td>Customer-facing name</td></tr>
             <tr><td>Applied amount (deposit)</td><td><b>Cost paid to High1</b></td><td>Hidden from customer</td></tr>
             <tr><td>Discount target list</td><td>Applicable PMS product list (e.g. Day Pass_adult_M_4-season + 15 others)</td><td></td></tr>
-            <tr><td>Use period (use_start/use_end)</td><td>On-site usable period. <b>Two columns.</b> High1 source data pulled into the CSV.</td><td></td></tr>
+            <tr><td>Use period (use_start/use_end)</td><td>On-site usable period. <b>Managed as two columns per level (use period differs per level, e.g. peak/off season).</b> Shown read-only in the S14-B level table. High1 source data pulled into the CSV.</td><td></td></tr>
             <tr><td>Single/Group · Internal/External</td><td>Group = external-agency only / External = agency channel</td><td>Reference</td></tr>
             <tr><td>Credit ID</td><td>High1 internal settlement account ID (varies by agency)</td><td>Reference</td></tr>
           </table>
@@ -1170,10 +1235,43 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
           · <b>S14 (product) owns:</b> sales options (level·deposit), linked spec, sales period, <b>thumbnail</b>, date settings<br>
           · <b>Per-product hero image / detailed intro fields removed</b> — to avoid duplicate content entry; shared at the category level.<br>
           · <b>Front detail modal:</b> shows category content (hero·description) and is simplified to show <b>only the price table (use period·option price)</b> inside the modal.</div>
+          <div class="pd-desc"><b>(v0.13) S14-A list visibility status = shown per level.</b> The product list also shows how many levels are on (N/M) alongside the visibility status.</div>
+          <table class="pd-table">
+            <tr><th>Visibility status</th><th>Display</th><th>Condition</th></tr>
+            <tr><td>Fully visible</td><td><code>Visible (level 4/4)</code></td><td>Product visibility ON AND all levels ON AND sales period valid</td></tr>
+            <tr><td>Partly visible</td><td><code>Visible (level 2/4)</code></td><td>Only some levels ON</td></tr>
+            <tr><td>Fully hidden</td><td><code>Hidden</code></td><td>Product visibility OFF or all levels OFF or sales period expired</td></tr>
+            <tr><td>Spec locked</td><td><code>🔒 Hidden</code></td><td>S13 spec toggle OFF (Cascade)</td></tr>
+          </table>
           <div class="pd-desc"><b>Two-tier:</b> S13 coupon spec (source) → S14 ticket product (sellable unit, 1:N).<br>
           <b>S14-B Master:</b> basics (name EN required·ZH optional / category depth dropdown (per S17) / linked spec select / <b>thumbnail image (upload to image storage → store URL)</b> / visibility toggle / <b>sales period (sales start·end date)</b>) · <b>margin (read-only — shows the actually-applied margin for the linked coupon-ID (inherited or override, §11); no per-level; selling-price preview)</b> · cancellation policy (use-date based, 1+ tier required, no no-show row).</div>
           <div class="pd-rose"><b>Sales period (v0.9 new):</b> separate from High1's use period (on-site entry), the admin directly sets our website sales window. Unset sales-start → sell immediately / unset sales-end → controlled by visibility toggle only. <b>After the sales-end date's midnight (00:00), auto-hidden on the front</b> (no manual action). Hide conditions (OR): past sales-end date / visibility OFF / linked spec toggle (S13) OFF — any one hides it.</div>
           <div class="pd-warn"><b>S14-B margin is read-only (v0.6).</b> Margin is set in the S11 Ticket tab via category master + coupon-ID override (§11), so S14-B only displays the applied margin of the linked coupon-ID. The former "per-level margin / bulk-apply button" is removed.</div>
+          <div class="pd-rose"><b>(v0.13 new) Level composition &amp; selling price — per-level visibility and sales period.</b> When the linked spec (S13) is selected in S14-B, its levels load automatically. Sales period and visibility are managed individually per level.</div>
+          <table class="pd-table">
+            <tr><th>Column</th><th>Editable</th><th>Description</th></tr>
+            <tr><td>Level</td><td>Read-only</td><td>Auto-loaded from the linked spec (adult peak·child peak, etc.)</td></tr>
+            <tr><td>Use period (start~end)</td><td>Read-only</td><td>S13 auto, per level</td></tr>
+            <tr><td>Deposit</td><td>Read-only</td><td>S13 auto, per level</td></tr>
+            <tr><td>Margin</td><td>Read-only</td><td>S11 coupon-ID margin (inherited/override)</td></tr>
+            <tr><td>Selling price</td><td>Read-only</td><td>Auto-calculated (deposit + margin)</td></tr>
+            <tr><td>Sales period</td><td><b>Editable</b></td><td>Admin input, per level</td></tr>
+            <tr><td>Visibility</td><td><b>Editable</b></td><td>Admin input, per level</td></tr>
+          </table>
+          <table class="pd-table">
+            <tr><th colspan="2">Per-level sales-period policy</th></tr>
+            <tr><td>Per-level sales period</td><td>Optional input. If unset, follows the product-level sales period.</td></tr>
+            <tr><td>Per-level sales-end passed</td><td>After the level's sales-end midnight (00:00), <b>only that level is auto-hidden</b> (not the whole product).</td></tr>
+            <tr><td>Precedence</td><td>The <b>more restrictive</b> of the product sales period AND the level sales period applies.</td></tr>
+          </table>
+          <table class="pd-table">
+            <tr><th colspan="2">Per-level visibility policy</th></tr>
+            <tr><td>Level OFF</td><td>Only that level is hidden.</td></tr>
+            <tr><td><b>All levels OFF</b></td><td><b>The front product card itself is removed (off-season).</b></td></tr>
+            <tr><td>Product-level OFF</td><td>All levels hidden at once.</td></tr>
+            <tr><td>Re-show</td><td>Toggle the level ON or edit the sales period.</td></tr>
+          </table>
+          <div class="pd-warn"><b>Hide conditions (OR — any one hides it on the front):</b> ① product visibility OFF ② product sales-end passed ③ S13 spec toggle OFF (🔒 Cascade) ④ level visibility OFF (v0.13) ⑤ level sales-end passed (v0.13).</div>
           <div class="pd-desc"><b>S14-C Date Settings:</b> date mode — <b>open (no date, free use within period, primary)</b> / date-specific (per-date limit·deposit·cutoff; feature retained, currently unused). Validity uses spec start/end dates for display only; actual date validity check not implemented (§4). Cutoff: N days/hours before + reference time (HH:MM); default = purchasable until midnight of the use date.</div>
           <div class="pd-warn"><b>Product depth — max 2 depths (v0.7):</b> ticket_type (depth-3: 4h/7h/day pass, etc.) removed. Depth-1 (category: ski/water park/meal/gondola) / depth-2 (product type: ski&gt;lift pass·equipment rental; 1 depth only if none). Pass type managed at coupon-name·coupon-code level. Categories are directly registered by admins in S17.</div>
         </div>

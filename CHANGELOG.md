@@ -2,6 +2,92 @@
 
 ---
 
+## 티켓 쿠폰 정책서 HTML v0.12 → v0.13 + 파일 리네임 — 2026-08-25
+
+**변경 파일:** `ticket-coupon-policy-v0.12.html` → **`ticket-coupon-policy.html`**(리네임·버전은 내용에만) · `index.html`
+**기준:** `정책서/티켓쿠폰연동-정책서-v0.13.md`
+
+- **리네임**: 파일명에서 버전 제거(`ticket-coupon-policy.html`). 문서 버전 토큰(title·TOC·doc-title 배지) v0.13. index.html 카드 링크·기준정책서 링크·버전·수정일 갱신.
+- **§2.3 레벨 구조 재정의**: 성수기/비수기 포함 **4레벨**(레벨 구성 패턴표 2/4/1레벨 + DDB·DDC 실측 입금가표 LV.1~4) + 성수기/비수기 날짜기준 note.
+- **§3.3**: 사용기간 = 레벨별 2컬럼 관리(성수기/비수기 상이) 명시.
+- **§12.3 S14-A**: 목록 노출 상태 레벨 N/M 표시(4/4·2/4·미노출·🔒 잠김).
+- **§12.3 S14-B**: 레벨별 노출여부·판매기간 정책 신규(레벨 테이블 7컬럼·판매기간 정책·노출여부 정책·미노출 5조건·**레벨 전체 OFF=프런트 카드 제거**).
+- KO/EN 미러 반영. div 498/498 균형·KO=EN 16섹션·JS 오류 0 검증.
+
+---
+
+## 프로토타입 — 모바일 티켓 상세/장바구니 시트 표시 버그픽스 + 상세보기 버튼 강조 (mobile v0.3.4 → v0.3.5) — 2026-08-19
+
+**변경 파일:** `prototypes/mobile-prototype/app.js`·`styles.css` / 배포 복사 `high1-deploy/mobile/`
+
+- **[버그픽스] 상세보기/장바구니 바텀시트가 실기기에서 딤만 뜨고 패널이 안 보이던 문제.**
+  - 원인①: 시트 루트를 `<body>`에 append → 배경 스크롤잠금(`lockBg`, body `position:fixed`)과 겹쳐 일부 모바일 브라우저(iOS Safari 등)에서 body 직속 fixed 오버레이가 어긋남. → **`.device` 프레임 안에 마운트**(기존 검색/객실 시트와 동일 구조)로 변경.
+  - 원인②: **`#tkCartSheetRoot`에 위치 CSS 누락**(정적 렌더 → 화면 밖 top≈1323px). → `#tkSheetRoot, #tkCartSheetRoot`에 `position:fixed; inset:0; max-width; margin:auto; z-index:120` 공통 적용. (이전 v0.3.4 장바구니 시트는 DOM만 존재·화면 밖이었음)
+- **[UI] 상품카드 "상세보기" 버튼 강조** — 회색 아웃라인 → **보라색 pill**(purple-soft 배경 + 보라 테두리 + 굵은 글씨 + "상세보기 ›").
+- **검증(Selenium 데스크톱+모바일)**: 상세 시트 parent=device·뷰포트 하단 노출(모바일 273~800)·장바구니 시트도 하단 노출(499~800, 기존 1323 오프스크린 해결)·콘솔0.
+
+---
+
+## 프로토타입 — 티켓 장바구니 재설계: 자동담기 + 상품별 그룹 (mobile v0.3.3 → v0.3.4 / front v0.8.27 → v0.8.28) — 2026-08-19
+
+**변경 파일:** `prototypes/mobile-prototype/app.js`·`styles.css`, `prototypes/front-prototype/app.js`·`styles.css` / 배포 복사 `high1-deploy/mobile/`·`high1-deploy/front/`
+
+- **[공통] "담기(Add)" 버튼 제거 → +/- 스테퍼가 곧 장바구니 수량(자동 담기·단일 소스).** 기존 "임시수량→담기" 2단계 폐기. `tkSetQty/tkCartQty`(모바일)·`tkfSetQty/tkfCartQty`(PC) 신설, 스테퍼 핸들러가 `ticketCart.items` 직접 조작. 담긴 레벨 스테퍼는 강조(in-cart).
+- **[모바일] 하단 바 접힘 → 탭하면 장바구니 시트 펼침.** 하단 바 = `⌃ 🧾 N매 · ₩총액` + `[Booking →]`. 요약 탭 → **장바구니 바텀시트**(상품별 그룹, 라인=레벨 수량+금액+[✕], Total+Booking). Select 섹션 인라인 카트 목록 제거(시트로 일원화), 카테고리 한정 안내 문구 추가. 라우터에 카트 시트 close 추가.
+- **[PC] 우측 장바구니 패널 상품별 그룹화** — 상품 헤더 + 레벨 라인(`단가 × 수량 = 금액` + [✕]). [✕]는 상품+레벨 기준 삭제. 버튼 라벨 `예약하기/Reserve` → **Booking**. 상품 행 Add 버튼 제거.
+- **[공통 유지] 1뎁스(브릿지) 단위 담기 규칙** — 스키(렌탈+리프트) 혼합 담기 OK, 워터파크와 혼합 불가. 빈 장바구니 시 바/패널 미노출.
+- **검증(Selenium)**: 모바일 — Add버튼 없음·초기 바 없음·스테퍼로 자동담기(3매 ₩117,000, 스테퍼=카트 동기)·바 탭→시트(2그룹·2라인)·[✕] 삭제·Booking→로그인게이트·−로 0 시 제거·콘솔0. PC — Add버튼 없음·스테퍼→우측 그룹 카트(2그룹·단가계산·Booking)·[✕] 삭제·Booking→체크아웃·콘솔0.
+
+---
+
+## 프로토타입 — 모바일 카트바 겹침 버그픽스 + 티켓 사용일 필터 (mobile v0.3.2 → v0.3.3) — 2026-08-19
+
+**변경 파일:** `prototypes/mobile-prototype/app.js`·`styles.css` / 배포 복사 `high1-deploy/mobile/`
+
+- **[버그픽스] 하단 장바구니 바가 빈 상태에서 반투명으로 상품 [Add] 버튼을 덮어 담기가 막히던 문제** — 빈 바(`.off` opacity 0.55, pointer-events auto)가 fixed로 화면 하단을 덮어 스크롤 시 Add 버튼 클릭을 가로챔. → **담긴 게 없으면 바 미표시**, 담긴 후에만 **불투명 바** 노출. `.tk-cartbar.off` 제거, `.tk-bridge-body` 하단 여백 96→112px. Reserve 배선 null 가드.
+- **[기능] 모바일 티켓 검색에 사용일(단일) 추가** — 검색 시트 도메인=Ticket 선택 시 **"Usage date (single day)" 네이티브 날짜 입력**(기본=오늘, min=오늘) + 안내 노트. Search→`#/ticket/search`는 **선택 사용일에 사용 가능한 판매중 티켓만 필터**(PC #/ticket/search와 동일, `ticketUsableOn` 이식). 상단바에 사용일 표기, 빈 결과 시 "사용일 변경" 안내. 홈 요약카드 티켓 라인도 사용일 표기. ※ 기존 "판매중 전체 노출"(2026-08-19 확정) → **사용일 필터로 변경**(PO 재확정 2026-08-19).
+- **검증(Selenium 390px)**: 빈 상태 바 미표시·Add 좌표 비가로채기 · 담기 후 불투명 바(1 ticket ₩44,000) · Ticket 사용일 입력(2026-08-19) · 오늘 검색 4건(워터파크·곤돌라, 스키 숨김) · 12/15 검색 3건(스키·곤돌라) · 2027-06-01 빈 결과 안내 · 콘솔0.
+
+---
+
+## 프로토타입 — 모바일 티켓 카트바 뷰포트 고정 버그픽스 (mobile v0.3.1 → v0.3.2) — 2026-08-19
+
+**변경 파일:** `prototypes/mobile-prototype/styles.css`(+app.js 버전 헤더) / 배포 복사 `high1-deploy/mobile/`
+
+- **[버그픽스] 티켓 브릿지 하단 장바구니 바가 화면에 고정되지 않던 문제** — `.tk-cartbar`가 `position: sticky; bottom:0`이었는데, 데스크톱·태블릿 프레임(`@media min-width:640px`)에서 `.device`에 `overflow:hidden`이 적용되어 sticky가 뷰포트에 붙지 못하고 **콘텐츠 맨 아래에 묻힘**(스크롤 중 안 보여 "담기·예약 작동 안 함"으로 보임). 담기 로직·카운트 계산은 정상이었음.
+- **수정**: `.tk-cartbar`를 드로어·바텀시트와 동일하게 `position: fixed; left:0; right:0; bottom:0; max-width:var(--maxw); margin:0 auto; z-index:60`으로 변경 → `.device`에 transform이 없어 fixed가 overflow 클립을 벗어나 **뷰포트 하단에 폰 프레임 폭으로 중앙 고정**.
+- **검증(Selenium)**: 데스크톱(1200px, 600 프레임)·모바일(390px) 모두 담기 후 바 고정(pinned=true)·중간 스크롤에도 상시 노출·Reserve 클릭→로그인게이트(#/signin)·콘솔0.
+
+---
+
+## 프로토타입 — 모바일 검색 도메인 토글 + 티켓 검색결과 (mobile v0.3.0 → v0.3.1) — 2026-08-19
+
+**변경 파일:** `prototypes/mobile-prototype/app.js`·`styles.css` / 배포 복사 `high1-deploy/mobile/`
+
+- **검색 바텀시트 도메인 필드 = Accommodation ↔ Ticket 2택 토글**(기존 정적 라벨 → 탭 시 인라인 옵션 펼침). Ticket 선택 시 캘린더·인원·객실 필드 숨김 + 오픈형 안내 노트 노출.
+- **Search 분기**: 도메인=Ticket → 신규 **`#/ticket/search`**(모바일 티켓 검색결과), 그 외 → 기존 `#/search`.
+- **모바일 티켓 검색결과 페이지 신설**: 숙소 검색결과와 동일 패턴(요약바+Edit·컨트롤바+Filters·세로 카드). **판매중 전체 노출**(이용일 필터 없음, PO 확정). 카드=오픈배지·카테고리·상품명·사용기간·레벨별 판매가·최저가. [Details]→상세 바텀시트, 카드/[Select]→해당 카테고리 브릿지(2뎁스 서브탭 자동 선택).
+- **티켓 필터 바텀시트**(숙소 `#filterScope` 재사용): 정렬(낮은/높은 가격) + 카테고리 다중선택 + 적용 시 건수 표시.
+- 홈 검색 요약카드(searchMini)도 티켓 도메인 대응(오픈형 안내 라인).
+- **검증(Selenium 390px)**: 도메인 토글 2옵션 · Ticket 선택 시 필드 간소화(cal/steppers 0) · Search→`#/ticket/search` 6건 · Filters 스키 선택→2건 · 카드→브릿지(스키) · 숙소 복귀 시 캘린더·스테퍼 복원·`#/search` 정상 · 콘솔0.
+
+---
+
+## 프로토타입 — 모바일 티켓 프런트 신설 (mobile v0.2 → v0.3.0) — 2026-08-19
+
+**변경 파일:** `prototypes/mobile-prototype/app.js`·`styles.css`·(`index.html` 무변경) / 배포 복사 `high1-deploy/mobile/`
+**기준:** PC front-prototype 티켓 플로우 이식 + 모바일 UX 재설계 / 티켓쿠폰연동-정책서-v0.13
+
+- **신설 화면**: 티켓 브릿지(`#/ticket/bridge/:catKo`) → 상세 바텀시트 → 체크아웃(`#/ticket/checkout`) → 주문완료(`#/ticket/done`). 기존 모바일은 숙소 전용이라 티켓 화면 부재 → 추가.
+- **어드민 연동(동일 localStorage 키)**: `high1_ticket_categories_v1`·`high1_coupon_specs_v1`·`high1_ticket_products_v1`·`high1_ticket_margin_master_v1` 읽기 + 주문/쿠폰 쓰기(`high1_ticket_orders_v1`·`high1_coupons_v1`). PC front·어드민과 데이터 레이어·계산식(마진 우선순위·판매가 floor·12자리 쿠폰) 100% 동일 → 같은 도메인이면 어드민 입력 데이터 그대로 노출.
+- **브릿지**: 히어로(스크림+TICKET 이벨로)·2뎁스 서브탭·섹션내비(Overview/Select/Detail/Guide/Policy/Location, `.sec-nav` 재사용)·상품카드(성인/아동 스테퍼+담기)·선택내역 리스트(✕삭제)·**하단 고정 장바구니 바**(매수·합계·예약하기).
+- **로그인 게이트**: 예약하기 → 미로그인 시 `#/signin`(데모 로그인) → 통과 후 체크아웃(`pendingTicketCheckout`).
+- **진입점**: 드로어 Ticket 서브메뉴 → Water World(워터파크)/Ski Lift·Rental(스키)/Gondola(곤돌라) 브릿지 링크.
+- **시드**: 어드민 데이터 없을 때만 더미 주입(`ensureTicketFrontSeed`, 어드민 데이터 보존). 워터파크 3·스키 리프트/렌탈·곤돌라 등 6상품.
+- **검증(Selenium, 390px 모바일 에뮬레이션)**: 시드 6cats/6prods · 브릿지 3상품·섹션내비6 · 상세시트(가격 Adult ₩44,000/Child ₩39,000, 마진 정확) · 담기 2매 ₩88,000 · 로그인게이트 통과 · 체크아웃 · 결제→주문 `ORD-20260819-00001`·12자리 쿠폰 2매 발급·localStorage 주문1/쿠폰2 저장 확인 · 콘솔에러 0(favicon 404 제외).
+
+---
+
 ## 정책서 문서 — 콘텐츠=객실 통일 반영 — 2026-07-15
 
 **변경 파일:** `High1-OTA-통합개발스펙-숙소-v1.3.md`(→ v1.4), `policy-decisions.html`, `context/사업부-정책서.md`
