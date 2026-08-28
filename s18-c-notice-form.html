@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S18-C — 공지 등록/수정 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+  .sec-policy{background:#ecfdf5;border:1px solid #a7f3d0;border-left:3px solid #10b981;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:11px;line-height:1.7;color:#065f46}
+  .sec-policy b{color:#064e3b}
+  .sec-policy .ref{font-size:10px;color:#059669;font-weight:700}
+  /* 리치에디터 목업 툴바 */
+  .wf-editor{border:1px solid #cbd5e1;border-radius:4px;overflow:hidden}
+  .wf-editor-tb{background:#f8fafc;border-bottom:1px solid #e2e8f0;padding:5px 8px;font-size:11px;color:#64748b;display:flex;gap:8px;flex-wrap:wrap}
+  .wf-editor-tb span{padding:1px 6px;border:1px solid #e2e8f0;border-radius:3px;background:#fff}
+  .wf-editor-area{padding:10px 12px;min-height:70px;font-size:12px;color:#94a3b8}
+  .ann-warn{margin-top:6px;font-size:12px;color:#991b1b;background:#fef2f2;padding:6px 9px;border-radius:3px;border-left:2px solid #f87171;line-height:1.6}
+  .chk{display:inline-flex;align-items:center;gap:6px;margin-right:18px;font-size:12px;color:#334155}
+  .chk input{width:14px;height:14px}
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">S18-C — 공지 등록/수정</span>
+  <span class="page-nav-route">#/notices/new · /edit/:id</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s18-b-notice-list.html">← 이전</a>
+    <a class="page-nav-pager" href="front-view-main.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge" style="background:#10b981">S18-C</span>
+    공지 등록 / 수정
+    <span style="font-size:12px;font-weight:400;color:#888">— #/notices/new · /edit/:id · 화면관리 &gt; 공지사항</span>
+  </div>
+  <div class="sec-sub">
+    고객 공지 <b>본문</b>과 <b>프런트 팝업 노출 조건</b>을 설정하는 화면입니다. 저장한 공지는 <b>마이페이지 공지 목록/상세 + 팝업</b>에 반영됩니다.<br>
+    기준: 프로토타입 admin v0.7.31 · 개발사 기능가이드 <code>notice-popup-client-guide</code>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 공지 등록/수정 폼                                       -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item on">화면관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">화면관리</div>
+          <div class="wf-lnb-item">메인관리</div>
+          <div class="wf-lnb-item">이메일 템플릿 관리</div>
+          <div class="wf-lnb-item on">공지사항</div>
+          <div class="wf-lnb-item" style="color:rgba(255,255,255,.25)">배너관리 <span style="font-size:9px">(추후)</span></div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="wf-main">
+          <div class="wf-page-title">
+            공지 등록 / 수정
+            <span class="wf-badge" style="font-size:11px;margin-left:8px">S18-C</span>
+          </div>
+
+          <div class="sec-policy">
+            <span class="ref">기준: 프로토타입 v0.7.31</span> <span class="wf-cn" style="background:#10b981">0</span><br>
+            · <b>공지 내용</b>(제목·본문)과 <b>게시 설정</b>·<b>팝업 노출</b>은 독립적으로 설정합니다.<br>
+            · 저장 시 <b>제목 EN·본문 EN 필수</b>. 미입력 시 저장 불가.
+          </div>
+
+          <!-- ① 공지 내용 -->
+          <div class="wf-section-head">① 공지 내용 <span class="wf-cn">1</span> <span style="font-size:11px;font-weight:400;color:#94a3b8">(EN 필수 · ZH 선택)</span></div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">제목 EN <span class="wf-form-req">*</span></div>
+            <div class="wf-form-field">
+              <input class="wf-input" type="text" placeholder="Notice title (English)" />
+            </div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">제목 ZH</div>
+            <div class="wf-form-field">
+              <input class="wf-input" type="text" placeholder="标题 (中文, 可选)" />
+              <div class="wf-hint">선택 입력. 미입력 시 EN 제목으로 대체.</div>
+            </div>
+          </div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">본문 EN <span class="wf-form-req">*</span> <span class="wf-cn">2</span></div>
+            <div class="wf-form-field">
+              <div class="wf-editor">
+                <div class="wf-editor-tb"><span>굵게</span><span>제목</span><span>목록</span><span>이미지 불러오기</span></div>
+                <div class="wf-editor-area">Notice body (English) …</div>
+              </div>
+            </div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">본문 ZH</div>
+            <div class="wf-form-field">
+              <div class="wf-editor">
+                <div class="wf-editor-tb"><span>굵게</span><span>제목</span><span>목록</span><span>이미지 불러오기</span></div>
+                <div class="wf-editor-area">正文 (中文, 可选) …</div>
+              </div>
+              <div class="wf-hint">선택 입력. 미입력 시 EN 본문으로 대체.</div>
+            </div>
+          </div>
+
+          <!-- ② 게시 설정 -->
+          <div class="wf-section-head" style="margin-top:20px">② 게시 설정 <span class="wf-cn">3</span></div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">게시 여부</div>
+            <div class="wf-form-field">
+              <select class="wf-input" style="max-width:220px"><option>게시(Published)</option><option>미게시</option></select>
+            </div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">게시 기간</div>
+            <div class="wf-form-field">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <input class="wf-input" type="text" placeholder="YYYY-MM-DD HH:MM" style="max-width:180px" />
+                <span style="color:#94a3b8">~</span>
+                <input class="wf-input" type="text" placeholder="YYYY-MM-DD HH:MM" style="max-width:180px" />
+              </div>
+              <div class="wf-hint">비워두면 상시 노출. 시작 전·종료 경과 시 자동 미노출.</div>
+            </div>
+          </div>
+
+          <!-- ③ 프런트 팝업 -->
+          <div class="wf-section-head" style="margin-top:20px">③ 프런트 팝업 <span class="wf-cn">4</span></div>
+
+          <div class="wf-form-row">
+            <div class="wf-form-label">팝업 사용</div>
+            <div class="wf-form-field">
+              <select class="wf-input" style="max-width:220px"><option>미사용</option><option>사용</option></select>
+            </div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">노출 대상 페이지</div>
+            <div class="wf-form-field">
+              <label class="chk"><input type="checkbox" checked /> 메인</label>
+              <label class="chk"><input type="checkbox" /> 검색결과</label>
+              <label class="chk"><input type="checkbox" /> 숙소상세</label>
+              <div class="wf-hint">팝업 사용 시 선택한 페이지에 노출. (마이페이지 공지 목록/상세는 팝업과 무관하게 게시중 공지 노출)</div>
+            </div>
+          </div>
+          <div class="wf-form-row">
+            <div class="wf-form-label">버전</div>
+            <div class="wf-form-field">
+              <input class="wf-input" type="number" value="1" style="max-width:90px" />
+              <div class="wf-hint">+1 올리면 이미 닫은(24h 숨김) 고객에게도 다시 노출.</div>
+            </div>
+          </div>
+
+          <!-- 저장 -->
+          <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+            <span class="wf-btn">취소</span>
+            <span class="wf-btn" style="color:#dc2626;border-color:#dc2626">삭제</span>
+            <span class="wf-btn wf-btn-primary" style="background:#10b981;border-color:#10b981">저장 <span class="wf-cn" style="background:#1a1f2e">5</span></span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 화면 주석 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">0</div>
+        <div class="ann-body">
+          <div class="ann-title">공통정책 — 내용·게시·팝업 분리 설정</div>
+          <div class="ann-desc">공지 <strong>내용(제목·본문)</strong>, <strong>게시 설정</strong>, <strong>팝업 노출</strong>을 각각 설정합니다. 저장 시 <strong>제목 EN·본문 EN 필수</strong>.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">제목 — EN 필수 / ZH 선택</div>
+          <div class="ann-desc">제목 EN은 필수, ZH는 선택입니다. ZH 미입력 시 EN 제목으로 대체 표시됩니다.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">본문 — EN 필수 / ZH 선택</div>
+          <div class="ann-desc">
+            본문 EN 필수, ZH 선택(미입력 시 EN 대체). 프로토타입은 <strong>리치 에디터</strong>(굵게·제목·목록·이미지)입니다.
+          </div>
+          <div class="ann-warn">⚠️ 라이브 확인 필요: 개발사 기능가이드(<code>notice-popup-client-guide</code>)는 본문을 <strong>플레인 텍스트 전용</strong>(HTML/이미지 불가, 보안·편집 단순화)으로 규정합니다. 프로토타입(리치)과 다르므로 <strong>본문 서식 정책 확정</strong> 필요.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">게시 설정 — 게시 여부 + 기간</div>
+          <div class="ann-desc">
+            게시(Published) ON/OFF + 게시 시작/종료 시각. 비우면 상시.<br>
+            → 프런트: <strong>게시 ON + 기간 내</strong>일 때만 고객에게 노출. 시작 전·종료 경과 시 자동 미노출.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">프런트 팝업 — 사용 · 대상 페이지 · 버전</div>
+          <div class="ann-desc">
+            <strong>팝업 사용</strong> 시 <strong>대상 페이지</strong>(메인/검색결과/숙소상세, 복수 선택)에 팝업 노출.<br>
+            → 프런트 팝업 동작: <strong>페이지당 최신 공지 1개</strong>(중첩 없음) · 닫기 / <strong>24시간 숨김</strong>(브라우저 로컬 저장) · <strong>버전 +1</strong> 시 닫은 고객에게도 재노출. 로그인 없이 노출되며 [자세히 보기]는 마이페이지 상세로(비로그인 시 로그인).
+          </div>
+          <div class="ann-rule">마이페이지 공지 목록/상세는 <strong>로그인 필요</strong>, 팝업과 무관하게 게시중 공지를 노출(비로그인 공개 목록 없음).</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">5</div>
+        <div class="ann-body">
+          <div class="ann-title">저장 — 유효성</div>
+          <div class="ann-desc">저장 시 <strong>제목 EN·본문 EN</strong> 미입력이면 저장 불가(알럿). 저장키 <code>high1_notices_v1</code>(어드민 write → 프런트 read).</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

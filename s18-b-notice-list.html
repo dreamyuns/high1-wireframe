@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S18-B — 공지사항 목록 | High1 Admin Wireframe</title>
+<link rel="stylesheet" href="wf-styles.css" />
+<style>
+  /* 공통정책 블록 — 화면관리 초록 계열 */
+  .sec-policy{background:#ecfdf5;border:1px solid #a7f3d0;border-left:3px solid #10b981;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:11px;line-height:1.7;color:#065f46}
+  .sec-policy b{color:#064e3b}
+  .sec-policy .ref{font-size:10px;color:#059669;font-weight:700}
+  /* 상태/팝업 배지 */
+  .nt-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 7px;border-radius:99px;vertical-align:middle}
+  .nt-on{background:#dcfce7;color:#166534}
+  .nt-off{background:#f1f5f9;color:#64748b}
+  .nt-tgt{background:#ede9fe;color:#5b21b6}
+  .ann-warn{margin-top:5px;font-size:12px;color:#991b1b;background:#fef2f2;padding:5px 9px;border-radius:3px;border-left:2px solid #f87171;line-height:1.6}
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <a class="page-nav-back" href="index.html">← 목록으로</a>
+  <span class="page-nav-sep">|</span>
+  <span class="page-nav-title">S18-B — 공지사항 목록</span>
+  <span class="page-nav-route">#/notices</span>
+  <div class="page-nav-nav">
+    <a class="page-nav-pager" href="s18-a-email-template.html">← 이전</a>
+    <a class="page-nav-pager" href="s18-c-notice-form.html">다음 →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="sec-title">
+    <span class="sec-badge" style="background:#10b981">S18-B</span>
+    공지사항 목록
+    <span style="font-size:12px;font-weight:400;color:#888">— #/notices · 화면관리 &gt; 공지사항</span>
+  </div>
+  <div class="sec-sub">
+    고객 공지와 <b>프런트 팝업 노출</b>을 관리하는 목록 화면입니다. 하나의 공지가 <b>프런트 마이페이지 공지 목록/상세 + 팝업(대상 페이지)</b> 두 곳에 반영됩니다.<br>
+    기준: 프로토타입 admin v0.7.31 · 개발사 기능가이드 <code>notice-popup-client-guide</code>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 공지사항 목록                                          -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <div class="two-col">
+
+    <!-- ── 와이어프레임 ── -->
+    <div class="wf">
+
+      <div class="wf-gnb">
+        <span class="wf-gnb-logo">high1</span>
+        <span class="wf-gnb-item">숙소관리</span>
+        <span class="wf-gnb-item">티켓관리</span>
+        <span class="wf-gnb-item">투어관리</span>
+        <span class="wf-gnb-item">예약관리</span>
+        <span class="wf-gnb-item on">화면관리</span>
+        <span class="wf-gnb-item">공통관리</span>
+      </div>
+
+      <div class="wf-body">
+
+        <!-- LNB -->
+        <div class="wf-lnb">
+          <div class="wf-lnb-g">화면관리</div>
+          <div class="wf-lnb-item">메인관리</div>
+          <div class="wf-lnb-item">이메일 템플릿 관리</div>
+          <div class="wf-lnb-item on">공지사항</div>
+          <div class="wf-lnb-item" style="color:rgba(255,255,255,.25)">배너관리 <span style="font-size:9px">(추후)</span></div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="wf-main">
+          <div class="wf-page-title">
+            공지사항
+            <span class="wf-badge" style="font-size:11px;margin-left:8px">S18-B</span>
+          </div>
+
+          <!-- 공통정책 블록 -->
+          <div class="sec-policy">
+            <span class="ref">기준: 프로토타입 v0.7.31</span> <span class="wf-cn" style="background:#10b981">0</span><br>
+            · <b>공지 1개 = 두 곳에 노출</b> — ① 프런트 <b>마이페이지 공지 목록/상세</b>(로그인 필요) ② <b>팝업</b>(대상 페이지, 로그인 없이). 제목·본문을 공유합니다.<br>
+            · 안내 문구 <b>EN(영어) 필수 · ZH(중국어) 선택</b>(ZH 미입력 시 EN으로 대체).<br>
+            · 목록 정렬 = <b>수정일 최신순</b>(수동 순서 없음).
+          </div>
+
+          <!-- 상단 바 -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:12px;color:#64748b">공지 목록 (3개)</div>
+            <span class="wf-btn wf-btn-primary" style="background:#10b981;border-color:#10b981">+ 공지 등록 <span class="wf-cn">1</span></span>
+          </div>
+
+          <!-- 목록 테이블 -->
+          <table class="wf-table">
+            <thead>
+              <tr>
+                <th>제목</th>
+                <th style="width:88px">상태 <span class="wf-cn">2</span></th>
+                <th style="width:150px">게시기간</th>
+                <th style="width:120px">팝업(대상) <span class="wf-cn">3</span></th>
+                <th style="width:96px">수정일</th>
+                <th style="width:96px">작업 <span class="wf-cn">4</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>Summer operating hours notice</b><div style="font-size:11px;color:#94a3b8">夏季运营时间公告</div></td>
+                <td><span class="nt-badge nt-on">게시중</span></td>
+                <td style="font-size:11px">상시</td>
+                <td><span class="nt-badge nt-on">ON</span> <span class="nt-badge nt-tgt" title="메인">M</span> <span class="nt-badge nt-tgt" title="숙소상세">P</span></td>
+                <td style="font-size:11px">08-24</td>
+                <td style="white-space:nowrap"><span class="wf-btn" style="font-size:10px;padding:2px 8px">수정</span> <span class="wf-btn" style="font-size:10px;padding:2px 8px;color:#dc2626">삭제</span></td>
+              </tr>
+              <tr>
+                <td><b>Water World maintenance</b><div style="font-size:11px;color:#94a3b8">水上世界维护通知</div></td>
+                <td><span class="nt-badge nt-off">대기/종료</span></td>
+                <td style="font-size:11px">09-01 00:00 ~ 09-05 23:59</td>
+                <td><span class="nt-badge nt-tgt" title="검색결과">S</span></td>
+                <td style="font-size:11px">08-20</td>
+                <td style="white-space:nowrap"><span class="wf-btn" style="font-size:10px;padding:2px 8px">수정</span> <span class="wf-btn" style="font-size:10px;padding:2px 8px;color:#dc2626">삭제</span></td>
+              </tr>
+              <tr>
+                <td><b>Construction notice (draft)</b></td>
+                <td><span class="nt-badge nt-off">미게시</span></td>
+                <td style="font-size:11px">상시</td>
+                <td><span class="nt-badge nt-off">OFF</span></td>
+                <td style="font-size:11px">08-18</td>
+                <td style="white-space:nowrap"><span class="wf-btn" style="font-size:10px;padding:2px 8px">수정</span> <span class="wf-btn" style="font-size:10px;padding:2px 8px;color:#dc2626">삭제</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="wf-hint" style="margin-top:8px">팝업 대상 배지: <b>M</b>=메인 · <b>S</b>=검색결과 · <b>P</b>=숙소상세</div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 화면 주석 ── -->
+    <div class="ann">
+      <h3>화면 주석</h3>
+
+      <div class="ann-item">
+        <div class="cn">0</div>
+        <div class="ann-body">
+          <div class="ann-title">공통정책 — 공지 1개 = 두 곳 노출</div>
+          <div class="ann-desc">
+            하나의 공지가 <strong>① 마이페이지 공지 목록/상세</strong>(로그인 필요)와 <strong>② 프런트 팝업</strong>(대상 페이지, 로그인 없이) 두 곳에 동시에 쓰입니다. 제목·본문을 공유하므로 따로 관리하지 않습니다.<br>
+            안내 문구는 <strong>EN 필수 · ZH 선택</strong>(ZH 미입력 시 EN 대체).
+          </div>
+          <div class="ann-rule">정렬 = 수정일 최신순(수동 순서/고정 없음). 근거: 프로토타입 admin v0.7.31 · 개발사 기능가이드.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">1</div>
+        <div class="ann-body">
+          <div class="ann-title">[+ 공지 등록]</div>
+          <div class="ann-desc">클릭 시 <strong>공지 등록 화면(S18-C)</strong>으로 이동합니다. 목록의 행 [수정]도 동일 화면(수정 모드)으로 진입합니다.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">2</div>
+        <div class="ann-body">
+          <div class="ann-title">상태 — 게시중 / 대기·종료 / 미게시</div>
+          <div class="ann-desc">
+            <strong>게시중</strong> = 게시 ON + 현재 시각이 게시기간 내 · <strong>대기/종료</strong> = 게시 ON이지만 시작 전이거나 종료 경과 · <strong>미게시</strong> = 게시 OFF(초안).<br>
+            → 프런트: <strong>게시중</strong> 공지만 고객에게 노출됩니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">3</div>
+        <div class="ann-body">
+          <div class="ann-title">팝업(대상) — ON/OFF + 대상 페이지</div>
+          <div class="ann-desc">
+            팝업 사용 시 <strong>ON</strong> 배지 + 대상 페이지 배지(<strong>M</strong>=메인 · <strong>S</strong>=검색결과 · <strong>P</strong>=숙소상세)를 표시합니다. 미사용은 <strong>OFF</strong>.<br>
+            → 프런트: 해당 페이지 진입 시 팝업 노출(페이지당 최신 공지 1개, 닫기/24시간 숨김).
+          </div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <div class="cn">4</div>
+        <div class="ann-body">
+          <div class="ann-title">작업 — 수정 / 삭제</div>
+          <div class="ann-desc"><strong>수정</strong> → S18-C(수정 모드). <strong>삭제</strong> → 확인 후 삭제. (저장키 <code>high1_notices_v1</code>)</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>
