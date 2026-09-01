@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <title>High1 Mobile Prototype v0.4.1</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- 데스크톱에서 볼 때 폰 프레임처럼 중앙 정렬 (모바일 전용 프로토타입) -->
+    <div class="device" id="device">
+      <!-- ===== 공용 셸: 모바일 헤더 (로고 | 언어 | 로그인 | 전체메뉴) ===== -->
+      <header class="mhead" id="mhead">
+        <a href="#/" class="mhead-logo" aria-label="High1 Resort home">
+          <span class="logo-mark" aria-hidden="true"></span>
+          <span class="logo-text">high<b>1</b></span>
+        </a>
+        <div class="mhead-right">
+          <label class="lang-pick" aria-label="Language">
+            <svg class="lang-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+            <select id="langSelect">
+              <option value="en">EN</option>
+              <option value="zh">中文</option>
+            </select>
+            <span class="lang-caret" aria-hidden="true">▾</span>
+          </label>
+          <button type="button" class="mhead-login" id="btnHeadLogin">Sign in</button>
+          <button type="button" class="mhead-menu" id="btnMenu" aria-label="Open menu" aria-expanded="false">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- 앱 콘텐츠 -->
+      <main id="app" class="app"></main>
+
+      <!-- 공용 푸터 (고객문의 상단 · 푸터정보 하단) -->
+      <footer class="mfoot">
+        <div class="mfoot-inquiry">
+          <h3 class="mfoot-inq-title">Inquiries</h3>
+          <p class="mfoot-inq-desc">We will help relieve any issues that you have when using High1.</p>
+          <p class="mfoot-inq-line">CS Email : CS@high1.com</p>
+          <p class="mfoot-inq-line">WhatsApp : +82 10212314</p>
+        </div>
+        <hr class="mfoot-div" />
+        <div class="mfoot-info">
+          <div class="mfoot-logo">high<span>1</span></div>
+          <p>265, High1-gil, Sabuk-eup, Jeongseon-gun, Gangwon-do, South Korea</p>
+          <p>TEL +82-1588-7789, +82-033-590-7700</p>
+          <p>E-MAIL webmaster@high1.com</p>
+          <p class="mfoot-copy">COPYRIGHT(C) 2019 BY KANGWON LAND, INC. ALL RIGHTS RESERVED.</p>
+        </div>
+      </footer>
+
+      <!-- ===== 전체메뉴 드로어 (모바일 프레임 안에서 슬라이드) ===== -->
+      <div class="drawer-scope" id="drawerScope">
+        <div class="drawer-backdrop" id="drawerBackdrop"></div>
+        <aside class="drawer" id="drawer" aria-hidden="true">
+          <div class="drawer-head">
+            <span class="drawer-title">Menu</span>
+            <button type="button" class="drawer-close" id="btnDrawerClose" aria-label="Close menu">✕</button>
+          </div>
+          <div class="drawer-auth-top" id="drawerAuthTop"></div>
+          <nav class="drawer-nav" id="drawerNav"></nav>
+        </aside>
+      </div>
+
+      <!-- ===== 검색 바텀시트 (모바일 프레임 안) ===== -->
+      <div class="sheet-scope" id="sheetScope">
+        <div class="sheet-backdrop" id="sheetBackdrop"></div>
+        <section class="sheet" id="searchSheet" aria-hidden="true" aria-label="Search">
+          <div class="sheet-grab"></div>
+          <div class="sheet-body" id="searchSheetBody"></div>
+        </section>
+      </div>
+
+      <!-- ===== 필터 바텀시트 ===== -->
+      <div class="sheet-scope" id="filterScope">
+        <div class="sheet-backdrop" id="filterBackdrop"></div>
+        <section class="sheet sheet-tall" id="filterSheet" aria-hidden="true" aria-label="Filters">
+          <div class="sheet-grab"></div>
+          <div class="sheet-body" id="filterBody"></div>
+        </section>
+      </div>
+
+      <!-- ===== 객실상세 바텀시트 ===== -->
+      <div class="sheet-scope" id="roomScope">
+        <div class="sheet-backdrop" id="roomBackdrop"></div>
+        <section class="sheet sheet-tall" id="roomSheet" aria-hidden="true" aria-label="Room detail">
+          <div class="sheet-grab"></div>
+          <div class="sheet-body" id="roomBody"></div>
+        </section>
+      </div>
+
+      <!-- ===== 안내/정책/위치 모달 (숙소상세) ===== -->
+      <div class="sheet-scope" id="guideScope">
+        <div class="sheet-backdrop" id="guideBackdrop"></div>
+        <section class="sheet sheet-tall" id="guideSheet" aria-hidden="true" aria-label="Guide / Policy / Location">
+          <div class="sheet-body" id="guideBody"></div>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

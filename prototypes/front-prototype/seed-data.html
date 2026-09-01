@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>High1 Seed Data (v0.6)</title>
+  <title>High1 Seed Data (v0.8)</title>
   <style>
     body { font-family: "Segoe UI", Arial, sans-serif; background: #f5f5f0; color: #1a1a1a; margin: 0; padding: 32px; }
     .wrap { max-width: 760px; margin: 0 auto; }
@@ -34,8 +34,9 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>High1 Seed Data <span style="font-size:14px;color:#7c3aed">v0.7 (티켓 포함)</span></h1>
+  <h1>High1 Seed Data <span style="font-size:14px;color:#7c3aed">v0.8 (티켓 데모주문 포함)</span></h1>
   <p class="subtitle">프로토타입 더미 데이터 주입 — 어드민·프런트 공용 localStorage</p>
+  <p class="subtitle" style="font-size:12px;color:#9a9a9a;margin-top:-14px">변경이력: v0.8 티켓 데모주문(사용완료 포함) 버튼 추가 · v0.7 티켓 도메인 더미 · v0.6 숙소 통합스펙 v1.0 기준</p>
 
   <div class="notice">
     ⚠️ 어드민(<code>admin-prototype</code>)과 프런트(<code>front-prototype</code>)는 <b>같은 브라우저 저장소(localStorage)</b>를 공유합니다.
@@ -58,6 +59,19 @@
   </div>
 
   <div class="card">
+    <div class="card-title">티켓 데모 주문 (마이페이지·어드민 S15 테스트용)</div>
+    <div class="row">
+      <button class="btn-backup" id="btnDemoOrder">🎫 데모 티켓 주문 8건 생성 (다양한 케이스)</button>
+    </div>
+    <div style="font-size:11px;color:#888;margin-top:4px;line-height:1.6">전부미사용 · 일부사용 · 전부사용완료 · 부분취소 · 3상태혼합 · 취소완료 · 사용기간만료 · 단일대량 (국가 KR/CN/JP/US/TW/HK/TH/SG)</div>
+    <p style="font-size:12px;color:#6b6b6b;margin:10px 0 0;line-height:1.7">
+      프런트에서 <b>먼저 로그인</b>한 뒤 이 버튼을 누르면 <b>로그인 계정으로</b> 데모 주문 1건이 생성됩니다.<br>
+      구성: 스키 리프트 종일권(대인 2·소인 1) + 장비렌탈(대인 1) — 이 중 <b>대인 1장 = 사용완료(USED)</b>.<br>
+      → 마이페이지 주문 상세에서 <b>사용완료 쿠폰은 취소 대상에서 제외</b>(취소·환불 불가), 미사용만 부분취소되는 걸 확인.
+    </p>
+  </div>
+
+  <div class="card">
     <div class="card-title">백업 / 복원 (JSON)</div>
     <div class="row">
       <button class="btn-backup" id="btnBackup">백업 (JSON 다운로드)</button>
@@ -76,7 +90,18 @@
 
 <script>
 /* ═══════════════════════════════════════════════════════════
-   High1 Seed v0.6 — 데이터 모델 기준: 통합 개발 스펙 v1.0
+   High1 Seed v0.8.2 — 데이터 모델 기준: 통합 개발 스펙 v1.0
+   변경이력:
+     v0.8.2 (2026-08-31) — seedAll에 데모 계정(demo@high1.com/demo) + 숙소 예약 5건
+                          (외국인·예약완료·demo플래그) 주입 추가. 어드민 S10·프런트 나의예약 공유.
+     v0.8.1 (2026-08-31) — 데모 티켓 주문을 8건 다양한 케이스로 확장(buildDemoTicketOrders).
+                          전부미사용·일부사용·전부사용완료·부분취소·3상태혼합·취소완료·
+                          사용기간만료·단일대량, 국가 8종. 마이페이지·어드민 S15 시연용.
+     v0.8 (2026-08-31) — 티켓 데모주문 생성 버튼(buildDemoTicketOrder) 추가.
+                          로그인 계정으로 주문 1건(사용완료 1 + 미사용 3) 생성 →
+                          마이페이지에서 '사용완료 쿠폰 취소/환불 불가' 시연용.
+     v0.7            — 티켓 도메인 더미(카테고리·쿠폰스펙·상품·마진) 추가.
+     v0.6            — 숙소 통합 개발 스펙 v1.0 기준 더미.
    저장 키:
      high1_places_v1 / high1_rooms_v1 / high1_products_v1
      high1_facility_categories_v1 / high1_facilities_v2
@@ -426,6 +451,36 @@ function log(msg, cls) {
 }
 function clearResults() { document.getElementById("results").innerHTML = ""; }
 
+/* 데모 계정 + 숙소 예약(외국인·예약완료) — 어드민 S10 / 프런트 나의예약 공유 */
+const DEMO_EMAIL = "demo@high1.com";
+const DEMO_RESV = [
+  { code: "BK-20260901-00011", source_mode: "PMS", place_name: "High1 Grand Hotel", room_name: "Deluxe King", product_name: "Deluxe King · Room Only",
+    checkin: "2026-09-15", checkout: "2026-09-17", nights: 2, pax: { rooms: [{ adults: 2, children: 0 }] },
+    guest: { firstName: "John", lastName: "Carter" }, member_email: DEMO_EMAIL, amount_deposit: 300000, amount_sell: 320000,
+    status: "CONFIRMED", created_at: "2026-08-20T10:11:00", demo: true },
+  { code: "BK-20260902-00012", source_mode: "PMS", place_name: "High1 Grand Hotel", room_name: "Standard Twin", product_name: "Standard Twin · Room Only",
+    checkin: "2026-10-05", checkout: "2026-10-07", nights: 2, pax: { rooms: [{ adults: 2, children: 1 }] },
+    guest: { firstName: "Emma", lastName: "Wilson" }, member_email: DEMO_EMAIL, amount_deposit: 260000, amount_sell: 280000,
+    status: "CONFIRMED", created_at: "2026-08-22T14:30:00", demo: true },
+  { code: "BK-20260903-00013", source_mode: "PMS", place_name: "High1 Condo", room_name: "Family Suite", product_name: "Family Suite · Breakfast",
+    checkin: "2026-11-20", checkout: "2026-11-22", nights: 2, pax: { rooms: [{ adults: 2, children: 2 }] },
+    guest: { firstName: "Hiroshi", lastName: "Tanaka" }, member_email: DEMO_EMAIL, amount_deposit: 420000, amount_sell: 450000,
+    status: "CONFIRMED", created_at: "2026-08-25T09:05:00", demo: true },
+  { code: "BK-20260904-00014", source_mode: "PMS", place_name: "High1 Grand Hotel", room_name: "Deluxe King", product_name: "Deluxe King · Breakfast",
+    checkin: "2026-12-24", checkout: "2026-12-26", nights: 2, pax: { rooms: [{ adults: 2, children: 0 }] },
+    guest: { firstName: "Li", lastName: "Wei" }, member_email: DEMO_EMAIL, amount_deposit: 360000, amount_sell: 390000,
+    status: "CONFIRMED", created_at: "2026-08-27T18:40:00", demo: true },
+  { code: "BK-20260905-00015", source_mode: "PMS", place_name: "High1 Condo", room_name: "Studio", product_name: "Studio · Room Only",
+    checkin: "2027-01-10", checkout: "2027-01-12", nights: 2, pax: { rooms: [{ adults: 2, children: 0 }] },
+    guest: { firstName: "Sophie", lastName: "Martin" }, member_email: DEMO_EMAIL, amount_deposit: 240000, amount_sell: 260000,
+    status: "CONFIRMED", created_at: "2026-08-29T11:20:00", demo: true },
+];
+function seedDemoAccount() {
+  const mem = JSON.parse(localStorage.getItem("high1_members_v1") || "[]");
+  if (!mem.some(m => m.email === DEMO_EMAIL)) { mem.push({ email: DEMO_EMAIL, password: "demo" }); }
+  localStorage.setItem("high1_members_v1", JSON.stringify(mem));
+}
+
 function seedAll() {
   clearResults();
   try {
@@ -448,6 +503,9 @@ function seedAll() {
     put("high1_ticket_products_v1", buildTicketProducts());
     put("high1_ticket_upload_history_v1", []);
     localStorage.setItem("high1_ticket_seed_ver", "12");
+    // 데모 계정 + 숙소 예약(외국인·예약완료) — 어드민/프런트 공유
+    seedDemoAccount();
+    put("high1_reservations_v1", DEMO_RESV);
 
     log("숙소시설 카테고리 " + catsPlace.length + " / 객실시설 카테고리 " + catsRoom.length + " 주입");
     log("숙소시설 " + facPlace.length + " / 객실시설 " + facRoom.length + " 주입 (카테고리 매핑)");
@@ -460,6 +518,7 @@ function seedAll() {
     log("메인 히어로 2 + 추천 섹션 2(숙소·티켓) 주입");
     log("티켓 카테고리 " + TICKET_CATEGORIES.length + " / 쿠폰스펙 " + TICKET_SPECS.length + "행 / 상품 5(곤돌라=성인전용) 주입");
     log("티켓 마진: 카테고리 마스터 4 + 오버라이드 1 (DBQ) 주입 (seed ver 12)");
+    log("데모 계정 " + DEMO_EMAIL + " (비번 demo) + 숙소 예약 " + DEMO_RESV.length + "건(외국인·예약완료) 주입 — 어드민/프런트 공유");
     const t = ymd(todayDate());
     document.getElementById("results").insertAdjacentHTML("beforeend",
       '<div class="summary">✅ 전체 더미 주입 완료 — 검색 기준일 <b>' + t + ' ~ ' + ymd(addDays(todayDate(),120)) +
@@ -500,6 +559,105 @@ function restore(file) {
   reader.readAsText(file);
 }
 
+/* ═══ 티켓 데모 주문 8건 (다양한 케이스) — 마이페이지·어드민 S15 시연 ═══ */
+// 상품 팔레트
+const DEMO_PROD = {
+  SVA: { pid: "p_PR-T0003", name: "Ski Lift Day Pass" },
+  SVZ: { pid: "p_PR-T0002", name: "Ski Lift 7hr Pass" },
+  RSF: { pid: "p_PR-T0004", name: "Ski Rental (Day)" },
+  RSC: { pid: "p_PR-T0005", name: "Ski Rental (7hr)" },
+};
+// 쿠폰ID|레벨 → 가격·라벨
+const DEMO_PRICE = {
+  "SVA|1": { dep: 65000, sell: 71500, lvn: "대인", cn: "스키 리프트 종일권(대인)" },
+  "SVA|2": { dep: 48000, sell: 52800, lvn: "소인", cn: "스키 리프트 종일권(소인)" },
+  "SVZ|1": { dep: 55000, sell: 60500, lvn: "대인", cn: "스키 리프트 7시간권(대인)" },
+  "RSF|1": { dep: 38000, sell: 41000, lvn: "대인", cn: "스키 장비렌탈 종일권(대인)" },
+  "RSC|1": { dep: 30000, sell: 33000, lvn: "대인", cn: "스키 장비렌탈 7시간권(대인)" },
+  "RSC|2": { dep: 22000, sell: 24000, lvn: "소인", cn: "스키 장비렌탈 7시간권(소인)" },
+};
+// 8개 케이스 정의 — cps: [쿠폰ID, 레벨, 상태(SOLD/USED/CANCELLED), 만료여부?]
+const DEMO_CASES = [
+  { label: "결제완료·전부 미사용(다상품)", buyer: { name: "Gildong Hong", phone: "010-1234-5678", nationality: "KR" }, daysAgo: 1,
+    cps: [["SVA",1,"SOLD"],["SVA",1,"SOLD"],["SVA",2,"SOLD"],["RSF",1,"SOLD"]] },
+  { label: "결제완료·일부 사용", buyer: { name: "Mei Wang", phone: "13800138000", nationality: "CN" }, daysAgo: 3,
+    cps: [["SVZ",1,"USED"],["SVZ",1,"SOLD"]] },
+  { label: "전부 사용완료(취소·환불 불가)", buyer: { name: "Taro Yamada", phone: "9012345678", nationality: "JP" }, daysAgo: 5,
+    cps: [["RSC",1,"USED"],["RSC",2,"USED"]] },
+  { label: "부분취소(1매 취소)", buyer: { name: "John Smith", phone: "2025550123", nationality: "US" }, daysAgo: 4,
+    cps: [["SVA",1,"CANCELLED"],["SVA",1,"SOLD"]] },
+  { label: "부분취소+일부사용(3상태 혼합)", buyer: { name: "Chen Wei", phone: "912345678", nationality: "TW" }, daysAgo: 6,
+    cps: [["SVA",1,"USED"],["SVA",1,"CANCELLED"],["SVA",1,"SOLD"]] },
+  { label: "취소완료(전체 취소)", buyer: { name: "Lee Ka Ying", phone: "51234567", nationality: "HK" }, daysAgo: 7,
+    cps: [["RSF",1,"CANCELLED"],["RSF",1,"CANCELLED"]] },
+  { label: "사용기간 만료·미사용(취소 불가)", buyer: { name: "Somchai P", phone: "812345678", nationality: "TH" }, daysAgo: 40,
+    cps: [["SVA",1,"SOLD",true],["SVA",2,"SOLD",true]] },
+  { label: "단일 상품 대량(대인 5)", buyer: { name: "Tan Wei Ming", phone: "81234567", nationality: "SG" }, daysAgo: 2,
+    cps: [["SVZ",1,"SOLD"],["SVZ",1,"SOLD"],["SVZ",1,"SOLD"],["SVZ",1,"SOLD"],["SVZ",1,"SOLD"]] },
+];
+
+function buildDemoTicketOrders() {
+  clearResults();
+  const sess = JSON.parse(localStorage.getItem("high1_session_v1") || "null");
+  let email = sess && sess.email;
+  if (!email) {
+    email = "demo@high1.com";
+    localStorage.setItem("high1_session_v1", JSON.stringify({ email }));
+    const mem = JSON.parse(localStorage.getItem("high1_members_v1") || "[]");
+    if (!mem.some(m => m.email === email)) { mem.push({ email, password: "demo" }); localStorage.setItem("high1_members_v1", JSON.stringify(mem)); }
+    log("로그인 세션이 없어 데모 계정(" + email + " / 비번 demo)으로 설정했습니다.", "ok");
+  }
+  const FUT_S = "2026-12-01", FUT_E = "2027-02-28";   // 미래 사용기간 → 취소 가능
+  const EXP_S = "2026-06-01", EXP_E = "2026-08-15";   // 만료 사용기간 → 취소 불가
+  const isoDaysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString(); };
+  const ymdDaysAgo = (n) => isoDaysAgo(n).slice(0, 10);
+  const genNo = (cid, lv) => cid + lv + String(Math.floor(Math.random() * 1e6)).padStart(6, "0") + String(Math.floor(Math.random() * 100)).padStart(2, "0");
+
+  const orders = JSON.parse(localStorage.getItem("high1_ticket_orders_v1") || "[]");
+  const allc = JSON.parse(localStorage.getItem("high1_coupons_v1") || "[]");
+  const created = [];
+
+  DEMO_CASES.forEach((cs, idx) => {
+    const createdIso = isoDaysAgo(cs.daysAgo);
+    const actIso = isoDaysAgo(Math.max(0, cs.daysAgo - 1)); // 사용/취소 시각 (생성 이후)
+    const orderNo = "ORD-" + ymdDaysAgo(cs.daysAgo).replace(/-/g, "") + "-D" + String(idx + 1).padStart(2, "0") + String(Math.floor(Math.random() * 100)).padStart(2, "0");
+    const coupons = cs.cps.map(([cid, lv, st, exp]) => {
+      const pr = DEMO_PRICE[cid + "|" + lv]; const pd = DEMO_PROD[cid];
+      const c = { id: "id_" + genNo(cid, lv), coupon_no: genNo(cid, lv), order_no: orderNo,
+        product_id: pd.pid, product_name: pd.name, coupon_id: cid, level: lv, level_name: pr.lvn, coupon_name: pr.cn,
+        deposit: pr.dep, sell: pr.sell, status: st,
+        use_start_date: exp ? EXP_S : FUT_S, use_end_date: exp ? EXP_E : FUT_E, created_at: createdIso, used_at: "" };
+      if (st === "USED") c.used_at = actIso;
+      if (st === "CANCELLED") c.cancelled_at = actIso;
+      return c;
+    });
+    const anyC = coupons.some(c => c.status === "CANCELLED");
+    const allC = coupons.length > 0 && coupons.every(c => c.status === "CANCELLED");
+    const status = allC ? "취소완료" : (anyC ? "부분취소" : "결제완료");
+    const refund = coupons.filter(c => c.status === "CANCELLED").reduce((s, c) => s + c.sell, 0);
+    const total = coupons.reduce((s, c) => s + c.sell, 0);
+    // items 그룹 (상품별 매수)
+    const iorder = []; const imap = {};
+    coupons.forEach(c => { if (!imap[c.product_id]) { imap[c.product_id] = { product_id: c.product_id, product_name: c.product_name, coupon_id: c.coupon_id, qty: 0 }; iorder.push(c.product_id); } imap[c.product_id].qty++; });
+    const items = iorder.map(pid => imap[pid]);
+    const order = { id: "id_" + orderNo, order_no: orderNo, items, total, pay_method: "CARD(mock)", status, demo: true,
+      buyer: { name: cs.buyer.name, phone: cs.buyer.phone, email, nationality: cs.buyer.nationality }, use_date: "", created_at: createdIso };
+    if (refund) order.refund_amount = refund;
+    if (anyC) order.cancelled_at = actIso;
+    orders.push(order); allc.push(...coupons);
+    created.push({ orderNo, cs, status, total, refund, qty: coupons.length });
+  });
+
+  localStorage.setItem("high1_ticket_orders_v1", JSON.stringify(orders));
+  localStorage.setItem("high1_coupons_v1", JSON.stringify(allc));
+
+  log("데모 티켓 주문 " + created.length + "건 생성 완료 (계정 " + email + ")");
+  created.forEach((r, i) => log((i + 1) + ". " + r.orderNo + " · " + r.cs.label + " · " + r.cs.buyer.nationality + " · " + r.status + " · " + r.qty + "매 · " + r.total.toLocaleString() + "원" + (r.refund ? " · 환불 " + r.refund.toLocaleString() + "원" : "")));
+  const rowsHtml = created.map((r, i) => "<tr><td>" + (i + 1) + "</td><td>" + r.cs.label + "</td><td>" + r.cs.buyer.nationality + "</td><td>" + r.status + "</td><td style='text-align:right'>" + r.qty + "매</td><td style='text-align:right'>" + r.total.toLocaleString() + "원</td></tr>").join("");
+  document.getElementById("results").insertAdjacentHTML("beforeend",
+    "<div class='summary'>✅ 데모 티켓 주문 <b>8건</b> 생성 완료.<br>프런트 <b>" + email + "</b> 로그인 → <b>Mypage → 나의 예약 → 티켓</b> / 어드민 <b>예약관리 → 티켓 예약 → 주문 목록(S15)</b> 에서 확인.<br><table style='margin-top:8px;border-collapse:collapse;font-size:12px;width:100%'><thead><tr><th>#</th><th style='text-align:left'>케이스</th><th>국가</th><th>주문상태</th><th>매수</th><th>결제금액</th></tr></thead><tbody>" + rowsHtml + "</tbody></table></div>");
+}
+document.getElementById("btnDemoOrder").addEventListener("click", buildDemoTicketOrders);
 document.getElementById("btnSeed").addEventListener("click", seedAll);
 document.getElementById("btnReset").addEventListener("click", resetAll);
 document.getElementById("btnBackup").addEventListener("click", backup);

@@ -30,6 +30,8 @@ const STORAGE_TICKET_MARGIN_MASTER = "high1_ticket_margin_master_v1"; // S11 티
 const STORAGE_TICKET_UPLOAD_HISTORY = "high1_ticket_upload_history_v1"; // S13 탭B 업로드 이력
 const STORAGE_TICKET_SEED_VER = "high1_ticket_seed_ver"; // 더미 시드 버전 마커 (값 바뀌면 재주입)
 const TICKET_SEED_VER = 12; // 더미 갱신 시 +1 → 카테고리·스펙·마진·상품 재주입(이력 제외)
+const STORAGE_TICKET_ORDERS = "high1_ticket_orders_v1";  // S15 티켓 주문(프런트 쓰기 / 어드민 읽기·상태변경)
+const STORAGE_TICKET_COUPONS = "high1_coupons_v1";       // S16 발급 쿠폰(프런트 쓰기 / 어드민 읽기·상태변경)
 
 /** 객실 부가요금 반영 기준 — 프런트 정책 노출은 모드와 무관하게 동일하게 표시 */
 const ROOM_CHARGE_SETTLEMENT = {
@@ -1473,14 +1475,11 @@ const NAV_SECTIONS = [
   },
   { id: "tour", label: "투어관리", mock: true, match: ["tours"], lnb: [], placeholder: "tours" },
   {
-    id: "booking", label: "예약관리", match: ["reservations", "reservations-cancelled", "ticket-orders", "ticket-orders-cancelled"],
+    id: "booking", label: "예약관리", match: ["reservations", "reservations-cancelled", "ticket-orders", "ticket-orders-cancelled", "coupon-issues"],
     lnb: [
-      { head: "숙소 예약" },
-      { label: "예약 목록", route: "reservations" },
-      { label: "취소 목록", route: "reservations-cancelled" },
-      { head: "티켓 예약" },
-      { label: "주문 목록", route: "ticket-orders" },
-      { label: "취소 목록", route: "ticket-orders-cancelled" },
+      { label: "숙소 예약", route: "reservations" },
+      { label: "티켓 예약·주문", route: "ticket-orders" },
+      { label: "쿠폰 발급현황", route: "coupon-issues" },
     ],
   },
   {
@@ -1697,14 +1696,9 @@ function openReservationCancelModal(main, code) {
   });
 }
 
-/** 어드민 표시용 데모 예약 (프런트가 생성하지 못하는 상태 보강 — localStorage 미저장, 표시 전용) */
-const DEMO_RESERVATIONS = [
-  { code: "BK-20260516-00003", source_mode: "PMS", product_name: "스탠다드 트윈 룸온리", place_name: "그랜드 호텔", room_name: "스탠다드 트윈", checkin: "2026-05-25", checkout: "2026-05-26", nights: 1, pax: { rooms: [{ adults: 2, children: 0 }] }, guest: { firstName: "Cheol Su", lastName: "Kim" }, amount_sell: 150000, status_admin: "FAILED", created_at: "2026-05-16T09:11:00", _demo: true },
-  { code: "BK-20260510-00007", source_mode: "PMS", product_name: "디럭스 킹 룸온리", place_name: "그랜드 호텔", room_name: "디럭스 킹", checkin: "2026-05-30", checkout: "2026-06-01", nights: 2, pax: { rooms: [{ adults: 2, children: 0 }] }, guest: { firstName: "Min Su", lastName: "Park" }, amount_deposit: 300000, amount_sell: 320000, status_admin: "CANCEL_REQ", penalty_rate: 30, penalty_section: "취소 3일 전 (DFLT_NM)", created_at: "2026-05-10T16:22:00", cancelled_at: "2026-05-20T11:30:00", _demo: true },
-  { code: "HM-20260516-00001", source_mode: "MANUAL", product_name: "디럭스 킹 특가", place_name: "그랜드 호텔", room_name: "디럭스 킹", checkin: "2026-06-01", checkout: "2026-06-03", nights: 2, pax: { rooms: [{ adults: 2, children: 0 }] }, guest: { firstName: "Young Hee", lastName: "Lee" }, amount_deposit: 260000, amount_sell: 280000, cancel_policy_type: "FREE_N_DAYS", cancel_free_days_before: 3, status_admin: "PENDING", created_at: "2026-05-16T10:45:00", _demo: true },
-  { code: "BK-20260415-00009", source_mode: "PMS", product_name: "디럭스 킹 룸온리", place_name: "그랜드 호텔", room_name: "디럭스 킹", checkin: "2026-05-01", checkout: "2026-05-02", nights: 1, pax: { rooms: [{ adults: 2, children: 0 }] }, guest: { firstName: "Tae Il", lastName: "Jung" }, amount_sell: 160000, status_admin: "NOSHOW", created_at: "2026-04-15T09:00:00", _demo: true },
-  { code: "BK-20260420-00005", source_mode: "PMS", product_name: "디럭스 킹 룸온리", place_name: "그랜드 호텔", room_name: "디럭스 킹", checkin: "2026-04-25", checkout: "2026-04-26", nights: 1, pax: { rooms: [{ adults: 2, children: 0 }] }, guest: { firstName: "Ji Hun", lastName: "Kang" }, amount_sell: 160000, status_admin: "CANCELLED", created_at: "2026-04-20T09:00:00", cancelled_at: "2026-04-22T09:10:00", refund_amount: 123333, penalty_amount: 36667, _demo: true },
-];
+/** 어드민 표시용 데모 예약 — 폐기(2026-08-31). 숙소 예약은 시드(high1_reservations_v1)로 프런트와 공유.
+ *  수기·실패·취소 등 하드코딩 데모 제거. 예약완료(CONFIRMED) 외국인 예약은 seed-data.html에서 주입. */
+const DEMO_RESERVATIONS = [];
 
 function rsvGuestName(g) { if (!g) return "-"; const n = [g.firstName, g.lastName].filter(Boolean).join(" "); return n || "-"; }
 function rsvFmtDT(iso) {
@@ -1805,7 +1799,7 @@ function renderReservationList(main, view) {
     <h2 class="page-title">${cancelledView ? "취소 목록" : "예약 목록"} <span class="badge" style="background:#ede9fe;color:#6d28d9">예약관리 · S10-A</span></h2>
     <p class="page-desc">${cancelledView
       ? "취소요청·취소완료 예약 전용 뷰. 취소일 기준 조회 · 위약금·환불금액 컬럼 표시."
-      : "전체 예약 조회. 프런트에서 접수된 실제 예약 + 상태 데모를 함께 표시합니다."} 저장소(읽기): <code>${STORAGE_RESERVATIONS}</code></p>
+      : "전체 예약 조회. 프런트에서 접수된 예약 + 시드 데모 예약(예약완료)을 함께 표시합니다."} 저장소(읽기): <code>${STORAGE_RESERVATIONS}</code></p>
 
     <div class="rsv-filter card">
       <div class="rsv-filter-row">
@@ -2023,6 +2017,473 @@ function renderReservationDetail(main, code) {
   });
   main.querySelector(".js-rd-cancel")?.addEventListener("click", () => openReservationCancelModal(main, code));
   main.querySelector(".js-rd-partial")?.addEventListener("click", () => alert("부분취소(PG 부분 환불)는 다음 단계 S10-C에서 제공됩니다."));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   S15 티켓 주문 목록 / S15-B 주문 상세 (예약관리 · 티켓 예약)
+   데이터: high1_ticket_orders_v1 + high1_coupons_v1 (프런트가 생성)
+   동기화: 프런트 구매→어드민 조회 / 어드민 관리자 부분취소→프런트 재진입 반영
+   ═══════════════════════════════════════════════════════════════ */
+const TK_NAT = {
+  KR: { ko: "대한민국", en: "Korea", dial: "+82" }, CN: { ko: "중국", en: "China", dial: "+86" },
+  JP: { ko: "일본", en: "Japan", dial: "+81" }, US: { ko: "미국", en: "USA", dial: "+1" },
+  TW: { ko: "대만", en: "Taiwan", dial: "+886" }, HK: { ko: "홍콩", en: "Hong Kong", dial: "+852" },
+  SG: { ko: "싱가포르", en: "Singapore", dial: "+65" }, TH: { ko: "태국", en: "Thailand", dial: "+66" },
+  VN: { ko: "베트남", en: "Vietnam", dial: "+84" }, MY: { ko: "말레이시아", en: "Malaysia", dial: "+60" },
+  ID: { ko: "인도네시아", en: "Indonesia", dial: "+62" }, PH: { ko: "필리핀", en: "Philippines", dial: "+63" },
+};
+function tkNatInfo(v) {
+  if (!v) return null;
+  const key = String(v).trim().toUpperCase();
+  if (TK_NAT[key]) return TK_NAT[key];
+  const hit = Object.values(TK_NAT).find((n) => n.ko === v || n.en.toLowerCase() === String(v).toLowerCase());
+  return hit || null;
+}
+function tkTodayYmd() { const d = new Date(); const p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; }
+/** 주문의 사용상태 집계 (취소 제외 활성 쿠폰 기준) — 미사용 / 일부사용 / 사용완료 / — */
+function tkUsageStatus(couponsOf) {
+  const active = couponsOf.filter((c) => c.status !== "CANCELLED");
+  if (!active.length) return "—";
+  const used = active.filter((c) => c.status === "USED").length;
+  if (used === 0) return "미사용";
+  if (used === active.length) return "사용완료";
+  return "일부사용";
+}
+const TK_ORD_CLS = { "결제완료": "tk-ost-paid", "부분취소": "tk-ost-part", "취소완료": "tk-ost-cx" };
+const TK_USE_CLS = { "미사용": "tk-ust-un", "일부사용": "tk-ust-part", "사용완료": "tk-ust-done", "—": "tk-ust-none" };
+
+let _tkOrdFilter = { view: "all", from: "", to: "", status: "", usage: "", q: "" };
+
+function renderTicketOrderList(main, view) {
+  if (_tkOrdFilter.view !== view) _tkOrdFilter = { view, from: "", to: "", status: "", usage: "", q: "" };
+  const f = _tkOrdFilter;
+  const cancelledView = view === "cancelled";
+  const orders = loadTicketOrders();
+  const coupons = loadTicketCoupons();
+  const won = (n) => Number(n || 0).toLocaleString() + "원";
+
+  const rows = orders.map((o) => {
+    const cps = coupons.filter((c) => c.order_no === o.order_no);
+    const first = (o.items && o.items[0]) || {};
+    const nMore = (o.items ? o.items.length : 0) - 1;
+    const rep = (first.product_name || "티켓 주문") + (nMore > 0 ? ` 외 ${nMore}종` : "");
+    const nat = tkNatInfo(o.buyer && o.buyer.nationality);
+    return {
+      order_no: o.order_no || "-",
+      buyerName: (o.buyer && o.buyer.name) || "-",
+      country: nat ? nat.ko : ((o.buyer && o.buyer.nationality) || "-"),
+      phone: (o.buyer && o.buyer.phone) || "-",
+      rep, qty: cps.length,
+      total: o.total || 0, refund: o.refund_amount || 0,
+      ordStatus: o.status || "결제완료",
+      useStatus: tkUsageStatus(cps),
+      created_at: o.created_at || "", cancelled_at: o.cancelled_at || "",
+      demo: !!o.demo,
+    };
+  }).sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
+
+  let list = rows;
+  if (cancelledView) list = list.filter((r) => r.ordStatus === "부분취소" || r.ordStatus === "취소완료");
+
+  const inRange = (v, from, to) => { if (!v) return false; if (from && v < from) return false; if (to && v > to) return false; return true; };
+  list = list.filter((r) => {
+    if (f.status && r.ordStatus !== f.status) return false;
+    if (f.usage && r.useStatus !== f.usage) return false;
+    if (f.q) { const q = f.q.toLowerCase(); if (!(`${r.order_no} ${r.buyerName} ${r.phone}`.toLowerCase().includes(q))) return false; }
+    const base = (cancelledView ? (r.cancelled_at || "") : (r.created_at || "")).slice(0, 10);
+    if (f.from || f.to) { if (!inRange(base, f.from, f.to)) return false; }
+    return true;
+  });
+
+  const ordBadge = (s) => `<span class="tk-ost ${TK_ORD_CLS[s] || ""}">${s}</span>`;
+  const useBadge = (s) => `<span class="tk-ust ${TK_USE_CLS[s] || ""}">${s}</span>`;
+  const statusOpts = ["", "결제완료", "부분취소", "취소완료"].map((s) => `<option value="${s}" ${f.status === s ? "selected" : ""}>${s === "" ? "전체 주문상태" : s}</option>`).join("");
+  const usageOpts = ["", "미사용", "일부사용", "사용완료"].map((s) => `<option value="${s}" ${f.usage === s ? "selected" : ""}>${s === "" ? "전체 사용상태" : s}</option>`).join("");
+
+  const cxHead = cancelledView ? `<th style="width:112px">취소일시</th><th style="width:88px">환불금액</th>` : `<th style="width:120px">주문일시</th>`;
+  const rowsHtml = list.length ? list.map((r) => {
+    const cxCols = cancelledView
+      ? `<td class="rsv-td-r">${r.cancelled_at ? rsvFmtDT(r.cancelled_at) : "—"}</td><td class="rsv-td-r">${r.refund ? won(r.refund) : "—"}</td>`
+      : `<td class="rsv-td-r" style="color:#888">${rsvFmtDT(r.created_at)}</td>`;
+    return `<tr>
+      <td class="rsv-td-code">${escapeHtml(r.order_no)}${r.demo ? ` <span class="rsv-demo" title="데모 데이터">데모</span>` : ""}</td>
+      <td>${escapeHtml(r.buyerName)}<div style="font-size:11px;color:#999">${escapeHtml(r.country)}</div></td>
+      <td class="rsv-td-c">${escapeHtml(r.phone)}</td>
+      <td>${escapeHtml(r.rep)}</td>
+      <td class="rsv-td-c">${r.qty}매</td>
+      <td>${ordBadge(r.ordStatus)}</td>
+      <td class="rsv-td-c">${useBadge(r.useStatus)}</td>
+      ${cxCols}
+      <td class="rsv-td-r">${won(r.total)}</td>
+      <td class="rsv-td-c"><button type="button" class="btn btn-ghost btn-sm js-tko-detail" data-no="${escapeAttr(r.order_no)}">상세</button></td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="${cancelledView ? 10 : 9}" class="empty" style="padding:24px">조회 조건에 맞는 티켓 주문이 없습니다. (프런트에서 티켓을 구매하면 표시됩니다)</td></tr>`;
+
+  const partCnt = rows.filter((r) => r.ordStatus === "부분취소").length;
+
+  main.innerHTML = `
+    <h2 class="page-title">${cancelledView ? "티켓 취소 목록" : "티켓 주문 목록"} <span class="badge" style="background:#ede9fe;color:#6d28d9">예약관리 · S15</span></h2>
+    <p class="page-desc">${cancelledView
+      ? "부분취소·취소완료 주문 전용 뷰. 취소일 기준 조회 · 환불금액 표시."
+      : "프런트에서 접수된 티켓 주문을 조회합니다. 행 클릭 → 주문 상세(발급 쿠폰·관리자 부분취소)."} 저장소(읽기): <code>${STORAGE_TICKET_ORDERS}</code></p>
+
+    <div class="rsv-filter card">
+      <div class="rsv-filter-row">
+        <span class="rsv-flabel">${cancelledView ? "취소일" : "주문일"}</span>
+        <input class="input rsv-date" type="date" id="tkf-from" value="${f.from}">
+        <span class="rsv-sep">~</span>
+        <input class="input rsv-date" type="date" id="tkf-to" value="${f.to}">
+        <span class="rsv-flabel" style="margin-left:10px">주문상태</span>
+        <select class="input rsv-sel" id="tkf-status">${statusOpts}</select>
+        <span class="rsv-flabel" style="margin-left:10px">사용상태</span>
+        <select class="input rsv-sel" id="tkf-usage">${usageOpts}</select>
+      </div>
+      <div class="rsv-filter-row">
+        <span class="rsv-flabel">통합검색</span>
+        <input class="input" style="width:230px" type="text" id="tkf-q" value="${escapeAttr(f.q)}" placeholder="주문번호 · 구매자명 · 연락처">
+        <button type="button" class="btn btn-primary btn-sm js-tko-search" style="margin-left:8px">검색</button>
+        <button type="button" class="btn btn-ghost btn-sm js-tko-reset">초기화</button>
+      </div>
+    </div>
+
+    <div class="rsv-meta">
+      총 <strong>${list.length}</strong>건
+      ${partCnt ? `<span class="rsv-pill rsv-pill-amber">부분취소 ${partCnt}건</span>` : ""}
+    </div>
+
+    <div class="card" style="padding:0;overflow-x:auto">
+      <table class="rsv-table">
+        <thead><tr>
+          <th style="width:150px">주문번호</th>
+          <th style="width:110px">구매자</th>
+          <th style="width:120px">연락처</th>
+          <th>대표상품</th>
+          <th style="width:64px">발급매수</th>
+          <th style="width:82px">주문상태</th>
+          <th style="width:82px">사용상태</th>
+          ${cxHead}
+          <th style="width:96px">결제금액</th>
+          <th style="width:56px">상세</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>`;
+
+  const commit = () => {
+    f.from = main.querySelector("#tkf-from").value;
+    f.to = main.querySelector("#tkf-to").value;
+    f.status = main.querySelector("#tkf-status").value;
+    f.usage = main.querySelector("#tkf-usage").value;
+    f.q = main.querySelector("#tkf-q").value.trim();
+    renderTicketOrderList(main, view);
+  };
+  main.querySelector(".js-tko-search").addEventListener("click", commit);
+  main.querySelector("#tkf-q").addEventListener("keydown", (e) => { if (e.key === "Enter") commit(); });
+  main.querySelector(".js-tko-reset").addEventListener("click", () => { _tkOrdFilter = { view, from: "", to: "", status: "", usage: "", q: "" }; renderTicketOrderList(main, view); });
+  main.querySelectorAll(".js-tko-detail").forEach((b) => b.addEventListener("click", () => navigate("ticket-orders/" + encodeURIComponent(b.getAttribute("data-no")))));
+}
+
+/** S15-B 티켓 주문 상세 */
+function renderTicketOrderDetail(main, orderNo) {
+  const orders = loadTicketOrders();
+  const o = orders.find((x) => x.order_no === orderNo);
+  if (!o) { renderComingSoon(main, "주문을 찾을 수 없습니다.", false); return; }
+  const coupons = loadTicketCoupons();
+  const ocs = coupons.filter((c) => c.order_no === orderNo);
+  const won = (n) => Number(n || 0).toLocaleString() + "원";
+  const today = tkTodayYmd();
+  const reRender = () => renderTicketOrderDetail(main, orderNo);
+
+  const anyCancelled = ocs.some((c) => c.status === "CANCELLED");
+  const allCancelled = ocs.length > 0 && ocs.every((c) => c.status === "CANCELLED");
+  const ordStatus = o.status || "결제완료";
+  const useStatus = tkUsageStatus(ocs);
+  const cpLabel = (s) => ({ SOLD: "미사용", USED: "사용완료", CANCELLED: "취소" }[s] || s);
+  const cpCls = (s) => ({ SOLD: "tk-cp-sold", USED: "tk-cp-used", CANCELLED: "tk-cp-cx" }[s] || "");
+
+  // 구매자
+  const buyer = o.buyer || {};
+  const nat = tkNatInfo(buyer.nationality);
+  const country = nat ? nat.ko : (buyer.nationality || "-");
+  const rawPhone = (buyer.phone || "").trim();
+  const phone = !rawPhone ? "-" : (rawPhone.startsWith("+") ? rawPhone : (nat ? `${nat.dial} ${rawPhone.replace(/^0/, "")}` : rawPhone));
+
+  // 발급 쿠폰 목록 (상품→레벨 정렬)
+  const sorted = ocs.slice().sort((a, b) => (a.product_name || "").localeCompare(b.product_name || "") || (a.level - b.level) || (a.coupon_no || "").localeCompare(b.coupon_no || ""));
+  const cpRows = sorted.map((c) => `<tr class="${c.status === "CANCELLED" ? "tk-cp-row-cx" : ""}">
+    <td style="font-family:monospace">${escapeHtml(c.coupon_no || "")}</td>
+    <td>${escapeHtml(c.product_name || "")}<div style="font-size:11px;color:#999">LV.${c.level} ${escapeHtml(c.level_name || "")} · ${escapeHtml(c.coupon_name || "")}</div></td>
+    <td class="rsv-td-c"><span class="tk-cp-badge ${cpCls(c.status)}">${cpLabel(c.status)}</span></td>
+    <td class="rsv-td-r">${won(c.deposit)}</td>
+    <td class="rsv-td-r">${won(c.sell)}</td>
+    <td class="rsv-td-c">${escapeHtml((c.use_start_date || "") + "~" + (c.use_end_date || ""))}</td>
+    <td class="rsv-td-c">${c.used_at ? rsvFmtDT(c.used_at) : (c.cancelled_at ? "취소 " + rsvFmtDate(c.cancelled_at.slice(0, 10)) : "—")}</td>
+  </tr>`).join("");
+
+  // 결제/환불 내역 — 상품별 성인(level!=2)/아동(level=2) + 금액 (원 주문 기준)
+  const payOrder = []; const payMap = new Map();
+  ocs.forEach((c) => { if (!payMap.has(c.product_id)) { payMap.set(c.product_id, { name: c.product_name, adult: 0, child: 0, amount: 0, deposit: 0 }); payOrder.push(c.product_id); } const g = payMap.get(c.product_id); if (c.level === 2) g.child++; else g.adult++; g.amount += (c.sell || 0); g.deposit += (c.deposit || 0); });
+  const payRows = payOrder.map((pid) => { const g = payMap.get(pid); const parts = []; if (g.adult) parts.push(`성인 ${g.adult}`); if (g.child) parts.push(`아동 ${g.child}`); return `<tr><td>${escapeHtml(g.name || "")}</td><td class="rsv-td-c">${parts.join(" · ")}</td><td class="rsv-td-r" style="color:#888">${won(g.deposit)}</td><td class="rsv-td-r">${won(g.amount)}</td></tr>`; }).join("");
+  const grossTotal = ocs.reduce((s, c) => s + (c.sell || 0), 0);
+  const grossDeposit = ocs.reduce((s, c) => s + (c.deposit || 0), 0);
+  const refunded = o.refund_amount || 0;
+
+  // 이력 타임라인
+  const hist = [];
+  if (o.created_at) hist.push({ dt: o.created_at, txt: `주문 접수 · 쿠폰 ${ocs.length}매 발급 (${won(grossTotal)})` });
+  ocs.forEach((c) => { if (c.used_at) hist.push({ dt: c.used_at, txt: `사용 처리 — ${c.coupon_no} (${c.product_name} LV.${c.level})` }); });
+  ocs.forEach((c) => { if (c.cancelled_at) hist.push({ dt: c.cancelled_at, txt: `취소 — ${c.coupon_no} (환불 ${won(c.sell)})` }); });
+  hist.sort((a, b) => (a.dt || "").localeCompare(b.dt || ""));
+  const histHtml = hist.map((h) => `<div class="tk-hist-row"><span class="tk-hist-dt">${rsvFmtDT(h.dt)}</span><span class="tk-hist-tx">${escapeHtml(h.txt)}</span></div>`).join("");
+
+  // 관리자 부분취소 가능 = 미사용(SOLD) + 사용종료일 이전 쿠폰 존재
+  const canCancel = ocs.some((c) => c.status === "SOLD" && c.use_end_date && today <= c.use_end_date);
+  const ordBadge = `<span class="tk-ost ${TK_ORD_CLS[ordStatus] || ""}">${ordStatus}</span>`;
+  const useBadge = `<span class="tk-ust ${TK_USE_CLS[useStatus] || ""}">${useStatus}</span>`;
+
+  main.innerHTML = `
+    <div style="margin-bottom:12px"><a href="#/ticket-orders" class="btn btn-ghost btn-sm">← 티켓 주문 목록</a></div>
+    <h2 class="page-title">티켓 주문 상세 <span class="badge" style="background:#ede9fe;color:#6d28d9">예약관리 · S15-B</span></h2>
+    <div class="rsv-meta" style="margin-bottom:14px">
+      주문번호 <strong>${escapeHtml(o.order_no)}</strong> &nbsp;|&nbsp; 주문일시 ${rsvFmtDT(o.created_at)} ${ordBadge} ${useBadge}
+      ${o.demo ? ` <span class="rsv-demo">데모</span>` : ""}
+    </div>
+
+    <div class="card" style="padding:16px;margin-bottom:14px">
+      <h3 style="font-size:14px;margin:0 0 10px">구매자 정보</h3>
+      <table class="rsv-detail-tbl">
+        <tr><th style="width:110px">성명</th><td>${escapeHtml(buyer.name || "-")}</td><th style="width:110px">국가</th><td>${escapeHtml(country)}</td></tr>
+        <tr><th>이메일</th><td>${escapeHtml(buyer.email || "-")}</td><th>휴대폰</th><td>${escapeHtml(phone)}</td></tr>
+      </table>
+    </div>
+
+    <div class="card" style="padding:0;margin-bottom:14px;overflow-x:auto">
+      <div style="padding:14px 16px 6px"><h3 style="font-size:14px;margin:0">발급 쿠폰 <span style="color:#888;font-weight:400">(${ocs.length}매)</span> <span class="badge" style="background:#fef3c7;color:#92400e">입금가 = 원가(어드민 전용)</span></h3></div>
+      <table class="rsv-table">
+        <thead><tr>
+          <th style="width:140px">쿠폰번호</th><th>쿠폰명 · 레벨</th><th style="width:78px">상태</th>
+          <th style="width:92px">입금가</th><th style="width:92px">판매가</th><th style="width:150px">사용기간</th><th style="width:120px">사용/취소일시</th>
+        </tr></thead>
+        <tbody>${cpRows || `<tr><td colspan="7" class="empty" style="padding:20px">발급된 쿠폰이 없습니다.</td></tr>`}</tbody>
+      </table>
+    </div>
+
+    <div class="card" style="padding:0;margin-bottom:14px;overflow-x:auto">
+      <div style="padding:14px 16px 6px"><h3 style="font-size:14px;margin:0">결제 · 환불 내역</h3></div>
+      <table class="rsv-table">
+        <thead><tr><th>상품</th><th style="width:130px">인원</th><th style="width:110px">입금가 합</th><th style="width:120px">판매가 합</th></tr></thead>
+        <tbody>${payRows}</tbody>
+        <tfoot>
+          <tr class="tk-pay-total"><td>총 결제금액</td><td></td><td class="rsv-td-r" style="color:#888">${won(grossDeposit)}</td><td class="rsv-td-r"><strong>${won(grossTotal)}</strong></td></tr>
+          ${refunded ? `<tr class="tk-pay-refund"><td colspan="3">환불액 (${allCancelled ? "전체취소" : "부분취소"})</td><td class="rsv-td-r" style="color:#c0392b">−${won(refunded)}</td></tr>
+          <tr class="tk-pay-net"><td colspan="3">실 결제금액</td><td class="rsv-td-r"><strong>${won(grossTotal - refunded)}</strong></td></tr>` : ""}
+        </tfoot>
+      </table>
+      <div style="padding:8px 16px 14px;font-size:12px;color:#888">결제수단 · 신용카드 (목업)</div>
+    </div>
+
+    <div class="card" style="padding:16px;margin-bottom:14px">
+      <h3 style="font-size:14px;margin:0 0 10px">처리 이력</h3>
+      <div class="tk-hist">${histHtml || `<div style="color:#999;font-size:13px">이력이 없습니다.</div>`}</div>
+    </div>
+
+    <div class="card" style="padding:16px">
+      <h3 style="font-size:14px;margin:0 0 8px">관리자 취소</h3>
+      <p style="font-size:12.5px;color:#555;margin:0 0 12px;line-height:1.7">오픈형 — 사용기간 종료 전 <strong>미사용(SOLD) 쿠폰</strong>만 상품·수량 단위로 부분취소·환불할 수 있습니다. 사용완료·기간 경과분은 취소 불가. 취소 결과는 프런트 마이페이지에 재진입 시 반영됩니다.</p>
+      ${canCancel
+        ? `<button type="button" class="btn btn-primary js-tko-cancel">부분취소 / 취소 처리</button>`
+        : `<button type="button" class="btn" disabled style="opacity:.5">취소 가능한 미사용 쿠폰 없음</button>`}
+    </div>`;
+
+  const btn = main.querySelector(".js-tko-cancel");
+  if (btn) btn.addEventListener("click", () => openAdminTicketCancel(orderNo, reRender));
+}
+
+/** 관리자 티켓 부분취소 모달 — 상품·수량 단위 (미사용 & 사용기간 이전만) */
+function openAdminTicketCancel(orderNo, onDone) {
+  const won = (n) => Number(n || 0).toLocaleString() + "원";
+  const today = tkTodayYmd();
+  const coupons = loadTicketCoupons();
+  const cancellable = coupons.filter((c) => c.order_no === orderNo && c.status === "SOLD" && c.use_end_date && today <= c.use_end_date);
+  if (!cancellable.length) { alert("취소 가능한 미사용 쿠폰이 없습니다."); return; }
+
+  // 상품+레벨 그룹 → { key, product_name, level, level_name, unit(sell), max }
+  const gmap = new Map(); const gorder = [];
+  cancellable.forEach((c) => { const key = c.product_id + "|" + c.level; if (!gmap.has(key)) { gmap.set(key, { key, product_id: c.product_id, level: c.level, product_name: c.product_name, level_name: c.level_name, unit: c.sell || 0, max: 0 }); gorder.push(key); } gmap.get(key).max++; });
+  const sel = {}; gorder.forEach((k) => sel[k] = 0);
+
+  const pOrder = []; const pMap = new Map();
+  gorder.forEach((k) => { const g = gmap.get(k); if (!pMap.has(g.product_id)) { pMap.set(g.product_id, []); pOrder.push(g.product_id); } pMap.get(g.product_id).push(g); });
+  const body = pOrder.map((pid) => `<div class="tpc-group"><div class="tpc-gname">${escapeHtml(pMap.get(pid)[0].product_name || "")}</div>${pMap.get(pid).map((g) => `<div class="tpc-line" data-key="${escapeAttr(g.key)}">
+      <div class="tpc-l"><span class="tpc-lv">LV.${g.level} ${escapeHtml(g.level_name || "")}</span><span class="tpc-unit">${won(g.unit)} · 미사용 ${g.max}</span></div>
+      <div class="tpc-step"><button type="button" class="tpc-dec">−</button><span class="tpc-q">0</span><button type="button" class="tpc-inc">+</button></div>
+    </div>`).join("")}</div>`).join("");
+
+  const wrap = document.createElement("div");
+  wrap.className = "tk-modal-back";
+  wrap.innerHTML = `<div class="tk-modal">
+    <h3 style="margin:0 0 4px">취소할 티켓 선택 <span style="font-size:12px;color:#888;font-weight:400">${escapeHtml(orderNo)}</span></h3>
+    <p style="font-size:12px;color:#888;margin:0 0 12px">미사용 쿠폰만 수량 단위로 취소됩니다. 취소 후 되돌릴 수 없습니다.</p>
+    <div class="tpc-body">${body}</div>
+    <div class="tk-modal-refund"><span>예상 환불액</span><strong id="atc_refund">${won(0)}</strong></div>
+    <div class="tk-modal-actions">
+      <button class="btn btn-ghost" id="atc_close">닫기</button>
+      <button class="btn btn-primary" id="atc_ok" disabled>선택 취소하기</button>
+    </div>
+  </div>`;
+  document.body.appendChild(wrap);
+  const close = () => wrap.remove();
+  const refresh = () => { let refund = 0, cnt = 0; Object.keys(sel).forEach((k) => { refund += sel[k] * gmap.get(k).unit; cnt += sel[k]; }); wrap.querySelector("#atc_refund").textContent = won(refund); wrap.querySelector("#atc_ok").disabled = cnt === 0; };
+  wrap.querySelectorAll(".tpc-line").forEach((row) => {
+    const key = row.dataset.key; const g = gmap.get(key);
+    row.querySelector(".tpc-dec").addEventListener("click", () => { sel[key] = Math.max(0, sel[key] - 1); row.querySelector(".tpc-q").textContent = sel[key]; refresh(); });
+    row.querySelector(".tpc-inc").addEventListener("click", () => { sel[key] = Math.min(g.max, sel[key] + 1); row.querySelector(".tpc-q").textContent = sel[key]; refresh(); });
+  });
+  wrap.addEventListener("click", (e) => { if (e.target === wrap) close(); });
+  wrap.querySelector("#atc_close").addEventListener("click", close);
+  wrap.querySelector("#atc_ok").addEventListener("click", () => {
+    let cnt = 0, refundPreview = 0; Object.keys(sel).forEach((k) => { cnt += sel[k]; refundPreview += sel[k] * gmap.get(k).unit; });
+    if (cnt <= 0) return;
+    if (!confirm(`선택한 ${cnt}매를 취소하시겠습니까?\n\n예상 환불액: ${won(refundPreview)}\n미사용 쿠폰만 취소되며 되돌릴 수 없습니다.`)) return;
+    let refund = 0; const all = loadTicketCoupons(); const nowIso = new Date().toISOString();
+    Object.keys(sel).forEach((k) => {
+      let q = sel[k]; if (q <= 0) return; const [pid, lv] = k.split("|"); const level = parseInt(lv, 10);
+      for (const c of all) {
+        if (q <= 0) break;
+        if (c.order_no === orderNo && c.product_id === pid && c.level === level && c.status === "SOLD" && c.use_end_date && today <= c.use_end_date) { c.status = "CANCELLED"; c.cancelled_at = nowIso; refund += (c.sell || 0); q--; }
+      }
+    });
+    saveTicketCoupons(all);
+    const orders = loadTicketOrders(); const o = orders.find((x) => x.order_no === orderNo);
+    const ocs = all.filter((c) => c.order_no === orderNo);
+    const allC = ocs.length > 0 && ocs.every((c) => c.status === "CANCELLED");
+    const anyC = ocs.some((c) => c.status === "CANCELLED");
+    if (o) { o.status = allC ? "취소완료" : (anyC ? "부분취소" : "결제완료"); o.refund_amount = (o.refund_amount || 0) + refund; o.cancelled_at = nowIso; saveTicketOrders(orders); }
+    close();
+    alert(`취소 처리되었습니다.\n환불액: ${won(refund)}`);
+    if (typeof onDone === "function") onDone();
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   S16 쿠폰 발급현황 (예약관리 · 쿠폰 발급현황)
+   데이터: high1_coupons_v1 (쿠폰 1장 = 1행) + high1_ticket_orders_v1(구매자)
+   조회 중심. 상태변경은 POS 사용/사용취소 API·주문취소(S15)로 발생.
+   ═══════════════════════════════════════════════════════════════ */
+let _tkCpFilter = { from: "", to: "", status: "", product: "", q: "" };
+
+function renderCouponIssueList(main) {
+  const f = _tkCpFilter;
+  const coupons = loadTicketCoupons();
+  const orders = loadTicketOrders();
+  const buyerMap = {}; orders.forEach((o) => { buyerMap[o.order_no] = (o.buyer && o.buyer.name) || "-"; });
+  const cpLabel = (s) => ({ SOLD: "미사용", USED: "사용완료", CANCELLED: "취소" }[s] || s);
+  const cpCls = (s) => ({ SOLD: "tk-cp-sold", USED: "tk-cp-used", CANCELLED: "tk-cp-cx" }[s] || "");
+
+  // 통계(전체 기준)
+  const totAll = coupons.length;
+  const usedAll = coupons.filter((c) => c.status === "USED").length;
+  const soldAll = coupons.filter((c) => c.status === "SOLD").length;
+  const cxAll = coupons.filter((c) => c.status === "CANCELLED").length;
+
+  // 상품 옵션(distinct)
+  const prodNames = Array.from(new Set(coupons.map((c) => c.product_name).filter(Boolean))).sort();
+
+  // 필터 적용
+  const inRange = (v, from, to) => { if (!v) return false; if (from && v < from) return false; if (to && v > to) return false; return true; };
+  let list = coupons.slice().sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
+  list = list.filter((c) => {
+    if (f.status && c.status !== f.status) return false;
+    if (f.product && c.product_name !== f.product) return false;
+    if (f.q) { const q = f.q.toLowerCase(); if (!(`${c.coupon_no} ${c.order_no} ${buyerMap[c.order_no] || ""}`.toLowerCase().includes(q))) return false; }
+    const base = (c.created_at || "").slice(0, 10);
+    if (f.from || f.to) { if (!inRange(base, f.from, f.to)) return false; }
+    return true;
+  });
+
+  const statusOpts = ["", "SOLD", "USED", "CANCELLED"].map((s) => `<option value="${s}" ${f.status === s ? "selected" : ""}>${s === "" ? "전체 상태" : s}</option>`).join("");
+  const prodOpts = `<option value="">전체 상품</option>` + prodNames.map((n) => `<option value="${escapeAttr(n)}" ${f.product === n ? "selected" : ""}>${escapeHtml(n)}</option>`).join("");
+
+  const rowsHtml = list.length ? list.map((c) => `<tr>
+    <td style="font-family:monospace;font-size:11px">${escapeHtml(c.coupon_no || "")}</td>
+    <td style="font-size:11px;color:#555"><a href="#/ticket-orders/${encodeURIComponent(c.order_no)}" style="color:#6d28d9">${escapeHtml(c.order_no || "")}</a></td>
+    <td>${escapeHtml(c.product_name || "")} <span style="color:#999;font-size:11px">/ LV.${c.level} ${escapeHtml(c.level_name || "")}</span></td>
+    <td>${escapeHtml(buyerMap[c.order_no] || "-")}</td>
+    <td class="rsv-td-c"><span class="tk-cp-badge ${cpCls(c.status)}">${cpLabel(c.status)} · ${c.status}</span></td>
+    <td class="rsv-td-c" style="font-size:11px">${escapeHtml((c.use_start_date || "") + "~" + (c.use_end_date || ""))}</td>
+    <td class="rsv-td-c" style="font-size:11px;color:#888">${rsvFmtDT(c.created_at)}</td>
+    <td class="rsv-td-c" style="font-size:11px;color:#888">${c.used_at ? rsvFmtDT(c.used_at) : (c.cancelled_at ? "취소 " + rsvFmtDate(c.cancelled_at.slice(0, 10)) : "—")}</td>
+  </tr>`).join("") : `<tr><td colspan="8" class="empty" style="padding:24px">조회 조건에 맞는 발급 쿠폰이 없습니다. (프런트에서 티켓을 구매하면 표시됩니다)</td></tr>`;
+
+  main.innerHTML = `
+    <div class="wf-toolbar" style="display:flex;align-items:center;justify-content:space-between">
+      <h2 class="page-title" style="margin:0">쿠폰 발급현황 <span class="badge" style="background:#fce7f3;color:#9d174d">예약관리 · S16</span></h2>
+      <button type="button" class="btn btn-ghost btn-sm js-cp-excel">⭳ 엑셀(CSV) 다운로드</button>
+    </div>
+    <p class="page-desc">발급된 쿠폰 단위 현황(쿠폰 1장 = 1행). 주문 단위는 S15. 상태변경은 하이원 POS 사용/사용취소 API·주문취소(S15)로 발생하며 이 화면은 <strong>조회 중심</strong>입니다. 저장소(읽기): <code>${STORAGE_TICKET_COUPONS}</code></p>
+
+    <div class="stat-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+      <div class="card" style="padding:12px 14px;border-left:3px solid #ec4899"><div style="font-size:11px;color:#888">발급 총수</div><div style="font-size:22px;font-weight:700;color:#1a1f2e">${totAll.toLocaleString()}<span style="font-size:11px;font-weight:400;color:#888"> 장</span></div></div>
+      <div class="card" style="padding:12px 14px;border-left:3px solid #1a6fb8"><div style="font-size:11px;color:#888">사용완료 (USED)</div><div style="font-size:22px;font-weight:700;color:#1a1f2e">${usedAll.toLocaleString()}<span style="font-size:11px;font-weight:400;color:#888"> 장</span></div></div>
+      <div class="card" style="padding:12px 14px;border-left:3px solid #10b981"><div style="font-size:11px;color:#888">미사용 (SOLD)</div><div style="font-size:22px;font-weight:700;color:#1a1f2e">${soldAll.toLocaleString()}<span style="font-size:11px;font-weight:400;color:#888"> 장</span></div></div>
+      <div class="card" style="padding:12px 14px;border-left:3px solid #ef4444"><div style="font-size:11px;color:#888">취소 (CANCELLED)</div><div style="font-size:22px;font-weight:700;color:#1a1f2e">${cxAll.toLocaleString()}<span style="font-size:11px;font-weight:400;color:#888"> 장</span></div></div>
+    </div>
+
+    <div class="rsv-filter card">
+      <div class="rsv-filter-row">
+        <span class="rsv-flabel">구매일</span>
+        <input class="input rsv-date" type="date" id="cpf-from" value="${f.from}">
+        <span class="rsv-sep">~</span>
+        <input class="input rsv-date" type="date" id="cpf-to" value="${f.to}">
+        <span class="rsv-flabel" style="margin-left:10px">쿠폰상태</span>
+        <select class="input rsv-sel" id="cpf-status">${statusOpts}</select>
+        <span class="rsv-flabel" style="margin-left:10px">상품</span>
+        <select class="input rsv-sel" id="cpf-product" style="min-width:150px">${prodOpts}</select>
+      </div>
+      <div class="rsv-filter-row">
+        <span class="rsv-flabel">통합검색</span>
+        <input class="input" style="width:240px" type="text" id="cpf-q" value="${escapeAttr(f.q)}" placeholder="쿠폰번호 · 주문번호 · 구매자명">
+        <button type="button" class="btn btn-primary btn-sm js-cp-search" style="margin-left:8px">검색</button>
+        <button type="button" class="btn btn-ghost btn-sm js-cp-reset">초기화</button>
+      </div>
+    </div>
+
+    <div class="rsv-meta">총 <strong>${list.length}</strong>장</div>
+
+    <div class="card" style="padding:0;overflow-x:auto">
+      <table class="rsv-table">
+        <thead><tr>
+          <th style="width:130px">쿠폰번호</th>
+          <th style="width:150px">주문번호</th>
+          <th>상품명 / 레벨</th>
+          <th style="width:96px">구매자</th>
+          <th style="width:110px">쿠폰상태</th>
+          <th style="width:150px">사용기간</th>
+          <th style="width:120px">구매일시</th>
+          <th style="width:120px">사용/취소일시</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>`;
+
+  const commit = () => {
+    f.from = main.querySelector("#cpf-from").value;
+    f.to = main.querySelector("#cpf-to").value;
+    f.status = main.querySelector("#cpf-status").value;
+    f.product = main.querySelector("#cpf-product").value;
+    f.q = main.querySelector("#cpf-q").value.trim();
+    renderCouponIssueList(main);
+  };
+  main.querySelector(".js-cp-search").addEventListener("click", commit);
+  main.querySelector("#cpf-q").addEventListener("keydown", (e) => { if (e.key === "Enter") commit(); });
+  main.querySelector(".js-cp-reset").addEventListener("click", () => { _tkCpFilter = { from: "", to: "", status: "", product: "", q: "" }; renderCouponIssueList(main); });
+  main.querySelector(".js-cp-excel").addEventListener("click", () => {
+    const head = ["쿠폰번호", "주문번호", "상품명", "레벨", "구매자", "쿠폰상태", "사용시작", "사용종료", "구매일시", "사용/취소일시"];
+    const lines = list.map((c) => [c.coupon_no, c.order_no, c.product_name, "LV." + c.level + " " + (c.level_name || ""), buyerMap[c.order_no] || "", c.status, c.use_start_date || "", c.use_end_date || "", c.created_at || "", c.used_at || c.cancelled_at || ""]);
+    const csv = [head].concat(lines).map((r) => r.map((v) => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`).join(",")).join("\r\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "coupon-issues.csv"; a.click(); URL.revokeObjectURL(a.href);
+  });
 }
 
 let _marginTab = "lodging"; // 마진관리 탭 상태 (lodging | ticket)
@@ -2902,9 +3363,14 @@ function route() {
     if (parts[1]) { renderReservationDetail(main, decodeURIComponent(parts[1])); return; }
     renderReservationList(main, "all"); return;
   }
-  // ── 예약관리 — 티켓 예약 (티켓 단계에서 구현 예정) ──
-  if (parts[0] === "ticket-orders") { renderComingSoon(main, "티켓 주문 목록 — 티켓 단계에서 구현 예정", false); return; }
-  if (parts[0] === "ticket-orders-cancelled") { renderComingSoon(main, "티켓 취소 목록 — 티켓 단계에서 구현 예정", false); return; }
+  // ── 예약관리 — 티켓 예약 (S15 주문목록 / S15-B 상세) ──
+  if (parts[0] === "ticket-orders-cancelled") { renderTicketOrderList(main, "cancelled"); return; }
+  if (parts[0] === "ticket-orders") {
+    if (parts[1]) { renderTicketOrderDetail(main, decodeURIComponent(parts[1])); return; }
+    renderTicketOrderList(main, "all"); return;
+  }
+  // ── 예약관리 — 쿠폰 발급현황 (S16) ──
+  if (parts[0] === "coupon-issues") { renderCouponIssueList(main); return; }
 
   // ── 티켓 도메인 ──
   if (parts[0] === "ticket-categories") {
@@ -6289,6 +6755,16 @@ function loadTicketProducts() {
   try { const r = localStorage.getItem(STORAGE_TICKET_PRODUCTS); return r ? JSON.parse(r) : []; } catch { return []; }
 }
 function saveTicketProducts(list) { localStorage.setItem(STORAGE_TICKET_PRODUCTS, JSON.stringify(list || [])); }
+
+/* ── S15/S16 티켓 주문·발급쿠폰 (프런트가 생성, 어드민은 조회·상태변경) ── */
+function loadTicketOrders() {
+  try { const r = localStorage.getItem(STORAGE_TICKET_ORDERS); return r ? JSON.parse(r) : []; } catch { return []; }
+}
+function saveTicketOrders(list) { localStorage.setItem(STORAGE_TICKET_ORDERS, JSON.stringify(list || [])); }
+function loadTicketCoupons() {
+  try { const r = localStorage.getItem(STORAGE_TICKET_COUPONS); return r ? JSON.parse(r) : []; } catch { return []; }
+}
+function saveTicketCoupons(list) { localStorage.setItem(STORAGE_TICKET_COUPONS, JSON.stringify(list || [])); }
 
 /** 티켓 마진 스키마 정규화 — { categories:{}, overrides:{} }. 구(flat) 스키마는 overrides로 이관. */
 function normalizeTicketMargin(raw) {

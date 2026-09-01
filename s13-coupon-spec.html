@@ -6,39 +6,54 @@
   <title>S13 쿠폰 스펙 관리</title>
   <link rel="stylesheet" href="wf-styles.css" />
   <style>
-    /* S13 전용 */
+    /* S13 전용 (티켓 = 로즈 테마) — 프로토타입 admin v0.7.31 카드형 재현 */
     .sec-policy{background:#fdf2f8;border:1px solid #fbcfe8;border-left:3px solid #ec4899;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:11px;line-height:1.7;color:#9d174d}
     .sec-policy b{color:#831843}
     .sec-policy .ref{font-size:10px;color:#ec4899;font-weight:700}
     .sec-policy .must{display:inline-block;background:#831843;color:#fff;font-size:9px;font-weight:700;border-radius:3px;padding:1px 6px;margin-right:4px}
-    /* 탭 활성색을 로즈 테마로 통일 */
+    .sec-note{background:#fff7ed;border:1px solid #fed7aa;border-left:3px solid #f59e0b;border-radius:4px;padding:8px 12px;margin-bottom:14px;font-size:11px;line-height:1.7;color:#9a3412}
+    .sec-note b{color:#7c2d12}
     .wf-tab.on{border-bottom-color:#ec4899;color:#831843}
-    /* 업로드 영역 */
-    .upload-box{border:1.5px dashed #ec4899;border-radius:8px;background:#fdf2f8;padding:18px;text-align:center;margin-bottom:14px}
-    .upload-box .up-ic{font-size:22px;color:#ec4899}
-    .upload-box .up-txt{font-size:12px;color:#9d174d;margin:6px 0 10px}
-    .result-log{border:1px solid #e8e8e2;border-radius:6px;background:#fff;margin-bottom:16px;overflow:hidden}
-    .result-head{display:flex;gap:14px;padding:9px 14px;background:#f0f0ea;font-size:11px;font-weight:700;border-bottom:1px solid #e0e0da}
-    .result-head .ok{color:#065f46}
-    .result-head .ng{color:#991b1b}
-    /* CSV 템플릿 양식 샘플 */
-    .csv-sample{width:100%;border-collapse:collapse;font-size:10px;margin-top:6px}
-    .csv-sample th{background:#831843;color:#fff;padding:6px 8px;text-align:left;font-weight:600;white-space:nowrap;border:1px solid #9d174d}
-    .csv-sample td{padding:5px 8px;border:1px solid #f3d4e3;color:#444;white-space:nowrap}
-    .csv-sample tr:nth-child(even) td{background:#fdf2f8}
-    .csv-sample .empty{color:#bbb;font-style:italic}
-    .csv-sample .req{color:#fbcfe8;font-weight:400;font-size:9px}
-    .csv-sample .opt{color:#f9a8c4;font-weight:400;font-size:9px}
-    /* 업로드 이력(탭B) */
-    .hist-detail{background:#fdf2f8;border:1px solid #f3d4e3;border-radius:4px;padding:10px 12px;font-size:10px;color:#9d174d;line-height:1.7}
-    .hist-detail .fail-line{font-family:monospace;color:#991b1b}
+
+    /* 프로토타입 안내박스(더미 업로드) */
+    .proto-notice{background:#fdf2f8;border:1px solid #fbcfe8;border-radius:6px;padding:8px 12px;font-size:11px;color:#9d174d;line-height:1.6;margin-bottom:12px}
+    .proto-notice b{color:#831843}
+
+    /* 스펙 카드 (쿠폰ID = 카드) */
+    .tk-card{border:1px solid #e5e7eb;border-radius:8px;margin-bottom:12px;overflow:hidden;background:#fff}
+    .tk-card.is-off{opacity:.62}
+    .tk-card-head{display:flex;align-items:center;gap:9px;padding:9px 12px;background:#fdf2f8;border-bottom:1px solid #fbcfe8;flex-wrap:wrap}
+    .tk-code{font-family:monospace;font-size:12px;font-weight:700;background:#fce7f3;color:#9d174d;padding:2px 8px;border-radius:3px;flex-shrink:0}
+    .tk-head-title{font-size:12px;font-weight:700;color:#1a1f2e}
+    .tk-head-meta{font-size:10px;color:#9ca3af}
+    .tk-head-actions{margin-left:auto;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .tk-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+    .tk-badge.on{background:#dcfce7;color:#166534}
+    .tk-badge.off{background:#fee2e2;color:#991b1b}
+    .tk-lv-table{width:100%;border-collapse:collapse;font-size:11px}
+    .tk-lv-table th{background:#faf5f7;color:#6b7280;font-weight:600;text-align:left;padding:6px 8px;border-bottom:1px solid #eee;white-space:nowrap;font-size:10px}
+    .tk-lv-table td{padding:6px 8px;border-bottom:1px solid #f3f4f6;color:#374151;white-space:nowrap}
+    .tk-lv-pill{display:inline-block;font-size:9px;font-weight:700;background:#ede9fe;color:#5b21b6;padding:1px 6px;border-radius:8px;margin-right:4px}
+    .tk-lv-pill.lv2{background:#e0f2fe;color:#075985}
+    .tk-scroll{overflow-x:auto}
+    .lock-btn{opacity:.4;cursor:not-allowed}
+
+    /* CSV 템플릿 컬럼 정의 표 */
+    .csv-def{width:100%;border-collapse:collapse;font-size:10px;margin-top:6px}
+    .csv-def th{background:#831843;color:#fff;padding:5px 8px;text-align:left;font-weight:600;white-space:nowrap}
+    .csv-def td{padding:5px 8px;border:1px solid #f3d4e3;color:#444}
+    .csv-def tr:nth-child(even) td{background:#fdf2f8}
+    .csv-def .rq{color:#be185d;font-weight:700}
+    .csv-def .op{color:#9ca3af}
+
+    /* 업로드 이력 상세 표 */
+    .hist-sub{width:100%;border-collapse:collapse;font-size:10px;margin:6px 0}
+    .hist-sub th{background:#f3f0f2;color:#6b7280;padding:4px 8px;text-align:left;font-weight:600}
+    .hist-sub td{padding:4px 8px;border-bottom:1px solid #f3f4f6}
     .hist-toggle{color:#be185d;text-decoration:underline;cursor:pointer;font-size:10px}
-    /* 페이지네이션 */
-    .wf-pager-num{display:flex;gap:4px;justify-content:center;margin-top:12px}
-    .wf-pager-num span{display:inline-block;min-width:24px;text-align:center;padding:4px 7px;border:1px solid #e0e0da;border-radius:4px;font-size:10px;color:#666;background:#fff;cursor:pointer}
-    .wf-pager-num span.on{background:#ec4899;border-color:#ec4899;color:#fff;font-weight:700}
-    /* 삭제 버튼 상태 */
-    .del-btn-off{color:#bbb;border-color:#e0e0da;cursor:not-allowed}
+    .rs-fail{background:#fee2e2;color:#991b1b;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px}
+    .rs-ok{background:#dcfce7;color:#166534;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px}
+    .rs-ow{background:#fef9c3;color:#854d0e;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px}
   </style>
 </head>
 <body>
@@ -62,7 +77,7 @@
   </div>
   <div class="sec-sub">
     High1 마케팅팀이 제공하는 쿠폰 스펙 데이터를 CSV로 등록·관리한다. 등록된 스펙은 S14 티켓 상품의 연결 소스가 된다.<br>
-    기준: 티켓 쿠폰 연동 정책서 v0.11 · 11.8절 · 12.2절 / 인수인계 문서 S13
+    기준: <b>프로토타입 admin v0.7.31</b>(#/coupon-specs) · 티켓 쿠폰 연동 정책서 v0.13 11.8절·12.2절
   </div>
 
   <div class="two-col">
@@ -83,12 +98,12 @@
 
       <div class="wf-body">
 
-        <!-- LNB -->
+        <!-- LNB : 프로토타입 실제 메뉴 순서 -->
         <div class="wf-lnb">
           <div class="wf-lnb-g">티켓관리</div>
+          <div class="wf-lnb-item">카테고리/컨텐츠 관리</div>
           <div class="wf-lnb-item on">쿠폰 스펙 관리</div>
-          <div class="wf-lnb-item">상품 목록</div>
-          <div class="wf-lnb-item">상품 등록/편집</div>
+          <div class="wf-lnb-item">티켓 상품</div>
         </div>
 
         <!-- MAIN -->
@@ -98,15 +113,15 @@
             <span class="wf-badge" style="font-size:11px;margin-left:8px;">S13</span>
           </div>
 
-          <!-- 공통정책 블록 -->
+          <!-- 공통정책 블록 : 프로토타입 실제 동작 기준 -->
           <div class="sec-policy">
-            <span class="ref">기준: v0.11 · 11.8절 · 12.2절</span><br>
-            · 스펙은 <b>관리자가 High1 제공 엑셀 → 우리 CSV 템플릿으로 변환 후 업로드</b>한다.<br>
-            · <b>데이터(입금가·사용기간 등) 변경은 엑셀 재업로드(덮어쓰기)로만</b>. 어드민 개별 수정은 없음.<br>
-            · <span class="must">선행 필수</span><b>CSV 업로드 전, CSV의 「카테고리·상품유형」 값이 S17 티켓 카테고리에 먼저 등록되어 있어야 한다.</b> 등록되지 않은 값이 있으면 그 행은 업로드에 실패한다(사유: "카테고리 불일치" / "상품유형 불일치"). 실패한 행은 <b>탭B 업로드 이력</b>에서 행을 펼쳐 라인번호·오류사유를 확인한다.<br>
-            · <b>노출 ON/OFF는 운영 토글로 별도 제어</b>(데이터와 분리). 입금가는 High1 납부 원가, <b>고객 미노출</b>.<br>
-            · 스펙 <b>OFF 시 연결된 S14 상품 전체 강제 미노출</b>(🔒), ON 시 상품 개별 노출로 복귀.<br>
-            · <b>스펙 삭제는 조건부 허용</b> — 연결 S14 상품 0개 <b>그리고</b> 발급 쿠폰 0개일 때만 삭제 가능(확인 모달 필수).
+            <span class="ref">기준: 프로토타입 admin v0.7.31</span><br>
+            · <b>카드 = 쿠폰ID(코드), 카드 안 행 = 레벨</b>(대인/소인). 스펙은 <b>관리자가 High1 제공 엑셀 → CSV 템플릿으로 변환 후 업로드</b>한다.<br>
+            · <b>데이터(입금가·사용기간 등) 변경은 CSV 재업로드(덮어쓰기)로만</b>. 어드민 개별 수정 없음.<br>
+            · <span class="must">선행 필수</span>업로드 전, CSV의 <b>「카테고리·상품유형」이 S17 티켓 카테고리에 먼저 등록</b>돼 있어야 한다. 미등록 값 행은 실패 처리(사유: 카테고리/상품유형 불일치) → <b>탭B 업로드 이력</b>에서 라인·사유 확인.<br>
+            · <b>노출 ON/OFF는 운영 토글로 별도 제어</b>(데이터와 분리). 스펙 <b>OFF → 연결 S14 상품 전체 강제 미노출 🔒</b>, ON 시 상품 개별 노출로 복귀.<br>
+            · <b>스펙 삭제는 조건부</b> — 연결 상품 0개 <b>AND</b> 발급 쿠폰 0개일 때만 가능(confirm 팝업 필수).<br>
+            · 입금가는 High1 납부 원가, <b>고객 미노출</b>. 상품명 등 텍스트는 EN(필수)/ZH(선택), 국문(KO) 미사용.
           </div>
 
           <!-- 탭 바 -->
@@ -118,218 +133,184 @@
           <!-- ===================== 탭A ===================== -->
           <div id="s13-tab-A">
 
-            <!-- 업로드 영역 -->
-            <div class="wf-toolbar" style="margin-bottom:10px;">
-              <div style="font-size:11px;color:#888;">등록된 스펙 총 4건</div>
-              <div style="display:flex;gap:6px;">
-                <button class="wf-btn">⭳ CSV 템플릿 다운로드 <span class="wf-cn">1</span></button>
-                <button class="wf-btn wf-btn-primary" style="background:#ec4899;border-color:#ec4899;">⭱ CSV 업로드 <span class="wf-cn">2</span></button>
+            <!-- 툴바 : 프로토타입 실제 = 등록 개수 + 템플릿/샘플 버튼 (드래그드롭·필터·검색 없음) -->
+            <div class="wf-toolbar" style="margin-bottom:10px;justify-content:space-between;">
+              <span style="font-size:12px;color:#6b7280;">등록된 스펙 3종 (레벨행 5건) <span class="wf-cn">1</span></span>
+              <span style="display:flex;gap:6px;">
+                <button class="wf-btn">⭳ CSV 템플릿 <span class="wf-cn">2</span></button>
+                <button class="wf-btn wf-btn-primary" style="background:#ec4899;border-color:#ec4899;">⭱ 샘플 스펙 불러오기 (더미) <span class="wf-cn">3</span></button>
+              </span>
+            </div>
+
+            <!-- 프로토타입 더미 업로드 안내 -->
+            <div class="proto-notice">
+              <b>프로토타입</b>: 실제 파일 업로드 대신 <b>[샘플 스펙 불러오기]</b> 버튼이 더미 CSV(워터월드 DBO 덮어쓰기 + 곤돌라 DC1 신규 + 카테고리 오류행 1건)를 주입해 <b>검증·덮어쓰기 확인·이력</b>을 시연합니다. S17 미등록 카테고리 행은 실패 처리됩니다. (실서비스에서는 파일 선택·업로드로 대체)
+            </div>
+
+            <!-- ================================================================
+                 카드 A : 쿠폰ID DBO — 워터파크 (2레벨) · 노출 ON · 연결상품 1 → 삭제 불가
+                 ================================================================ -->
+            <div class="tk-card">
+              <div class="tk-card-head">
+                <span class="tk-code">DBO <span class="wf-cn">4</span></span>
+                <span class="tk-head-title">OAT_26성수기_얼리_워터월드(플레이스토리) <span class="wf-cn">5</span></span>
+                <span class="tk-head-meta">레벨 2 · 연결상품 1 · 발급 0 <span class="wf-cn">6</span></span>
+                <span class="tk-head-actions">
+                  <span class="tk-badge on">노출 ON <span class="wf-cn">7</span></span>
+                  <button class="wf-btn wf-btn-sm">노출 OFF</button>
+                  <button class="wf-btn wf-btn-sm lock-btn" disabled title="연결 상품 1개가 있어 삭제할 수 없습니다">삭제 <span class="wf-cn">8</span></button>
+                </span>
+              </div>
+              <div class="tk-scroll">
+                <table class="tk-lv-table">
+                  <thead>
+                    <tr>
+                      <th>레벨 <span class="wf-cn">9</span></th>
+                      <th>쿠폰명 <span class="wf-cn">10</span></th>
+                      <th>카테고리 <span class="wf-cn">11</span></th>
+                      <th>입금가 <span class="wf-cn">12</span></th>
+                      <th>할인대상내역 <span class="wf-cn">13</span></th>
+                      <th>사용기간 <span class="wf-cn">14</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="tk-lv-pill">LV.1</span>대인</td>
+                      <td>워터월드 종일권_성수기(대인/얼리)</td>
+                      <td>워터파크</td>
+                      <td>40,000원</td>
+                      <td>종일권_대인_남_4계절 상품 외 15종</td>
+                      <td>2026-07-10 ~ 2026-08-30</td>
+                    </tr>
+                    <tr>
+                      <td><span class="tk-lv-pill lv2">LV.2</span>소인</td>
+                      <td>워터월드 종일권_성수기(소인/얼리)</td>
+                      <td>워터파크</td>
+                      <td>35,000원</td>
+                      <td>종일권_대인_남_4계절 상품 외 15종</td>
+                      <td>2026-07-10 ~ 2026-08-30</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 
-            <div class="upload-box">
-              <div class="up-ic">⭱</div>
-              <div class="up-txt">CSV 파일을 끌어다 놓거나 클릭하여 선택하세요<br>
-                <span style="font-size:10px;color:#be185d;">템플릿 컬럼: 카테고리 · 상품유형 · 쿠폰코드 · 이용권명 · 레벨 · 쿠폰명 · 입금가 · 할인대상내역 · 사용시작일 · 사용종료일</span>
+            <!-- ================================================================
+                 카드 B : 쿠폰ID SVA — 스키>리프트권 (2레벨) · 노출 OFF 🔒 · 연결상품 1 → 삭제 불가
+                 노출 OFF → 연결 S14 상품 전체 강제 미노출
+                 ================================================================ -->
+            <div class="tk-card is-off">
+              <div class="tk-card-head">
+                <span class="tk-code">SVA</span>
+                <span class="tk-head-title">OAT_26시즌_스키리프트_종일권</span>
+                <span class="tk-head-meta">레벨 2 · 연결상품 1 · 발급 0</span>
+                <span class="tk-head-actions">
+                  <span class="tk-badge off">노출 OFF 🔒 <span class="wf-cn">15</span></span>
+                  <button class="wf-btn wf-btn-sm">노출 ON</button>
+                  <button class="wf-btn wf-btn-sm lock-btn" disabled title="연결 상품 1개가 있어 삭제할 수 없습니다">삭제</button>
+                </span>
               </div>
-              <button class="wf-btn" style="font-size:10px;">파일 선택</button>
+              <div class="tk-scroll">
+                <table class="tk-lv-table">
+                  <thead>
+                    <tr>
+                      <th>레벨</th><th>쿠폰명</th><th>카테고리</th><th>입금가</th><th>할인대상내역</th><th>사용기간</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="tk-lv-pill">LV.1</span>대인</td>
+                      <td>스키 리프트 종일권(대인)</td>
+                      <td>스키 › 리프트권</td>
+                      <td>65,000원</td>
+                      <td>리프트 종일권 대인 외 (입금가 추정)</td>
+                      <td>2026-12-01 ~ 2027-02-28</td>
+                    </tr>
+                    <tr>
+                      <td><span class="tk-lv-pill lv2">LV.2</span>소인</td>
+                      <td>스키 리프트 종일권(소인)</td>
+                      <td>스키 › 리프트권</td>
+                      <td>48,000원</td>
+                      <td>리프트 종일권 소인 외 (입금가 추정)</td>
+                      <td>2026-12-01 ~ 2027-02-28</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            <!-- S11 마진 자동 연동 안내 -->
-            <div style="background:#eef2ff;border:1px solid #c7d2fe;border-left:3px solid #6366f1;border-radius:4px;padding:8px 12px;font-size:11px;color:#3730a3;line-height:1.6;margin-bottom:10px;">
-              <b>S11 마진 자동 연동</b> <span class="wf-cn">16</span><br>
-              업로드가 완료되면 등록된 <b>쿠폰코드(coupon_id)</b>가 <b>S11 티켓 마진 목록에 자동 반영</b>됩니다. 신규 쿠폰코드는 마진 <b>미설정(상속)</b> 상태로 행이 추가됩니다.<br>
-              기존 쿠폰코드의 <b>카테고리·상품유형이 바뀌고</b> 그 마진이 <b>'상속'</b> 상태이면 새 카테고리 마스터로 재계산되며, 업로드 결과에 <b>"N개 쿠폰코드의 카테고리가 변경되어 상속 마진이 재계산되었습니다"</b> 경고가 표시됩니다. (개별 설정 쿠폰코드는 유지)
+            <!-- ================================================================
+                 카드 C : 쿠폰ID GDO — 곤돌라 (1레벨 대인 전용) · 노출 ON · 연결상품 0·발급 0 → 삭제 가능
+                 ================================================================ -->
+            <div class="tk-card">
+              <div class="tk-card-head">
+                <span class="tk-code">GDO</span>
+                <span class="tk-head-title">OAT_곤돌라_왕복권</span>
+                <span class="tk-head-meta">레벨 1 · 연결상품 0 · 발급 0</span>
+                <span class="tk-head-actions">
+                  <span class="tk-badge on">노출 ON</span>
+                  <button class="wf-btn wf-btn-sm">노출 OFF</button>
+                  <button class="wf-btn wf-btn-sm wf-btn-danger" title="연결 상품 0개 / 발급 쿠폰 0개 — 삭제 가능">삭제</button>
+                </span>
+              </div>
+              <div class="tk-scroll">
+                <table class="tk-lv-table">
+                  <thead>
+                    <tr>
+                      <th>레벨</th><th>쿠폰명</th><th>카테고리</th><th>입금가</th><th>할인대상내역</th><th>사용기간</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="tk-lv-pill">LV.1</span>대인</td>
+                      <td>곤돌라 왕복권(대인)</td>
+                      <td>곤돌라</td>
+                      <td>18,000원</td>
+                      <td>곤돌라 왕복 대인</td>
+                      <td>2026-07-01 ~ 2026-12-31</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            <!-- CSV 템플릿 양식 샘플 -->
-            <div class="wf-section-head">CSV 템플릿 양식 (샘플) <span class="wf-cn">3</span></div>
+            <div class="wf-hint" style="margin-top:10px;">· 카드 = 쿠폰ID · 카드 안 행 = 레벨(대인 LV.1·소인 LV.2 또는 대인 1레벨) · 입금가(원가) 고객 미노출 · 노출 OFF🔒 = 연결 S14 상품 전체 강제 미노출 · 삭제는 연결상품 0 AND 발급 0일 때만 · <b>발급 수는 현재 0 고정</b>(S16 발급현황 프로토타입 미구현).</div>
+
+            <!-- CSV 템플릿 컬럼 정의 (다운로드 양식) -->
+            <div class="wf-section-head" style="margin-top:16px;">CSV 템플릿 컬럼 정의 (다운로드 양식 10컬럼) <span class="wf-cn">16</span></div>
             <div style="overflow-x:auto;border:1px solid #f3d4e3;border-radius:6px;">
-              <table class="csv-sample">
+              <table class="csv-def">
                 <thead>
-                  <tr>
-                    <th>카테고리<br><span class="req">필수</span></th>
-                    <th>상품유형<br><span class="opt">선택·2뎁스</span></th>
-                    <th>쿠폰코드<br><span class="req">필수</span></th>
-                    <th>이용권명<br><span class="req">필수</span></th>
-                    <th>레벨<br><span class="req">필수</span></th>
-                    <th>쿠폰명<br><span class="req">필수</span></th>
-                    <th>입금가<br><span class="req">필수</span></th>
-                    <th>할인대상내역<br><span class="opt">선택</span></th>
-                    <th>사용시작일<br><span class="req">YYYY-MM-DD</span></th>
-                    <th>사용종료일<br><span class="req">YYYY-MM-DD</span></th>
-                  </tr>
+                  <tr><th>순서</th><th>컬럼</th><th>필수</th><th>정의 · 값 형식</th></tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>워터파크</td><td class="empty">(빈값)</td><td>OAT</td><td>OAT_26성수기_얼리_워터월드</td><td>1</td><td>워터월드 종일권_성수기(대인/얼리)</td><td>40000</td><td>워터월드 종일권_대인 외 3종</td><td>2026-07-10</td><td>2026-08-30</td>
-                  </tr>
-                  <tr>
-                    <td>워터파크</td><td class="empty">(빈값)</td><td>OAT</td><td>OAT_26성수기_얼리_워터월드</td><td>2</td><td>워터월드 종일권_성수기(소인/얼리)</td><td>35000</td><td>워터월드 종일권_소인 외 3종</td><td>2026-07-10</td><td>2026-08-30</td>
-                  </tr>
-                  <tr>
-                    <td>스키</td><td>리프트권</td><td>SKL</td><td>SKL_26시즌_리프트_종일권</td><td>1</td><td>리프트 종일권_대인</td><td>55000</td><td>종일권_대인_남_4계절 상품 외 15종</td><td>2026-12-01</td><td>2027-02-28</td>
-                  </tr>
-                  <tr>
-                    <td>스키</td><td>리프트권</td><td>SKL</td><td>SKL_26시즌_리프트_4시간</td><td>1</td><td>리프트 4시간권_대인</td><td>38000</td><td>4시간권_대인 외 8종</td><td>2026-12-01</td><td>2027-02-28</td>
-                  </tr>
+                  <tr><td>1</td><td>카테고리</td><td class="rq">필수</td><td>1뎁스 분류(예: 워터파크·스키). S17에 사전 등록 필수.</td></tr>
+                  <tr><td>2</td><td>상품유형</td><td class="op">선택</td><td>2뎁스(예: 리프트권). 2뎁스 없는 카테고리는 빈값. S17 사전 등록 필수.</td></tr>
+                  <tr><td>3</td><td>쿠폰코드</td><td class="rq">필수</td><td>3자리 코드(=쿠폰ID). 12자리 쿠폰번호 앞 3자리. 예: DBO·SVA.</td></tr>
+                  <tr><td>4</td><td>이용권명</td><td class="rq">필수</td><td>스펙 파일 헤더의 쿠폰 식별명. 쿠폰코드와 1:1.</td></tr>
+                  <tr><td>5</td><td>레벨</td><td class="rq">필수</td><td>1=대인 / 2=소인 (숫자). 같은 쿠폰코드 내 레벨별 행 분리.</td></tr>
+                  <tr><td>6</td><td>쿠폰명</td><td class="rq">필수</td><td>레벨별 표시명. 예: "워터월드 종일권_성수기(대인/얼리)".</td></tr>
+                  <tr><td>7</td><td>입금가</td><td class="rq">필수</td><td>High1 납부 원가(숫자, 원). 고객 미노출.</td></tr>
+                  <tr><td>8</td><td>할인대상내역</td><td class="op">선택</td><td>이 쿠폰으로 할인되는 PMS 상품 목록(참고 텍스트).</td></tr>
+                  <tr><td>9</td><td>사용시작일</td><td class="rq">필수</td><td>현장 사용 시작일. YYYY-MM-DD.</td></tr>
+                  <tr><td>10</td><td>사용종료일</td><td class="rq">필수</td><td>현장 사용 종료일. YYYY-MM-DD.</td></tr>
                 </tbody>
               </table>
             </div>
-            <div class="wf-hint" style="margin-bottom:16px;">· <b>10개 컬럼 · 순서 준수</b>. 사용기간은 <b>사용시작일 / 사용종료일 2컬럼</b>(YYYY-MM-DD). 판매기간(인쇄기간)은 받지 않음(정책 v0.11 3.3절). · <b>이용권명</b>은 스펙 파일 상단 헤더의 쿠폰 식별명으로, <b>쿠폰코드와 1:1</b>로 대응한다. · <b>상품유형</b>은 2뎁스가 있는 카테고리(스키 등)만 입력하고, 워터파크처럼 2뎁스가 없으면 빈값. · <b>할인대상내역</b>은 이 쿠폰으로 할인 적용되는 PMS 상품 목록(선택 입력).</div>
+            <div class="wf-hint" style="margin-bottom:14px;">· 판매기간(인쇄기간)은 받지 않음(정책 v0.13 3.3절) — 판매 마감은 S14 커트오프가 담당. · 3뎁스(권종)는 쓰지 않음(최대 2뎁스) — 종일권·4시간권 구분은 쿠폰명·쿠폰코드로.</div>
 
-            <!-- 업로드 결과 요약 -->
-            <div class="wf-section-head">최근 업로드 결과 <span class="wf-cn">4</span></div>
-            <div class="result-log">
-              <div class="result-head">
-                <span>workshop_coupon_2026.csv</span>
-                <span class="ok">성공 6건</span>
-                <span class="ng">실패 2건</span>
-                <span style="margin-left:auto;color:#888;font-weight:400;">2026-06-23 09:12</span>
-              </div>
-              <div style="padding:9px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                <button class="wf-btn" style="font-size:10px;" onclick="s13tab('B')">업로드 이력에서 상세 보기 →</button>
-                <span class="wf-hint" style="margin-top:0;">화면에는 <b>성공·실패 건수 요약</b>만 표시. 실패 행의 <b>라인번호·오류사유</b>는 <b>탭B 업로드 이력</b>에서 행을 펼쳐 확인한다.</span>
-              </div>
+            <!-- S11 마진 자동 연동 안내 -->
+            <div style="background:#eef2ff;border:1px solid #c7d2fe;border-left:3px solid #6366f1;border-radius:4px;padding:8px 12px;font-size:11px;color:#3730a3;line-height:1.6;margin-bottom:10px;">
+              <b>S11 마진 자동 연동</b> <span class="wf-cn">17</span><br>
+              업로드 완료 시 등록된 <b>쿠폰코드</b>가 <b>S11 티켓 마진 목록에 자동 반영</b>됩니다. 신규 쿠폰코드는 마진 <b>미설정(상속)</b> 상태로 행 추가. 기존 쿠폰코드의 카테고리·상품유형이 바뀌고 그 마진이 <b>'상속'</b>이면 새 카테고리 마스터로 재계산 → 결과에 재계산 경고 표시(개별 설정 쿠폰코드는 유지).
             </div>
 
-            <!-- 스펙 목록 -->
-            <div class="wf-toolbar" style="margin-bottom:10px;">
-              <div class="wf-filter" style="margin-bottom:0;">
-                <select class="wf-select" style="width:120px;font-size:11px"><option>카테고리 전체</option><option>스키</option><option>워터파크</option></select>
-                <select class="wf-select" style="width:120px;font-size:11px"><option>상품유형 전체</option><option>리프트권</option><option>장비렌탈</option></select>
-                <select class="wf-select" style="width:110px;font-size:11px"><option>상태 전체</option><option>활성</option><option>비활성</option></select>
-                <input class="wf-input" style="width:170px;" placeholder="쿠폰코드 / 이용권명 검색" />
-              </div>
-            </div>
-
-            <div style="overflow-x:auto;">
-            <table class="wf-table">
-              <thead>
-                <tr>
-                  <th>카테고리 <span class="wf-cn">5</span></th>
-                  <th>상품유형</th>
-                  <th>이용권명</th>
-                  <th>쿠폰코드 <span class="wf-cn">6</span></th>
-                  <th>레벨 <span class="wf-cn">7</span></th>
-                  <th>쿠폰명</th>
-                  <th>입금가 <span class="wf-cn">8</span></th>
-                  <th>사용기간</th>
-                  <th>연결상품 <span class="wf-cn">9</span></th>
-                  <th>발급쿠폰 <span class="wf-cn">10</span></th>
-                  <th>노출 ON/OFF <span class="wf-cn">11</span></th>
-                  <th>삭제 <span class="wf-cn">12</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>워터파크</td>
-                  <td style="color:#bbb;">—</td>
-                  <td style="font-size:10px;">OAT_26성수기_얼리_워터월드</td>
-                  <td style="font-family:monospace;">OAT</td>
-                  <td>LV.1 대인</td>
-                  <td style="font-size:10px;">워터월드 종일권_성수기(대인/얼리)</td>
-                  <td>40,000</td>
-                  <td style="font-size:10px;">26-07-10 ~ 08-30</td>
-                  <td><a class="wf-link">1</a></td>
-                  <td>12</td>
-                  <td>
-                    <div class="wf-toggle-row" style="margin-bottom:0;">
-                      <span class="wf-toggle on"></span><span class="wf-toggle-label">활성</span>
-                    </div>
-                  </td>
-                  <td><button class="wf-btn wf-btn-sm del-btn-off" disabled title="연결 상품 1개 / 발급 쿠폰 12개가 있어 삭제할 수 없습니다">삭제</button></td>
-                </tr>
-                <tr>
-                  <td>워터파크</td>
-                  <td style="color:#bbb;">—</td>
-                  <td style="font-size:10px;">OAT_26성수기_얼리_워터월드</td>
-                  <td style="font-family:monospace;">OAT</td>
-                  <td>LV.2 소인</td>
-                  <td style="font-size:10px;">워터월드 종일권_성수기(소인/얼리)</td>
-                  <td>35,000</td>
-                  <td style="font-size:10px;">26-07-10 ~ 08-30</td>
-                  <td><a class="wf-link">1</a></td>
-                  <td>8</td>
-                  <td>
-                    <div class="wf-toggle-row" style="margin-bottom:0;">
-                      <span class="wf-toggle on"></span><span class="wf-toggle-label">활성</span>
-                    </div>
-                  </td>
-                  <td><button class="wf-btn wf-btn-sm del-btn-off" disabled title="연결 상품 1개 / 발급 쿠폰 8개가 있어 삭제할 수 없습니다">삭제</button></td>
-                </tr>
-                <tr>
-                  <td>스키</td>
-                  <td>리프트권</td>
-                  <td style="font-size:10px;">SKL_26시즌_리프트_종일권</td>
-                  <td style="font-family:monospace;">SKL</td>
-                  <td>LV.1 대인</td>
-                  <td style="font-size:10px;">리프트 종일권_대인</td>
-                  <td>55,000</td>
-                  <td style="font-size:10px;">26-12-01 ~ 27-02-28</td>
-                  <td><a class="wf-link">0</a></td>
-                  <td>0</td>
-                  <td>
-                    <div class="wf-toggle-row" style="margin-bottom:0;">
-                      <span class="wf-toggle on"></span><span class="wf-toggle-label">활성</span>
-                    </div>
-                  </td>
-                  <td><button class="wf-btn wf-btn-sm wf-btn-danger" title="연결 상품 0개 / 발급 쿠폰 0개 — 삭제 가능">삭제</button></td>
-                </tr>
-                <tr style="opacity:.75;">
-                  <td>스키</td>
-                  <td>리프트권</td>
-                  <td style="font-size:10px;">SKL_26시즌_리프트_4시간</td>
-                  <td style="font-family:monospace;">SKL</td>
-                  <td>LV.1 대인</td>
-                  <td style="font-size:10px;">리프트 4시간권_대인</td>
-                  <td>38,000</td>
-                  <td style="font-size:10px;">26-12-01 ~ 27-02-28</td>
-                  <td><a class="wf-link">2</a></td>
-                  <td>0</td>
-                  <td>
-                    <div class="wf-toggle-row" style="margin-bottom:0;">
-                      <span class="wf-toggle"></span><span class="wf-toggle-label">비활성</span> <span title="연결상품 강제 미노출">🔒</span>
-                    </div>
-                  </td>
-                  <td><button class="wf-btn wf-btn-sm del-btn-off" disabled title="연결 상품 2개가 있어 삭제할 수 없습니다">삭제</button></td>
-                </tr>
-              </tbody>
-            </table>
-            </div>
-
-            <!-- 재업로드 덮어쓰기 모달 (참고용 인라인) -->
-            <div class="sec-title" style="margin-top:28px;font-size:14px;">
-              <span class="sec-badge" style="background:#ec4899;">모달</span>
-              재업로드 — 덮어쓰기 확인 <span class="wf-cn">13</span>
-            </div>
-            <div class="wf-card" style="max-width:440px;">
-              <div style="font-size:12px;font-weight:700;color:#1a1f2e;margin-bottom:8px;">동일 스펙이 이미 존재합니다</div>
-              <div class="wf-alert" style="margin-top:0;">
-                업로드 파일 중 <b>3건</b>이 기존 쿠폰코드+레벨과 동일합니다. 덮어쓰면 기존 입금가·사용기간이 새 값으로 교체됩니다.
-              </div>
-              <div style="font-size:10px;color:#888;margin:8px 0;line-height:1.6;">· 덮어쓰기: 동일 건 새 값으로 교체, 나머지는 신규 등록<br>· 중단: 업로드 전체 취소</div>
-              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
-                <button class="wf-btn">중단</button>
-                <button class="wf-btn wf-btn-primary" style="background:#ec4899;border-color:#ec4899;">덮어쓰기</button>
-              </div>
-            </div>
-
-            <!-- 스펙 삭제 확인 모달 (참고용 인라인) -->
-            <div class="sec-title" style="margin-top:24px;font-size:14px;">
-              <span class="sec-badge" style="background:#ec4899;">모달</span>
-              스펙 삭제 확인 <span class="wf-cn">14</span>
-            </div>
-            <div class="wf-card" style="max-width:440px;">
-              <div style="font-size:12px;font-weight:700;color:#1a1f2e;margin-bottom:8px;">이 스펙을 삭제하시겠습니까?</div>
-              <div class="wf-alert" style="margin-top:0;">
-                <b>SKL · LV.1 대인 (리프트 종일권)</b> 스펙을 삭제합니다. 연결 상품 0개 · 발급 쿠폰 0개로 삭제 조건을 충족합니다. 삭제하면 되돌릴 수 없습니다.
-              </div>
-              <div style="font-size:10px;color:#888;margin:8px 0;line-height:1.6;">· 연결 상품이 1개 이상이거나 발급 쿠폰(SOLD/USED/CANCELED)이 1건이라도 있으면 삭제할 수 없다(삭제 버튼 비활성).</div>
-              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
-                <button class="wf-btn">취소</button>
-                <button class="wf-btn wf-btn-primary" style="background:#e74c3c;border-color:#e74c3c;">삭제</button>
-              </div>
+            <!-- confirm 팝업 안내 (프로토타입은 브라우저 confirm) -->
+            <div class="sec-note" style="margin-top:6px;">
+              <b>확인 팝업(브라우저 confirm) 2종 — 커스텀 모달 아님(프로토타입):</b><br>
+              · <b>재업로드 덮어쓰기</b> <span class="wf-cn">18</span> — 동일 쿠폰코드+레벨 존재 시 "N건이 이미 존재합니다. 덮어쓰시겠습니까? [취소] 시 중단" confirm. 확인=기존 입금가·사용기간 교체(노출 상태 유지), 취소=업로드 전체 중단.<br>
+              · <b>스펙 삭제</b> — "쿠폰 스펙 XXX를 삭제할까요? (연결 상품·발급 쿠폰 0건일 때만)" confirm. 삭제는 되돌릴 수 없음.<br>
+              · <b>노출 토글</b> — OFF 시 "연결된 티켓 상품이 전부 강제 미노출됩니다" confirm.
             </div>
 
           </div><!-- /s13-tab-A -->
@@ -337,8 +318,8 @@
           <!-- ===================== 탭B ===================== -->
           <div id="s13-tab-B" style="display:none;">
 
-            <div class="wf-section-head">업로드 이력 <span class="wf-cn">15</span></div>
-            <div class="wf-hint" style="margin-bottom:10px;">· 업로드를 시도할 때마다 이력이 쌓인다. <b>최근 50건</b>을 보여주며, 그보다 오래된 이력은 아래 페이지 번호(1·2·3…)로 넘겨서 본다.<br>· 각 행의 <b>[상세 보기]</b>를 누르면 그 행이 펼쳐지면서, 실패한 행의 <b>라인번호와 오류사유</b>를 볼 수 있다.</div>
+            <div class="wf-section-head">업로드 이력 <span class="wf-cn">19</span></div>
+            <div class="wf-hint" style="margin-bottom:10px;">· 업로드를 시도할 때마다 이력이 쌓인다(<b>최근 50건</b> 저장). 각 행을 클릭하면 아래로 펼쳐지며, 라인별 <b>결과(성공/덮어쓰기/실패)·사유</b>를 표로 보여준다.</div>
 
             <table class="wf-table">
               <thead>
@@ -354,54 +335,30 @@
               </thead>
               <tbody>
                 <tr>
-                  <td style="white-space:nowrap;">2026-06-23 09:12</td>
-                  <td style="font-size:10px;">workshop_coupon_2026.csv</td>
-                  <td>8</td>
-                  <td style="color:#065f46;font-weight:700;">6</td>
-                  <td style="color:#991b1b;font-weight:700;">2</td>
-                  <td>관리자A</td>
+                  <td style="white-space:nowrap;">2026-09-01 09:12</td>
+                  <td style="font-size:10px;">waterpark_ski_specs_dummy.csv</td>
+                  <td>4</td>
+                  <td style="color:#065f46;font-weight:700;">3</td>
+                  <td style="color:#991b1b;font-weight:700;">1</td>
+                  <td>admin</td>
                   <td><span class="hist-toggle" onclick="s13hist(this)">접기 ▴</span></td>
                 </tr>
-                <!-- 인라인 펼침 상세 (기본 열림 상태로 예시 표시) -->
+                <!-- 인라인 펼침 상세 (표) : 라인·쿠폰코드·레벨·결과·사유 -->
                 <tr class="hist-detail-row">
-                  <td colspan="7" style="background:#fff;">
-                    <div class="hist-detail">
-                      <b>실패 2건 상세</b><br>
-                      <span class="fail-line">라인 4</span> — 카테고리 불일치: "워터랜드"는 S17에 등록되지 않은 카테고리입니다. (S17 선행 등록 필요)<br>
-                      <span class="fail-line">라인 7</span> — 상품유형 불일치: 카테고리 "스키"에 상품유형 "곤돌라권"이 S17에 등록되어 있지 않습니다.<br>
-                      <span style="color:#065f46;">· 성공 6건: 라인 2·3·5·6·8·9 정상 등록.</span>
-                    </div>
+                  <td colspan="7" style="background:#fafafa;">
+                    <table class="hist-sub">
+                      <thead><tr><th>라인</th><th>쿠폰코드</th><th>레벨</th><th>결과</th><th>사유</th></tr></thead>
+                      <tbody>
+                        <tr><td>1</td><td>DBO</td><td>1</td><td><span class="rs-ow">덮어쓰기</span></td><td>기존 스펙 덮어쓰기</td></tr>
+                        <tr><td>2</td><td>DBO</td><td>2</td><td><span class="rs-ow">덮어쓰기</span></td><td>기존 스펙 덮어쓰기</td></tr>
+                        <tr><td>3</td><td>DC1</td><td>1</td><td><span class="rs-ok">성공</span></td><td>신규 등록</td></tr>
+                        <tr><td>4</td><td>DK1</td><td>1</td><td><span class="rs-fail">실패</span></td><td>카테고리 불일치 ("카트레이싱" 미등록)</td></tr>
+                      </tbody>
+                    </table>
                   </td>
-                </tr>
-                <tr>
-                  <td style="white-space:nowrap;">2026-06-20 15:40</td>
-                  <td style="font-size:10px;">waterworld_early.csv</td>
-                  <td>4</td>
-                  <td style="color:#065f46;font-weight:700;">4</td>
-                  <td>0</td>
-                  <td>관리자A</td>
-                  <td><span class="hist-toggle" onclick="s13hist(this)">상세 보기 ▾</span></td>
-                </tr>
-                <tr>
-                  <td style="white-space:nowrap;">2026-06-18 11:05</td>
-                  <td style="font-size:10px;">ski_lift_season.csv</td>
-                  <td>16</td>
-                  <td style="color:#065f46;font-weight:700;">13</td>
-                  <td style="color:#991b1b;font-weight:700;">3</td>
-                  <td>관리자B</td>
-                  <td><span class="hist-toggle" onclick="s13hist(this)">상세 보기 ▾</span></td>
                 </tr>
               </tbody>
             </table>
-
-            <!-- 페이지네이션 -->
-            <div class="wf-pager-num">
-              <span>‹</span>
-              <span class="on">1</span>
-              <span>2</span>
-              <span>3</span>
-              <span>›</span>
-            </div>
 
           </div><!-- /s13-tab-B -->
 
@@ -416,146 +373,163 @@
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">1</span>
         <div class="ann-body">
-          <div class="ann-title">CSV 템플릿 다운로드</div>
-          <div class="ann-desc">우리가 정한 표준 CSV 양식(헤더 10개 컬럼 포함)을 내려받는다. 관리자는 High1 엑셀을 이 양식에 맞춰 옮겨 담은 뒤 업로드한다.</div>
+          <div class="ann-title">등록된 스펙 수</div>
+          <div class="ann-desc">현재 등록된 스펙을 <b>쿠폰ID 종수(카드 수)</b>와 <b>레벨행 건수</b>로 표시. 예) "3종 (레벨행 5건)" = 카드 3개, 레벨 합계 5행. 프로토타입은 <b>별도 검색·필터 UI 없음</b>.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">2</span>
         <div class="ann-body">
-          <div class="ann-title">CSV 업로드</div>
-          <div class="ann-desc">파일 선택 또는 끌어다 놓기. 업로드하면 전체 행을 한 번에 처리한 뒤 성공/실패 건수를 알려준다.</div>
-          <div class="ann-rule"><b>필수 컬럼</b>: 카테고리 · 쿠폰코드 · 이용권명 · 레벨 · 쿠폰명 · 입금가 · 사용시작일 · 사용종료일. <b>선택 컬럼</b>: 상품유형(2뎁스 없는 카테고리는 빈값) · 할인대상내역.</div>
-          <div class="ann-rule" style="margin-top:5px;"><b>S17 선행 등록 확인:</b> 업로드하기 전, CSV의 카테고리·상품유형 값이 S17 티켓 카테고리에 먼저 등록되어 있어야 한다. 등록 안 된 값이 있으면 그 행은 실패하고, 실패 사유는 탭B 이력에서 확인한다.</div>
+          <div class="ann-title">CSV 템플릿 (다운로드)</div>
+          <div class="ann-desc">표준 CSV 양식(헤더 10개 컬럼 + 예시 1행)을 내려받는다. 관리자는 High1 엑셀을 이 양식에 옮겨 담아 업로드한다. 컬럼 정의는 CN16 표 참고.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">3</span>
         <div class="ann-body">
-          <div class="ann-title">CSV 템플릿 양식 (샘플)</div>
-          <div class="ann-desc">업로드할 CSV의 표준 컬럼과 예시. <b>컬럼 10개 · 순서 그대로</b>. 사용기간은 <b>사용시작일 / 사용종료일 2컬럼</b>(YYYY-MM-DD). 판매기간(인쇄기간) 컬럼은 받지 않는다.</div>
-          <div class="ann-rule"><b>이용권명(신규 컬럼)</b>: 스펙 파일 맨 위 헤더에 적힌 쿠폰 식별명. 쿠폰코드 하나에 이용권명 하나가 1:1로 붙는다.</div>
-          <div class="ann-rule" style="margin-top:5px;"><b>상품유형(2뎁스)</b>: 스키처럼 하위 구분이 있는 카테고리만 채우고, 워터파크·식사권처럼 하위가 없으면 빈값으로 둔다. <b>3뎁스(권종)는 쓰지 않는다 — 최대 2뎁스.</b> 종일권·4시간권 같은 권종 구분은 쿠폰명·쿠폰코드로 나눈다.</div>
-          <div class="ann-rule" style="margin-top:5px;">판매 시작/종료(인쇄기간)는 어드민에서 관리하지 않음 — 정책 v0.7 3.3절. 판매 마감은 S14 커트오프가 담당한다.</div>
+          <div class="ann-title">샘플 스펙 불러오기 (더미) — 프로토타입 전용</div>
+          <div class="ann-desc"><b>프로토타입에서는 실제 파일 업로드 대신</b> 이 버튼이 더미 CSV(4행)를 주입해 검증·덮어쓰기·이력 시연. 실서비스에서는 <b>[파일 선택 → 업로드]</b>로 대체된다.</div>
+          <div class="ann-rule">더미 구성: DBO 대인/소인 2행(기존 존재 → 덮어쓰기 확인 팝업), DC1 곤돌라 1행(신규 성공), DK1 카트레이싱 1행(S17 미등록 → 실패). 결과는 alert + 탭B 이력 기록.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">4</span>
         <div class="ann-body">
-          <div class="ann-title">최근 업로드 결과 — 요약</div>
-          <div class="ann-desc">화면에는 <b>성공/실패 건수 요약 한 줄</b>만 보여준다. 화면이 길어지지 않도록, 실패 행의 라인번호·오류사유 같은 상세 내역은 <b>탭B 업로드 이력</b>으로 넘겨서 확인한다.</div>
-          <div class="ann-rule">[업로드 이력에서 상세 보기 →]를 누르면 탭B로 이동한다. 실패 행을 고쳐 다시 업로드하면 된다.</div>
+          <div class="ann-title">쿠폰ID (카드 헤더 코드)</div>
+          <div class="ann-desc">스펙의 3자리 코드(coupon_id). 값 형식: 영문 3자 예) <code>DBO</code>·<code>SVA</code>·<code>GDO</code>. <b>데이터 성격: CSV 업로드로 등록(읽기전용 표시).</b> 우리 12자리 쿠폰번호의 <b>맨 앞 3자리</b>가 되며 High1이 대행사별 부여(우리 전용 코드 요청 = 미결 M-04).</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">5</span>
         <div class="ann-body">
-          <div class="ann-title">카테고리 · 상품유형 · 이용권명</div>
-          <div class="ann-desc"><b>카테고리</b>(1뎁스, 예: 스키·워터파크)와 <b>상품유형</b>(2뎁스, 예: 리프트권·장비렌탈)은 S17에 먼저 등록된 값이어야 한다. 2뎁스가 없는 카테고리는 상품유형이 "—"로 표시된다.</div>
-          <div class="ann-rule"><b>이용권명</b>은 스펙 파일 헤더의 식별명으로, 쿠폰코드와 1:1로 대응한다. 목록 검색·구분에 사용한다.</div>
+          <div class="ann-title">이용권명 (카드 타이틀)</div>
+          <div class="ann-desc">스펙 파일 헤더의 쿠폰 식별명(pass_name). 값 형식: 자유 텍스트 예) "OAT_26성수기_얼리_워터월드(플레이스토리)". <b>데이터 성격: CSV 업로드로 등록(읽기전용).</b> 쿠폰코드와 1:1 대응, 목록 구분·검색용.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">6</span>
         <div class="ann-body">
-          <div class="ann-title">쿠폰코드 (쿠폰ID)</div>
-          <div class="ann-desc">3자리 코드(스펙 파일 시트명과 동일). 우리 12자리 쿠폰번호의 <b>맨 앞 3자리</b>가 된다. High1이 대행사별로 부여(우리 전용 코드 발급 요청 — 미결 M-04).</div>
-          <div class="ann-rule"><b>바코드(쿠폰번호) 12자리 구조:</b> 쿠폰코드 3자리 + 레벨 1자리 + 일련번호 6자리 + 난수 2자리. 예: <span style="font-family:monospace;">OAT100000157</span> = OAT(쿠폰코드) · 1(레벨) · 000001(일련번호) · 57(난수). 일련번호는 우리가 순서대로 붙이고, 난수 2자리는 번호 패턴이 드러나지 않도록 붙인다. (정책 v0.11 2.1절)</div>
+          <div class="ann-title">메타 (레벨 수 · 연결상품 · 발급)</div>
+          <div class="ann-desc">카드 요약 정보. 값 형식: <code>레벨 N · 연결상품 N · 발급 N</code>. <b>데이터 성격: 자동 집계.</b><br>· <b>레벨 N</b> = 카드 안 레벨행 수(대인/소인 등).<br>· <b>연결상품 N</b> = 이 스펙을 쓰는 S14 상품 개수(삭제 가능 조건).<br>· <b>발급 N</b> = 발급 쿠폰 수 → <b>현재 0 고정</b>(S16 발급현황 프로토타입 미구현).</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">7</span>
         <div class="ann-body">
-          <div class="ann-title">레벨</div>
-          <div class="ann-desc">LV.1 대인 / LV.2 소인 등. 카테고리에 따라 구성이 다르다. 같은 쿠폰코드 안에서 레벨별로 행이 나뉜다.</div>
-          <div class="ann-rule"><b>레벨은 "상품(가격)을 구분하는 번호" 역할만 한다.</b> 현장(하이원 POS·키오스크)에서는 쿠폰을 스캔하면 그 레벨에 맞는 상품 목록만 보여줄 뿐, 성인/소인 나이를 따로 확인하지 않는다. 즉 소인 쿠폰을 대인이 써도 나이 검증이 없다. (정책 v0.11 2.3절)</div>
+          <div class="ann-title">노출 배지 + 노출 토글 (Cascade)</div>
+          <div class="ann-desc">스펙의 <b>운영 노출 스위치</b>(데이터가 아닌 ON/OFF 상태). 배지 2종: <span class="tk-badge on">노출 ON</span> / <span class="tk-badge off">노출 OFF 🔒</span>. 버튼은 반대 동작(ON이면 "노출 OFF").</div>
+          <div class="ann-rule"><b>OFF → 연결 S14 상품 전체 강제 미노출</b>(🔒, 상품 개별 제어 불가) = "이 쿠폰 종류 판매 일괄 중단". ON → 각 상품 개별 노출로 복귀. OFF 전환 시 confirm 팝업.</div>
+          <div class="ann-front">→ 프런트: OFF면 연결 상품 전부 미노출</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">8</span>
         <div class="ann-body">
-          <div class="ann-title">입금가</div>
-          <div class="ann-desc">High1에 납부하는 원가. 고객에게 보이지 않는다. 판매가 = 입금가 + 마진(S11 티켓 탭 = 카테고리 마스터+쿠폰ID 오버라이드로 설정).</div>
-          <div class="ann-front">→ 프런트: 미노출 (마진이 더해진 판매가만 노출)</div>
+          <div class="ann-title">삭제 — 조건부 허용</div>
+          <div class="ann-desc"><b>연결 S14 상품 0개 AND 발급 쿠폰 0개</b>일 때만 삭제 버튼 활성. 못 채우면 <b>비활성(disabled)</b> + 호버 시 "연결 상품 N개 / 발급 쿠폰 N개가 있어 삭제할 수 없습니다".</div>
+          <div class="ann-rule">활성 상태에서 클릭 시 confirm 팝업 → 확인해야 삭제. 삭제는 되돌릴 수 없음(정책 v0.13 12.2절).</div>
         </div>
       </div>
 
+      <!-- ── 레벨 하위 테이블 컬럼 정의 (6개) ── -->
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">9</span>
         <div class="ann-body">
-          <div class="ann-title">연결상품 수</div>
-          <div class="ann-desc">이 스펙을 사용하는 S14 티켓 상품 개수. 누르면 그 스펙에 연결된 상품 목록으로 이동(필터). 0이면 아직 만든 상품이 없다는 뜻.</div>
-          <div class="ann-rule">삭제 가능 조건 중 하나 — 연결상품이 0개여야 삭제할 수 있다(CN12 참고).</div>
+          <div class="ann-title">[표] 레벨</div>
+          <div class="ann-desc">쿠폰코드 내 판매 구분 번호. 값 형식: <code>LV.N + 레벨명</code> 예) <b>LV.1 대인</b> / <b>LV.2 소인</b>. <b>데이터 성격: CSV 레벨 컬럼(1/2)에서 로드(읽기전용).</b></div>
+          <div class="ann-rule"><b>레벨 = 상품(가격) 구분자 역할만.</b> 현장(High1 POS·키오스크)은 쿠폰 스캔 시 해당 레벨 상품 목록만 보여줄 뿐 나이(성인/소인) 검증은 하지 않음(정책 v0.13 2.3절).</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">10</span>
         <div class="ann-body">
-          <div class="ann-title">발급쿠폰 수</div>
-          <div class="ann-desc">이 스펙으로 실제 발급된 쿠폰(SOLD/USED/CANCELED) 개수. 구매가 일어나면 이 숫자가 늘어난다.</div>
-          <div class="ann-rule">삭제 가능 조건 중 하나 — 발급쿠폰이 0개여야 삭제할 수 있다(CN12 참고).</div>
+          <div class="ann-title">[표] 쿠폰명</div>
+          <div class="ann-desc">레벨별 쿠폰 표시명(coupon_name). 값 형식: 자유 텍스트 예) "워터월드 종일권_성수기(대인/얼리)". <b>데이터 성격: CSV 업로드로 로드(읽기전용).</b> High1 제공 명칭이며 S14 상품명(EN/ZH)과 별개.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">11</span>
         <div class="ann-body">
-          <div class="ann-title">노출 ON/OFF — 운영 토글 (Cascade)</div>
-          <div class="ann-desc">스펙의 <b>운영 노출 스위치</b>(데이터가 아니라 켜고/끄는 상태). 관리자가 토글로 바로 제어한다.</div>
-          <div class="ann-rule">OFF → 연결된 S14 상품 <b>전체 강제 미노출</b>(🔒, 상품 개별 제어 불가) = "이 쿠폰 종류 판매 일괄 중단". ON → 각 상품 개별 노출 여부로 복귀.</div>
-          <div class="ann-rule" style="margin-top:5px;"><b>데이터(입금가·기간)와 분리:</b> 데이터 변경은 엑셀 재업로드로, 노출 ON/OFF는 이 토글로 한다.</div>
+          <div class="ann-title">[표] 카테고리</div>
+          <div class="ann-desc">분류 경로(최대 2뎁스). 값 형식: <code>1뎁스</code> 또는 <code>1뎁스 › 2뎁스</code> 예) "스키 › 리프트권" / "워터파크". <b>데이터 성격: CSV 카테고리·상품유형에서 로드.</b> 업로드 전 S17에 사전 등록 필수(미등록 시 그 행 실패).</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">12</span>
         <div class="ann-body">
-          <div class="ann-title">삭제 — 조건부 허용 (v0.7 신규)</div>
-          <div class="ann-desc">스펙을 삭제할 수 있다. 단, <b>연결 S14 상품이 0개이고 그리고 발급된 쿠폰(SOLD/USED/CANCELED)이 0개</b>일 때만 삭제 버튼이 활성화된다.</div>
-          <div class="ann-rule">조건을 못 채우면 삭제 버튼이 <b>비활성</b>되고, 버튼 위에 마우스를 올리면 "연결 상품 N개 / 발급 쿠폰 N개가 있어 삭제할 수 없습니다" 안내가 뜬다.</div>
-          <div class="ann-rule" style="margin-top:5px;">조건을 채웠어도 삭제 전 <b>확인 모달</b>(CN14)이 반드시 뜬다. 삭제하면 되돌릴 수 없다. (정책 v0.11 12.2절)</div>
+          <div class="ann-title">[표] 입금가 (원가 · 고객 미노출)</div>
+          <div class="ann-desc">High1에 납부하는 원가. 값 형식: <code>NN,NNN원</code>. 레벨별로 다름. <b>데이터 성격: CSV 입금가에서 로드(읽기전용).</b> <b>고객 미노출</b> — 판매가(=입금가+마진, S11)만 프런트 노출.</div>
+          <div class="ann-front">→ 프런트: 미노출</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">13</span>
         <div class="ann-body">
-          <div class="ann-title">재업로드 덮어쓰기 확인</div>
-          <div class="ann-desc">같은 쿠폰코드+레벨이 이미 있으면 "N건이 이미 존재합니다. 덮어쓰시겠습니까?" 모달이 뜬다. 관리자가 덮어쓰기/중단을 고른다. <b>스펙 데이터 수정의 유일한 경로.</b></div>
+          <div class="ann-title">[표] 할인대상내역</div>
+          <div class="ann-desc">이 쿠폰으로 할인 적용되는 PMS 상품 목록(참고 텍스트). 값 형식: 자유 텍스트 예) "종일권_대인_남_4계절 상품 외 15종". <b>데이터 성격: CSV 선택 컬럼(빈값 시 "-").</b> 정산·확인용 참고 정보.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">14</span>
         <div class="ann-body">
-          <div class="ann-title">스펙 삭제 확인 모달</div>
-          <div class="ann-desc">삭제 조건을 충족한 스펙만 이 모달을 거쳐 삭제된다. 연결 상품·발급 쿠폰이 0개임을 다시 안내하고, 삭제는 되돌릴 수 없음을 강조한다.</div>
+          <div class="ann-title">[표] 사용기간</div>
+          <div class="ann-desc">현장 사용(입장) 가능 기간. 값 형식: <code>사용시작일 ~ 사용종료일</code>(YYYY-MM-DD). <b>데이터 성격: CSV 사용시작일/종료일 2컬럼에서 로드(읽기전용, 레벨별).</b> High1이 정한 실제 이용 기간이며 판매기간과 별개(판매기간은 S14-B 관리).</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">15</span>
         <div class="ann-body">
-          <div class="ann-title">탭B — 업로드 이력 + 인라인 펼침</div>
-          <div class="ann-desc">업로드 시도를 <b>최근 50건</b>까지 기록한다. 오래된 건은 페이지 번호(1·2·3…)로 넘겨 본다.</div>
-          <div class="ann-rule">각 행의 [상세 보기]를 누르면 <b>그 행 아래가 펼쳐지며</b> 실패한 행의 <b>라인번호·오류사유</b>(예: 카테고리 불일치 / 상품유형 불일치)를 보여준다. 관리자는 여기서 원인을 확인하고 CSV를 고쳐 다시 올린다.</div>
+          <div class="ann-title">노출 OFF 🔒 (Cascade 강제 미노출)</div>
+          <div class="ann-desc">스펙이 OFF면 카드 전체가 흐리게 표시되고, 연결된 <b>S14 상품이 전부 강제 미노출</b>됩니다(상품 개별 제어 불가). 데이터는 유지되며 노출만 차단.</div>
+          <div class="ann-rule">해제: [노출 ON] 버튼 → confirm → 각 상품 개별 노출로 복귀.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">16</span>
         <div class="ann-body">
+          <div class="ann-title">CSV 템플릿 컬럼 정의 (10컬럼)</div>
+          <div class="ann-desc">[CSV 템플릿] 버튼이 내려주는 표준 양식. <b>10개 컬럼 · 순서 준수.</b> 필수 8 / 선택 2(상품유형·할인대상내역). 사용기간은 <b>사용시작일·사용종료일 2컬럼</b>. 판매기간(인쇄기간) 컬럼은 받지 않음(정책 v0.13 3.3절).</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">17</span>
+        <div class="ann-body">
           <div class="ann-title">S11 마진 자동 연동 (§11.8)</div>
-          <div class="ann-desc">CSV 업로드가 끝나면 등록된 쿠폰코드가 <b>S11 티켓 마진 목록에 자동 반영</b>된다. 신규 쿠폰코드 = 행 추가(마진 미설정=상속 초기화). 기존 쿠폰코드 = 카테고리/상품유형 매핑만 갱신, 마진값 유지.</div>
-          <div class="ann-rule">카테고리·상품유형이 바뀐 쿠폰코드 중 <b>'상속'</b> 항목은 새 카테고리 마스터로 재계산 → 업로드 결과(탭A 요약 하단)에 <b>재계산 경고</b> 표시. <b>개별(오버라이드)</b> 쿠폰코드는 유지되어 경고 제외. (정책 v0.11 11.8절·12.2절)</div>
+          <div class="ann-desc">업로드 완료 시 등록 쿠폰코드가 <b>S11 티켓 마진 목록에 자동 반영</b>. 신규=행 추가(마진 미설정=상속). 기존=카테고리/상품유형 매핑만 갱신, 마진값 유지.</div>
+          <div class="ann-rule">카테고리·상품유형이 바뀐 쿠폰코드 중 <b>'상속'</b> 항목은 새 마스터로 재계산 → 결과에 재계산 경고. <b>개별(오버라이드)</b> 쿠폰코드는 유지·경고 제외(정책 v0.13 11.8절·12.2절).</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">18</span>
+        <div class="ann-body">
+          <div class="ann-title">확인 팝업 (브라우저 confirm) — 커스텀 모달 아님</div>
+          <div class="ann-desc">프로토타입은 별도 모달 화면 대신 <b>브라우저 confirm() 팝업</b>으로 처리. 3종: ①재업로드 덮어쓰기 ②스펙 삭제 ③노출 OFF 전환. 각각 확인/취소.</div>
+          <div class="ann-rule"><b>덮어쓰기</b>: 동일 쿠폰코드+레벨 존재 시 → 확인=입금가·사용기간 교체(노출 상태 유지) / 취소=업로드 전체 중단. (스펙 데이터 수정의 유일 경로)</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">19</span>
+        <div class="ann-body">
+          <div class="ann-title">탭B — 업로드 이력 + 인라인 펼침</div>
+          <div class="ann-desc">업로드 시도를 <b>최근 50건</b> 기록(일시·파일명·전체·성공·실패·업로더). 행 클릭 시 아래로 <b>상세 표</b>가 펼쳐짐 — <b>라인·쿠폰코드·레벨·결과(성공/덮어쓰기/실패)·사유</b>.</div>
+          <div class="ann-rule">실패 사유 예: "카테고리 불일치 (미등록)" / "상품유형 불일치". 관리자는 원인을 확인해 CSV를 고쳐 다시 올린다.</div>
         </div>
       </div>
 
@@ -563,8 +537,7 @@
         <span class="cn" style="background:#6366f1;">i</span>
         <div class="ann-body">
           <div class="ann-title">판매 유형(얼리/상시/프로모션)</div>
-          <div class="ann-desc">유형별로 쿠폰 코드가 다르므로 어드민에서는 유형별 별도 스펙으로 등록한다(v0.7 3.5절).</div>
-          <div class="ann-rule">유형 관리 방식(별도 컬럼 vs 별도 스펙) 상세는 미확정(미결 M-12). 현재는 별도 스펙 등록으로 진행.</div>
+          <div class="ann-desc">유형별로 쿠폰 코드가 다르므로 어드민에서는 유형별 별도 스펙으로 등록. 유형 관리 방식(별도 컬럼 vs 별도 스펙)은 미확정(미결 M-12). 현재는 별도 스펙 등록으로 진행.</div>
         </div>
       </div>
 

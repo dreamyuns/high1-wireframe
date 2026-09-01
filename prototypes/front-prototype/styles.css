@@ -1425,6 +1425,16 @@ body {
 .tkf-cart-l b { font-size: 13px; }
 .tkf-cart-l span { color: #888; font-size: 12px; }
 .tkf-cart-r { white-space: nowrap; text-align: right; }
+/* Add 제거: Detail 단독 → 그리드/50%폭 해제 */
+.tkf-foot-btns { display: inline-flex; width: auto; min-width: 0; }
+/* 장바구니 상품별 그룹 */
+.tkf-cart-group { padding: 4px 0 6px; border-bottom: 1px solid #eef0f4; margin-bottom: 6px; }
+.tkf-cart-group:last-of-type { border-bottom: none; margin-bottom: 0; }
+.tkf-cart-pname { font-weight: 800; font-size: 13.5px; color: #1a1f2e; margin: 4px 0 2px; }
+.tkf-cart-group .tkf-cart-line { border-bottom: none; padding: 6px 0; }
+.tkf-cart-lv { color: #333; font-weight: 600; }
+.tkf-cart-calc { color: #888; font-size: 12px; margin-left: 4px; }
+.tkf-optrow.in-cart .tkf-optprice { color: #7c3aed; }
 .tkf-cart-x { border: none; background: none; color: #c33; cursor: pointer; margin-left: 8px; font-size: 13px; }
 .tkf-cart-total { display: flex; justify-content: space-between; align-items: center; padding: 12px 0 2px; font-size: 14px; }
 .tkf-cart-total strong { font-size: 20px; }
@@ -1562,6 +1572,99 @@ body {
 .my-badge.ok { background: #ecfdf5; color: #059669; }
 .my-badge.wait { background: #fffbeb; color: #d97706; }
 .my-badge.cx { background: #f3f4f6; color: #6b7280; }
+.my-badge.part { background: #fef3c7; color: #b45309; }
+/* 발급 쿠폰 · 바코드 (상품별 그룹) */
+.my-cp-guide { font-size: 12px; color: #888; margin: 0 0 10px; }
+.my-cp-groups { display: flex; flex-direction: column; gap: 14px; }
+.my-cp-group { border: 1px solid #ececf0; border-radius: 10px; overflow: hidden; }
+.my-cp-gname { background: #f7f7fa; padding: 10px 14px; font-weight: 800; font-size: 13.5px; color: #1a1f2e; border-bottom: 1px solid #ececf0; }
+.my-cp-gname .my-cp-cnt { font-weight: 600; color: #888; font-size: 12px; margin-left: 4px; }
+.my-cp { display: flex; align-items: center; gap: 16px; padding: 12px 14px; border-bottom: 1px solid #f2f2f5; }
+.my-cp:last-child { border-bottom: none; }
+.my-cp.off { opacity: .5; }
+.my-cp-bar { flex: 0 0 auto; text-align: center; }
+.my-cp-bar .js-barcode { display: block; height: 44px; }
+.my-cp.off .js-barcode { filter: grayscale(1); }
+.my-cp-no { font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 1px; color: #333; margin-top: 3px; }
+.my-cp-info { min-width: 0; }
+.my-cp-nm { font-size: 13.5px; font-weight: 700; color: #1a1f2e; }
+.my-cp-sub { font-size: 12px; color: #666; margin-top: 3px; }
+.my-cp-st { font-weight: 800; }
+.my-cp-st.st-SOLD { color: #059669; }
+.my-cp-st.st-USED { color: #6b7280; }
+.my-cp-st.st-CANCELLED { color: #b91c1c; }
+/* 수량단위 부분취소 모달 */
+.tpc-modal { max-width: 460px; width: 100%; }
+.tpc-body { max-height: 46vh; overflow-y: auto; margin: 6px 0 12px; }
+.tpc-group { border: 1px solid #ececf0; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+.tpc-gname { background: #f7f7fa; padding: 9px 12px; font-weight: 800; font-size: 13px; }
+.tpc-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-top: 1px solid #f2f2f5; }
+.tpc-l { display: flex; flex-direction: column; }
+.tpc-lv { font-size: 13.5px; font-weight: 700; color: #1a1f2e; }
+.tpc-unit { font-size: 12px; color: #888; margin-top: 2px; }
+.tpc-step { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.tpc-step button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #d8dee8; background: #fff; font-size: 18px; line-height: 1; color: #1a1f2e; cursor: pointer; }
+.tpc-step .tpc-q { min-width: 18px; text-align: center; font-weight: 800; font-size: 15px; }
+/* 상태 탭 (미사용/사용완료/취소) */
+.tkd-tabs { display: flex; gap: 6px; border-bottom: 1px solid #ececf0; margin: 4px 0 12px; }
+.tkd-tab { background: none; border: none; padding: 10px 14px; font-size: 13.5px; font-weight: 700; color: #999; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tkd-tab .tkd-tab-n { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 2px; border-radius: 999px; background: #f0f0f4; color: #777; font-size: 11px; font-weight: 800; }
+.tkd-tab.on { color: #7c3aed; border-bottom-color: #7c3aed; }
+.tkd-tab.on .tkd-tab-n { background: #efe7fd; color: #7c3aed; }
+/* 쿠폰 행 (탭 내) */
+.tkd-cp { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #f2f2f5; }
+.tkd-cp:last-child { border-bottom: none; }
+.tkd-cp-info { min-width: 0; }
+.tkd-cp-nm { font-size: 13.5px; font-weight: 700; color: #1a1f2e; }
+.tkd-cp-sub { font-size: 12px; color: #666; margin-top: 3px; }
+.tkd-cp-no { font-family: ui-monospace, Menlo, monospace; letter-spacing: .5px; color: #333; }
+.tkd-cp-stlabel { font-weight: 800; font-size: 12.5px; white-space: nowrap; }
+.tkd-cp-stlabel.st-SOLD { color: #059669; }
+.tkd-cp-stlabel.st-USED { color: #6b7280; }
+.tkd-cp-stlabel.st-CANCELLED { color: #b91c1c; }
+.tkd-bc-btn { flex: 0 0 auto; border: 1.5px solid #7c3aed; background: #f5f0fe; color: #6d28d9; border-radius: 999px; padding: 8px 16px; font-size: 12.5px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+.tkd-bc-btn:hover { background: #efe7fd; }
+/* 바코드 팝업 */
+.tkbc-modal { max-width: 400px; width: 100%; padding: 0; overflow: hidden; }
+.tkbc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 16px 18px; border-bottom: 1px solid #eee; }
+.tkbc-cat { font-size: 12px; font-weight: 700; color: #7c3aed; }
+.tkbc-nm { font-size: 15px; font-weight: 800; color: #1a1f2e; margin-top: 3px; }
+.tkbc-x { border: none; background: none; font-size: 18px; color: #888; cursor: pointer; line-height: 1; }
+.tkbc-body { padding: 22px 18px 24px; text-align: center; }
+.tkbc-svg { display: block; margin: 0 auto; max-width: 100%; height: 96px; }
+.tkbc-no { font-family: ui-monospace, Menlo, monospace; font-size: 18px; font-weight: 800; letter-spacing: 2px; color: #1a1f2e; margin-top: 10px; }
+.tkbc-meta { font-size: 13px; color: #555; margin-top: 8px; }
+.tkbc-guide { font-size: 12px; color: #999; margin-top: 14px; }
+/* 바코드 스와이프 캐러셀 */
+.tkbc-carousel { position: relative; }
+.tkbc-count { font-size: 13px; font-weight: 800; color: #555; }
+.tkbc-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.tkbc-track::-webkit-scrollbar { display: none; }
+.tkbc-slide { flex: 0 0 100%; box-sizing: border-box; scroll-snap-align: center; padding: 20px 22px 8px; text-align: center; }
+.tkbc-slide .tkbc-cat { font-size: 12px; font-weight: 700; color: #7c3aed; }
+.tkbc-slide .tkbc-nm { font-size: 15px; font-weight: 800; color: #1a1f2e; margin: 3px 0 12px; }
+.tkbc-arrow { position: absolute; top: 46%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; border: 1px solid #e2e2e6; background: rgba(255,255,255,.96); font-size: 20px; line-height: 1; color: #333; cursor: pointer; z-index: 3; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.tkbc-prev { left: 8px; } .tkbc-next { right: 8px; }
+.tkbc-dots { display: flex; justify-content: center; gap: 6px; padding: 8px 0 2px; }
+.tkbc-dot { width: 7px; height: 7px; border-radius: 50%; background: #d5d5dd; cursor: pointer; }
+.tkbc-dot.on { background: #7c3aed; }
+.tkbc-use { margin-top: 12px; width: 100%; border: none; border-radius: 10px; background: #0e7490; color: #fff; font-weight: 800; font-size: 13.5px; padding: 12px; cursor: pointer; }
+.tkbc-use:hover { background: #0c6378; }
+/* 토스트 */
+.tk-toast { position: fixed; left: 50%; bottom: 42px; transform: translateX(-50%) translateY(12px); background: #1a1f2e; color: #fff; padding: 12px 22px; border-radius: 999px; font-size: 14px; font-weight: 700; z-index: 300; opacity: 0; transition: opacity .25s ease, transform .25s ease; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,.28); max-width: 88vw; text-align: center; }
+.tk-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* 결제 내역 브레이크다운 */
+.tkpay-card { border: 1px solid #ececf0; border-radius: 12px; padding: 6px 16px; }
+.tkpay-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; }
+.tkpay-l { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tkpay-nm { font-size: 14px; font-weight: 700; color: #1a1f2e; }
+.tkpay-cnt { font-size: 12.5px; color: #888; }
+.tkpay-amt { font-size: 14px; font-weight: 700; color: #1a1f2e; white-space: nowrap; }
+.tkpay-sep { border-top: 1px solid #eee; margin: 2px 0; }
+.tkpay-total .tkpay-nm, .tkpay-total .tkpay-amt { font-size: 15px; font-weight: 800; }
+.tkpay-refund .tkpay-nm { color: #b45309; } .tkpay-refund .tkpay-amt { color: #b45309; font-weight: 800; }
+.tkpay-net .tkpay-nm, .tkpay-net .tkpay-amt { font-size: 16px; font-weight: 800; color: #7c3aed; }
+.tkpay-method { border-top: 1px dashed #eee; margin-top: 4px; padding: 10px 0 6px; font-size: 12.5px; color: #888; }
 .my-empty { grid-column: 1 / -1; text-align: center; color: #999; font-size: 14px; padding: 50px 0; }
 /* 상세 */
 .my-detail { max-width: 640px; }

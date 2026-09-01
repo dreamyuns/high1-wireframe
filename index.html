@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>High1 Admin Wireframe v0.9.22 — 목록</title>
+<title>High1 Admin Wireframe v0.9.26 — 목록</title>
 <link rel="stylesheet" href="wf-styles.css" />
 <style>
 body{background:#1a1f2e;min-height:100vh;padding-left:210px}
@@ -76,7 +76,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
 <!-- 좌측 고정 목차 -->
 <nav class="toc">
   <div class="toc-logo">high<span>1</span></div>
-  <div class="toc-ver">Admin Wireframe v0.9.22</div>
+  <div class="toc-ver">Admin Wireframe v0.9.26</div>
   <a class="toc-link" data-target="grp-policy"><span class="toc-dot" style="background:#fbbf24"></span>정책 문서</a>
   <a class="toc-link" data-target="grp-property"><span class="toc-dot" style="background:#60a5fa"></span>숙소관리</a>
   <a class="toc-link" data-target="grp-ticket"><span class="toc-dot" style="background:#f472b6"></span>티켓관리</a>
@@ -90,7 +90,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
 <div class="cover">
   <div class="cover-logo">high<span>1</span></div>
   <div class="cover-title">Admin Wireframe</div>
-  <div class="cover-meta">v0.9.22 · 2026-08-25 · 개발자 전달용 화면기획서</div>
+  <div class="cover-meta">v0.9.26 · 2026-09-01 · 개발자 전달용 화면기획서</div>
   <div class="cover-desc">
     <strong>admin-prototype v0.7.31</strong> 기준 화면 레이아웃 · 필드 정의 · 동작 규칙 · 프런트 데이터 매핑.<br>
     각 화면 카드를 클릭하면 해당 화면의 상세 기획서로 이동합니다.<br>
@@ -251,72 +251,72 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
         <div class="sc-num">S17</div>
         <div class="sc-name">카테고리/컨텐츠 관리 — 목록</div>
         <div class="sc-route">#/ticket-categories · 티켓관리 GNB(LNB 최상단)</div>
-        <div class="sc-desc">공통관리→<b>티켓관리 이동</b> · 카드형(1뎁스 카드/2뎁스 행) · 직접 등록(추가·수정, 삭제 없음) · 최대 2뎁스 · 표시명 EN/ZH·관리명 KO · <b>리프 뎁스에 [콘텐츠] 버튼→S17-B</b> · S13 검증 기준 · v0.13 §12.1·12.6</div>
-        <div class="sc-date">2026-07-10</div>
+        <div class="sc-desc">공통관리→<b>티켓관리 이동</b> · 카드형(1뎁스 카드/2뎁스 행) · 직접 등록(추가·수정, 삭제 없음) · 최대 2뎁스 · 표시명 EN/ZH·관리명 KO · <b>리프 뎁스에 [콘텐츠] 버튼→S17-B</b> · S13 검증 기준 · v0.13 §12.1·12.6 (프로토 v0.7.31 정합)</div>
+        <div class="sc-date">2026-09-01</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s17-b-ticket-content.html">
         <div class="sc-num">S17-B</div>
         <div class="sc-name">카테고리/컨텐츠 관리 — 콘텐츠 편집</div>
         <div class="sc-route">#/ticket-categories/edit/:id · 티켓관리 GNB</div>
-        <div class="sc-desc">뎁스(카테고리) 소유 콘텐츠 6블록 — 히어로 이미지·개요·상세설명·이용안내·유의사항/정책·위치 · 텍스트 4종 리치 에디터(굵게·제목·목록·이미지 불러오기·Ctrl+V) · EN필수/ZH · 이미지 URL 저장 · 프런트 브릿지 매핑 · v0.13 §12.6·14</div>
-        <div class="sc-date">2026-07-10</div>
+        <div class="sc-desc">뎁스(카테고리) 소유 콘텐츠 6블록 — 히어로 이미지·개요·상세설명·이용안내·유의사항/정책·위치 · 텍스트 4종 리치 에디터(굵게·제목·목록·이미지 불러오기·Ctrl+V) · EN필수/ZH · 이미지 URL 저장 · 프런트 브릿지 매핑 · v0.13 §12.6·14 (프로토 v0.7.31 정합)</div>
+        <div class="sc-date">2026-09-01</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s13-coupon-spec.html">
         <div class="sc-num">S13</div>
         <div class="sc-name">쿠폰 스펙 관리</div>
         <div class="sc-route">#/coupon-specs · 티켓관리 GNB</div>
-        <div class="sc-desc">탭A(업로드&스펙목록)/탭B(업로드 이력) · CSV 10컬럼 한국어 재정의(이용권명 추가·ticket_type 제거) · S17 선행검증(카테고리/상품유형 일치) · 조건부 삭제(연결상품0 AND 발급쿠폰0) · 바코드 12자리 · S11 마진 자동연동(§11.8·재계산 경고)</div>
-        <div class="sc-date">2026-07-09</div>
+        <div class="sc-desc"><b>프로토타입 v0.7.31 카드형</b> — 카드=쿠폰ID/카드 안 행=레벨(6컬럼: 레벨·쿠폰명·카테고리·입금가·할인대상내역·사용기간) · 탭A(업로드&스펙목록: 템플릿·샘플불러오기 더미)/탭B(업로드 이력·상세표) · 노출 ON/OFF🔒 Cascade · 조건부 삭제(연결0 AND 발급0) · S11 마진 자동연동 · confirm 팝업 · CSV 10컬럼 정의 · 컬럼정의 주석 19개</div>
+        <div class="sc-date">2026-09-01</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s14-a-ticket-product-list.html">
         <div class="sc-num">S14-A</div>
-        <div class="sc-name">티켓 상품 목록</div>
+        <div class="sc-name">티켓 상품 (목록)</div>
         <div class="sc-route">#/ticket-products · 티켓관리 GNB</div>
-        <div class="sc-desc">coupon_id 마스터-디테일 · 카테고리 경로 최대 2뎁스 · 입금가·마진·판매가 3컬럼 · 노출 확인 팝업 · 오픈형 우선 · 2단 노출 · EN/ZH</div>
-        <div class="sc-date">2026-07-09</div>
+        <div class="sc-desc"><b>프로토타입 v0.7.31 카드형</b> — 카드=상품/카드 안 행=레벨(대인 LV.1·소인 LV.2 또는 대인 1레벨) · 레벨표 8컬럼(레벨·쿠폰명·카테고리·판매기간·사용기간·입금가·적용마진·판매가) · <b>노출 3상태(노출중/미노출/강제 미노출🔒) 상품 단위</b> · 판매상태 자동(판매전/중/종료) · 마진 S11 표시만 · EN/ZH · 컬럼 정의 상세주석</div>
+        <div class="sc-date">2026-09-01</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s14-b-ticket-product-form.html">
         <div class="sc-num">S14-B</div>
         <div class="sc-name">티켓 상품 — 마스터 (탭1)</div>
         <div class="sc-route">#/ticket-products/new · 티켓관리 GNB</div>
-        <div class="sc-desc">탭1 마스터 — 기본정보(스펙 연결·판매기간·<b>썸네일</b>)·카테고리 2뎁스(스키만 상품유형) · 마진 S11 티켓탭 상속(읽기전용) · 취소정책 구간형 · EN필수/ZH · 판매종료일 초과 자동 미노출 · <b>콘텐츠(상세·안내·정책·위치·히어로)는 S17 소유, 상품은 썸네일만</b></div>
-        <div class="sc-date">2026-07-10</div>
+        <div class="sc-desc"><b>프로토타입 v0.7.31 폼</b> — ①기본정보(상품명EN/ZH·카테고리1/2뎁스·연결스펙 카테고리 자동필터·노출·판매기간) ②레벨구성&판매가(4컬럼·마진 S11 읽기전용) ③취소/환불(<b>오픈형 고정 읽기전용 3행</b>) ④썸네일(S17 콘텐츠 소유) · 컬럼정의 주석 15개</div>
+        <div class="sc-date">2026-09-01</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s14-c-ticket-date-cal.html">
         <div class="sc-num">S14-C</div>
         <div class="sc-name">티켓 상품 — 날짜 설정 (탭2)</div>
         <div class="sc-route">#/ticket-products/edit/:id · 티켓관리 GNB</div>
-        <div class="sc-desc">탭2 날짜 — 오픈형 우선(날짜지정형 기능만 유지·미사용) · 사용기간 표시용(날짜 유효성 미구현) · 커트오프(날짜지정형 전용)</div>
-        <div class="sc-date">2026-07-09</div>
+        <div class="sc-desc"><b>프로토타입 v0.7.31</b> — 날짜 방식 <b>오픈형 고정</b>(사용기간 내 자유·날짜 유효성 미체크) · 커트오프 <b>오픈형 미적용</b>(이용일 기준→날짜지정형 전용) · 날짜지정형=기능유지·프로토 범위 밖 · 컬럼/항목 주석 4개</div>
+        <div class="sc-date">2026-09-01</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s15-ticket-order-list.html">
         <div class="sc-num">S15</div>
-        <div class="sc-name">티켓 예약/주문 관리</div>
+        <div class="sc-name">티켓 주문 목록</div>
         <div class="sc-route">#/ticket-orders · 예약관리 GNB</div>
-        <div class="sc-desc">주문 목록 · 주문상태 2종(결제완료/취소완료)·사용상태·주문일시 컬럼 · 필터(주문상태/사용상태/주문일) · 취소(전체만) · [상세]→S15-B · 패키지 통보(M-03)</div>
-        <div class="sc-date">2026-07-09</div>
+        <div class="sc-desc"><b>프로토타입 v0.7.31</b> — 조회중심 10컬럼(주문번호·구매자(국가)·연락처·대표상품·발급매수·주문상태·사용상태·주문일시·결제금액·상세) · <b>주문상태 3종(결제완료/부분취소/취소완료)</b> · 사용상태 3종+— · 필터(주문일·상태·통합검색)+부분취소 pill · 컬럼정의 주석 12개</div>
+        <div class="sc-date">2026-09-01</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s15-b-ticket-order-detail.html">
         <div class="sc-num">S15-B</div>
         <div class="sc-name">티켓 주문 상세</div>
         <div class="sc-route">#/ticket-orders/:id · 예약관리 GNB</div>
-        <div class="sc-desc">주문·고객(국적) · 발급쿠폰 7컬럼(쿠폰번호·쿠폰명/레벨·상태·입금가(미노출)·판매가·사용기간·사용일시) · 취소환불(전체취소) · 변경이력. S10-B 대응</div>
-        <div class="sc-date">2026-07-09</div>
+        <div class="sc-desc"><b>프로토타입 v0.7.31 · 정책 v0.14</b> — 구매자·발급쿠폰 7컬럼(입금가 어드민전용)·결제/환불내역(성인·아동/총결제·환불·실결제)·처리이력 · <b>관리자 부분취소 모달(상품·수량 단위 스텝퍼·미사용&종료일이전만)</b> · 컬럼정의 주석 13개</div>
+        <div class="sc-date">2026-09-01</div>
         <div class="sc-arrow">→</div>
       </a>
       <a class="screen-card" href="s16-coupon-issue-list.html">
         <div class="sc-num">S16</div>
-        <div class="sc-name">쿠폰 발급 현황</div>
+        <div class="sc-name">쿠폰 발급현황</div>
         <div class="sc-route">#/coupon-issues · 예약관리 GNB</div>
-        <div class="sc-desc">쿠폰 단위 조회·통계(발급/사용완료/미사용) · 상태 3종(SOLD/USED/CANCELED, AVAILABLE·VOID 제거) · API 3종(hiww_ent_*)+응답코드 · 취소=사용취소/주문취소</div>
-        <div class="sc-date">2026-07-09</div>
+        <div class="sc-desc"><b>프로토타입 v0.7.31</b> — 쿠폰 1장=1행 조회중심 · 통계 4카드(발급총수/USED/SOLD/CANCELLED) · 8컬럼(쿠폰번호·주문번호(링크)·상품/레벨·구매자·상태·사용기간·구매일시·사용/취소일시) · 필터+엑셀(CSV) 다운로드 · 컬럼정의 주석 12개</div>
+        <div class="sc-date">2026-09-01</div>
         <div class="sc-arrow">→</div>
       </a>
     </div>
@@ -580,7 +580,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
   </div>
 
   <div class="footer">
-    High1 Admin Wireframe v0.9.22 · 2026-08-25 · 개발자 전달용<br>
+    High1 Admin Wireframe v0.9.26 · 2026-09-01 · 개발자 전달용<br>
     와이어프레임은 레이아웃·기능 기준이며, 실제 비주얼 디자인은 Figma에서 별도 정의합니다.
   </div>
 </div>

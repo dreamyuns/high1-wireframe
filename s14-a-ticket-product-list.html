@@ -6,22 +6,38 @@
   <title>S14-A 티켓 상품 목록</title>
   <link rel="stylesheet" href="wf-styles.css" />
   <style>
-    /* S14-A 전용 (티켓 = 로즈 테마) */
+    /* S14-A 전용 (티켓 = 로즈 테마) — 프로토타입 admin v0.7.31 카드형 재현 */
     .sec-policy{background:#fdf2f8;border:1px solid #fbcfe8;border-left:3px solid #ec4899;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:11px;line-height:1.7;color:#9d174d}
     .sec-policy b{color:#831843}
     .sec-policy .ref{font-size:10px;color:#ec4899;font-weight:700}
-    .cat-path{font-size:10px;color:#666}
-    .cat-path b{color:#9d174d}
-    .spec-chip{display:inline-block;font-family:monospace;font-size:10px;background:#fce7f3;color:#9d174d;padding:1px 6px;border-radius:3px;font-weight:700}
-    .lock-row td{background:#faf5f7 !important}
-    /* coupon_id 단위 마스터-디테일 */
-    .master-row td{background:#fdf2f8;font-weight:600;border-top:2px solid #fbcfe8}
-    .lv-row td{background:#fff;font-size:11px}
-    .lv-indent{color:#9d174d;padding-left:18px !important;font-size:10px}
-    .opt-summary{font-size:10px;color:#9d174d;font-style:italic}
-    .price-sell{color:#831843}
-    .toggle-hint{display:block;font-size:9px;color:#ec4899;margin-top:2px}
-    .ann-warn{margin-top:5px;font-size:12px;color:#991b1b;background:#fef2f2;padding:5px 9px;border-radius:3px;border-left:2px solid #f87171;line-height:1.6}
+    .sec-note{background:#fff7ed;border:1px solid #fed7aa;border-left:3px solid #f59e0b;border-radius:4px;padding:8px 12px;margin-bottom:14px;font-size:11px;line-height:1.7;color:#9a3412}
+    .sec-note b{color:#7c2d12}
+
+    /* 상품 카드 */
+    .tk-card{border:1px solid #e5e7eb;border-radius:8px;margin-bottom:12px;overflow:hidden;background:#fff}
+    .tk-card.is-off{opacity:.62}
+    .tk-card-head{display:flex;align-items:center;gap:9px;padding:9px 12px;background:#fdf2f8;border-bottom:1px solid #fbcfe8;flex-wrap:wrap}
+    .tk-thumb{width:44px;height:30px;border-radius:4px;object-fit:cover;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;text-align:center;line-height:1.1}
+    .tk-code-prod{font-family:monospace;font-size:11px;font-weight:700;background:#fce7f3;color:#9d174d;padding:2px 7px;border-radius:3px;flex-shrink:0}
+    .tk-head-title{font-size:13px;font-weight:700;color:#1a1f2e}
+    .tk-head-title .zh{color:#9ca3af;font-weight:400;font-size:11px}
+    .tk-head-actions{margin-left:auto;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    /* 배지 */
+    .tk-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+    .tk-badge.sale-on{background:#dcfce7;color:#166534}
+    .tk-badge.sale-off{background:#f1f5f9;color:#64748b}
+    .tk-badge.vis-on{background:#dbeafe;color:#1e40af}
+    .tk-badge.vis-off{background:#f1f5f9;color:#64748b}
+    .tk-badge.vis-lock{background:#fee2e2;color:#991b1b}
+    /* 레벨 하위 테이블 */
+    .tk-lv-table{width:100%;border-collapse:collapse;font-size:11px}
+    .tk-lv-table th{background:#faf5f7;color:#6b7280;font-weight:600;text-align:left;padding:6px 8px;border-bottom:1px solid #eee;white-space:nowrap;font-size:10px}
+    .tk-lv-table td{padding:6px 8px;border-bottom:1px solid #f3f4f6;color:#374151;white-space:nowrap}
+    .tk-lv-pill{display:inline-block;font-size:9px;font-weight:700;background:#ede9fe;color:#5b21b6;padding:1px 6px;border-radius:8px;margin-right:4px}
+    .tk-lv-pill.lv2{background:#e0f2fe;color:#075985}
+    .tk-sell{color:#831843;font-weight:700}
+    .tk-scroll{overflow-x:auto}
+    .lock-btn{opacity:.4;cursor:not-allowed}
   </style>
 </head>
 <body>
@@ -29,7 +45,7 @@
 <nav class="page-nav">
   <a class="page-nav-back" href="index.html">← 목록으로</a>
   <span class="page-nav-sep">|</span>
-  <span class="page-nav-title">티켓 상품 목록</span>
+  <span class="page-nav-title">티켓 상품 (목록)</span>
   <span class="page-nav-route">#/ticket-products</span>
   <div class="page-nav-nav">
     <a class="page-nav-pager" href="s13-coupon-spec.html">← 이전</a>
@@ -41,11 +57,11 @@
 
   <div class="sec-title">
     <span class="sec-badge" style="background:#ec4899;">S14-A</span>
-    티켓 상품 목록
+    티켓 상품 (목록)
   </div>
   <div class="sec-sub">
     S13 쿠폰 스펙을 기반으로 고객에게 판매할 티켓 상품을 조회·관리한다. 스펙 1개 → 상품 N개(1:N).<br>
-    기준: 티켓 쿠폰 연동 정책서 v0.7 · 12.3절 / 인수인계 문서 S14-A
+    기준: <b>프로토타입 admin v0.7.31</b>(#/ticket-products) · 티켓 쿠폰 연동 정책서 v0.13 12.3절
   </div>
 
   <div class="two-col">
@@ -66,163 +82,199 @@
 
       <div class="wf-body">
 
-        <!-- LNB -->
+        <!-- LNB : 프로토타입 실제 메뉴 순서 (카테고리→쿠폰스펙→티켓상품) -->
         <div class="wf-lnb">
           <div class="wf-lnb-g">티켓관리</div>
+          <div class="wf-lnb-item">카테고리/컨텐츠 관리</div>
           <div class="wf-lnb-item">쿠폰 스펙 관리</div>
-          <div class="wf-lnb-item on">상품 목록</div>
-          <div class="wf-lnb-item">상품 등록/편집</div>
+          <div class="wf-lnb-item on">티켓 상품</div>
         </div>
 
         <!-- MAIN -->
         <div class="wf-main">
           <div class="wf-page-title">
-            티켓 상품 목록
+            티켓 상품
             <span class="wf-badge" style="font-size:11px;margin-left:8px;">S14-A</span>
           </div>
 
-          <!-- 공통정책 블록 -->
+          <!-- 공통정책 블록 : 프로토타입 실제 동작 기준 -->
           <div class="sec-policy">
-            <span class="ref">기준: v0.7 12.3절</span><br>
-            · <b>coupon_id(쿠폰ID)가 상품 관리의 기준 축</b>입니다. 상품 1개(coupon_id 연결) 아래에 <b>레벨(대인·소인)을 옵션으로 펼쳐</b> 보여줍니다(1 coupon_id = 레벨 N개, S13 스펙 구조와 동일). 카테고리는 필터, 레벨은 옵션입니다.<br>
-            · 상품은 <b>S13 쿠폰 스펙을 연결</b>하여 생성한다(스펙 1:상품 N). 마진·날짜·취소정책은 S14-B에서 설정.<br>
-            · <b>프런트 노출 = 연결 스펙 ON AND 상품 노출 ON</b> (둘 다 충족해야 노출).<br>
-            · 연결 <b>스펙이 OFF면 상품은 강제 미노출</b>(🔒, 개별 토글 잠김). 스펙 ON 시 상품 개별 토글로 복귀.<br>
-            · 판매가 = 입금가 + 마진(고객 노출가). 입금가(원가)는 미노출.<br>
-            · <b>날짜 방식은 오픈형이 기본·우선 운영</b>. 날짜지정형은 기능만 유지된 상태로 <b>현재 미사용</b>(추후 필요 시 사용).<br>
-            · 상품명 등 모든 텍스트는 <b>EN(영어, 필수) / ZH(중국어, 선택)</b> 입력. 외국인 전용 사이트라 국문(KO)은 사용하지 않는다.
+            <span class="ref">기준: 프로토타입 admin v0.7.31</span><br>
+            · <b>카드 = 상품, 카드 안 행 = 레벨</b>(대인/소인). 상품 1개(쿠폰ID 연결) 아래 레벨이 하위 표로 펼쳐집니다. 레벨은 <b>S13 쿠폰 스펙</b>에서 자동 로드됩니다.<br>
+            · <b>레벨 구조 2가지</b> — ① <b>2레벨</b>(대인 LV.1 · 소인 LV.2) ② <b>1레벨</b>(대인 전용, 예: 곤돌라). ※ 프로토타입은 상품당 대인·소인 2레벨(또는 대인 1레벨)만 사용.<br>
+            · <b>노출 = 스펙 ON AND 상품 노출 ON AND 판매중</b> (3개 모두 충족해야 프런트 노출). 하나라도 아니면 미노출.<br>
+            · <b>노출 제어는 상품 단위 토글 1개</b>뿐(레벨별 개별 on/off 없음). 연결 <b>스펙 OFF → 강제 미노출 🔒</b>(상품 토글 잠김). <b>판매기간 종료 → 자동 미노출</b>.<br>
+            · 마진은 <b>S11 마진관리(쿠폰ID 단위)</b>에서 관리 → 이 화면은 <b>판매가로 표시만</b>. 판매가 = 입금가 + 마진(소수점 버림). 입금가(원가)는 고객 미노출.<br>
+            · <b>날짜 방식은 오픈형이 기본·우선</b>. 날짜지정형은 기능만 유지·현재 미사용.<br>
+            · 상품명 등 텍스트는 <b>EN(필수) / ZH(선택)</b> 입력. 외국인 전용 사이트라 국문(KO)은 사용하지 않음.
           </div>
 
-          <!-- 툴바 -->
-          <div class="wf-toolbar" style="margin-bottom:10px;">
-            <div class="wf-filter" style="margin-bottom:0;">
-              <select class="wf-select" style="width:130px;font-size:11px"><option>카테고리 전체</option><option>스키</option><option>워터파크</option></select>
-              <select class="wf-select" style="width:150px;font-size:11px"><option>날짜방식 전체</option><option>오픈형 (기본·우선)</option><option>날짜지정형 (미사용)</option></select>
-              <select class="wf-select" style="width:120px;font-size:11px"><option>노출 전체</option><option>노출중</option><option>미노출</option><option>강제 미노출(🔒)</option></select>
-              <input class="wf-input" style="width:150px;" placeholder="상품명 검색" />
+          <!-- 툴바 : 프로토타입 실제 = 총 개수 + 등록버튼만 (필터·검색 없음) -->
+          <div class="wf-toolbar" style="margin-bottom:10px;justify-content:space-between;">
+            <span style="font-size:12px;color:#6b7280;">총 3개 상품 <span class="wf-cn">1</span></span>
+            <a href="s14-b-ticket-product-form.html"><button class="wf-btn wf-btn-primary" style="background:#ec4899;border-color:#ec4899;">+ 상품 등록 <span class="wf-cn">2</span></button></a>
+          </div>
+
+          <!-- ================================================================
+               카드 A : Ski Lift Day Pass (쿠폰ID SVA) — 스키>리프트권
+               2레벨(대인/소인) · 판매중 · 노출중 (정상 노출 케이스)
+               마진 = 스키>리프트권 카테고리 마스터 10%(율)
+               ================================================================ -->
+          <div class="tk-card">
+            <div class="tk-card-head">
+              <span class="tk-thumb" style="background:#6366f1;">Ski Lift</span>
+              <span class="tk-code-prod">SVA <span class="wf-cn">3</span></span>
+              <span class="tk-head-title">Ski Lift Day Pass <span class="zh">滑雪缆车一日券 <span class="wf-cn">4</span></span></span>
+              <span class="tk-head-actions">
+                <span class="tk-badge sale-on">판매중 <span class="wf-cn">5</span></span>
+                <span class="tk-badge vis-on">노출중 <span class="wf-cn">6</span></span>
+                <button class="wf-btn wf-btn-sm">미노출</button>
+                <button class="wf-btn wf-btn-sm">수정 <span class="wf-cn">7</span></button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
             </div>
-            <a href="s14-b-ticket-product-form.html"><button class="wf-btn wf-btn-primary" style="background:#ec4899;border-color:#ec4899;">+ 상품 등록 <span class="wf-cn">1</span></button></a>
+            <div class="tk-scroll">
+              <table class="tk-lv-table">
+                <thead>
+                  <tr>
+                    <th>레벨 <span class="wf-cn">8</span></th>
+                    <th>쿠폰명 <span class="wf-cn">9</span></th>
+                    <th>카테고리 <span class="wf-cn">10</span></th>
+                    <th>판매기간 <span class="wf-cn">11</span></th>
+                    <th>사용기간 <span class="wf-cn">12</span></th>
+                    <th>입금가 <span class="wf-cn">13</span></th>
+                    <th>적용 마진 <span class="wf-cn">14</span></th>
+                    <th>판매가 <span class="wf-cn">15</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="tk-lv-pill">LV.1</span>대인</td>
+                    <td>스키 리프트 종일권(대인)</td>
+                    <td>스키 › 리프트권</td>
+                    <td>2026-07-01 ~ 2027-02-20</td>
+                    <td>2026-12-01 ~ 2027-02-28</td>
+                    <td>65,000원</td>
+                    <td>10%</td>
+                    <td class="tk-sell">71,500원</td>
+                  </tr>
+                  <tr>
+                    <td><span class="tk-lv-pill lv2">LV.2</span>소인</td>
+                    <td>스키 리프트 종일권(소인)</td>
+                    <td>스키 › 리프트권</td>
+                    <td>2026-07-01 ~ 2027-02-20</td>
+                    <td>2026-12-01 ~ 2027-02-28</td>
+                    <td>48,000원</td>
+                    <td>10%</td>
+                    <td class="tk-sell">52,800원</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <!-- 상품 목록 테이블 (coupon_id 단위 마스터-디테일) -->
-          <table class="wf-table">
-            <thead>
-              <tr>
-                <th>coupon_id <span class="wf-cn">2</span></th>
-                <th>상품명 <span class="wf-cn">3</span></th>
-                <th>카테고리 <span class="wf-cn">4</span></th>
-                <th>날짜 방식 <span class="wf-cn">5</span></th>
-                <th>레벨(옵션) <span class="wf-cn">6</span></th>
-                <th>입금가 <span class="wf-cn">7</span></th>
-                <th>마진금액 <span class="wf-cn">8</span></th>
-                <th>판매가 <span class="wf-cn">9</span></th>
-                <th>노출 <span class="wf-cn">10</span></th>
-                <th>수정/삭제 <span class="wf-cn">11</span></th>
-              </tr>
-            </thead>
-            <tbody>
+          <!-- ================================================================
+               카드 B : Gondola Round Trip (쿠폰ID GDO) — 곤돌라
+               1레벨(대인 전용, 소인 없음) · 판매중 · 미노출 (상품 토글 OFF)
+               마진 = 곤돌라 카테고리 마스터 +2,000원(정액)
+               ================================================================ -->
+          <div class="tk-card is-off">
+            <div class="tk-card-head">
+              <span class="tk-thumb" style="background:#10b981;">Gondola</span>
+              <span class="tk-code-prod">GDO</span>
+              <span class="tk-head-title">Gondola Round Trip <span class="zh">观光缆车往返</span></span>
+              <span class="tk-head-actions">
+                <span class="tk-badge sale-on">판매중</span>
+                <span class="tk-badge vis-off">미노출</span>
+                <button class="wf-btn wf-btn-sm">노출</button>
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+            <div class="tk-scroll">
+              <table class="tk-lv-table">
+                <thead>
+                  <tr>
+                    <th>레벨</th><th>쿠폰명</th><th>카테고리</th><th>판매기간</th><th>사용기간</th><th>입금가</th><th>적용 마진</th><th>판매가</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="tk-lv-pill">LV.1</span>대인</td>
+                    <td>곤돌라 왕복권(대인)</td>
+                    <td>곤돌라</td>
+                    <td>2026-07-01 ~ 2026-12-31</td>
+                    <td>2026-07-01 ~ 2026-12-31</td>
+                    <td>18,000원</td>
+                    <td>+2,000원</td>
+                    <td class="tk-sell">20,000원</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-              <!-- 상품 A : coupon_id OAT (마스터 1행 + 레벨 옵션 2행) -->
-              <tr class="master-row">
-                <td><span class="spec-chip">OAT</span></td>
-                <td>
-                  Water World Full-Day<br>
-                  <span style="font-size:10px;color:#888;">水上世界一日券 (ZH)</span>
-                </td>
-                <td><span class="cat-path"><b>워터파크</b></span></td>
-                <td><span class="wf-badge" style="background:#e0e7ff;color:#3730a3;">오픈형</span></td>
-                <td colspan="4" class="opt-summary">옵션(레벨) 2개 — 대인 · 소인 (아래 표시) ▾</td>
-                <td>
-                  <div class="wf-toggle-row" style="margin-bottom:0;">
-                    <span class="wf-toggle on" onclick="return confirm('미노출 처리하시겠습니까?');" title="클릭 시 확인 팝업이 뜹니다"></span><span class="wf-toggle-label">노출</span>
-                  </div>
-                  <span class="toggle-hint">클릭 시 확인 팝업</span>
-                </td>
-                <td>
-                  <button class="wf-btn wf-btn-sm">수정</button>
-                  <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
-                </td>
-              </tr>
-              <tr class="lv-row">
-                <td colspan="4" class="lv-indent">↳ 레벨 옵션</td>
-                <td>대인 <span style="color:#888;">(LV.1)</span></td>
-                <td>40,000</td>
-                <td>+4,000</td>
-                <td class="price-sell"><b>44,000</b></td>
-                <td colspan="2"></td>
-              </tr>
-              <tr class="lv-row">
-                <td colspan="4" class="lv-indent">↳ 레벨 옵션</td>
-                <td>소인 <span style="color:#888;">(LV.2)</span></td>
-                <td>35,000</td>
-                <td>+3,500</td>
-                <td class="price-sell"><b>38,500</b></td>
-                <td colspan="2"></td>
-              </tr>
+          <!-- ================================================================
+               카드 C : Water World Day Pass (쿠폰ID DBO) — 워터파크
+               2레벨 · 연결 스펙(S13) OFF → 강제 미노출 🔒 (상품 토글 잠김)
+               + 판매기간(~2026-08-25) 경과 → 판매종료 배지
+               마진 = 워터파크 카테고리 마스터 +4,000원(정액)
+               ================================================================ -->
+          <div class="tk-card is-off">
+            <div class="tk-card-head">
+              <span class="tk-thumb" style="background:#38bdf8;">Water World</span>
+              <span class="tk-code-prod">DBO</span>
+              <span class="tk-head-title">Water World Day Pass (Peak/Early) <span class="zh">水世界一日通票（旺季/早鸟）</span></span>
+              <span class="tk-head-actions">
+                <span class="tk-badge sale-off">판매종료</span>
+                <span class="tk-badge vis-lock">강제 미노출 🔒 <span class="wf-cn">16</span></span>
+                <button class="wf-btn wf-btn-sm lock-btn" disabled title="연결 스펙이 미노출(OFF)이라 제어할 수 없습니다">노출</button>
+                <button class="wf-btn wf-btn-sm">수정</button>
+                <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
+              </span>
+            </div>
+            <div class="tk-scroll">
+              <table class="tk-lv-table">
+                <thead>
+                  <tr>
+                    <th>레벨</th><th>쿠폰명</th><th>카테고리</th><th>판매기간</th><th>사용기간</th><th>입금가</th><th>적용 마진</th><th>판매가</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="tk-lv-pill">LV.1</span>대인</td>
+                    <td>워터월드 종일권_성수기(대인)</td>
+                    <td>워터파크</td>
+                    <td>2026-07-01 ~ 2026-08-25</td>
+                    <td>2026-07-10 ~ 2026-08-30</td>
+                    <td>40,000원</td>
+                    <td>+4,000원</td>
+                    <td class="tk-sell">44,000원</td>
+                  </tr>
+                  <tr>
+                    <td><span class="tk-lv-pill lv2">LV.2</span>소인</td>
+                    <td>워터월드 종일권_성수기(소인)</td>
+                    <td>워터파크</td>
+                    <td>2026-07-01 ~ 2026-08-25</td>
+                    <td>2026-07-10 ~ 2026-08-30</td>
+                    <td>35,000원</td>
+                    <td>+4,000원</td>
+                    <td class="tk-sell">39,000원</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-              <!-- 상품 B : coupon_id SKL (스펙 ON · 상품 토글 미노출) -->
-              <tr class="master-row">
-                <td><span class="spec-chip">SKL</span></td>
-                <td>
-                  High1 Lift Full-Day<br>
-                  <span style="font-size:10px;color:#888;">High1缆车一日券 (ZH)</span>
-                </td>
-                <td><span class="cat-path">스키 &gt; <b>리프트권</b></span></td>
-                <td><span class="wf-badge" style="background:#e0e7ff;color:#3730a3;">오픈형</span></td>
-                <td colspan="4" class="opt-summary">옵션(레벨) 1개 — 대인 (아래 표시) ▾</td>
-                <td>
-                  <div class="wf-toggle-row" style="margin-bottom:0;">
-                    <span class="wf-toggle" onclick="return confirm('노출하시겠습니까?');" title="클릭 시 확인 팝업이 뜹니다"></span><span class="wf-toggle-label">미노출</span>
-                  </div>
-                  <span class="toggle-hint">클릭 시 확인 팝업</span>
-                </td>
-                <td>
-                  <button class="wf-btn wf-btn-sm">수정</button>
-                  <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
-                </td>
-              </tr>
-              <tr class="lv-row">
-                <td colspan="4" class="lv-indent">↳ 레벨 옵션</td>
-                <td>대인 <span style="color:#888;">(LV.1)</span></td>
-                <td>55,000</td>
-                <td>+5,500</td>
-                <td class="price-sell"><b>60,500</b></td>
-                <td colspan="2"></td>
-              </tr>
+          <div class="wf-hint" style="margin-top:10px;">· 카드 = 상품 · 카드 안 행 = 레벨(S13 스펙에서 로드) · 입금가(원가) 고객 미노출 · 판매가 = 입금가 + 마진(소수점 버림) · 노출 3상태(노출중/미노출/강제 미노출🔒) = 상품 단위 · 스펙 OFF·판매종료 시 자동 미노출.</div>
 
-              <!-- 상품 C : coupon_id SK4 (스펙 OFF → 강제 미노출 🔒) -->
-              <tr class="master-row lock-row" style="opacity:.7;">
-                <td><span class="spec-chip">SK4</span> <span style="font-size:9px;color:#991b1b;">스펙 OFF</span></td>
-                <td>
-                  High1 Lift 4-Hour<br>
-                  <span style="font-size:10px;color:#888;">High1缆车4小时券 (ZH)</span>
-                </td>
-                <td><span class="cat-path">스키 &gt; <b>리프트권</b></span></td>
-                <td><span class="wf-badge" style="background:#e0e7ff;color:#3730a3;">오픈형</span></td>
-                <td colspan="4" class="opt-summary">옵션(레벨) 1개 — 대인 (아래 표시) ▾</td>
-                <td>
-                  <div class="wf-toggle-row" style="margin-bottom:0;">
-                    <span class="wf-toggle" style="opacity:.4;"></span><span class="wf-toggle-label">강제 미노출</span> <span title="연결 스펙 OFF — 개별 제어 불가">🔒</span>
-                  </div>
-                </td>
-                <td>
-                  <button class="wf-btn wf-btn-sm">수정</button>
-                  <button class="wf-btn wf-btn-sm wf-btn-danger">삭제</button>
-                </td>
-              </tr>
-              <tr class="lv-row lock-row">
-                <td colspan="4" class="lv-indent">↳ 레벨 옵션</td>
-                <td>대인 <span style="color:#888;">(LV.1)</span></td>
-                <td>38,000</td>
-                <td>+3,800</td>
-                <td class="price-sell"><b>41,800</b></td>
-                <td colspan="2"></td>
-              </tr>
-
-            </tbody>
-          </table>
-
-          <div class="wf-hint" style="margin-top:10px;">· 총 3개 상품(coupon_id 3개) · 각 상품 아래 레벨(대인·소인) 옵션을 펼쳐 표시 · 입금가(원가)는 고객 미노출 · 판매가 = 입금가 + 마진금액(소수점 버림) · 🔒 강제 미노출 = 연결 스펙(S13)이 OFF여서 상품 노출 토글이 잠긴 상태. S13에서 스펙을 ON하면 해제됨.</div>
+          <!-- 정책 v0.13 확장(프로토타입 미구현) 안내 -->
+          <div class="sec-note" style="margin-top:12px;">
+            <b>참고 — 정책서 v0.13 확장 항목은 현재 프로토타입 미구현이라 본 화면 미반영:</b><br>
+            · 성수기/비수기 <b>4레벨 구조</b>(대인·소인×성수기/비수기) — 프로토타입은 대인·소인 2레벨(또는 대인 1레벨)만 사용.<br>
+            · <b>레벨별 노출/판매기간·레벨 N/M 표시</b> — 프로토타입은 노출이 상품 단위 1개 토글뿐.<br>
+            → 개발 반영 시점에 화면 갱신 예정. (본 화면은 프로토타입 admin v0.7.31 기준으로 작성)
+          </div>
 
         </div><!-- /wf-main -->
       </div><!-- /wf-body -->
@@ -235,98 +287,157 @@
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">1</span>
         <div class="ann-body">
-          <div class="ann-title">+ 상품 등록</div>
-          <div class="ann-desc">S14-B 상품 등록/편집 폼으로 이동. 연결할 스펙(S13)을 선택해 새 상품 생성.</div>
-          <div class="ann-rule">등록 가능한 스펙이 없으면(S13 미등록) 먼저 스펙 등록 안내. 스펙 선행 원칙.</div>
+          <div class="ann-title">총 상품 수</div>
+          <div class="ann-desc">등록된 티켓 상품(쿠폰ID 연결)의 총 개수입니다. 프로토타입은 상품 목록 상단에 개수만 표시하며, <b>별도 검색·필터 UI는 없습니다</b>(카드 정렬은 최종수정일 최신순).</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">2</span>
         <div class="ann-body">
-          <div class="ann-title">coupon_id (쿠폰ID) — 관리의 기준 축</div>
-          <div class="ann-desc">이 상품이 연결한 <b>S13 쿠폰 스펙의 ID</b>입니다. 상품을 관리하는 <b>기준 축</b>이라 맨 앞 컬럼에 둡니다. 예: OAT, SKL. <b>coupon_id 1개 = 레벨(대인·소인) 여러 개</b> 구조라서, 이 줄(마스터 행) 아래에 레벨 옵션이 펼쳐집니다.</div>
-          <div class="ann-rule">연결한 스펙이 OFF면 옆에 "스펙 OFF"가 뜨고, 그 상품은 강제 미노출(🔒)이 됩니다. 입금가·사용기간의 원천도 이 스펙입니다.</div>
+          <div class="ann-title">+ 상품 등록</div>
+          <div class="ann-desc">S14-B 상품 등록 폼으로 이동. 연결할 스펙(S13)을 선택해 새 상품을 만듭니다.</div>
+          <div class="ann-rule">등록 가능한 스펙이 없으면(S13 미등록) "먼저 쿠폰 스펙을 등록하세요" 알럿 후 이동 차단. 스펙 선행 원칙.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">3</span>
         <div class="ann-body">
-          <div class="ann-title">상품명 (EN 필수 / ZH 선택)</div>
-          <div class="ann-desc">고객에게 보이는 상품 이름입니다. 외국인 전용 사이트라 <b>영어(EN)는 반드시 입력</b>하고, <b>중국어(ZH)는 선택 입력</b>입니다. 중국어를 비우면 영어가 대신 보입니다. 국문(KO)은 입력하지 않습니다. 실제 입력은 S14-B에서 합니다.</div>
-          <div class="ann-front">→ 프런트: 티켓 상품 카드·상세 타이틀</div>
+          <div class="ann-title">쿠폰ID (카드 헤더 코드)</div>
+          <div class="ann-desc">이 상품이 연결한 <b>S13 쿠폰 스펙의 ID(coupon_id)</b>입니다. 값 형식: 3자리 코드 예) <code>SVA</code>·<code>GDO</code>·<code>DBO</code>. <b>데이터 성격: 상품 생성 시 스펙 선택으로 확정(수정 불가), 읽기전용 표시.</b> 입금가·레벨·사용기간의 원천이 이 스펙입니다.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">4</span>
         <div class="ann-body">
-          <div class="ann-title">카테고리 (필터용 분류)</div>
-          <div class="ann-desc">S17 티켓 카테고리 트리에서 선택한 분류 경로(최대 2뎁스). 예: 스키 &gt; 리프트권. 워터파크처럼 2뎁스가 없는 카테고리는 1뎁스만 표시됩니다. 권종(종일권·4시간권 등)은 카테고리 뎁스가 아니라 상품명·쿠폰명에서 구분합니다. 상품을 <b>거르는 필터 기준</b>으로 씁니다(관리 축은 coupon_id).</div>
-          <div class="ann-front">→ 프런트: 카테고리 네비게이션·필터 분류</div>
+          <div class="ann-title">상품명 (EN 필수 / ZH 선택)</div>
+          <div class="ann-desc">고객에게 보이는 상품 이름. 값 형식: 영문 타이틀 + (회색) 중문 병기. <b>데이터 성격: 어드민 직접입력(S14-B).</b> 영어(EN)는 필수, 중국어(ZH)는 선택(비우면 EN 대체 표시). 국문(KO)은 미사용.</div>
+          <div class="ann-front">→ 프런트: 티켓 상품 카드·상세 타이틀</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">5</span>
         <div class="ann-body">
-          <div class="ann-title">날짜 방식 (오픈형이 기본·우선)</div>
-          <div class="ann-desc"><b>오픈형</b>: 날짜를 정하지 않고 사용기간 안에서 자유롭게 씁니다. <b>현재는 오픈형을 기본으로 우선 운영</b>합니다. 그래서 예시 목록도 모두 오픈형입니다.</div>
-          <div class="ann-rule"><b>날짜지정형</b>(고객이 이용일을 골라 구매, 날짜별 한도 설정)은 <b>기능만 남겨둔 상태로 현재는 사용하지 않습니다</b>. 나중에 필요할 때 사용합니다. 날짜 방식은 S14-C(탭2)에서 설정합니다.</div>
+          <div class="ann-title">판매상태 배지 (자동 계산)</div>
+          <div class="ann-desc"><b>판매기간(판매시작~판매종료일)</b> 기준으로 시스템이 자동 판정합니다. 값 3종:</div>
+          <table class="wf-table" style="font-size:10px;margin:4px 0;">
+            <thead><tr><th>배지</th><th>조건</th></tr></thead>
+            <tbody>
+              <tr><td><span class="tk-badge sale-on">판매중</span></td><td>오늘이 판매기간 이내</td></tr>
+              <tr><td><span class="tk-badge sale-off">판매전</span></td><td>오늘 &lt; 판매시작일</td></tr>
+              <tr><td><span class="tk-badge sale-off">판매종료</span></td><td>오늘 &gt; 판매종료일 (자정 경과 시 자동 미노출)</td></tr>
+            </tbody>
+          </table>
+          <div class="ann-rule"><b>데이터 성격: 자동 계산(어드민 편집 불가).</b> 판매기간 자체는 S14-B에서 관리자가 입력.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">6</span>
         <div class="ann-body">
-          <div class="ann-title">레벨(옵션) — 대인 · 소인</div>
-          <div class="ann-desc">한 상품(coupon_id) 안의 <b>선택 옵션</b>입니다. 마스터 행 아래에 <b>↳ 레벨 옵션</b> 줄로 대인(LV.1)·소인(LV.2)이 펼쳐집니다. 레벨마다 입금가·마진·판매가가 다릅니다. 경쟁사도 상품 1개에서 옵션을 골라 담는 방식입니다.</div>
-          <div class="ann-front">→ 프런트: 상품 상세에서 대인/소인 수량 선택</div>
+          <div class="ann-title">노출 배지 + 노출/미노출 토글 (상품 단위)</div>
+          <div class="ann-desc">상품(쿠폰ID) <b>단위의 노출 상태</b>를 나타냅니다. <b>레벨별 개별 on/off는 없습니다.</b> 배지 3종:</div>
+          <table class="wf-table" style="font-size:10px;margin:4px 0;">
+            <thead><tr><th>배지</th><th>의미</th><th>조건</th></tr></thead>
+            <tbody>
+              <tr><td><span class="tk-badge vis-on">노출중</span></td><td>프런트 노출</td><td>스펙 ON AND 상품 노출 ON AND 판매중</td></tr>
+              <tr><td><span class="tk-badge vis-off">미노출</span></td><td>미노출</td><td>상품 노출 OFF 또는 판매종료</td></tr>
+              <tr><td><span class="tk-badge vis-lock">강제 미노출 🔒</span></td><td>스펙 잠김</td><td>연결 스펙(S13) OFF (Cascade)</td></tr>
+            </tbody>
+          </table>
+          <div class="ann-rule"><b>[노출]/[미노출] 버튼</b>: 상품 노출 토글(visibility Y/N). 버튼 라벨은 현재 상태의 반대 동작(노출중이면 "미노출", 미노출이면 "노출").</div>
+          <div class="ann-warn"><b>강제 미노출 🔒</b> 상태에서는 토글 버튼이 <b>비활성(disabled)</b> — 연결 스펙이 OFF라 제어 불가. S13에서 스펙을 ON하면 다시 상품 토글로 제어 가능.</div>
+          <div class="ann-front">→ 프런트: 3개 조건(스펙·상품·판매중) 모두 충족 시에만 상품 카드 노출</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">7</span>
         <div class="ann-body">
-          <div class="ann-title">입금가 (원가 · 고객 미노출)</div>
-          <div class="ann-desc">우리가 High1(PMS)에 실제로 내는 원가입니다. 레벨별로 다릅니다. <b>고객에게는 절대 보이지 않습니다.</b> 판매가를 계산하는 출발점입니다.</div>
+          <div class="ann-title">수정 · 삭제</div>
+          <div class="ann-desc"><b>수정</b>: S14-B 편집 폼으로 이동. <b>삭제</b>: 상품 삭제(예약/주문 이력 있는 경우 처리 정책은 예약관리 기획 시 확정). 스펙과 달리 상품은 우리 판매 단위라 직접 수정·삭제 가능.</div>
         </div>
       </div>
 
+      <!-- ── 레벨 하위 테이블 컬럼 정의 (8개) ── -->
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">8</span>
         <div class="ann-body">
-          <div class="ann-title">마진금액 (S11에서 온 값 · 표시만)</div>
-          <div class="ann-desc">입금가에 얹는 이익 금액입니다. 이 값은 <b>S11 마진관리(티켓 탭)에서 coupon_id 단위로 정한 마진</b>이 내려온 것입니다. <b>이 화면은 결과를 보여주기만 하고, 여기서 수정하지 않습니다.</b> (마진율/마진금액 설정은 S11·S14-B에서 함)</div>
-          <div class="ann-rule">양수(+)는 마크업, 음수(−)는 할인입니다. 계산 결과에 소수점이 생기면 무조건 버림(floor) 처리합니다.</div>
+          <div class="ann-title">[표] 레벨</div>
+          <div class="ann-desc">한 상품 안의 <b>판매 옵션 단위</b>. 값 형식: <code>LV.N + 레벨명</code> 예) <b>LV.1 대인</b> / <b>LV.2 소인</b>. <b>데이터 성격: S13 쿠폰 스펙에서 자동 로드(읽기전용).</b></div>
+          <div class="ann-rule"><b>레벨 구조 2가지</b>: 2레벨(대인 LV.1·소인 LV.2) / 1레벨(대인 전용, 예: 곤돌라 — 소인 행 없음). ※ 성수기/비수기 4레벨은 정책 확장(프로토타입 미구현).</div>
+          <div class="ann-front">→ 프런트: 상품 상세에서 대인/소인 수량 선택</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">9</span>
         <div class="ann-body">
-          <div class="ann-title">판매가 (= 입금가 + 마진금액)</div>
-          <div class="ann-desc">고객에게 보이는 최종 가격입니다. <b>판매가 = 입금가 + 마진금액</b>이며, 소수점은 버림합니다. 레벨별로 각각 계산됩니다. 예: 입금가 40,000 + 마진 4,000 = 판매가 44,000.</div>
-          <div class="ann-front">→ 프런트: 상품 카드·상세 가격</div>
+          <div class="ann-title">[표] 쿠폰명</div>
+          <div class="ann-desc">레벨별 쿠폰 표시명(coupon_name). 값 형식: <code>기본명(대인/소인)</code> 예) "스키 리프트 종일권(대인)". <b>데이터 성격: S13 스펙에서 자동 로드(읽기전용).</b> High1 제공 쿠폰 스펙의 명칭이며 상품명(EN/ZH)과 별개.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">10</span>
         <div class="ann-body">
-          <div class="ann-title">노출 — 상품 토글 (클릭 시 확인 팝업 필수)</div>
-          <div class="ann-desc">상품(coupon_id) 단위의 개별 노출 ON/OFF입니다. <b>프런트 노출 = 연결 스펙 ON AND 상품 노출 ON</b> (둘 다 켜져야 고객에게 보임).</div>
-          <div class="ann-rule"><b>토글을 누르면 바로 바뀌지 않고 확인 팝업이 먼저 뜹니다</b>(실수 방지). 켤 때 → "노출하시겠습니까?", 끌 때 → "미노출 처리하시겠습니까?". <b>확인</b>을 눌러야 실제로 바뀝니다.</div>
-          <div class="ann-warn">연결 스펙 OFF → 상품 토글 <b>잠김(🔒 강제 미노출)</b>, 팝업도 뜨지 않고 제어 불가. 스펙 ON 시 상품 토글로 복귀.</div>
+          <div class="ann-title">[표] 카테고리</div>
+          <div class="ann-desc">상품의 분류 경로(최대 2뎁스). 값 형식: <code>1뎁스</code> 또는 <code>1뎁스 › 2뎁스</code> 예) "스키 › 리프트권" / "워터파크"(2뎁스 없음). <b>데이터 성격: S14-B에서 선택(S17 카테고리 트리 기준).</b> 권종(종일권·4시간권 등)은 뎁스가 아니라 상품명·쿠폰명에서 구분.</div>
+          <div class="ann-front">→ 프런트: 카테고리 네비게이션·필터 분류</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">11</span>
         <div class="ann-body">
-          <div class="ann-title">수정 · 삭제</div>
-          <div class="ann-desc">수정: S14-B 편집 폼으로 이동. 삭제: 상품 삭제(예약/주문 이력 있는 경우 처리 정책은 예약관리 기획 시 확정). 스펙과 달리 상품은 우리 판매 단위라 직접 수정·삭제 가능.</div>
+          <div class="ann-title">[표] 판매기간</div>
+          <div class="ann-desc">우리 홈페이지에서 판매 가능한 기간(판매시작일 ~ 판매종료일). 값 형식: <code>YYYY-MM-DD ~ YYYY-MM-DD</code>(미설정 시 "즉시"·"무기한"·"상시"). <b>데이터 성격: S14-B에서 관리자 입력(상품 단위, 모든 레벨 공통).</b> High1 제공 <b>사용기간과 별개</b>. 판매종료일 자정 경과 시 자동 미노출.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">12</span>
+        <div class="ann-body">
+          <div class="ann-title">[표] 사용기간</div>
+          <div class="ann-desc">현장 사용(입장) 가능 기간. 값 형식: <code>use_start_date ~ use_end_date</code>. <b>데이터 성격: S13 스펙에서 자동 로드(레벨별), 읽기전용.</b> High1이 정한 실제 이용 가능 기간이며 판매기간(11)과 다름.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">13</span>
+        <div class="ann-body">
+          <div class="ann-title">[표] 입금가 (원가 · 고객 미노출)</div>
+          <div class="ann-desc">우리가 High1에 실제로 내는 원가. 값 형식: <code>NN,NNN원</code>. 레벨별로 다름(대인 &gt; 소인 일반적). <b>데이터 성격: S13 스펙에서 자동 로드(읽기전용).</b> <b>고객에게 절대 미노출</b>, 판매가 계산의 출발점.</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">14</span>
+        <div class="ann-body">
+          <div class="ann-title">[표] 적용 마진 (S11에서 온 값 · 표시만)</div>
+          <div class="ann-desc">입금가에 얹는 이익. 값 형식: <b>율</b>은 <code>10%</code>, <b>정액</b>은 <code>+4,000원</code>. <b>데이터 성격: S11 마진관리(쿠폰ID 단위, 카테고리 마스터+오버라이드)에서 결정 → 이 화면은 표시만(편집 불가).</b> 같은 상품의 모든 레벨에 동일 적용(쿠폰ID 단위).</div>
+          <div class="ann-rule">양수(+)=마크업, 음수(−)=할인. 계산 결과 소수점은 무조건 버림(floor).</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">15</span>
+        <div class="ann-body">
+          <div class="ann-title">[표] 판매가 (= 입금가 + 마진)</div>
+          <div class="ann-desc">고객에게 보이는 최종 가격. 값 형식: <code>NN,NNN원</code>(강조 표시). <b>데이터 성격: 자동 계산(입금가+마진, floor).</b> 레벨별로 각각 계산. 예) 65,000 × 10% = 71,500 / 40,000 + 4,000 = 44,000.</div>
+          <div class="ann-front">→ 프런트: 상품 카드·상세 가격</div>
+        </div>
+      </div>
+
+      <div class="ann-item">
+        <span class="cn" style="background:#ec4899;">16</span>
+        <div class="ann-body">
+          <div class="ann-title">강제 미노출 🔒 (Cascade)</div>
+          <div class="ann-desc">연결한 <b>S13 쿠폰 스펙이 OFF</b>이면 이 상품은 강제로 미노출되고, 노출 토글 버튼이 <b>비활성(잠김)</b>됩니다. 상품 개별 제어 불가.</div>
+          <div class="ann-rule">해제 방법: S13 쿠폰 스펙 관리에서 해당 스펙을 다시 ON → 상품 토글로 제어 복귀.</div>
         </div>
       </div>
 

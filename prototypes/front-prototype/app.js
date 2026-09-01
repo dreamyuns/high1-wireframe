@@ -26,6 +26,7 @@ const STORAGE_TICKET_COUPONS    = "high1_coupons_v1";          // 발급 쿠폰(
 const DEFAULT_TICKET_MARGIN_FRONT = { type: "amount", value: "30000" }; // 전역 디폴트 (정책 v0.11 §11)
 /* 로그인/회원 (프로토타입 목업) */
 const STORAGE_MEMBERS = "high1_members_v1";   // [{email, password}]
+const DEMO_LOGIN = { email: "demo@high1.com", password: "demo" }; // 로그인 화면 기본 프리필(데모 계정)
 const STORAGE_SESSION = "high1_session_v1";    // { email } 로그인 세션
 const STORAGE_RESV    = "high1_reservations_v1"; // 숙소 예약(프런트 쓰기)
 const STORAGE_PROFILE = "high1_profile_v1";      // 회원 프로필(이메일별)
@@ -166,7 +167,7 @@ const uiState = {
   ticketUseDate: "",          // 티켓 검색 사용일(하루)
   ticketDetailTab: "select",  // 티켓 상세 탭
   ticketQty: {},              // 상세: coupon level별 수량 { level: n }
-  auth: { step: "email", email: "", isNew: false, next: "", err: "" }, // 로그인 흐름 상태
+  auth: { step: "email", email: DEMO_LOGIN.email, isNew: false, next: "", err: "" }, // 로그인 흐름 상태(데모 계정 기본 프리필)
   booking: null,              // 숙소 예약 진행 컨텍스트 {productId,ci,co,pax,guest,agree,holdUntil,result}
   myFilter: { domain: "all", tab: "current" }, // 마이페이지 목록 필터
   pwVerified: false,          // 비밀번호 변경 세션 인증 여부
@@ -182,7 +183,7 @@ function logout() { localStorage.removeItem(STORAGE_SESSION); }
 /** 로그인 필요 화면 진입 시 호출 — 미로그인이면 로그인으로 유도(next 저장) */
 function requireLogin(nextHash) {
   if (currentUser()) return true;
-  uiState.auth = { step: "email", email: "", isNew: false, next: nextHash || location.hash, err: "" };
+  uiState.auth = { step: "email", email: DEMO_LOGIN.email, isNew: false, next: nextHash || location.hash, err: "" };
   location.hash = "#/login";
   return false;
 }
@@ -2082,21 +2083,31 @@ function renderTicketSearch(app) {
 
 /* ─── 티켓 브릿지 (#/ticket/bridge/:catKo) — 숙소식 리치 랜딩 ─── */
 function ticketLevelLabel(level, name, L) { return level === 1 ? L("성인", "Adult") : level === 2 ? L("아동", "Child") : name; }
-/** 브릿지 상품 행 (썸네일 + 성인/아동 스테퍼(pending) + 담기·상세보기) */
+/* ─ 장바구니 수량 헬퍼 (스테퍼 = 장바구니, 단일 소스) ─ */
+function tkfCartQty(pid, level) {
+  const items = (uiState.ticketCart && uiState.ticketCart.items) || [];
+  const it = items.find((x) => x.product_id === pid && x.level === level);
+  return it ? it.qty : 0;
+}
+function tkfSetQty(pid, level, delta) {
+  if (!uiState.ticketCart) return;
+  const items = uiState.ticketCart.items;
+  const it = items.find((x) => x.product_id === pid && x.level === level);
+  const cur = it ? it.qty : 0;
+  const next = Math.max(0, Math.min(20, cur + delta));
+  if (next === 0) { if (it) items.splice(items.indexOf(it), 1); }
+  else if (it) it.qty = next;
+  else items.push({ product_id: pid, level, qty: next });
+}
+/** 브릿지 상품 행 — Add 버튼 없음. +/- 스테퍼가 곧 장바구니 수량(자동 담기) */
 function ticketBridgeProductRow(p, gmap, L) {
   const g = gmap.get(p.spec_coupon_id); const margin = getTicketMarginFront(p.spec_coupon_id);
   const img = ticketImg(p); const rows = g ? g.rows : [];
-  const pend = (uiState.ticketPending && uiState.ticketPending[p.id]) || {};
   const useP = rows.length ? `${rows[0].use_start_date} ~ ${rows[0].use_end_date}` : "";
-  let rowSub = 0, rowQty = 0;
   const opt = rows.map((r) => {
-    const sell = ticketLevelSell(r, margin); const q = parseInt(pend[r.level], 10) || 0;
-    rowSub += sell * q; rowQty += q;
-    return `<div class="tkf-optrow"><span class="tkf-optlabel">${ticketLevelLabel(r.level, r.level_name, L)} <span style="color:#888">${escapeHtml(r.coupon_name)}</span></span><span class="tkf-optprice">${formatWon(sell)}</span><span class="tkf-step"><button type="button" class="tkf-pqbtn" data-pid="${escapeHtml(p.id)}" data-lv="${r.level}" data-d="-1">−</button><span>${q}</span><button type="button" class="tkf-pqbtn" data-pid="${escapeHtml(p.id)}" data-lv="${r.level}" data-d="1">+</button></span></div>`;
+    const sell = ticketLevelSell(r, margin); const q = tkfCartQty(p.id, r.level);
+    return `<div class="tkf-optrow${q > 0 ? " in-cart" : ""}"><span class="tkf-optlabel">${ticketLevelLabel(r.level, r.level_name, L)} <span style="color:#888">${escapeHtml(r.coupon_name)}</span></span><span class="tkf-optprice">${formatWon(sell)}</span><span class="tkf-step"><button type="button" class="tkf-pqbtn" data-pid="${escapeHtml(p.id)}" data-lv="${r.level}" data-d="-1" ${q <= 0 ? "disabled" : ""}>−</button><span>${q}</span><button type="button" class="tkf-pqbtn" data-pid="${escapeHtml(p.id)}" data-lv="${r.level}" data-d="1">+</button></span></div>`;
   }).join("");
-  const addLabel = rowQty > 0
-    ? (uiState.lang === "en" ? `Add ${rowQty} · ${formatWon(rowSub)}` : `총 ${rowQty}매 , ${formatWon(rowSub)} 담기`)
-    : L("담기", "Add");
   return `<div class="tkf-pcard" data-pid="${escapeHtml(p.id)}">
     <div class="tkf-pcard-img">${img ? `<img src="${escapeHtml(img)}" alt="">` : `<div class="tkf-noimg">No Image</div>`}</div>
     <div class="tkf-pcard-main">
@@ -2107,24 +2118,29 @@ ${/* ZH(name_zh) 미노출 — 개발단계 KO-EN. 추후 EN-ZH 전환 시 name_
       <div class="tkf-pcard-foot">
         <div class="tkf-foot-btns">
           <button type="button" class="tkf-detailbtn" data-pid="${escapeHtml(p.id)}">${L("상세보기", "Detail")}</button>
-          <button type="button" class="tkf-addbtn btn-cta" data-pid="${escapeHtml(p.id)}">${addLabel}</button>
         </div>
       </div>
     </div>
   </div>`;
 }
-/** 우측 선택 내역(장바구니) */
+/** 우측 선택 내역(장바구니) — 상품별 그룹, 라인=단가×수량=금액 + [✕] */
 function ticketCartHtml(gmap, L) {
   const items = (uiState.ticketCart && uiState.ticketCart.items) || [];
-  if (!items.length) return `<div class="tkf-cart"><h3>🧾 ${L("선택 내역", "Cart")}</h3><div class="tkf-cart-empty">${L("담긴 상품이 없습니다.", "Cart is empty.")}<br>${L("상품에서 수량 선택 후 [담기]", "Add items above.")}</div></div>`;
+  if (!items.length) return `<div class="tkf-cart"><h3>🧾 ${L("선택 내역", "Cart")}</h3><div class="tkf-cart-empty">${L("담긴 상품이 없습니다.", "Cart is empty.")}<br>${L("상품에서 수량(+)을 올리면 담깁니다.", "Increase quantity to add.")}</div></div>`;
+  const order = []; const byP = new Map();
+  items.forEach((it) => { if (!byP.has(it.product_id)) { byP.set(it.product_id, []); order.push(it.product_id); } byP.get(it.product_id).push(it); });
   let total = 0, cnt = 0;
-  const lines = items.map((it, idx) => {
-    const p = loadTicketProducts().find((x) => x.id === it.product_id); if (!p) return "";
-    const g = gmap.get(p.spec_coupon_id); const r = g && g.rows.find((x) => x.level === it.level); if (!r) return "";
-    const sell = ticketLevelSell(r, getTicketMarginFront(p.spec_coupon_id)); const sum = sell * it.qty; total += sum; cnt += it.qty;
-    return `<div class="tkf-cart-line"><div class="tkf-cart-l"><b>${escapeHtml(p.name_en)}</b><br><span>${ticketLevelLabel(it.level, r.level_name, L)} × ${it.qty}</span></div><div class="tkf-cart-r">${formatWon(sum)}<button type="button" class="tkf-cart-x" data-idx="${idx}">✕</button></div></div>`;
+  const groups = order.map((pid) => {
+    const p = loadTicketProducts().find((x) => x.id === pid); if (!p) return "";
+    const g = gmap.get(p.spec_coupon_id); const margin = getTicketMarginFront(p.spec_coupon_id);
+    const lines = byP.get(pid).slice().sort((a, b) => a.level - b.level).map((it) => {
+      const r = g && g.rows.find((x) => x.level === it.level); if (!r) return "";
+      const unit = ticketLevelSell(r, margin); const sum = unit * it.qty; total += sum; cnt += it.qty;
+      return `<div class="tkf-cart-line"><div class="tkf-cart-l"><span class="tkf-cart-lv">${ticketLevelLabel(it.level, r.level_name, L)}</span> <span class="tkf-cart-calc">${formatWon(unit)} × ${it.qty}</span></div><div class="tkf-cart-r">${formatWon(sum)}<button type="button" class="tkf-cart-x" data-pid="${escapeHtml(pid)}" data-lv="${it.level}">✕</button></div></div>`;
+    }).join("");
+    return `<div class="tkf-cart-group"><div class="tkf-cart-pname">${escapeHtml(p.name_en)}</div>${lines}</div>`;
   }).join("");
-  return `<div class="tkf-cart"><h3>🧾 ${L("선택 내역", "Cart")}</h3>${lines}<div class="tkf-cart-total"><span>${L("총", "Total")} ${cnt}${L("매", "")}</span><strong>${formatWon(total)}</strong></div><button type="button" id="tkfReserve" class="btn-cta" style="width:100%;margin-top:10px">${L("예약하기", "Reserve")}</button></div>`;
+  return `<div class="tkf-cart"><h3>🧾 ${L("선택 내역", "Cart")}</h3>${groups}<div class="tkf-cart-total"><span>${L("총", "Total")} ${cnt}${L("매", "")}</span><strong>${formatWon(total)}</strong></div><button type="button" id="tkfReserve" class="btn-cta" style="width:100%;margin-top:10px">Booking</button></div>`;
 }
 
 /* ─── 티켓 브릿지 (#/ticket/bridge/:catKo) — 뎁스 콘텐츠 + 상품선택(담기·장바구니) + 2뎁스 서브탭 ─── */
@@ -2197,32 +2213,15 @@ function renderTicketBridge(app, catKo) {
     document.getElementById("sec-" + a.dataset.sec)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }));
   app.querySelector(".js-tk-hero-detail")?.addEventListener("click", () => document.getElementById("sec-detail")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  // 수량 스테퍼 = 장바구니 직접 반영 (자동 담기)
   app.querySelectorAll(".tkf-pqbtn").forEach((b) => b.addEventListener("click", () => {
-    const pid = b.dataset.pid, lv = b.dataset.lv, d = parseInt(b.dataset.d, 10);
-    uiState.ticketPending[pid] = uiState.ticketPending[pid] || {};
-    uiState.ticketPending[pid][lv] = Math.max(0, Math.min(20, (parseInt(uiState.ticketPending[pid][lv], 10) || 0) + d));
-    render();
-  }));
-  app.querySelectorAll(".tkf-addbtn").forEach((b) => b.addEventListener("click", () => {
-    const pid = b.dataset.pid; const pend = uiState.ticketPending[pid] || {};
-    const cart = uiState.ticketCart;
-    let added = 0;
-    Object.keys(pend).forEach((lv) => {
-      const q = parseInt(pend[lv], 10) || 0; if (q <= 0) return;
-      const level = parseInt(lv, 10);
-      const ex = cart.items.find((it) => it.product_id === pid && it.level === level);
-      if (ex) ex.qty += q; else cart.items.push({ product_id: pid, level, qty: q });
-      added += q;
-    });
-    if (!added) { alert(L("수량을 선택하세요.", "Select quantity.")); return; }
-    uiState.ticketPending[pid] = {};
+    tkfSetQty(b.dataset.pid, parseInt(b.dataset.lv, 10), parseInt(b.dataset.d, 10));
     render();
   }));
   app.querySelectorAll(".tkf-detailbtn").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); openTicketModal(b.dataset.pid); }));
-  // 장바구니 라인 삭제(✕)
+  // 장바구니 라인 삭제(✕) — 상품+레벨 기준
   app.querySelectorAll(".tkf-cart-x").forEach((b) => b.addEventListener("click", () => {
-    const idx = parseInt(b.dataset.idx, 10);
-    if (uiState.ticketCart && Array.isArray(uiState.ticketCart.items)) uiState.ticketCart.items.splice(idx, 1);
+    tkfSetQty(b.dataset.pid, parseInt(b.dataset.lv, 10), -9999);
     render();
   }));
   app.querySelector("#tkfReserve")?.addEventListener("click", () => {
@@ -2260,7 +2259,7 @@ function renderTicketModal() {
       <div class="tkf-modal-body">
         <table class="tkf-info"><tr><th>${L("사용기간", "Valid")}</th><td>${escapeHtml(useP)}</td></tr><tr><th>${L("유형", "Type")}</th><td>${L("오픈형 (사용기간 내 자유 이용)", "Open ticket")}</td></tr></table>
         <table class="tkf-info" style="margin-top:8px"><thead><tr><th>${L("옵션", "Option")}</th><th style="text-align:right">${L("판매가", "Price")}</th></tr></thead><tbody>${priceRows}</tbody></table>
-        <p style="color:#888;font-size:12px;margin-top:10px">${L("상세설명·이용안내·정책·위치는 브릿지 페이지에서 확인하세요. 수량 선택·담기는 브릿지 상품선택에서.", "See detail/guide/policy/location on the bridge page; select quantity there.")}</p>
+        <p style="color:#888;font-size:12px;margin-top:10px">${L("상세설명·이용안내·정책·위치는 브릿지 페이지에서 확인하세요. 수량 +/- 를 올리면 바로 장바구니에 담깁니다.", "See detail/guide/policy/location on the bridge page; use +/- to add to the cart instantly.")}</p>
       </div>
     </div>`;
   root.querySelector(".tkf-modal-backdrop").addEventListener("click", closeTicketModal);
@@ -2288,6 +2287,7 @@ function renderTicketCheckout(app) {
   });
   const total = lines.reduce((s, l) => s + l.sum, 0);
   const b = uiState.ticketBuyer || (uiState.ticketBuyer = { last: "Hong", first: "Gildong", email: "guest@example.com", phone: "010-1234-5678", nationality: "KR" });
+  const _u = currentUser(); if (_u && _u.email) b.email = _u.email; // 로그인 사용자 이메일로 프리필 → 마이페이지 주문 연동 보장
   const inp = "width:100%;padding:9px;border:1px solid #ddd;border-radius:6px";
   app.innerHTML = `<div class="content-wrap" style="max-width:860px;margin:24px auto;padding:0 16px 60px">
     <h2 style="font-size:22px;margin:0 0 16px">${L("결제", "Checkout")}</h2>
@@ -2377,7 +2377,7 @@ function renderTicketDone(app) {
 /* ─── 로그인 (프로토타입 목업) — 이메일 → 인증번호(신규)/패스워드(기존) → 로그인 ─── */
 function renderLogin(app) {
   const L = (ko, en) => (uiState.lang === "en" ? en || ko : ko || en);
-  const a = uiState.auth || (uiState.auth = { step: "email", email: "", isNew: false, next: "", err: "" });
+  const a = uiState.auth || (uiState.auth = { step: "email", email: DEMO_LOGIN.email, isNew: false, next: "", err: "" });
   const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || "").trim());
   const box = (inner) => `<div class="login-wrap"><div class="login-card">${inner}</div></div>`;
   const errHtml = a.err ? `<p class="login-err">${escapeHtml(a.err)}</p>` : "";
@@ -2407,7 +2407,8 @@ function renderLogin(app) {
       <label class="login-label">${L("이메일", "Email")}</label>
       <input class="login-input" value="${escapeHtml(a.email)}" readonly style="background:#f5f5f2;color:#888">
       <label class="login-label">${a.isNew ? L("새 비밀번호 (8자 이상)", "New password (8+ chars)") : L("비밀번호", "Password")}</label>
-      <input id="lg_pw" class="login-input" type="password" placeholder="Password">
+      <input id="lg_pw" class="login-input" type="password" placeholder="Password" value="${a.email === DEMO_LOGIN.email ? DEMO_LOGIN.password : ""}">
+      ${a.email === DEMO_LOGIN.email ? `<p class="login-note" style="margin-top:6px">${L("데모 계정 기본값이 입력되어 있습니다. 바로 로그인하세요.", "Demo account is pre-filled. Just sign in.")}</p>` : ""}
       ${errHtml}
       <button id="lg_submit" class="btn-cta login-btn">${a.isNew ? L("가입하고 로그인", "Register and sign in") : L("로그인", "Sign in")}</button>
       <div class="login-links"><a id="lg_back" href="javascript:void(0)">${L("← 이메일 다시 입력", "← Back to sign in")}</a></div>`);
@@ -2449,7 +2450,7 @@ function renderLogin(app) {
 function loginSuccess(email) {
   setSession(email);
   const next = (uiState.auth && uiState.auth.next) || "#/";
-  uiState.auth = { step: "email", email: "", isNew: false, next: "", err: "" };
+  uiState.auth = { step: "email", email: DEMO_LOGIN.email, isNew: false, next: "", err: "" };
   location.hash = next && next !== "#/login" ? next : "#/";
   render();
 }
@@ -2803,18 +2804,20 @@ function accResvImage(r) {
   const room = loadJson(STORAGE_ROOMS, []).find((x) => x.id === p.room_id);
   return (roomImages(room)[0] || {}).data_url || "";
 }
-/** 티켓 상품 썸네일 */
+/** 티켓 주문 썸네일 — 대표상품(items[0]) 썸네일 → 카테고리 히어로(S17) → No Image */
 function ticketResvImage(o) {
   const pid = (o.items && o.items[0] && o.items[0].product_id) || "";
   const p = loadTicketProducts().find((x) => x.id === pid);
-  return p ? ticketImg(p) : "";
+  let img = p ? ticketImg(p) : "";
+  if (!img && p) { const cat = ticketCatByKo(p.category_1); img = ticketCatImgFront(cat); }
+  return img || "";
 }
 
 /** 회원 예약(숙소+티켓) 통합 아이템 목록 */
 function myBookingItems(email) {
   const today = todayKstYmd();
-  const resv = loadJson(STORAGE_RESV, []).filter((r) => (r.member_email || "") === email);
-  const orders = loadTicketOrders().filter((o) => ((o.buyer && o.buyer.email) || "") === email);
+  const resv = loadJson(STORAGE_RESV, []).filter((r) => r.demo || (r.member_email || "") === email);
+  const orders = loadTicketOrders().filter((o) => o.demo || ((o.buyer && o.buyer.email) || "") === email);
   const coupons = loadTicketCoupons();
   const items = [];
   resv.forEach((r) => {
@@ -2829,15 +2832,17 @@ function myBookingItems(email) {
   });
   orders.forEach((o) => {
     const ocs = coupons.filter((c) => c.order_no === o.order_no);
-    const ended = ocs.length ? ocs.every((c) => c.use_end_date && c.use_end_date < today) : false;
-    const allUsed = ocs.length ? ocs.every((c) => c.status === "USED") : false;
-    const tab = o.status === "취소완료" ? "cancelled" : ((ended || allUsed) ? "past" : "current");
+    // 탭 분류: 취소 쿠폰 제외 후 '사용 가능한 미사용 잔여' 기준
+    const active = ocs.filter((c) => c.status !== "CANCELLED");
+    const allCancelled = ocs.length > 0 && active.length === 0;
+    const usable = active.some((c) => c.status === "SOLD" && (!c.use_end_date || c.use_end_date >= today));
+    const tab = allCancelled ? "cancelled" : (usable ? "current" : "past");
     const first = (o.items && o.items[0]) || {};
-    const more = (o.items && o.items.length > 1) ? ` 외 ${o.items.length - 1}` : "";
-    const validRange = ocs.length ? `${ocs[0].use_start_date}~${ocs[0].use_end_date}` : (o.use_date || "");
+    const nMore = (o.items ? o.items.length : 0) - 1;
+    const more = nMore > 0 ? (uiState.lang === "en" ? ` +${nMore} more` : ` 외 ${nMore}종`) : "";
     items.push({ kind: "ticket", id: o.order_no, tab, status: o.status,
-      title: (first.product_name || "티켓 주문") + more, sub: `${ocs.length}매`,
-      dateLabel: validRange, amount: o.total, created: o.created_at || "",
+      title: (first.product_name || "티켓 주문") + more, sub: "",
+      amount: o.total, created: o.created_at || "",
       img: ticketResvImage(o), qty: ocs.length, checkin: "" });
   });
   items.sort((a, b) => (b.created || "").localeCompare(a.created || ""));
@@ -2869,13 +2874,14 @@ function renderMyPage(app, parts) {
       return `<span class="my-badge ok">${L("확정", "Confirmed")}</span>`;
     }
     if (it.status === "취소완료") return `<span class="my-badge cx">${L("취소완료", "Cancelled")}</span>`;
+    if (it.status === "부분취소") return `<span class="my-badge part">${L("부분취소", "Partly cancelled")}</span>`;
     return `<span class="my-badge ok">${L("결제완료", "Paid")}</span>`;
   };
   const cards = tabItems.length ? tabItems.map((it) => {
     const dday = (it.kind === "acc" && f.tab === "current") ? checkinDdayLabel(it.checkin, L) : "";
     const paxLine = it.kind === "acc"
       ? `👥 ${L("성인", "Adults")} ${it.adults}${it.children ? ` · ${L("아동", "Children")} ${it.children}` : ""} · ${it.roomCount} ${L("객실", "room")}`
-      : `🎫 ${it.qty} ${L("매", "ea")}`;
+      : `🎫 ${L("총", "Total")} ${it.qty}${L("매", " tickets")}`;
     const thumb = it.img
       ? `<div class="my-card-thumb"><img src="${escapeHtml(it.img)}" alt="" />${dday ? `<span class="my-dday">${dday}</span>` : ""}</div>`
       : `<div class="my-card-thumb my-no-img">No Image${dday ? `<span class="my-dday">${dday}</span>` : ""}</div>`;
@@ -2886,10 +2892,12 @@ function renderMyPage(app, parts) {
         ${thumb}
         <div class="my-card-info">
           <div class="my-card-title">${escapeHtml(it.title)}</div>
-          <div class="my-card-sub">${escapeHtml(it.sub)}</div>
+          ${it.sub ? `<div class="my-card-sub">${escapeHtml(it.sub)}</div>` : ""}
           <div class="my-card-meta">${paxLine}</div>
-          <div class="my-card-meta">📅 ${escapeHtml(it.dateLabel)}</div>
-          <div class="my-card-foot"><span class="my-card-bdate">${L("예약일", "Booked")} ${escapeHtml(fmtDateTime(it.created))}</span><strong>${formatWon(it.amount)}</strong></div>
+          ${it.kind === "acc" ? `<div class="my-card-meta">📅 ${escapeHtml(it.dateLabel)}</div>` : ""}
+          ${it.kind === "acc"
+            ? `<div class="my-card-foot"><span class="my-card-bdate">${L("예약일", "Booked")} ${escapeHtml(fmtDateTime(it.created))}</span><strong>${formatWon(it.amount)}</strong></div>`
+            : `<div class="my-card-foot"><span class="my-card-bdate">${L("주문일", "Ordered")} ${escapeHtml(fmtDateTime(it.created))}</span></div>`}
         </div>
       </div>
     </a>`;
@@ -2943,7 +2951,7 @@ function renderMyAccDetail(app, code) {
   const L = (ko, en) => (uiState.lang === "en" ? en || ko : ko || en);
   const email = (currentUser() || {}).email || "";
   const list = loadJson(STORAGE_RESV, []);
-  const r = list.find((x) => x.code === code && (x.member_email || "") === email);
+  const r = list.find((x) => x.code === code && (x.demo || (x.member_email || "") === email));
   if (!r) { location.hash = "#/mypage"; return; }
   const cancelled = r.status === "CANCELLED";
   const canCancel = !cancelled && r.checkout >= todayKstYmd();
@@ -3009,71 +3017,284 @@ function computeTicketRefund(order, coupons) {
   return refund;
 }
 
+/** 국적 코드/이름 → 국가명·국가번호 매핑 (프로토타입 표시용) */
+function natInfo(v) {
+  const raw = String(v || "").trim(); if (!raw) return null;
+  const key = raw.toUpperCase();
+  const M = {
+    KR: { ko: "대한민국", en: "Korea", dial: "+82" }, CN: { ko: "중국", en: "China", dial: "+86" },
+    JP: { ko: "일본", en: "Japan", dial: "+81" }, US: { ko: "미국", en: "USA", dial: "+1" },
+    TW: { ko: "대만", en: "Taiwan", dial: "+886" }, HK: { ko: "홍콩", en: "Hong Kong", dial: "+852" },
+    SG: { ko: "싱가포르", en: "Singapore", dial: "+65" }, TH: { ko: "태국", en: "Thailand", dial: "+66" },
+    VN: { ko: "베트남", en: "Vietnam", dial: "+84" }, MY: { ko: "말레이시아", en: "Malaysia", dial: "+60" },
+    ID: { ko: "인도네시아", en: "Indonesia", dial: "+62" }, PH: { ko: "필리핀", en: "Philippines", dial: "+63" },
+  };
+  const byName = { KOREA: "KR", "대한민국": "KR", CHINA: "CN", "중국": "CN", JAPAN: "JP", "일본": "JP", USA: "US", "UNITED STATES": "US", "미국": "US", TAIWAN: "TW", "대만": "TW" };
+  const code = M[key] ? key : (byName[key] || "");
+  return M[code] || null;
+}
 function renderMyTicketDetail(app, orderNo) {
   const L = (ko, en) => (uiState.lang === "en" ? en || ko : ko || en);
   const email = (currentUser() || {}).email || "";
   const orders = loadTicketOrders();
-  const o = orders.find((x) => x.order_no === orderNo && ((x.buyer && x.buyer.email) || "") === email);
+  const o = orders.find((x) => x.order_no === orderNo && (x.demo || ((x.buyer && x.buyer.email) || "") === email));
   if (!o) { location.hash = "#/mypage"; return; }
   const coupons = loadTicketCoupons();
   const ocs = coupons.filter((c) => c.order_no === o.order_no);
-  const cancelled = o.status === "취소완료";
-  const refund = computeTicketRefund(o, coupons);
-  const canCancel = !cancelled && ocs.some((c) => c.status === "SOLD");
+  const today = todayKstYmd();
   const cpLabel = (s) => ({ SOLD: L("미사용", "Unused"), USED: L("사용완료", "Used"), CANCELLED: L("취소", "Cancelled") }[s] || s);
-  const rows = ocs.map((c) => `<tr><td style="font-family:monospace;font-size:11px">${escapeHtml(c.coupon_no)}</td><td>${escapeHtml(c.coupon_name || "")}</td><td>${cpLabel(c.status)}</td><td>${formatWon(c.sell)}</td><td style="font-size:11px">${escapeHtml(c.use_start_date || "")}~${escapeHtml(c.use_end_date || "")}</td></tr>`).join("");
-  const statusBadge = cancelled ? `<span class="my-badge cx">${L("취소완료", "Cancelled")}</span>` : `<span class="my-badge ok">${L("결제완료", "Paid")}</span>`;
+  const allCancelled = ocs.length > 0 && ocs.every((c) => c.status === "CANCELLED");
+  const anyCancelled = ocs.some((c) => c.status === "CANCELLED");
+  const statusBadge = allCancelled
+    ? `<span class="my-badge cx">${L("취소완료", "Cancelled")}</span>`
+    : (anyCancelled ? `<span class="my-badge part">${L("부분취소", "Partly cancelled")}</span>` : `<span class="my-badge ok">${L("결제완료", "Paid")}</span>`);
+  // 취소 가능 = 미사용(SOLD) + 사용종료일 이전 쿠폰 존재
+  const canCancel = ocs.some((c) => c.status === "SOLD" && c.use_end_date && today <= c.use_end_date);
+
+  // 상태 탭 (미사용 기본 / 사용완료 / 취소) — 항상 3탭 + 건수
+  const byStatus = { SOLD: [], USED: [], CANCELLED: [] };
+  ocs.forEach((c) => { (byStatus[c.status] || (byStatus[c.status] = [])).push(c); });
+  let tab = uiState.myTicketTab; if (!["SOLD", "USED", "CANCELLED"].includes(tab)) tab = "SOLD";
+  const TAB_DEF = [["SOLD", L("미사용", "Unused")], ["USED", L("사용완료", "Used")], ["CANCELLED", L("취소", "Cancelled")]];
+  const tabsHtml = TAB_DEF.map(([k, label]) => `<button type="button" class="tkd-tab ${tab === k ? "on" : ""}" data-tkt="${k}">${label} <span class="tkd-tab-n">${(byStatus[k] || []).length}</span></button>`).join("");
+  const isUnused = tab === "SOLD";
+  const list = byStatus[tab] || [];
+
+  // 활성 탭 쿠폰 → 상품(권종)별 그룹. 미사용=바코드보기 버튼 / 사용완료·취소=쿠폰번호만
+  let groupsHtml;
+  if (!list.length) {
+    groupsHtml = `<div class="my-empty">${L("해당 상태의 쿠폰이 없습니다.", "No coupons in this status.")}</div>`;
+  } else {
+    const pOrder = []; const byP = new Map();
+    list.forEach((c) => { if (!byP.has(c.product_id)) { byP.set(c.product_id, []); pOrder.push(c.product_id); } byP.get(c.product_id).push(c); });
+    groupsHtml = pOrder.map((pid) => {
+      const cs = byP.get(pid).slice().sort((a, b) => (a.level - b.level) || (a.coupon_no || "").localeCompare(b.coupon_no || ""));
+      const rows = cs.map((c) => {
+        const info = `<div class="tkd-cp-nm">${escapeHtml(ticketLevelLabel(c.level, c.level_name, L))} · ${escapeHtml(c.coupon_name || "")}</div>
+          <div class="tkd-cp-sub"><span class="tkd-cp-no">${escapeHtml(c.coupon_no)}</span> · <span class="tkd-cp-vl">🗓 ${escapeHtml(c.use_start_date || "")}~${escapeHtml(c.use_end_date || "")}</span>${c.status === "USED" && c.used_at ? ` · ${L("사용", "Used")} ${escapeHtml(fmtDateTime(c.used_at))}` : ""}</div>`;
+        const action = isUnused
+          ? `<button type="button" class="tkd-bc-btn" data-bc="${escapeHtml(c.coupon_no)}">${L("바코드 보기", "Barcode")}</button>`
+          : `<span class="tkd-cp-stlabel st-${c.status}">${cpLabel(c.status)}</span>`;
+        return `<div class="tkd-cp"><div class="tkd-cp-info">${info}</div>${action}</div>`;
+      }).join("");
+      return `<div class="my-cp-group"><div class="my-cp-gname">${escapeHtml(cs[0].product_name || "")} <span class="my-cp-cnt">${cs.length}${L("매", "ea")}</span></div>${rows}</div>`;
+    }).join("");
+  }
+  // 취소 가능 = 미사용 탭 + 사용종료일 이전 미사용 쿠폰 존재
+  const canCancelNow = isUnused && list.some((c) => c.use_end_date && today <= c.use_end_date);
+
   const img = ticketResvImage(o);
   const first = (o.items && o.items[0]) || {};
   const more = (o.items && o.items.length > 1) ? L(` 외 ${o.items.length - 1}종`, ` +${o.items.length - 1} more`) : "";
-  const validRange = ocs.length ? `${ocs[0].use_start_date || ""} ~ ${ocs[0].use_end_date || ""}` : (o.use_date || "-");
   const buyer = o.buyer || {};
+  const _nat = natInfo(buyer.nationality);
+  const buyerCountry = _nat ? (uiState.lang === "en" ? _nat.en : _nat.ko) : (buyer.nationality || "-");
+  const _rawPhone = (buyer.phone || "").trim();
+  const buyerPhone = !_rawPhone ? "-" : (_rawPhone.startsWith("+") ? _rawPhone : (_nat ? `${_nat.dial} ${_rawPhone.replace(/^0/, "")}` : _rawPhone));
   const metaLine = `${L("주문번호", "Order no.")} <strong>${escapeHtml(o.order_no)}</strong>`
     + ` &nbsp;|&nbsp; ${L("주문일", "Ordered")} ${escapeHtml(fmtDateTime(o.created_at))}`
-    + (cancelled ? ` &nbsp;|&nbsp; ${L("취소일", "Cancelled")} ${escapeHtml(fmtDateTime(o.cancelled_at))}` : "");
+    + (anyCancelled && o.cancelled_at ? ` &nbsp;|&nbsp; ${L("최근 취소", "Last cancel")} ${escapeHtml(fmtDateTime(o.cancelled_at))}` : "");
+  // 결제 내역 — 상품별 성인/아동 수 + 금액(원 주문 기준 = 발급 쿠폰 전체)
+  const payOrder = []; const payMap = new Map();
+  ocs.forEach((c) => { if (!payMap.has(c.product_id)) { payMap.set(c.product_id, { name: c.product_name, adult: 0, child: 0, amount: 0 }); payOrder.push(c.product_id); } const g = payMap.get(c.product_id); if (c.level === 2) g.child++; else g.adult++; g.amount += (c.sell || 0); });
+  const payRows = payOrder.map((pid) => { const g = payMap.get(pid); const parts = []; if (g.adult) parts.push(`${L("성인", "Adult")} ${g.adult}`); if (g.child) parts.push(`${L("아동", "Child")} ${g.child}`); return `<div class="tkpay-row"><div class="tkpay-l"><span class="tkpay-nm">${escapeHtml(g.name || "")}</span><span class="tkpay-cnt">${parts.join(" · ")}</span></div><div class="tkpay-amt">${formatWon(g.amount)}</div></div>`; }).join("");
+  const grossTotal = ocs.reduce((s, c) => s + (c.sell || 0), 0);
+  const refunded = o.refund_amount || 0;
+  const refundLabel = allCancelled ? L("전체취소", "full") : L("부분취소", "partial");
   app.innerHTML = `<div class="my-wrap my-detail">
     <a class="my-back" href="#/mypage">← ${L("목록으로", "Back to list")}</a>
     <div class="my-det-head"><h2>${L("티켓 주문", "Ticket order")}</h2>${statusBadge}</div>
     <div class="my-det-meta">${metaLine}</div>
-    ${cancelled ? `<div class="my-cancelled-box">${L("취소완료", "Cancelled")} · ${L("환불액", "Refund")} <strong>${formatWon(o.refund_amount || 0)}</strong></div>` : ""}
-    <div class="my-det-card">
-      ${img ? `<div class="my-det-thumb"><img src="${escapeHtml(img)}" alt="" /></div>` : `<div class="my-det-thumb my-no-img">No Image</div>`}
-      <div class="my-det-sum">
-        <div class="my-det-room">${escapeHtml((first.product_name || "티켓 주문") + more)}</div>
-        <div class="my-det-line">🎫 ${L("수량", "Quantity")} ${ocs.length} ${L("매", "ea")}</div>
-        <div class="my-det-line">📅 ${L("사용기간", "Valid")} ${escapeHtml(validRange)}</div>
-        <div class="my-det-line">💳 <strong>${formatWon(o.total)}</strong></div>
-      </div>
-    </div>
     <h3 class="my-sec-title">${L("구매자 정보", "Buyer info")}</h3>
     <table class="bk-sum-tbl bk-done-tbl">
       <tr><th>${L("성명", "Name")}</th><td>${escapeHtml(buyer.name || "-")}</td></tr>
+      <tr><th>${L("국가", "Country")}</th><td>${escapeHtml(buyerCountry)}</td></tr>
       <tr><th>${L("이메일", "E-mail")}</th><td>${escapeHtml(buyer.email || "")}</td></tr>
-      <tr><th>${L("휴대폰", "Mobile")}</th><td>${escapeHtml(buyer.phone || "-")}</td></tr>
+      <tr><th>${L("휴대폰", "Mobile")}</th><td>${escapeHtml(buyerPhone)}</td></tr>
     </table>
     <h3 class="my-sec-title">${L("발급 쿠폰", "Coupons")} (${ocs.length})</h3>
-    <div style="overflow-x:auto"><table class="tkf-info my-coupon-tbl"><thead><tr><th>${L("쿠폰번호", "Coupon No.")}</th><th>${L("쿠폰명", "Coupon")}</th><th>${L("상태", "Status")}</th><th>${L("판매가", "Price")}</th><th>${L("사용기간", "Valid")}</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="tkd-tabs">${tabsHtml}</div>
+    <div class="my-cp-groups">${groupsHtml}</div>
+    ${isUnused && list.length ? `<p class="my-cp-guide">${L("‘바코드 보기’를 눌러 현장 POS/KIOSK에서 스캔하세요. 쿠폰 1장 = 1인 1영업장.", "Tap ‘Barcode’ to scan at the on-site POS/KIOSK. One coupon = one person, one venue.")}</p>` : ""}
+    <h3 class="my-sec-title">${L("결제 내역", "Payment")}</h3>
+    <div class="tkpay-card">
+      ${payRows}
+      <div class="tkpay-sep"></div>
+      <div class="tkpay-row tkpay-total"><div class="tkpay-l"><span class="tkpay-nm">${L("총 결제금액", "Total paid")}</span></div><div class="tkpay-amt">${formatWon(grossTotal)}</div></div>
+      ${refunded ? `<div class="tkpay-row tkpay-refund"><div class="tkpay-l"><span class="tkpay-nm">${L("환불액", "Refunded")} (${refundLabel})</span></div><div class="tkpay-amt">−${formatWon(refunded)}</div></div>
+      <div class="tkpay-row tkpay-net"><div class="tkpay-l"><span class="tkpay-nm">${L("실 결제금액", "Net paid")}</span></div><div class="tkpay-amt">${formatWon(grossTotal - refunded)}</div></div>` : ""}
+      <div class="tkpay-method">${L("결제수단", "Payment method")} · ${L("신용카드 (목업)", "Credit card (mock)")}</div>
+    </div>
     ${supportBlockHtml(L)}
     <h3 class="my-sec-title">${L("취소 규정", "Cancellation policy")}</h3>
-    <div class="my-cancel-policy free">${L("사용기간 종료 전 미사용 쿠폰은 전액 환불, 사용완료·기간 경과분은 환불불가", "Unused coupons before the valid period ends are fully refunded; used/expired are non-refundable.")}</div>
-    ${canCancel ? `<button id="my_cancel" class="btn-outline my-cancel-btn">${L("주문 취소", "Cancel order")}</button>` : ""}
+    <div class="my-cancel-policy free">${L("오픈형 — 사용기간 종료 전 미사용 쿠폰은 상품(권종)·수량 단위로 부분취소 가능(전액 환불). 사용완료·기간 경과분은 환불불가.", "Open ticket — unused coupons can be partially cancelled by product and quantity before the valid period ends (full refund). Used/expired are non-refundable.")}</div>
+    ${canCancelNow ? `<button id="my_cancel" class="btn-outline my-cancel-btn">${L("부분취소 / 취소", "Cancel tickets")}</button>` : ""}
   </div>`;
-  if (canCancel) {
-    document.getElementById("my_cancel").addEventListener("click", () => {
-      showCancelModal({
-        title: L("주문을 취소하시겠습니까?", "Cancel this order?"),
-        refund,
-        note: L("미사용 쿠폰만 환불되며, 취소 후 되돌릴 수 없습니다.", "Only unused coupons are refunded. This cannot be undone."),
-      }, L, () => {
-        const all = loadTicketCoupons();
-        all.forEach((c) => { if (c.order_no === o.order_no && c.status === "SOLD") c.status = "CANCELLED"; });
-        saveTicketCoupons(all);
-        o.status = "취소완료"; o.refund_amount = refund; o.cancelled_at = new Date().toISOString();
-        saveTicketOrders(orders);
-        render();
-      });
+  app.querySelectorAll(".tkd-tab").forEach((b) => b.addEventListener("click", () => { uiState.myTicketTab = b.dataset.tkt; render(); }));
+  app.querySelectorAll(".tkd-bc-btn").forEach((b) => b.addEventListener("click", () => openTicketBarcodePopup(o.order_no, b.dataset.bc, L)));
+  if (canCancelNow) document.getElementById("my_cancel").addEventListener("click", () => openTicketPartialCancel(o.order_no, L));
+}
+
+/** 쿠폰별 바코드 팝업 — 큰 Code128 + 상품·레벨·사용기간·상태 */
+/** 토스트 (하단 중앙, 2초 자동) */
+function tkToast(msg) {
+  const old = document.getElementById("tkToast"); if (old) old.remove();
+  const t = document.createElement("div"); t.id = "tkToast"; t.className = "tk-toast"; t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => t.classList.add("show"));
+  clearTimeout(window._tkToastT);
+  window._tkToastT = setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 2000);
+}
+
+/** 바코드 팝업 — 미사용 쿠폰 전체 좌우 스와이프 캐러셀 + 현장 사용처리(데모) */
+function openTicketBarcodePopup(orderNo, focusNo, L) {
+  if (!orderNo) return;
+  const wrap = document.createElement("div");
+  wrap.className = "my-modal-back";
+  document.body.appendChild(wrap);
+  const close = () => wrap.remove();
+  wrap.addEventListener("click", (e) => { if (e.target === wrap) close(); });
+  const unusedList = () => loadTicketCoupons().filter((c) => c.order_no === orderNo && c.status === "SOLD");
+
+  function paint(focusNo) {
+    const list = unusedList();
+    if (!list.length) { close(); return; }
+    const slides = list.map((c) => `
+      <div class="tkbc-slide" data-cn="${escapeHtml(c.coupon_no)}">
+        <div class="tkbc-cat">${escapeHtml(c.product_name || "")}</div>
+        <div class="tkbc-nm">${escapeHtml(ticketLevelLabel(c.level, c.level_name, L))} · ${escapeHtml(c.coupon_name || "")}</div>
+        <svg class="tkbc-svg js-bc" data-code="${escapeHtml(c.coupon_no)}"></svg>
+        <div class="tkbc-no">${escapeHtml(c.coupon_no)}</div>
+        <div class="tkbc-meta">🗓 ${L("사용기간", "Valid")} ${escapeHtml(c.use_start_date || "")} ~ ${escapeHtml(c.use_end_date || "")}</div>
+        <div class="tkbc-meta">${L("판매가", "Price")} ${formatWon(c.sell)} · <span class="tkd-cp-stlabel st-SOLD">${L("미사용", "Unused")}</span></div>
+        <button type="button" class="tkbc-use" data-use="${escapeHtml(c.coupon_no)}">${L("현장 사용 처리 (데모)", "Use on-site (demo)")}</button>
+      </div>`).join("");
+    const dots = list.map((_, i) => `<i class="tkbc-dot" data-i="${i}"></i>`).join("");
+    wrap.innerHTML = `<div class="my-modal tkbc-modal tkbc-carousel">
+      <div class="tkbc-head">
+        <div class="tkbc-count"><span id="tkbc_cur">1</span> / ${list.length} ${L("매", "")}</div>
+        <button type="button" class="tkbc-x" id="tkbc_close" aria-label="close">✕</button>
+      </div>
+      <div class="tkbc-track" id="tkbc_track">${slides}</div>
+      ${list.length > 1 ? `<button type="button" class="tkbc-arrow tkbc-prev" id="tkbc_prev" aria-label="prev">‹</button><button type="button" class="tkbc-arrow tkbc-next" id="tkbc_next" aria-label="next">›</button>` : ""}
+      <div class="tkbc-dots">${dots}</div>
+      <p class="tkbc-guide">${L("좌우로 넘겨 미사용 티켓 바코드를 확인하세요. 현장 POS/KIOSK에서 스캔합니다.", "Swipe to view unused ticket barcodes. Scan at the on-site POS/KIOSK.")}</p>
+    </div>`;
+    if (window.JsBarcode) wrap.querySelectorAll(".js-bc").forEach((el) => { try { JsBarcode(el, el.dataset.code, { format: "CODE128", width: 2.4, height: 90, displayValue: false, margin: 0 }); } catch (e) {} });
+    const track = wrap.querySelector("#tkbc_track");
+    const slideEls = [...track.querySelectorAll(".tkbc-slide")];
+    const dotsEls = [...wrap.querySelectorAll(".tkbc-dot")];
+    const curEl = wrap.querySelector("#tkbc_cur");
+    const updateIdx = () => { const i = Math.min(slideEls.length - 1, Math.max(0, Math.round(track.scrollLeft / track.clientWidth))); curEl.textContent = i + 1; dotsEls.forEach((d, k) => d.classList.toggle("on", k === i)); };
+    track.addEventListener("scroll", updateIdx);
+    let startIdx = slideEls.findIndex((s) => s.dataset.cn === focusNo); if (startIdx < 0) startIdx = 0;
+    track.scrollLeft = startIdx * track.clientWidth; updateIdx();
+    const prev = wrap.querySelector("#tkbc_prev"), next = wrap.querySelector("#tkbc_next");
+    if (prev) prev.onclick = () => track.scrollBy({ left: -track.clientWidth, behavior: "smooth" });
+    if (next) next.onclick = () => track.scrollBy({ left: track.clientWidth, behavior: "smooth" });
+    dotsEls.forEach((dt, k) => dt.onclick = () => track.scrollTo({ left: k * track.clientWidth, behavior: "smooth" }));
+    // 마우스 드래그 스와이프 (데스크톱)
+    let drag = null;
+    track.addEventListener("pointerdown", (e) => { if (e.target.closest(".tkbc-use, .tkbc-arrow")) return; drag = { x: e.clientX, left: track.scrollLeft, moved: false }; });
+    track.addEventListener("pointermove", (e) => { if (!drag) return; const dx = e.clientX - drag.x; if (Math.abs(dx) > 3) drag.moved = true; track.scrollLeft = drag.left - dx; });
+    const endDrag = () => { if (!drag) return; const w = track.clientWidth; track.scrollTo({ left: Math.round(track.scrollLeft / w) * w, behavior: "smooth" }); drag = null; };
+    track.addEventListener("pointerup", endDrag);
+    track.addEventListener("pointerleave", endDrag);
+    track.style.cursor = slideEls.length > 1 ? "grab" : "default";
+    wrap.querySelector("#tkbc_close").onclick = close;
+    wrap.querySelectorAll(".tkbc-use").forEach((b) => b.onclick = () => {
+      const cn = b.dataset.use; const all = loadTicketCoupons(); const cc = all.find((x) => x.coupon_no === cn);
+      if (!cc || cc.status !== "SOLD") return;
+      cc.status = "USED"; cc.used_at = new Date().toISOString();
+      saveTicketCoupons(all);
+      tkToast(L("사용 처리되었습니다.", "Marked as used."));
+      render();      // 뒤 상세(미사용 목록·탭 카운트) 갱신
+      paint(cn);     // 캐러셀 재구성(사용된 슬라이드 제거, 없으면 닫힘)
     });
   }
+  paint(focusNo);
+}
+
+/** 수량단위 부분취소 모달 — 상품(권종)별 그룹, 레벨별 수량 선택(미사용·기간 내만) */
+function openTicketPartialCancel(orderNo, L) {
+  const today = todayKstYmd();
+  const cancellable = (c) => c.order_no === orderNo && c.status === "SOLD" && c.use_end_date && today <= c.use_end_date;
+  const lineKey = (c) => c.product_id + "|" + c.level;
+  const cs = loadTicketCoupons().filter(cancellable);
+  if (!cs.length) { alert(L("취소 가능한 쿠폰이 없습니다.", "No cancellable coupons.")); return; }
+  const order = []; const map = new Map();
+  cs.forEach((c) => { const k = lineKey(c); if (!map.has(k)) { map.set(k, { product_id: c.product_id, product_name: c.product_name, level: c.level, level_name: c.level_name, unit: c.sell, max: 0 }); order.push(k); } map.get(k).max++; });
+  const lines = order.map((k) => map.get(k));
+  const sel = {}; lines.forEach((l) => sel[lineKey(l)] = 0);
+  const lineByKey = (k) => lines.find((l) => lineKey(l) === k);
+
+  const pOrder = []; const pMap = new Map();
+  lines.forEach((l) => { if (!pMap.has(l.product_id)) { pMap.set(l.product_id, []); pOrder.push(l.product_id); } pMap.get(l.product_id).push(l); });
+  const rowHtml = (l) => `<div class="tpc-line" data-key="${lineKey(l)}">
+      <div class="tpc-l"><span class="tpc-lv">${escapeHtml(ticketLevelLabel(l.level, l.level_name, L))}</span><span class="tpc-unit">${formatWon(l.unit)} · ${L("미사용", "unused")} ${l.max}</span></div>
+      <div class="tpc-step"><button type="button" class="tpc-dec" aria-label="-">−</button><span class="tpc-q">0</span><button type="button" class="tpc-inc" aria-label="+">+</button></div>
+    </div>`;
+  const body = pOrder.map((pid) => `<div class="tpc-group"><div class="tpc-gname">${escapeHtml(pMap.get(pid)[0].product_name || "")}</div>${pMap.get(pid).map(rowHtml).join("")}</div>`).join("");
+
+  const wrap = document.createElement("div");
+  wrap.className = "my-modal-back";
+  wrap.innerHTML = `<div class="my-modal tpc-modal">
+    <h3>${L("취소할 티켓 선택", "Select tickets to cancel")}</h3>
+    <p class="my-modal-note">${L("미사용 쿠폰만 수량 단위로 취소합니다. 취소 후 되돌릴 수 없습니다.", "Only unused coupons can be cancelled by quantity. This cannot be undone.")}</p>
+    <div class="tpc-body">${body}</div>
+    <div class="my-modal-refund"><span>${L("예상 환불액", "Estimated refund")}</span><strong id="tpc_refund">${formatWon(0)}</strong></div>
+    <div class="my-modal-actions">
+      <button class="btn-outline" id="tpc_close">${L("닫기", "Close")}</button>
+      <button class="btn-cta" id="tpc_ok" disabled>${L("선택 취소하기", "Cancel selected")}</button>
+    </div>
+  </div>`;
+  document.body.appendChild(wrap);
+  const close = () => wrap.remove();
+  const refresh = () => {
+    let refund = 0, cnt = 0;
+    Object.keys(sel).forEach((k) => { const l = lineByKey(k); refund += sel[k] * l.unit; cnt += sel[k]; });
+    wrap.querySelector("#tpc_refund").textContent = formatWon(refund);
+    wrap.querySelector("#tpc_ok").disabled = cnt === 0;
+  };
+  wrap.querySelectorAll(".tpc-line").forEach((row) => {
+    const key = row.dataset.key; const l = lineByKey(key);
+    row.querySelector(".tpc-dec").addEventListener("click", () => { sel[key] = Math.max(0, sel[key] - 1); row.querySelector(".tpc-q").textContent = sel[key]; refresh(); });
+    row.querySelector(".tpc-inc").addEventListener("click", () => { sel[key] = Math.min(l.max, sel[key] + 1); row.querySelector(".tpc-q").textContent = sel[key]; refresh(); });
+  });
+  wrap.addEventListener("click", (e) => { if (e.target === wrap) close(); });
+  wrap.querySelector("#tpc_close").addEventListener("click", close);
+  wrap.querySelector("#tpc_ok").addEventListener("click", () => {
+    let refundPreview = 0, cnt = 0;
+    Object.keys(sel).forEach((k) => { const l = lineByKey(k); refundPreview += sel[k] * l.unit; cnt += sel[k]; });
+    if (cnt <= 0) return;
+    // 취소 여부 확인 팝업
+    showCancelModal({
+      title: L(`선택한 ${cnt}매를 취소하시겠습니까?`, `Cancel ${cnt} ticket(s)?`),
+      refund: refundPreview,
+      note: L("미사용 쿠폰만 취소되며, 취소 후 되돌릴 수 없습니다.", "Only unused coupons are cancelled. This cannot be undone."),
+    }, L, () => {
+      let refund = 0; const all = loadTicketCoupons();
+      Object.keys(sel).forEach((k) => {
+        let q = sel[k]; if (q <= 0) return;
+        const [pid, lv] = k.split("|"); const level = parseInt(lv, 10);
+        for (const c of all) {
+          if (q <= 0) break;
+          if (c.order_no === orderNo && c.product_id === pid && c.level === level && c.status === "SOLD" && c.use_end_date && today <= c.use_end_date) { c.status = "CANCELLED"; refund += (c.sell || 0); q--; }
+        }
+      });
+      saveTicketCoupons(all);
+      const orders = loadTicketOrders(); const o = orders.find((x) => x.order_no === orderNo);
+      const ocs = all.filter((c) => c.order_no === orderNo);
+      const allC = ocs.length > 0 && ocs.every((c) => c.status === "CANCELLED");
+      const anyC = ocs.some((c) => c.status === "CANCELLED");
+      o.status = allC ? "취소완료" : (anyC ? "부분취소" : "결제완료");
+      o.refund_amount = (o.refund_amount || 0) + refund;
+      o.cancelled_at = new Date().toISOString();
+      saveTicketOrders(orders);
+      close(); render();
+      tkToast(L(`취소되었습니다. 환불 ${formatWon(refund)}`, `Cancelled. Refund ${formatWon(refund)}`));
+    });
+  });
 }
 
 /** 취소 확인 모달 (환불액 표시) */
@@ -3303,7 +3524,7 @@ window.addEventListener("DOMContentLoaded", () => {
     render();
   });
   document.getElementById("signinBtn")?.addEventListener("click", () => {
-    uiState.auth = { step: "email", email: "", isNew: false, next: location.hash, err: "" };
+    uiState.auth = { step: "email", email: DEMO_LOGIN.email, isNew: false, next: location.hash, err: "" };
     location.hash = "#/login";
   });
   // Mypage 드롭다운 — 비로그인 시 로그인 유도 / Log out / (Profile·My Bookings·Event·CS는 Phase3)
@@ -3325,7 +3546,7 @@ window.addEventListener("DOMContentLoaded", () => {
       return;
     }
     if (!currentUser()) { // 비로그인 → 로그인 페이지로 유도
-      uiState.auth = { step: "email", email: "", isNew: false, next: "#/", err: "" };
+      uiState.auth = { step: "email", email: DEMO_LOGIN.email, isNew: false, next: "#/", err: "" };
       location.hash = "#/login";
       return;
     }

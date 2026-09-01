@@ -3,47 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>S14-C 티켓 상품 — 날짜 설정</title>
+  <title>S14-C 티켓 상품 — 날짜 설정 (탭2)</title>
   <link rel="stylesheet" href="wf-styles.css" />
   <style>
-    /* S14-C 전용 (티켓 = 로즈 테마) */
+    /* S14-C 전용 (티켓 = 로즈 테마) — 프로토타입 admin v0.7.31 탭2 재현 */
     .sec-policy{background:#fdf2f8;border:1px solid #fbcfe8;border-left:3px solid #ec4899;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:11px;line-height:1.7;color:#9d174d}
     .sec-policy b{color:#831843}
     .sec-policy .ref{font-size:10px;color:#ec4899;font-weight:700}
-    .wf-section-head.tk{border-bottom-color:#fbcfe8;color:#9d174d}
     .tk-tab.on{border-bottom-color:#ec4899 !important;color:#9d174d !important}
-    .mini-in{border:1px solid #ccc;border-radius:4px;padding:4px 7px;font-size:11px;width:56px;text-align:center}
-    .mini-sel{border:1px solid #ccc;border-radius:4px;padding:4px 7px;font-size:11px}
-    .radio-row{display:flex;gap:16px;align-items:center;font-size:12px;margin-bottom:6px}
-    .radio-dot{width:13px;height:13px;border:2px solid #ec4899;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle;position:relative}
-    .radio-dot.on::after{content:'';position:absolute;top:2.5px;left:2.5px;width:6px;height:6px;background:#ec4899;border-radius:50%}
-    /* 상품 정보 인라인 바 */
-    .prod-info{display:flex;gap:18px;align-items:center;flex-wrap:wrap;font-size:11px;background:#faf5f7;border:1px solid #f3e0e9;border-radius:6px;padding:8px 12px;margin-bottom:12px}
-    .prod-info .lbl{color:#888;margin-right:4px}
-    .prod-info .val{font-weight:600;color:#9d174d}
-    .prod-info .none{color:#bbb;font-weight:400}
-    /* 2개월 달력 */
-    .date-cal-wrap{display:grid;grid-template-columns:1fr 210px;gap:14px;align-items:start}
-    .cal-months{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .wf-cal-cell{min-height:54px;display:flex;flex-direction:column;padding:3px 4px;cursor:pointer;border-right:1px solid #eee;border-bottom:1px solid #eee;font-size:9px}
-    .wf-cal-cell:hover:not(.head){background:#fdf2f8 !important}
-    .wf-cal-cell.head{min-height:auto;text-align:center;font-weight:700;color:#888;font-size:9px;background:#faf5f7;cursor:default;padding:4px 0}
-    .wf-cal-cell.inf{background:#f0fdf4}
-    .wf-cal-cell.lim{background:#fff}
-    .wf-cal-cell.peak{background:#fef9c3}
-    .wf-cal-cell.sold{background:#fee2e2}
-    .wf-cal-cell.out{background:#fafafa;color:#ccc}
-    .wf-cal-cell.sel{background:#fce7f3 !important;outline:2px solid #ec4899}
-    .cd-date{font-weight:700;color:#333;font-size:10px}
-    .cd-price{color:#1a6fb8;margin-top:1px;font-weight:600}
-    .cd-lim{color:#9d174d;margin-top:0}
-    .cd-sold{color:#991b1b;font-weight:700;margin-top:1px}
-    .cal-title{background:#faf5f7;border:1px solid #ddd;border-bottom:none;border-radius:4px 4px 0 0;text-align:center;font-size:11px;font-weight:700;color:#9d174d;padding:5px}
-    .edit-panel{border:1px solid #ddd;border-radius:6px;padding:14px;background:#fff}
-    .edit-panel-title{font-weight:700;color:#9d174d;margin-bottom:10px;font-size:12px;padding-bottom:8px;border-bottom:1px solid #f3e0e9}
-    .ep-price-row{display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:6px}
-    .ep-price-row .lv{width:38px;color:#555;flex-shrink:0}
-    .ep-price-row .sell{color:#9d174d;font-weight:700;font-size:11px}
+    .form-card{border:1px solid #eee;border-radius:8px;padding:14px 16px;margin-bottom:14px;background:#fff}
+    .form-card h4{margin:0 0 10px;font-size:13px;color:#831843}
+    .badge-open{display:inline-block;font-size:11px;font-weight:700;background:#dcfce7;color:#166534;padding:2px 9px;border-radius:10px}
+    .badge-off{display:inline-block;font-size:11px;font-weight:600;background:#f1f5f9;color:#94a3b8;padding:2px 9px;border-radius:10px}
+    .notice-green{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:6px;padding:8px 12px;font-size:11px;color:#065f46;margin-top:10px;line-height:1.6}
+    .notice-gray{background:#f8f9fb;border:1px solid #e5e7eb;border-radius:6px;padding:8px 12px;font-size:11px;color:#6b7280;margin-top:8px;line-height:1.6}
+    .mode-row{display:flex;align-items:center;gap:10px;font-size:13px;color:#374151}
   </style>
 </head>
 <body>
@@ -51,8 +25,8 @@
 <nav class="page-nav">
   <a class="page-nav-back" href="index.html">← 목록으로</a>
   <span class="page-nav-sep">|</span>
-  <span class="page-nav-title">티켓 상품 — 날짜 설정</span>
-  <span class="page-nav-route">#/ticket-products/edit/:id (탭2)</span>
+  <span class="page-nav-title">티켓 상품 — 탭2 날짜 설정</span>
+  <span class="page-nav-route">#/ticket-products/edit/:id</span>
   <div class="page-nav-nav">
     <a class="page-nav-pager" href="s14-b-ticket-product-form.html">← 이전</a>
     <a class="page-nav-pager" href="s15-ticket-order-list.html">다음 →</a>
@@ -63,13 +37,12 @@
 
   <div class="sec-title">
     <span class="sec-badge" style="background:#ec4899;">S14-C</span>
-    티켓 상품 등록/편집 — 날짜 설정
-    <span style="font-size:12px;font-weight:400;color:#888">— 탭2 날짜 (방식·한도·날짜별 입금가·커트오프)</span>
+    티켓 상품 — 날짜 설정
+    <span style="font-size:12px;font-weight:400;color:#888">— 탭2</span>
   </div>
   <div class="sec-sub">
-    티켓 상품의 날짜 방식(오픈/날짜지정), 날짜별 한도·입금가, 커트오프를 설정한다. 상품 마스터는 탭1(S14-B).<br>
-    <b>현재는 오픈형 우선 운영</b>이며, 날짜지정형은 기능만 유지(현재 미사용)한다.<br>
-    기준: 티켓 쿠폰 연동 정책서 v0.11 · 4.3절 · 11절 · 12.3절 / 인수인계 문서 S14-B
+    티켓 상품의 날짜 방식과 예약 마감(커트오프)을 설정한다. <b>오픈형이 기본·고정</b>이며, 오픈형에서는 날짜별 한도·입금가·커트오프가 적용되지 않는다.<br>
+    기준: <b>프로토타입 admin v0.7.31</b>(#/ticket-products/edit/:id 탭2) · 티켓 쿠폰 연동 정책서 v0.13
   </div>
 
   <div class="two-col">
@@ -90,200 +63,57 @@
 
       <div class="wf-body">
 
-        <!-- LNB -->
+        <!-- LNB : 프로토타입 실제 메뉴 순서 -->
         <div class="wf-lnb">
           <div class="wf-lnb-g">티켓관리</div>
+          <div class="wf-lnb-item">카테고리/컨텐츠 관리</div>
           <div class="wf-lnb-item">쿠폰 스펙 관리</div>
-          <div class="wf-lnb-item">상품 목록</div>
-          <div class="wf-lnb-item on">상품 등록/편집</div>
+          <div class="wf-lnb-item on">티켓 상품</div>
         </div>
 
         <!-- MAIN -->
         <div class="wf-main">
           <div class="wf-page-title">
-            티켓 상품 등록 — 날짜 설정
+            티켓 상품 수정
             <span class="wf-badge" style="font-size:11px;margin-left:8px;">S14-C</span>
           </div>
 
-          <!-- 메인 탭 -->
+          <!-- 탭 (탭1 상품 마스터 / 탭2 날짜 설정) -->
           <div class="wf-tab-bar">
-            <div class="wf-tab" style="color:#aaa;">탭1 — 상품 마스터 &nbsp;<a href="s14-b-ticket-product-form.html" style="color:#ec4899;font-size:10px;">S14-B</a></div>
-            <div class="wf-tab tk-tab on">탭2 — 날짜 설정 <span class="wf-cn">1</span></div>
+            <div class="wf-tab" style="color:#aaa;">탭1 · 상품 마스터 &nbsp;<a href="s14-b-ticket-product-form.html" style="color:#ec4899;font-size:10px;">← S14-B</a></div>
+            <div class="wf-tab tk-tab on">탭2 · 날짜 설정 <span class="wf-cn">1</span></div>
           </div>
 
-          <!-- 공통정책 블록 -->
+          <!-- 공통정책 블록 : 프로토타입 실제 동작 기준 -->
           <div class="sec-policy">
-            <span class="ref">기준: v0.11 4.3절 · 11절 · 12.3절 · 마진(S11 카테고리 마스터+쿠폰ID 오버라이드)</span><br>
-            · <b>오픈형 우선 운영(현재 방식)</b>: 날짜 미지정, 사용기간 내 자유 사용(달력·커트오프 숨김). <b>날짜지정형</b>은 <b>기능만 유지(현재 미사용)</b> — 이용일 선택 구매(달력·커트오프 노출).<br>
-            · <b>날짜 유효성 체크 없음</b>: 사용기간(스펙 use_start/end)은 <b>표시용으로만</b> 사용. 실제 날짜 검증 로직 미구현(하이원 응답코드 DBER31/32 미발생).<br>
-            · (날짜지정형 기능 시) 달력은 <b>사용기간만큼 월 단위 노출</b>. 셀에 <b>판매가(대인 기준) + 한도</b> 표기. 날짜별 <b>입금가 조정</b> 가능(숙소 S06 방식). 판매가 = 입금가 + 마진(S11 카테고리 마스터+쿠폰ID 오버라이드 고정). 미설정 날짜는 기본 입금가 상속.<br>
-            · 한도 — ∞ / 숫자(잔여 0 자동 매진) / 0(직접 매진).<br>
-            · <b>커트오프(예약 마감)는 날짜지정형 전용</b>. 오픈형은 커트오프 없음(사용기간 내 자유 사용). 날짜지정형에서 미설정 시 이용일 당일 자정까지.
+            <span class="ref">기준: 프로토타입 admin v0.7.31</span><br>
+            · <b>날짜 방식 = 오픈형 고정</b>. 사용기간 안에서 자유 사용(이용일 미지정). 현재 운영 방식.<br>
+            · <b>오픈형은 날짜별 한도·입금가 설정이 없다.</b> 사용기간은 스펙(사용시작/종료일)을 <b>표시용</b>으로만 쓰고 <b>날짜 유효성 체크는 하지 않는다</b>.<br>
+            · <b>커트오프(예약 마감)는 이용일 기준</b>이라 이용일이 없는 <b>오픈형에는 적용되지 않는다</b>. 날짜지정형에서만 설정.<br>
+            · <b>날짜지정형</b>(날짜별 한도·입금가·커트오프)은 정책상 <b>기능 유지</b>이나 <b>현재 프로토타입 범위 밖</b>(추후 필요 시 사용).
           </div>
 
           <!-- 날짜 방식 -->
-          <div class="wf-section-head tk">날짜 방식 <span class="wf-cn">2</span></div>
-
-          <!-- 상품 정보 (카테고리·사용기간) -->
-          <div class="prod-info">
-            <span><span class="lbl">카테고리</span><span class="val">워터파크 &gt; 대인</span></span>
-            <span><span class="lbl">사용기간</span><span class="val">2026-07-10 ~ 08-30</span></span>
-            <span style="margin-left:auto;color:#bbb;font-size:10px;">※ 연결 스펙 선택 전: <span class="none">-</span> 표시 <span class="wf-cn">3</span></span>
-          </div>
-
-          <div class="radio-row">
-            <span><span class="radio-dot on"></span>오픈형 <span style="color:#888;font-size:10px;">(사용기간 내 자유 사용 · 우선 운영)</span></span>
-            <span><span class="radio-dot"></span>날짜지정형 <span style="color:#888;font-size:10px;">(이용일 선택 구매 · 기능 유지, 현재 미사용)</span></span>
-          </div>
-
-          <!-- 오픈형 안내 -->
-          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:8px 12px;font-size:11px;color:#166534;margin-bottom:12px;">
-            <b>오픈형 선택 시(현재 기본)</b> — 아래 <b>달력·커트오프 영역이 모두 숨겨지고</b>, 가격은 S14-B 기본 입금가·판매가만 적용됩니다. <span style="color:#888;">아래 날짜지정형 달력·커트오프 영역은 기능 유지를 위해 함께 보여드리는 것으로, 현재 운영에서는 사용하지 않습니다.</span> <span class="wf-cn">4</span>
-          </div>
-
-          <!-- 날짜지정형: 달력 (2개월, 판매가+한도) -->
-          <div class="wf-section-head tk">날짜별 입금가·한도 설정 <span style="font-weight:400;color:#888;font-size:11px;">(날짜지정형 전용 기능 · 현재 미사용 · 사용기간 7~8월)</span> <span class="wf-cn">5</span></div>
-          <div class="date-cal-wrap">
-
-            <!-- 2개월 달력 -->
-            <div>
-              <div class="cal-months">
-                <!-- 7월 -->
-                <div>
-                  <div class="cal-title">2026년 7월</div>
-                  <div class="wf-cal-grid" style="border:1px solid #ddd;border-radius:0 0 4px 4px;overflow:hidden;">
-                    <div class="wf-cal-cell head">일</div><div class="wf-cal-cell head">월</div><div class="wf-cal-cell head">화</div><div class="wf-cal-cell head">수</div><div class="wf-cal-cell head">목</div><div class="wf-cal-cell head">금</div><div class="wf-cal-cell head">토</div>
-                    <div class="wf-cal-cell out"></div><div class="wf-cal-cell out"></div><div class="wf-cal-cell out"></div>
-                    <div class="wf-cal-cell out"><span class="cd-date">1</span><span style="color:#ccc;">기간외</span></div>
-                    <div class="wf-cal-cell out"><span class="cd-date">2</span></div>
-                    <div class="wf-cal-cell out"><span class="cd-date">3</span></div>
-                    <div class="wf-cal-cell out"><span class="cd-date">4</span></div>
-                    <div class="wf-cal-cell out"><span class="cd-date">5</span></div>
-                    <div class="wf-cal-cell out"><span class="cd-date">6</span></div>
-                    <div class="wf-cal-cell out"><span class="cd-date">7</span></div>
-                    <div class="wf-cal-cell out"><span class="cd-date">8</span></div>
-                    <div class="wf-cal-cell out"><span class="cd-date">9</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">10</span><span class="cd-price">44,000</span><span class="cd-lim">∞</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">11</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">12</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">13</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">14</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">15</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">16</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell sold"><span class="cd-date">17</span><span class="cd-price">44,000</span><span class="cd-sold">매진</span></div>
-                    <div class="wf-cal-cell peak"><span class="cd-date">18</span><span class="cd-price">52,800</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell sel peak"><span class="cd-date">19</span><span class="cd-price">52,800</span><span class="cd-lim">50</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">20</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">21</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">22</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">23</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">24</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell peak"><span class="cd-date">25</span><span class="cd-price">52,800</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell peak"><span class="cd-date">26</span><span class="cd-price">52,800</span><span class="cd-lim">∞</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">27</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">28</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">29</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">30</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">31</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                  </div>
-                </div>
-                <!-- 8월 -->
-                <div>
-                  <div class="cal-title">2026년 8월</div>
-                  <div class="wf-cal-grid" style="border:1px solid #ddd;border-radius:0 0 4px 4px;overflow:hidden;">
-                    <div class="wf-cal-cell head">일</div><div class="wf-cal-cell head">월</div><div class="wf-cal-cell head">화</div><div class="wf-cal-cell head">수</div><div class="wf-cal-cell head">목</div><div class="wf-cal-cell head">금</div><div class="wf-cal-cell head">토</div>
-                    <div class="wf-cal-cell peak"><span class="cd-date">1</span><span class="cd-price">52,800</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell peak"><span class="cd-date">2</span><span class="cd-price">52,800</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">3</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">4</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">5</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">6</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">7</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell peak"><span class="cd-date">8</span><span class="cd-price">52,800</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell peak"><span class="cd-date">9</span><span class="cd-price">52,800</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">10</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">11</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">12</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">13</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">14</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell sold"><span class="cd-date">15</span><span class="cd-price">52,800</span><span class="cd-sold">매진</span></div>
-                    <div class="wf-cal-cell peak"><span class="cd-date">16</span><span class="cd-price">52,800</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">17</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">18</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">19</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">20</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">21</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">22</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">23</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">24</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">25</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">26</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">27</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">28</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">29</span><span class="cd-price">44,000</span><span class="cd-lim">100</span></div>
-                    <div class="wf-cal-cell lim"><span class="cd-date">30</span><span class="cd-price">44,000</span><span class="cd-lim">∞</span></div>
-                    <div class="wf-cal-cell out"><span class="cd-date">31</span><span style="color:#ccc;">기간외</span></div>
-                  </div>
-                </div>
-              </div>
-              <!-- 범례 -->
-              <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
-                <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#555;"><span style="width:11px;height:11px;background:#fff;border:1px solid #ddd;border-radius:2px;"></span>기본가</span>
-                <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#555;"><span style="width:11px;height:11px;background:#fef9c3;border:1px solid #ddd;border-radius:2px;"></span>입금가 조정(성수기 등)</span>
-                <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#555;"><span style="width:11px;height:11px;background:#fee2e2;border:1px solid #ddd;border-radius:2px;"></span>매진</span>
-                <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#555;"><span style="width:11px;height:11px;background:#fafafa;border:1px solid #ddd;border-radius:2px;"></span>사용기간 외</span>
-              </div>
-              <div class="wf-hint" style="margin-top:4px;">셀 표기: 판매가(대인 기준) + 한도. 레벨별 가격은 우측 패널에서 확인. <span class="wf-cn">6</span></div>
+          <div class="form-card">
+            <h4>날짜 방식 <span class="wf-cn">2</span></h4>
+            <div class="mode-row">
+              <span class="badge-open">오픈형 (고정)</span>
+              <span>사용기간 내 자유 사용 — 현재 운영 방식</span>
             </div>
-
-            <!-- 편집 패널 -->
-            <div class="edit-panel">
-              <div class="edit-panel-title">날짜 입금가·한도 편집 <span class="wf-cn">7</span></div>
-              <div style="font-size:10px;color:#888;margin-bottom:10px;">선택 날짜: <b style="color:#9d174d;">2026-07-19</b> <span style="background:#fef9c3;color:#92400e;padding:1px 5px;border-radius:3px;font-size:9px;">입금가 조정됨</span></div>
-
-              <!-- 날짜별 입금가 (레벨별) -->
-              <div style="font-size:10px;color:#9d174d;font-weight:700;margin-bottom:6px;">날짜별 입금가 <span style="font-weight:400;color:#888;">(미입력 시 기본값 상속)</span></div>
-              <div class="ep-price-row">
-                <span class="lv">대인</span><input class="mini-in" value="48,000" style="width:70px;" />
-                <span style="color:#888;">→ 판매가</span> <span class="sell">52,800</span>
-              </div>
-              <div class="ep-price-row">
-                <span class="lv">소인</span><input class="mini-in" value="42,000" style="width:70px;" />
-                <span style="color:#888;">→ 판매가</span> <span class="sell">46,200</span>
-              </div>
-              <div class="wf-hint" style="margin-top:2px;margin-bottom:10px;">판매가 = 입금가 + 마진(S11 카테고리 마스터+쿠폰ID 오버라이드 고정). 자동 계산.</div>
-
-              <!-- 한도 -->
-              <div style="font-size:10px;color:#9d174d;font-weight:700;margin-bottom:6px;border-top:1px solid #f3e0e9;padding-top:8px;">한도</div>
-              <div style="display:flex;flex-direction:column;gap:6px;font-size:11px;">
-                <label style="display:flex;align-items:center;gap:5px;"><span class="wf-cb"></span> 수량 제한 없음(∞)</label>
-                <div style="display:flex;align-items:center;gap:6px;">한도 <input class="mini-in" value="50" style="width:64px;" /> 장</div>
-                <div class="wf-hint" style="margin-top:0;">0 입력 = 직접 매진. 잔여 = 한도 − 발급 수.</div>
-              </div>
-
-              <div style="display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid #f3e0e9;">
-                <button class="wf-btn wf-btn-sm wf-btn-primary" style="flex:1;background:#ec4899;border-color:#ec4899;">적용</button>
-                <button class="wf-btn wf-btn-sm" style="flex:1;">취소</button>
-              </div>
-              <div class="wf-hint" style="margin-top:8px;">구간 일괄 적용: 여러 날짜 드래그 선택 후 입금가·한도 일괄 적용. <span class="wf-cn">8</span></div>
+            <div class="mode-row" style="margin-top:8px;">
+              <span class="badge-off">날짜지정형 (미사용)</span>
+              <span style="color:#94a3b8;">날짜별 한도·입금가·커트오프 — 기능 유지·현재 프로토타입 범위 밖 <span class="wf-cn">4</span></span>
             </div>
-
-          </div><!-- /date-cal-wrap -->
-
-          <!-- 커트오프 (날짜지정형 전용) -->
-          <div class="wf-section-head tk" style="margin-top:20px;">커트오프 (예약 마감) <span style="font-weight:400;color:#888;font-size:11px;">(날짜지정형 전용 · 현재 미사용)</span> <span class="wf-cn">9</span></div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:11px;">
-            이용일 <input class="mini-in" value="1" />
-            <select class="mini-sel"><option>일</option><option>시간</option></select> 전
-            <input class="mini-in" value="18:00" style="width:64px;" /> 까지
+            <div class="notice-green">오픈형은 날짜별 한도·입금가 설정이 없습니다. 사용기간은 스펙(사용시작/종료일)을 <b>표시용</b>으로만 사용하며 <b>날짜 유효성 체크는 하지 않습니다.</b></div>
           </div>
-          <div class="wf-hint" style="margin-top:6px;"><b>날짜지정형 전용</b> — 오픈형은 커트오프 없음. 날짜지정형에서 미설정 시 이용일 당일 자정까지 구매 가능.</div>
 
-          <!-- 저장 -->
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;border-top:1px solid #eee;padding-top:14px;">
-            <button class="wf-btn">취소</button>
-            <button class="wf-btn wf-btn-primary" style="background:#ec4899;border-color:#ec4899;">저장 <span class="wf-cn">10</span></button>
+          <!-- 커트오프 -->
+          <div class="form-card">
+            <h4>커트오프 (예약 마감) <span class="wf-cn">3</span></h4>
+            <div class="notice-gray">커트오프는 <b>이용일 기준 마감</b>이라 이용일이 없는 <b>오픈형에는 적용되지 않습니다.</b> 날짜지정형에서만 "이용일 N일/시간 전 HH:MM까지" 형태로 설정합니다.</div>
           </div>
+
+          <div class="wf-hint" style="margin-top:6px;">· 오픈형이 기본·우선 운영 · 날짜별 한도·입금가·커트오프는 오픈형에선 비활성 · 날짜지정형 전환 시에만 활성(현재 프로토타입 미구현).</div>
 
         </div><!-- /wf-main -->
       </div><!-- /wf-body -->
@@ -296,89 +126,37 @@
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">1</span>
         <div class="ann-body">
-          <div class="ann-title">탭2 — 날짜 설정</div>
-          <div class="ann-desc">날짜 관련 설정(방식·한도·날짜별 입금가·커트오프)을 한 곳에 모음. 탭1(마스터)과 같은 상품을 편집.</div>
-          <div class="ann-rule">날짜 영역을 마스터에서 분리해 폼 비대화 방지. 숙소 S06(마스터/인벤토리) 패턴과 동일 사상.</div>
+          <div class="ann-title">탭2 · 날짜 설정</div>
+          <div class="ann-desc">S14-B 상품 폼의 <b>탭2</b>. 같은 상품의 날짜 방식·커트오프를 관리한다(탭1은 기본정보·레벨/판매가·취소정책·썸네일).</div>
+          <div class="ann-rule">저장은 탭1과 공통. 오픈형에서는 이 탭에 실제 편집 항목이 없다(안내 위주).</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">2</span>
         <div class="ann-body">
-          <div class="ann-title">날짜 방식</div>
-          <div class="ann-desc"><b>오픈형</b>: 날짜 미지정, 사용기간 내 자유 사용. <b>날짜지정형</b>: 고객이 이용일 선택 후 구매, 날짜별 한도·입금가 적용.</div>
-          <div class="ann-rule">현재는 <b>오픈형 우선 운영</b>이라 기본값이 오픈형이다. 날짜지정형은 기능만 남겨두고 지금은 쓰지 않는다.</div>
+          <div class="ann-title">날짜 방식 (오픈형 고정)</div>
+          <div class="ann-desc"><b>데이터 성격: 고정값(오픈형).</b> 값: <b>오픈형(고정)</b> — 사용기간 내 자유 사용, 이용일 미지정. 프로토타입은 오픈형만 운영하며 방식 전환 UI가 없다.</div>
+          <div class="ann-rule">오픈형은 날짜별 한도·입금가가 없고, 사용기간은 스펙(사용시작/종료일)을 표시용으로만 사용(날짜 유효성 체크 없음).</div>
+          <div class="ann-front">→ 프런트: 이용일 선택 없이 사용기간 내 사용 안내</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">3</span>
         <div class="ann-body">
-          <div class="ann-title">상품 정보 노출 (카테고리·사용기간)</div>
-          <div class="ann-desc">탭1에서 선택한 <b>카테고리·사용기간만</b> 간결 표시(편집 불가). <b>연결 스펙 미선택 시 각 값은 <code>-</code></b>로 표시.</div>
-          <div class="ann-rule">사용기간(스펙의 use_start/end)은 <b>표시용으로만</b> 사용한다. 실제 날짜 유효성 검증은 하지 않는다(하이원 응답코드 DBER31/32 미발생). 날짜지정형 달력 기능을 쓸 때는 이 기간이 화면상 입력 범위로 보이며, 기간 외 날짜는 '기간외'로 표시된다.</div>
+          <div class="ann-title">커트오프 (오픈형 미적용)</div>
+          <div class="ann-desc">예약 마감 기준. <b>데이터 성격: 날짜지정형 전용(오픈형 비활성).</b> 커트오프는 이용일 기준 마감이라 <b>이용일이 없는 오픈형에는 적용되지 않는다.</b></div>
+          <div class="ann-rule">날짜지정형에서만 "이용일 N일/시간 전 HH:MM까지" 형태로 설정. 미설정 시 이용일 당일 자정까지 구매 가능.</div>
         </div>
       </div>
 
       <div class="ann-item">
         <span class="cn" style="background:#ec4899;">4</span>
         <div class="ann-body">
-          <div class="ann-title">오픈형 선택 시 동작</div>
-          <div class="ann-desc">달력·커트오프 영역이 모두 숨겨지고 가격은 S14-B 기본 입금가·판매가만 적용된다(날짜별 조정·커트오프·한도 없음).</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <span class="cn" style="background:#ec4899;">5</span>
-        <div class="ann-body">
-          <div class="ann-title">날짜별 입금가·한도 — 사용기간 기준 노출 (날짜지정형 기능 · 현재 미사용)</div>
-          <div class="ann-desc">이 달력 영역은 <b>날짜지정형 전용 기능</b>으로, 오픈형 우선 운영인 현재는 사용하지 않는다(기능만 유지). 날짜지정형을 쓸 때는 달력이 <b>사용기간만큼 월 단위 노출</b>(7/10~8/30 → 7·8월)되고, 셀에 <b>판매가(대인 기준) + 한도</b>가 표기되며, 기간 외 날짜는 비활성으로 보인다.</div>
-          <div class="ann-rule">입금가를 조정한 날짜는 색상(노랑)으로 구분. 미조정 날짜는 S14-B 기본 입금가 상속. 한도: ∞ / 숫자(잔여 0 자동매진) / 0(직접 매진).</div>
-          <div class="ann-front">→ 프런트: 날짜 선택 캘린더의 날짜별 가격·잔여/매진 표시</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <span class="cn" style="background:#ec4899;">6</span>
-        <div class="ann-body">
-          <div class="ann-title">셀 표기 규칙</div>
-          <div class="ann-desc">달력 셀은 공간상 <b>판매가(대인 기준) + 한도</b>만 표기. 레벨별(대인/소인) 가격은 셀 클릭 시 우측 편집 패널에서 확인·수정.</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <span class="cn" style="background:#ec4899;">7</span>
-        <div class="ann-body">
-          <div class="ann-title">날짜 입금가·한도 편집 패널</div>
-          <div class="ann-desc">선택 날짜의 <b>레벨별 입금가</b>를 입력(미입력 시 기본값 상속) → 판매가 자동 계산(입금가 + 마진). 한도(∞/숫자/0)도 함께 설정. [적용] → state 반영, 하단 [저장]에서 최종 기록.</div>
-          <div class="ann-rule">판매가 = 입금가 + 마진(S11 마진관리 티켓 탭에서 카테고리 마스터+쿠폰ID 오버라이드로 관리하는 고정 마진). 마진은 날짜 무관 고정. 날짜별로 바뀌는 건 입금가(숙소 S06 방식).</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <span class="cn" style="background:#ec4899;">8</span>
-        <div class="ann-body">
-          <div class="ann-title">구간 일괄 적용</div>
-          <div class="ann-desc">여러 날짜를 선택(드래그)해 동일 입금가·한도를 한 번에 적용. 성수기 등 장기간 동일 설정 시 사용.</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <span class="cn" style="background:#ec4899;">9</span>
-        <div class="ann-body">
-          <div class="ann-title">커트오프 (예약 마감) — 날짜지정형 전용</div>
-          <div class="ann-desc">이용일 기준 N일/N시간 전 + 기준 시각(HH:MM). <b>이용일 개념이 있는 날짜지정형에만 필요</b>하므로 날짜지정형에서만 노출·적용된다. <b>오픈형은 커트오프 없음</b>. 미설정 시 이용일 당일 자정까지.</div>
-          <div class="ann-front">→ 프런트: (날짜지정형) 커트오프 경과 시 해당 날짜/상품 '구매 마감' 처리</div>
-        </div>
-      </div>
-
-      <div class="ann-item">
-        <span class="cn" style="background:#ec4899;">10</span>
-        <div class="ann-body">
-          <div class="ann-title">저장</div>
-          <div class="ann-desc">날짜 방식·날짜별 입금가/한도·커트오프를 상품에 저장. 탭1(마스터)과 같은 상품의 날짜 영역만 기록.</div>
-          <div class="ann-rule">현재 운영은 오픈형이라 저장 시 날짜별 입금가·한도·커트오프는 사용되지 않고, 날짜 방식만 실제 반영된다(커트오프는 날짜지정형 전용).</div>
-          <div class="ann-rule">★미결(신규-1): 날짜별 입금가 조정 ↔ 실제 High1 납부액 관계는 하이원 확인 대상(대화창1). 날짜지정형 재사용 시 검토.</div>
+          <div class="ann-title">날짜지정형 (기능 유지 · 현재 미사용)</div>
+          <div class="ann-desc">고객이 이용일을 골라 구매하고 날짜별 한도·입금가·커트오프를 두는 방식. <b>정책상 기능은 유지</b>되나 <b>현재 프로토타입 범위 밖</b>(구현·노출 안 함).</div>
+          <div class="ann-rule">추후 날짜지정형이 필요해지면 이 탭에 달력·날짜별 한도·입금가·커트오프 UI가 활성화된다.</div>
         </div>
       </div>
 
