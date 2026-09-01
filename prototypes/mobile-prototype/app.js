@@ -1,5 +1,5 @@
 /* =========================================================
-   High1 Mobile Prototype — app.js  (v0.4.1)
+   High1 Mobile Prototype — app.js  (v0.4.4)
         · [v0.4.0] 바코드=중앙 팝업(PC 동일, ‹›이동·사용처리 토스트) · 티켓 목록카드 총수 상품명 하단 이동(높이 축소) · 티켓 예약상세 UI 정돈(쿠폰 섹션 카드화·행 좌우패딩·중복CSS 정리)
         · [v0.3.8] 숙소 나의예약 = 시드(high1_reservations_v1) 공유(하드코딩 폴백) — 목록·상세·취소·취소완료 정규화(코드 키). 로그인/이메일 무관 노출.
         · [v0.3.9] [버그픽스] 바코드/취소 바텀시트 루트에 fixed 규칙 추가(#mbBcRoot·#mbCancelRoot) → 긴 페이지에서 시트가 화면 밖(딤만)으로 가던 문제 해결. 취소 스테퍼 부분갱신(전체 재렌더 제거) → 깜빡임 해소.
@@ -2088,7 +2088,7 @@ function renderMyTicketOrder(app, orderNo) {
         const info = `<div class="mb-cp-nm">${escapeHtml(ticketLevelLabel(c.level, c.level_name))} · ${escapeHtml(c.coupon_name || "")}</div>
           <div class="mb-cp-sub"><span class="mb-cp-no">${escapeHtml(c.coupon_no)}</span> · 🗓 ${escapeHtml(c.use_start_date || "")}~${escapeHtml(c.use_end_date || "")}${c.status === "USED" && c.used_at ? ` · Used ${escapeHtml(fmtDateTimeM(c.used_at))}` : ""}</div>`;
         const action = isUnused
-          ? `<button class="mb-bc-btn" data-bc="${escapeHtml(c.coupon_no)}">Barcode</button>`
+          ? `<button class="mb-bc-btn" data-bc="${escapeHtml(c.coupon_no)}" data-pid="${escapeHtml(c.product_id)}">Barcode</button>`
           : `<span class="mb-cp-st st-${c.status}">${cpLabel(c.status)}</span>`;
         return `<div class="mb-cp2"><div class="mb-cp-info">${info}</div>${action}</div>`;
       }).join("");
@@ -2140,59 +2140,95 @@ function renderMyTicketOrder(app, orderNo) {
     ${canCancelNow ? `<div class="done-foot"><button class="btn-solid" id="toCancel" style="background:#e11d48">Cancel tickets</button></div>` : ""}`;
   $("#toBack").onclick = navBack;
   app.querySelectorAll(".tkd-tab").forEach((b) => b.onclick = () => { uiState.mbTicketTab = b.dataset.tkt; renderMyTicketOrder(app, orderNo); });
-  app.querySelectorAll(".mb-bc-btn").forEach((b) => b.onclick = () => openMbTicketBarcode(orderNo, b.dataset.bc));
+  app.querySelectorAll(".mb-bc-btn").forEach((b) => b.onclick = () => openMbTicketBarcode(orderNo, b.dataset.bc, b.dataset.pid));
   const cb = $("#toCancel"); if (cb) cb.onclick = () => openMbTicketCancel(orderNo);
 }
 
-/* 바코드 중앙 팝업 (PC 동일) — 미사용 쿠폰 1장씩 + ‹ › 이동 + 현장 사용처리(데모)·토스트 */
-function openMbTicketBarcode(orderNo, focusNo) {
-  const start = loadTicketCoupons().filter((c) => c.order_no === orderNo && c.status === "SOLD");
-  if (!start.length) { mbToast("No unused coupons."); return; }
+/* 바코드 중앙 팝업 (PC 동일) — 캐러셀(모달 1회 생성, transform 이동=깜빡임 없음) + 스와이프 + 사용처리 토스트
+ * productId: 지정 시 해당 상품(권종) 쿠폰만 스코프(스키리프트/장비렌탈 등 장소별 오사용 방지) */
+function openMbTicketBarcode(orderNo, focusNo, productId) {
+  const scope = (c) => c.order_no === orderNo && c.status === "SOLD" && (!productId || c.product_id === productId);
+  const list0 = loadTicketCoupons().filter(scope);
+  if (!list0.length) { mbToast("No unused coupons."); return; }
   let root = document.getElementById("mbBcRoot");
   if (!root) { root = document.createElement("div"); root.id = "mbBcRoot"; (document.getElementById("device") || document.body).appendChild(root); lockBg(); }
-  let idx = Math.max(0, start.findIndex((c) => c.coupon_no === focusNo));
-  const close = () => { root.remove(); unlockBg(); renderMyTicketOrder($("#app"), orderNo); };
-  const paint = () => {
-    const cur = loadTicketCoupons().filter((c) => c.order_no === orderNo && c.status === "SOLD");
-    if (!cur.length) { close(); return; }
-    if (idx >= cur.length) idx = cur.length - 1;
-    if (idx < 0) idx = 0;
-    const c = cur[idx];
-    root.innerHTML = `<div class="mb-bcm-back"></div><div class="mb-bcm" role="dialog" aria-modal="true">
-      <button class="mb-bcm-x" aria-label="Close">✕</button>
-      <div class="mb-bcm-nm">${escapeHtml(c.product_name || "")}<br><span>${escapeHtml(ticketLevelLabel(c.level, c.level_name))} · ${escapeHtml(c.coupon_name || "")}</span></div>
-      <div class="mb-bcm-code"><svg class="js-bc" data-code="${escapeHtml(c.coupon_no)}"></svg><div class="mb-bcm-no">${escapeHtml(c.coupon_no)}</div></div>
-      <div class="mb-bcm-vl">🗓 ${escapeHtml(c.use_start_date || "")} ~ ${escapeHtml(c.use_end_date || "")}</div>
-      <div class="mb-bcm-nav">
-        <button class="mb-bcm-arw" data-d="-1" ${cur.length <= 1 || idx <= 0 ? "disabled" : ""}>‹</button>
-        <span class="mb-bcm-cnt">${idx + 1} / ${cur.length}</span>
-        <button class="mb-bcm-arw" data-d="1" ${cur.length <= 1 || idx >= cur.length - 1 ? "disabled" : ""}>›</button>
-      </div>
-      <button class="mb-bcm-use" data-use="${escapeHtml(c.coupon_no)}">현장 사용 처리 (데모)</button>
-      <p class="mb-bcm-guide">현장 POS/KIOSK에서 바코드를 스캔하세요. 쿠폰 1장 = 1인 1영업장.</p>
-    </div>`;
-    root.querySelector(".mb-bcm-back").onclick = close;
-    root.querySelector(".mb-bcm-x").onclick = close;
-    if (window.JsBarcode) { const el = root.querySelector(".js-bc"); try { JsBarcode(el, el.dataset.code, { format: "CODE128", width: 2.2, height: 84, displayValue: false, margin: 0 }); } catch (e) {} }
-    root.querySelectorAll(".mb-bcm-arw").forEach((b) => b.onclick = () => { idx += parseInt(b.dataset.d, 10); paint(); });
-    // 좌우 스와이프(모바일 터치) → 이전/다음
-    const box = root.querySelector(".mb-bcm");
-    let sx = 0, sy = 0, sw = false;
-    const total = () => loadTicketCoupons().filter((x) => x.order_no === orderNo && x.status === "SOLD").length;
-    const swipe = (dx) => { const n = total(); if (dx < 0 && idx < n - 1) { idx++; paint(); } else if (dx > 0 && idx > 0) { idx--; paint(); } };
-    box.addEventListener("touchstart", (e) => { const t = e.changedTouches[0]; sx = t.clientX; sy = t.clientY; sw = true; }, { passive: true });
-    box.addEventListener("touchend", (e) => { if (!sw) return; sw = false; const t = e.changedTouches[0]; const dx = t.clientX - sx, dy = t.clientY - sy; if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) swipe(dx); }, { passive: true });
-    // 마우스 드래그(데스크톱 확인용)
-    let mx = null; box.addEventListener("mousedown", (e) => { mx = e.clientX; });
-    box.addEventListener("mouseup", (e) => { if (mx == null) return; const dx = e.clientX - mx; mx = null; if (Math.abs(dx) > 40) swipe(dx); });
-    root.querySelector(".mb-bcm-use").onclick = () => {
-      const no = c.coupon_no; const all = loadTicketCoupons(); const t = all.find((x) => x.coupon_no === no);
-      if (t) { t.status = "USED"; t.used_at = new Date().toISOString(); saveTicketCoupons(all); }
-      mbToast("사용 처리되었습니다.");
-      paint();
-    };
+  let idx = Math.max(0, list0.findIndex((c) => c.coupon_no === focusNo));
+  let cur = [];
+  const onMove = (e) => { if (drag) move(e.clientX); };
+  const onUp = (e) => { if (drag) end(e.clientX); };
+  const close = () => {
+    window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp);
+    root.remove(); unlockBg(); renderMyTicketOrder($("#app"), orderNo);
   };
-  paint();
+
+  // 모달 뼈대 1회 생성 (진입 애니메이션도 1회만)
+  root.innerHTML = `<div class="mb-bcm-back"></div><div class="mb-bcm" role="dialog" aria-modal="true">
+    <button class="mb-bcm-x" aria-label="Close">✕</button>
+    <div class="mb-bcm-vp"><div class="mb-bcm-track"></div></div>
+    <div class="mb-bcm-nav">
+      <button class="mb-bcm-arw" data-d="-1">‹</button>
+      <span class="mb-bcm-cnt"></span>
+      <button class="mb-bcm-arw" data-d="1">›</button>
+    </div>
+    <button class="mb-bcm-use">현장 사용 처리 (데모)</button>
+    <p class="mb-bcm-guide">현장 POS/KIOSK에서 바코드를 스캔하세요. 쿠폰 1장 = 1인 1영업장. (좌우로 스와이프)</p>
+  </div>`;
+  const vp = root.querySelector(".mb-bcm-vp");
+  const track = root.querySelector(".mb-bcm-track");
+  const cntEl = root.querySelector(".mb-bcm-cnt");
+  const useBtn = root.querySelector(".mb-bcm-use");
+  const arws = root.querySelectorAll(".mb-bcm-arw");
+  root.querySelector(".mb-bcm-back").onclick = close;
+  root.querySelector(".mb-bcm-x").onclick = close;
+
+  function slideW() { return 100 / (cur.length || 1); }
+  function apply(animate) {
+    track.style.transition = animate ? "transform .3s cubic-bezier(.22,.61,.36,1)" : "none";
+    track.style.transform = `translateX(-${idx * slideW()}%)`;
+    cntEl.textContent = `${idx + 1} / ${cur.length}`;
+    arws[0].disabled = idx <= 0; arws[1].disabled = idx >= cur.length - 1;
+    useBtn.dataset.use = cur[idx] ? cur[idx].coupon_no : "";
+  }
+  function goTo(i, animate) { idx = Math.max(0, Math.min(cur.length - 1, i)); apply(animate !== false); }
+  function buildTrack() {
+    cur = loadTicketCoupons().filter(scope);
+    if (!cur.length) { close(); return; }
+    if (idx >= cur.length) idx = cur.length - 1; if (idx < 0) idx = 0;
+    track.style.width = (cur.length * 100) + "%";
+    track.innerHTML = cur.map((c) => `<div class="mb-bcm-slide" style="width:${slideW()}%">
+        <div class="mb-bcm-hd">
+          <div class="mb-bcm-prod">${escapeHtml(c.product_name || "")}</div>
+          <div class="mb-bcm-lvrow"><span class="mb-bcm-lvpill ${c.level === 2 ? "child" : "adult"}">${escapeHtml(ticketLevelLabel(c.level, c.level_name))}</span><span class="mb-bcm-cpn">${escapeHtml(c.coupon_name || "")}</span></div>
+        </div>
+        <div class="mb-bcm-code"><svg class="js-bc" data-code="${escapeHtml(c.coupon_no)}"></svg><div class="mb-bcm-no">${escapeHtml(c.coupon_no)}</div></div>
+        <div class="mb-bcm-vl">🗓 ${escapeHtml(c.use_start_date || "")} ~ ${escapeHtml(c.use_end_date || "")}</div>
+      </div>`).join("");
+    if (window.JsBarcode) track.querySelectorAll(".js-bc").forEach((el) => { try { JsBarcode(el, el.dataset.code, { format: "CODE128", width: 2.2, height: 84, displayValue: false, margin: 0 }); } catch (e) {} });
+    apply(false);
+  }
+
+  arws[0].onclick = () => goTo(idx - 1, true);
+  arws[1].onclick = () => goTo(idx + 1, true);
+  useBtn.onclick = () => {
+    const no = useBtn.dataset.use; if (!no) return;
+    const all = loadTicketCoupons(); const t = all.find((x) => x.coupon_no === no);
+    if (t) { t.status = "USED"; t.used_at = new Date().toISOString(); saveTicketCoupons(all); }
+    mbToast("사용 처리되었습니다.");
+    buildTrack(); // 목록만 갱신(모달 유지 → 깜빡임 없음)
+  };
+
+  // 드래그/스와이프 — 손가락 따라 이동, 놓으면 스냅(부드럽게)
+  var drag = false; let sx = 0, w = 0;
+  function start(x) { drag = true; sx = x; w = vp.getBoundingClientRect().width || 1; track.style.transition = "none"; }
+  function move(x) { if (!drag) return; const dxPct = ((x - sx) / w) * slideW(); track.style.transform = `translateX(-${idx * slideW() - dxPct}%)`; }
+  function end(x) { if (!drag) return; drag = false; const dx = x - sx; if (Math.abs(dx) > w * 0.15) goTo(idx + (dx < 0 ? 1 : -1), true); else apply(true); }
+  vp.addEventListener("touchstart", (e) => start(e.changedTouches[0].clientX), { passive: true });
+  vp.addEventListener("touchmove", (e) => move(e.changedTouches[0].clientX), { passive: true });
+  vp.addEventListener("touchend", (e) => end(e.changedTouches[0].clientX), { passive: true });
+  vp.addEventListener("mousedown", (e) => { start(e.clientX); e.preventDefault(); });
+  window.addEventListener("mousemove", onMove); window.addEventListener("mouseup", onUp);
+
+  buildTrack();
 }
 
 /* 수량단위 부분취소 바텀시트 (모바일) */

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>High1 Admin Wireframe v0.9.26 — 목록</title>
+<title>High1 Admin Wireframe v0.9.27 — 목록</title>
 <link rel="stylesheet" href="wf-styles.css" />
 <style>
 body{background:#1a1f2e;min-height:100vh;padding-left:210px}
@@ -76,7 +76,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
 <!-- 좌측 고정 목차 -->
 <nav class="toc">
   <div class="toc-logo">high<span>1</span></div>
-  <div class="toc-ver">Admin Wireframe v0.9.26</div>
+  <div class="toc-ver">Admin Wireframe v0.9.27</div>
   <a class="toc-link" data-target="grp-policy"><span class="toc-dot" style="background:#fbbf24"></span>정책 문서</a>
   <a class="toc-link" data-target="grp-property"><span class="toc-dot" style="background:#60a5fa"></span>숙소관리</a>
   <a class="toc-link" data-target="grp-ticket"><span class="toc-dot" style="background:#f472b6"></span>티켓관리</a>
@@ -90,7 +90,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
 <div class="cover">
   <div class="cover-logo">high<span>1</span></div>
   <div class="cover-title">Admin Wireframe</div>
-  <div class="cover-meta">v0.9.26 · 2026-09-01 · 개발자 전달용 화면기획서</div>
+  <div class="cover-meta">v0.9.27 · 2026-09-01 · 개발자 전달용 화면기획서</div>
   <div class="cover-desc">
     <strong>admin-prototype v0.7.31</strong> 기준 화면 레이아웃 · 필드 정의 · 동작 규칙 · 프런트 데이터 매핑.<br>
     각 화면 카드를 클릭하면 해당 화면의 상세 기획서로 이동합니다.<br>
@@ -119,10 +119,10 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
       </a>
       <a class="screen-card" href="ticket-coupon-policy.html">
         <div class="sc-num" style="color:#f472b6">TICKET-POL</div>
-        <div class="sc-name">티켓 쿠폰 연동 정책서 v0.13</div>
+        <div class="sc-name">티켓 쿠폰 연동 정책서 v0.14</div>
         <div class="sc-route">티켓 화면(S13~S18-A) 기준 정책 · HTML · KO/EN</div>
-        <div class="sc-desc">쿠폰번호(12자리·구매 시 발급) · 스펙/CSV · API 3종·응답코드 · 상태 3종(SOLD/USED/CANCELED) · 주문/사용상태 · 취소(전체만·오픈형 종료일) · 마진 A안(카테고리 마스터+쿠폰ID·4단계) · S15-B · S17 직접등록·2뎁스 · S18-A 이메일 템플릿 · 콘텐츠 소유 A안(§12.3·12.6)·성인전용(2.3)·프런트 검색(§13·사용일+7일)·이미지 URL 저장(§14) · <b>4레벨(성수기/비수기)·레벨별 노출/판매기간·S14-A 레벨 N/M(v0.13)</b>. <strong>좌측 TOC·한영 토글</strong>.</div>
-        <div class="sc-date">2026-08-25</div>
+        <div class="sc-desc">쿠폰번호(12자리·구매 시 발급) · 스펙/CSV · API 3종·응답코드 · 상태 3종(SOLD/USED/CANCELLED) · 주문상태 3종 · 마진 A안 · S17 직접등록·2뎁스 · S18-A 이메일 · 콘텐츠 소유 A안 · 4레벨(성수기/비수기)·레벨별 노출/판매기간(v0.13) · <b>(v0.14) §5.3 주문상태 "부분취소" 신설 · §8.3 수량단위 부분취소(전체취소만 폐지) · §12.4-B 관리자 취소권한 · §12.8 마이페이지 티켓 노출(Code128) · CANCELLED 통일 · 미결 신규-3 해소</b>. <strong>좌측 TOC·한영 토글</strong>.</div>
+        <div class="sc-date">2026-09-01</div>
         <div class="sc-arrow">→</div>
       </a>
     </div>
@@ -243,8 +243,8 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
   <div class="group group-ticket" id="grp-ticket">
     <div class="group-title">티켓관리 — Ticket / Coupon Management</div>
     <div style="font-size:12px;color:rgba(255,255,255,.5);margin:-6px 0 14px;line-height:1.6">
-      기준 정책서: <a href="ticket-coupon-policy.html" style="color:#f472b6;font-weight:600">티켓 쿠폰 연동 정책서 v0.13</a>
-      <span style="color:rgba(255,255,255,.3)">— 화면 S13~S18-A 정책서 v0.13 정합 (상태 3종·주문/사용상태 · 마진 A안 · S15-B · S17 직접등록·2뎁스 · S18-A 이메일 템플릿 · 콘텐츠 소유 A안 · 프런트 검색·이미지 저장 · 4레벨(성수기/비수기)·레벨별 노출/판매기간(v0.13) · 정책 HTML v0.13 반영)</span>
+      기준 정책서: <a href="ticket-coupon-policy.html" style="color:#f472b6;font-weight:600">티켓 쿠폰 연동 정책서 v0.14</a>
+      <span style="color:rgba(255,255,255,.3)">— 화면 S13~S18-A 프로토타입(admin v0.7.31) 정합 완료 · 정책 HTML v0.14 반영 ((v0.14) 주문상태 3종·수량단위 부분취소·관리자 취소권한·마이페이지 노출(Code128)·CANCELLED 통일)</span>
     </div>
     <div class="screen-grid">
       <a class="screen-card" href="s17-ticket-category.html">
@@ -580,7 +580,7 @@ body{background:#1a1f2e;min-height:100vh;padding-left:210px}
   </div>
 
   <div class="footer">
-    High1 Admin Wireframe v0.9.26 · 2026-09-01 · 개발자 전달용<br>
+    High1 Admin Wireframe v0.9.27 · 2026-09-01 · 개발자 전달용<br>
     와이어프레임은 레이아웃·기능 기준이며, 실제 비주얼 디자인은 Figma에서 별도 정의합니다.
   </div>
 </div>

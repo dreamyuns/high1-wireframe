@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>티켓 쿠폰 연동 정책서 v0.13 | High1</title>
+<title>티켓 쿠폰 연동 정책서 v0.14 | High1</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:"Segoe UI","Malgun Gothic",Arial,sans-serif;background:#f0f0eb;color:#1a1a1a;font-size:14px;padding-left:210px}
@@ -73,7 +73,7 @@
 <!-- 좌측 TOC -->
 <nav class="toc">
   <div class="toc-logo">high<span>1</span></div>
-  <div class="toc-ver">티켓 쿠폰 정책서 v0.13</div>
+  <div class="toc-ver">티켓 쿠폰 정책서 v0.14</div>
   <a class="toc-link" data-idx="0"><span class="toc-num">1</span><span class="toc-ko-text">전체 연동 아키텍처</span><span class="toc-en-text" style="display:none">Integration Architecture</span></a>
   <a class="toc-link" data-idx="1"><span class="toc-num">2</span><span class="toc-ko-text">쿠폰번호 구조·생성</span><span class="toc-en-text" style="display:none">Coupon Number</span></a>
   <a class="toc-link" data-idx="2"><span class="toc-num">3</span><span class="toc-ko-text">쿠폰 스펙 파일 구조</span><span class="toc-en-text" style="display:none">Spec File Structure</span></a>
@@ -98,11 +98,11 @@
   <div class="lang-ko show">
 
     <div class="doc-head">
-      <div class="doc-title">티켓 쿠폰 연동 정책서 <span class="badge">v0.13</span></div>
+      <div class="doc-title">티켓 쿠폰 연동 정책서 <span class="badge">v0.14</span></div>
       <div class="doc-meta">
         작성일: 2026-07-09 · 최종수정: 2026-07-10 · 상태: 진행 중<br>
         기준 문서: 하이원 소셜연동 인터페이스규격서 v1.0(2018) · High1 개발팀 확인질문 답변서 v0.2 · 쿠폰등록정보(워터월드) 성수기 샘플 · 리프트 종일권 발급 데이터<br>
-        변경 이력: v0.8 주문상태(결제완료/취소완료) 정의·S15-B 컬럼 확장 → v0.9 판매기간 정책 신설(S14-B) → v0.10 티켓 마진 구조 전면 변경(카테고리 마스터 1/2뎁스 + 쿠폰ID 오버라이드) → v0.11 오픈형 취소 기준(사용기간 종료일) 추가 · 이메일 템플릿 관리(S18-A) 신설 → <b>v0.12 콘텐츠 소유 재정의 A안(S17 콘텐츠 소유 추가 · S14 콘텐츠 재정의) · 성인 전용 티켓 케이스(2.3절) · 프런트 티켓 검색 정책 신규(사용일 기본값 오늘+7일) · 이미지 저장 정책 신규</b> → <b>v0.13 레벨 구조 재정의(성수기/비수기 4레벨, DDB·DDC 실측) · 사용기간 레벨별 관리(3.3) · S14-A 레벨 N/M 노출표시 · S14-B 레벨별 노출여부·판매기간(레벨 전체 OFF 시 카드 제거)</b>
+        변경 이력: v0.8 주문상태(결제완료/취소완료) 정의·S15-B 컬럼 확장 → v0.9 판매기간 정책 신설(S14-B) → v0.10 티켓 마진 구조 전면 변경(카테고리 마스터 1/2뎁스 + 쿠폰ID 오버라이드) → v0.11 오픈형 취소 기준(사용기간 종료일) 추가 · 이메일 템플릿 관리(S18-A) 신설 → <b>v0.12 콘텐츠 소유 재정의 A안(S17 콘텐츠 소유 추가 · S14 콘텐츠 재정의) · 성인 전용 티켓 케이스(2.3절) · 프런트 티켓 검색 정책 신규(사용일 기본값 오늘+7일) · 이미지 저장 정책 신규</b> → <b>v0.13 레벨 구조 재정의(성수기/비수기 4레벨, DDB·DDC 실측) · 사용기간 레벨별 관리(3.3) · S14-A 레벨 N/M 노출표시 · S14-B 레벨별 노출여부·판매기간(레벨 전체 OFF 시 카드 제거)</b> → <b>v0.14 프로토타입(v0.8) 기반 반영 — §5.3 주문상태 '부분취소' 신설(상품+수량 단위) · §8.3 전면개정(수량단위 부분취소 허용·전체취소만 폐지) · 미결 신규-3 해소 · 관리자 취소권한 명문화(§12.4-B) · §12.8 마이페이지 티켓 노출정책 신규(목록 아이템·바코드 Code128) · 쿠폰상태 CANCELLED(더블L) 통일</b>
       </div>
     </div>
 
@@ -166,7 +166,7 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
         <div class="pd-item">
           <div class="pd-item-title">레벨 구조 / 유니크 규칙</div>
           <div class="pd-desc">LV.1=대인 / LV.2=소인 / LV.3~8 미사용 예약. 현장에서 성인·소인 별도 확인 없이 레벨별 상품 목록만 표시(Q23 답변). <b>쿠폰 레벨 = 상품 구분자 역할만 함.</b><br>
-          동일 쿠폰ID+레벨 내 유니크. <b>CANCELED 번호는 재사용 가능, USED 번호는 재사용 불가</b>(Q14 답변).</div>
+          동일 쿠폰ID+레벨 내 유니크. <b>CANCELLED 번호는 재사용 가능, USED 번호는 재사용 불가</b>(Q14 답변).</div>
           <div class="pd-rule">레벨 구성은 카테고리(스키/워터파크)에 따라 상이. 스펙 파일 수령 후 확정.</div>
           <div class="pd-desc"><b>(v0.13) 레벨 구조 재정의 — 성수기/비수기 포함.</b> 레벨 = 상품 구분자이며, 구성은 상품 종류에 따라 달라진다. 대인/소인 2레벨 외에, 시즌 내 성수기/비수기까지 구분하는 <b>4레벨 구조</b>도 존재한다.</div>
           <table class="pd-table">
@@ -250,7 +250,7 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
             <tr><td>DBER01</td><td>BARCODE LENGTH ERR</td><td>자릿수 오류(12자리 아님)</td><td>형식 오류</td></tr>
             <tr><td>DBER02</td><td>NO SEARCH BARCODE</td><td>쿠폰번호 미존재</td><td>DB에 없는 번호</td></tr>
             <tr><td>DBER03</td><td>USED BARCODE</td><td>이미 사용됨</td><td>USED 상태</td></tr>
-            <tr><td>DBER04</td><td>CANCELED BARCODE</td><td>취소됨</td><td>CANCELED 상태</td></tr>
+            <tr><td>DBER04</td><td>CANCELLED BARCODE</td><td>취소됨</td><td>CANCELLED 상태</td></tr>
             <tr><td class="strike">DBER31/32</td><td class="strike">BEFORE STARTDATE / AFTER ENDDATE</td><td class="strike">유효기간 이전/경과</td><td><b>미발생 처리 (날짜 체크 제거)</b></td></tr>
           </table>
         </div>
@@ -272,11 +272,11 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
       <div class="pd-section-title"><span class="badge">5</span>쿠폰 상태 관리</div>
       <div class="pd-body">
         <div class="pd-item">
-          <div class="pd-item-title">상태 흐름 / 상태 정의 (SOLD / USED / CANCELED 3종)</div>
+          <div class="pd-item-title">상태 흐름 / 상태 정의 (SOLD / USED / CANCELLED 3종)</div>
           <div class="pd-rose"><b>쿠폰번호는 구매(결제 완료) 시점에 생성된다(2.2절).</b> 실제 발급된 쿠폰 행은 처음부터 <b>SOLD</b> 상태로 생성되며, <b>발급현황(S16)에는 판매 전(AVAILABLE) 상태의 쿠폰 행이 존재하지 않는다.</b> AVAILABLE은 "발급 가능한 스펙/재고 개념"일 뿐, 발급된 쿠폰 행의 상태가 아니다.</div>
           <div class="pd-pre">[구매(결제 완료) 시점에 쿠폰번호 생성]
    ▼
- SOLD ──── 주문 취소(자동/수동) ──→ CANCELED    ← 발급 즉시 초기 상태
+ SOLD ──── 주문 취소(자동/수동) ──→ CANCELLED    ← 발급 즉시 초기 상태
    │ High1 /use
    ▼
  USED ──── High1 /cancel(사용취소·현장 실수 복원) ──→ SOLD(복원)</div>
@@ -285,7 +285,7 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
             <tr><td>(AVAILABLE)</td><td><b>발급된 쿠폰 행의 상태가 아님.</b> 스펙/재고 상 "발급 가능"의 개념적 표현. 쿠폰번호는 구매 시점 생성이므로 발급현황에 이 상태 행 없음.</td></tr>
             <tr><td>SOLD</td><td>판매(발급)됨, 현장 사용 가능. 발급된 쿠폰의 초기 상태.</td></tr>
             <tr><td>USED</td><td>현장 사용 완료.</td></tr>
-            <tr><td>CANCELED</td><td>주문 취소로 무효화됨.</td></tr>
+            <tr><td>CANCELLED</td><td>주문 취소로 무효화됨.</td></tr>
           </table>
         </div>
         <div class="pd-item">
@@ -294,9 +294,10 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
           <table class="pd-table">
             <tr><th>주문 상태</th><th>의미</th><th>전환 조건</th></tr>
             <tr><td><b>결제완료</b></td><td>PG 결제 성공, 쿠폰 발급됨. 주문의 초기·정상 상태.</td><td>PG 결제 완료 시 자동 부여</td></tr>
-            <tr><td><b>취소완료</b></td><td>주문 전체 취소 처리 완료, 환불 처리됨. 발급된 쿠폰 전체 SOLD → CANCELED.</td><td>자동취소(고객 요청) 또는 수동취소(관리자) 완료 시</td></tr>
+            <tr><td><b>부분취소</b></td><td>주문 내 일부 상품(권종)+수량 단위 취소 처리 완료. 선택 쿠폰 SOLD → CANCELLED, 미취소 쿠폰 SOLD 유지. 환불 = 선택 쿠폰 판매가 합(전액).</td><td>고객 또는 관리자가 일부 수량 취소 처리 완료 시</td></tr>
+            <tr><td><b>취소완료</b></td><td>주문 전체 취소 처리 완료, 환불 처리됨. 발급된 쿠폰 전체 SOLD → CANCELLED.</td><td>자동취소(고객 요청) 또는 수동취소(관리자) 완료 시</td></tr>
           </table>
-          <div class="pd-rule"><b>주문 상태 ≠ 사용 상태.</b> 결제완료 주문 안에서 쿠폰이 얼마나 사용됐는지는 아래 사용상태로 별도 추적한다. 두 개념을 혼용하지 않는다.</div>
+          <div class="pd-rule"><b>주문 상태 ≠ 사용 상태.</b> 결제완료 주문 안에서 쿠폰이 얼마나 사용됐는지는 아래 사용상태로 별도 추적한다. 두 개념을 혼용하지 않는다. <b>부분취소 후 사용상태</b>는 남은 쿠폰의 SOLD/USED 비율에 따라 미사용/일부사용/사용완료로 유지된다.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">사용 상태 (주문 레벨 집계 · 미사용/일부사용/사용완료 3종)</div>
@@ -308,7 +309,7 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
             <tr><td><b>사용완료</b></td><td>발급된 모든 쿠폰이 USED 상태</td><td>결제완료 주문에서만 표시</td></tr>
             <tr><td>—</td><td>(취소완료 주문은 사용상태 표시 없음)</td><td>주문상태=취소완료이면 사용상태 비해당</td></tr>
           </table>
-          <div class="pd-rule"><b>미결(신규-3):</b> 일부사용(USED 포함) 주문의 전체 취소 처리 규칙은 운영정책 확정 필요. (13절 참고)</div>
+          <div class="pd-rose"><b>✅ v0.14 — 미결 신규-3 해소:</b> USED 포함 주문은 SOLD 쿠폰만 선택하는 수량단위 부분취소로 처리한다(USED 쿠폰 선택 불가). §8.3·§5.3 참고.</div>
         </div>
       </div>
     </div>
@@ -318,7 +319,7 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
       <div class="pd-section-title"><span class="badge">6</span>고객 데이터 관리</div>
       <div class="pd-body">
         <div class="pd-item">
-          <div class="pd-desc">쿠폰별 고객 정보: 바코드(쿠폰)번호 · 사용가능일자(시작/종료, 표시용) · 상태(SOLD/USED/CANCELED) · 구입한사람이름 · 전화번호 · 이메일 · <b>국적</b> · 구매날짜 · 쿠폰명 · 권종(리프트권/렌탈/워터월드 등).</div>
+          <div class="pd-desc">쿠폰별 고객 정보: 바코드(쿠폰)번호 · 사용가능일자(시작/종료, 표시용) · 상태(SOLD/USED/CANCELLED) · 구입한사람이름 · 전화번호 · 이메일 · <b>국적</b> · 구매날짜 · 쿠폰명 · 권종(리프트권/렌탈/워터월드 등).</div>
           <div class="pd-warn"><b>여권번호 수집 제외 확정(v0.2):</b> 민감 개인정보(여권번호) 미수집. 외국인 식별은 <b>국적</b>만 수집(개인정보 최소화).</div>
         </div>
       </div>
@@ -343,8 +344,9 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
           <div class="pd-item-title">처리 주체별 흐름</div>
           <table class="pd-table">
             <tr><th>구분</th><th>처리 방식</th><th>High1 통보</th></tr>
-            <tr><td>단품 취소(자동)</td><td>고객 요청 → 취소정책 기준 자동 환불 (SOLD→CANCELED). <b>전체 취소만.</b></td><td>불필요</td></tr>
-            <tr><td>단품 취소(수동)</td><td>어드민 S15에서 관리자 직접 처리. <b>전체 취소만.</b></td><td>불필요</td></tr>
+            <tr><td>단품 취소 — 전체(자동)</td><td>고객 요청 → 취소정책 기준 자동 환불 (SOLD 전체 → CANCELLED).</td><td>불필요</td></tr>
+            <tr><td>단품 취소 — 부분(수동)</td><td>어드민 S15-B에서 관리자가 상품+수량 단위 선택 취소. SOLD 쿠폰만 선택 가능. 환불 = 선택 쿠폰 판매가 합(전액).</td><td>불필요</td></tr>
+            <tr><td>단품 취소 — 전체(수동)</td><td>어드민 S15-B에서 관리자 전체 취소 처리. SOLD 전체 → CANCELLED, 환불.</td><td>불필요</td></tr>
             <tr><td>패키지 취소 — 룸</td><td>OTA가 PMS API 7 취소. 위약금율(%) × OTA 전체 판매가 적용.</td><td>자동(API 7)</td></tr>
             <tr><td>패키지 취소 — 쿠폰</td><td><b>OTA가 High1에 API로 취소 통보 필요</b>(Q7). 통보 API 미개발(M-03).</td><td><b>OTA→High1 통보(미개발)</b></td></tr>
             <tr><td>현장 실수 취소(사용취소)</td><td>High1 /cancel → USED→SOLD 복원</td><td>High1 주도</td></tr>
@@ -373,12 +375,21 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
           <div class="pd-rule"><b>오픈형 취소 기준 = 사용기간 종료일(use_end_date).</b> 이 값은 S13 쿠폰 스펙의 `사용종료일` 필드에서 가져온다. 오픈형 상품에서 S14-B 취소정책(이용일 기준 구간)은 <b>날짜지정형 전환 시를 대비해 설정값을 유지하지만, 오픈형 운영 중에는 위 특례가 우선 적용된다.</b></div>
         </div>
         <div class="pd-item">
-          <div class="pd-item-title">전체 취소만 운영 (부분취소·부분환불 폐지)</div>
-          <div class="pd-warn"><b>v0.6 변경 — 부분취소·부분환불 폐지.</b> 프런트·어드민 모두 <b>전체 취소만</b> 지원. 종전 v0.5의 "어드민 수동 부분환불 가능" 정책 삭제.</div>
-          <div class="pd-desc"><b>프런트:</b> 부분 취소/부분 환불 불가. 주문 단위 전체 취소만.<br>
-          <b>어드민(S15):</b> 관리자도 부분 환불 불가. 주문 단위 전체 취소만.<br>
-          취소 시 위약금율(위 8.2)은 주문 전체 판매가 기준으로 적용.</div>
-          <div class="pd-rule"><b>미결(신규-3):</b> 사용완료(USED) 쿠폰이 포함된 주문의 전체 취소 처리 규칙은 운영정책 확정 필요. (13절 참고)</div>
+          <div class="pd-item-title">수량단위 부분취소 운영 (v0.14 전면 개정)</div>
+          <div class="pd-rose"><b>✅ v0.14 개정 — 부분취소 허용.</b> 프로토타입(v0.8) 기반 정책 반영. 종전 "전체 취소만(v0.6)" 정책을 폐지하고 <b>상품(권종)+수량 단위 부분취소</b>를 도입한다. 미결 신규-3 해소.</div>
+          <div class="pd-desc"><b>부분취소 기본 규칙</b><br>
+          · <b>취소 단위:</b> 상품(권종) + 수량. 개별 쿠폰 번호 단위가 아닌 권종·수량을 선택해 일괄 취소.<br>
+          · <b>취소 대상:</b> SOLD(미사용) 상태의 쿠폰만 선택 가능. <b>USED(사용 완료) 쿠폰은 취소 선택 불가.</b><br>
+          · <b>환불 금액:</b> 선택 취소한 쿠폰의 판매가 합계 전액 환불. 위약금 없음(전액 환불 원칙).<br>
+          · <b>주문 상태 전환:</b> 일부만 취소 → <b>부분취소</b> / 전체 취소 → <b>취소완료</b>.<br>
+          · <b>USED 포함 주문:</b> USED 쿠폰이 있어도 SOLD 쿠폰만 선택해 부분취소 진행 가능. USED 쿠폰은 현장 <code>/cancel</code>(사용취소) 처리 후에만 SOLD로 복원되어 취소 대상이 됨.</div>
+          <table class="pd-table">
+            <tr><th>취소 주체</th><th>경로</th><th>처리 가능 내용</th></tr>
+            <tr><td><b>고객</b></td><td>프런트 마이페이지 → 주문 상세</td><td>오픈형: 사용기간 종료일 이전 SOLD 쿠폰 전체 취소. 날짜지정형: 취소 구간 내 전체 취소. <b>(부분취소는 현재 프런트 미제공 — 관리자 처리)</b></td></tr>
+            <tr><td><b>관리자(CS)</b></td><td>어드민 S15-B</td><td>상품+수량 단위 선택 부분취소 또는 전체 취소. SOLD 쿠폰만 선택 가능.</td></tr>
+          </table>
+          <div class="pd-rule"><b>오픈형 부분취소 기준:</b> 사용기간 종료일(use_end_date) 이전이며 SOLD 상태인 쿠폰만 부분취소 가능. 종료일 이후 또는 USED 쿠폰은 환불 불가(8.2절 오픈형 취소 특례 동일 적용).</div>
+          <div class="pd-rule"><b>날짜지정형 부분취소 기준:</b> 이용일 기준 취소 구간(8.2절) 내 SOLD 쿠폰에 한해 부분취소 가능. 위약금율은 개별 쿠폰 판매가 × 구간별 위약금율 적용.</div>
         </div>
       </div>
     </div>
@@ -393,9 +404,9 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
           <table class="pd-table">
             <tr><th>처리</th><th>API/주체</th><th>상태 변화</th><th>비고</th></tr>
             <tr><td>사용취소 (현장 실수 복원)</td><td>High1 <code>/cancel</code> (cancel API)</td><td>USED → SOLD</td><td>다시 사용 가능 상태로 복원</td></tr>
-            <tr><td>주문취소</td><td>어드민/프런트 (전체취소)</td><td>SOLD → CANCELED</td><td>주문 단위 취소, 환불은 취소정책 기준</td></tr>
+            <tr><td>주문취소</td><td>어드민/프런트 (전체취소)</td><td>SOLD → CANCELLED</td><td>주문 단위 취소, 환불은 취소정책 기준</td></tr>
           </table>
-          <div class="pd-desc">오발급·부정사용·운영 오류 케이스도 별도 VOID 기능이 아닌 <b>주문취소(SOLD→CANCELED)</b>로 처리. CANCELED 쿠폰번호는 재사용 가능(2.4절), USED 번호는 재사용 불가.</div>
+          <div class="pd-desc">오발급·부정사용·운영 오류 케이스도 별도 VOID 기능이 아닌 <b>주문취소(SOLD→CANCELLED)</b>로 처리. CANCELLED 쿠폰번호는 재사용 가능(2.4절), USED 번호는 재사용 불가.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">현황 / 회수</div>
@@ -403,7 +414,7 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
         </div>
         <div class="pd-item">
           <div class="pd-item-title">어드민 처리 (S16)</div>
-          <div class="pd-warn"><b>v0.6 — S16 VOID 처리 삭제(미운영).</b> 종전 개별 VOID(모달)/일괄 VOID(체크박스) 기능 제공하지 않음. S16은 발급현황 조회·상태 확인(SOLD/USED/CANCELED) 전용.</div>
+          <div class="pd-warn"><b>v0.6 — S16 VOID 처리 삭제(미운영).</b> 종전 개별 VOID(모달)/일괄 VOID(체크박스) 기능 제공하지 않음. S16은 발급현황 조회·상태 확인(SOLD/USED/CANCELLED) 전용.</div>
         </div>
       </div>
     </div>
@@ -544,7 +555,7 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
           <div class="pd-warn"><b>선행 필수 — S17 카테고리 등록:</b> CSV의 `카테고리`·`상품유형` 값에 해당하는 카테고리가 반드시 S17에 <b>선행 등록</b>되어 있어야 함. 불일치 시 해당 행 업로드 실패(사유: "카테고리 불일치"/"상품유형 불일치"). 실패 행은 탭B 인라인 상세에서 라인번호·오류사유 확인.</div>
           <div class="pd-desc"><b>재업로드:</b> 동일 쿠폰ID+레벨 존재 시 "N건 이미 존재, 덮어쓰시겠습니까?" 확인 필수.<br>
           <b>노출 ON/OFF(운영 토글):</b> 데이터와 분리. OFF → 연결 S14 상품 전체 강제 미노출 cascade(🔒). ON → 상품 개별 노출로 복귀.</div>
-          <div class="pd-rose"><b>스펙 삭제 조건(v0.7):</b> 기존 "삭제 없음(토글 OFF 대체)" → <b>조건부 삭제 허용.</b> 연결 S14 상품 <b>0개</b> AND 발급 쿠폰(SOLD/USED/CANCELED) <b>0개</b>일 때만 삭제 가능. 미충족 시 버튼 비활성화(툴팁). 충족 시에도 관리자 확인 모달 필수.</div>
+          <div class="pd-rose"><b>스펙 삭제 조건(v0.7):</b> 기존 "삭제 없음(토글 OFF 대체)" → <b>조건부 삭제 허용.</b> 연결 S14 상품 <b>0개</b> AND 발급 쿠폰(SOLD/USED/CANCELLED) <b>0개</b>일 때만 삭제 가능. 미충족 시 버튼 비활성화(툴팁). 충족 시에도 관리자 확인 모달 필수.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">S14 — 티켓 상품 관리 (S14-A/B/C)</div>
@@ -595,25 +606,25 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
         </div>
         <div class="pd-item">
           <div class="pd-item-title">S15 / S15-B — 티켓 예약·주문 관리</div>
-          <div class="pd-desc"><b>S15 목록:</b> 주문번호 · 고객명/연락처 · 상품명 · 수량(레벨별) · 결제금액 · 결제수단 · 주문상태(결제완료/취소완료) · 주문일시 · <b>사용상태(미사용/일부사용/사용완료)</b>. 필터: 주문번호/고객명/연락처, 상품, 주문상태, 사용상태, 주문일 범위. 취소/환불 = <b>전체취소만</b>(자동·수동, 부분취소·부분환불 없음). [상세] 클릭 → S15-B 이동.</div>
-          <div class="pd-rose"><b>"사용날짜" 대신 사용상태 컬럼(v0.6).</b> 오픈형 운영이라 한 주문에 여러 쿠폰 발급 → 전부 미사용=미사용 / 일부만 USED=일부사용 / 전부 USED=사용완료. 주문상태 값은 결제완료/취소완료 2종(v0.8, 5.3절).</div>
-          <div class="pd-desc"><b>S15-B 주문 상세 페이지(v0.6 신규, <code>#/ticket-orders/:id</code>):</b> ① 주문 정보(번호·상태·일시·결제금액·수단) ② 고객 정보(명·연락처·이메일·국적) ③ 발급 쿠폰 목록(아래 7컬럼) ④ 취소·환불(주문 단위 전체취소, 위약금율 적용 환불액 표시, 부분 없음) ⑤ 이력(발급·사용·사용취소·주문취소 시간순).</div>
+          <div class="pd-desc"><b>S15 목록:</b> 주문번호 · 고객명/연락처 · 상품명 · 수량(레벨별) · 결제금액 · 결제수단 · 주문상태(결제완료/부분취소/취소완료) · 주문일시 · <b>사용상태(미사용/일부사용/사용완료)</b>. 필터: 주문번호/고객명/연락처, 상품, 주문상태, 사용상태, 주문일 범위. 취소/환불 = <b>전체취소 또는 수량단위 부분취소(관리자 S15-B)</b>. [상세] 클릭 → S15-B 이동.</div>
+          <div class="pd-rose"><b>"사용날짜" 대신 사용상태 컬럼(v0.6).</b> 오픈형 운영이라 한 주문에 여러 쿠폰 발급 → 전부 미사용=미사용 / 일부만 USED=일부사용 / 전부 USED=사용완료. 주문상태 값은 결제완료/부분취소/취소완료 3종(v0.14, 5.3절).</div>
+          <div class="pd-desc"><b>S15-B 주문 상세 페이지(v0.6 신규, <code>#/ticket-orders/:id</code>):</b> ① 주문 정보(번호·상태·일시·결제금액·수단) ② 고객 정보(명·연락처·이메일·국적) ③ 발급 쿠폰 목록(아래 7컬럼) ④ <b>취소·환불(관리자 — 상품+수량 단위 부분취소 또는 전체취소, SOLD 쿠폰만 선택, 위약금율 적용 환불액 표시)</b> ⑤ 이력(발급·사용·사용취소·부분취소·주문취소 시간순).</div>
           <table class="pd-table">
             <tr><th>발급 쿠폰 목록 컬럼</th><th>설명</th></tr>
             <tr><td>쿠폰번호</td><td>12자리 고유번호</td></tr>
             <tr><td>쿠폰명/레벨</td><td>레벨별 표시명 (예: 워터월드 종일권_성수기(대인/얼리) / LV.1)</td></tr>
-            <tr><td>쿠폰 상태</td><td>SOLD / USED / CANCELED</td></tr>
+            <tr><td>쿠폰 상태</td><td>SOLD / USED / CANCELLED</td></tr>
             <tr><td>입금가</td><td>High1에 납부하는 원가 (<b>고객 미노출</b>, 정산 기준)</td></tr>
             <tr><td>판매가</td><td>고객 청구 금액 = 입금가 + 마진</td></tr>
             <tr><td>사용기간</td><td>현장 사용 가능 기간</td></tr>
-            <tr><td>사용일시</td><td>High1 /use 호출 시각. USED 상태인 경우에만 표시. SOLD/CANCELED는 공란.</td></tr>
+            <tr><td>사용일시</td><td>High1 /use 호출 시각. USED 상태인 경우에만 표시. SOLD/CANCELLED는 공란.</td></tr>
           </table>
           <div class="pd-rose"><b>입금가·판매가·사용일시 컬럼 추가(v0.8).</b> 정산 시 어떤 쿠폰이 얼마에 납부됐고 언제 사용됐는지를 주문 상세 한 화면에서 확인. 종전 3컬럼(쿠폰명/레벨·상태·사용기간) → <b>7컬럼</b>으로 확장.</div>
-          <div class="pd-rule"><b>미결(신규-3):</b> 사용완료(USED) 쿠폰 포함 주문의 전체취소 처리 규칙 운영정책 확정 필요.</div>
+          <div class="pd-rose"><b>✅ v0.14 — 미결 신규-3 해소:</b> 수량단위 부분취소 도입으로 USED 포함 주문 처리 정책 확정. 부분취소(SOLD만 선택, 선택 판매가 전액 환불, 주문상태→부분취소) 또는 전체취소. 이력에 부분취소 포함. §8.3·§5.4 참고.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">S16 — 쿠폰 발급 현황</div>
-          <div class="pd-warn"><b>v0.6 변경 — AVAILABLE·VOID 제거. 상태 3종(SOLD/USED/CANCELED)만 사용.</b> VOID 처리 기능 삭제(9절).</div>
+          <div class="pd-warn"><b>v0.6 변경 — AVAILABLE·VOID 제거. 상태 3종(SOLD/USED/CANCELLED)만 사용.</b> VOID 처리 기능 삭제(9절).</div>
           <div class="pd-desc"><b>통계:</b> 발급 총수 / 사용완료(USED) / 미사용(SOLD). <b>목록:</b> 쿠폰번호 · 연결 주문번호 · 상품명/레벨 · 쿠폰 상태 · 구매자명 · 사용기간 · 구매일시. <b>엑셀 다운로드:</b> 현재 필터 조건 기준 전체.<br>
           발급현황에는 판매 전(AVAILABLE) 상태 쿠폰 행이 없음(5절). 쿠폰번호는 구매 시점 생성되어 SOLD로 시작.</div>
         </div>
@@ -655,6 +666,32 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
             <tr><td>프런트 예약/주문 상세</td><td>숙소 예약확정 · 티켓 구매완료 (2탭만)</td><td>동일 안내 문구 표시 (별도 설정 불필요)</td></tr>
           </table>
           <div class="pd-rule"><b>미결(신규-5):</b> 티켓 취소완료 이메일 발송 여부 확정 필요. (13절 참고)</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">12.8 프런트 마이페이지 — 티켓 주문 노출 정책 (v0.14 신규)</div>
+          <div class="pd-rose"><b>✅ v0.14 신규.</b> 프런트 마이페이지 "나의 예약" 탭에서 티켓 주문 노출 정책을 명문화한다. 근거: 프로토타입 front v0.8 §15 스펙.</div>
+          <div class="pd-desc"><b>12.8.1 목록 아이템 정의 (나의 예약 → 티켓 탭)</b></div>
+          <table class="pd-table">
+            <tr><th>항목</th><th>표시 규칙</th></tr>
+            <tr><td>대표 상품명</td><td>첫 번째 권종명 표시. 2종 이상이면 <b>"외 N종"</b> 표기</td></tr>
+            <tr><td>티켓 수</td><td>주문 내 총 발급 쿠폰 수 (CANCELLED 포함 합산). 예: <b>"스키 리프트권 외 1종 · 총 4매"</b></td></tr>
+            <tr><td>썸네일</td><td>대표 상품의 카테고리 썸네일. 없으면 기본 이미지(폴백)</td></tr>
+            <tr><td>유효기간</td><td>목록에서 <b>표시하지 않음</b> (상세에서 확인)</td></tr>
+            <tr><td>금액</td><td>목록에서 <b>표시하지 않음</b> (상세에서 확인)</td></tr>
+            <tr><td>주문 상태</td><td>결제완료 / 부분취소 / 취소완료</td></tr>
+            <tr><td>탭 규칙</td><td>"티켓" 탭이 별도로 있으며, 숙소 예약과 탭 분리. 탭 내 최신순(주문일시 내림차순) 정렬</td></tr>
+          </table>
+          <div class="pd-desc"><b>12.8.2 주문 상세 노출 정책</b></div>
+          <table class="pd-table">
+            <tr><th>항목</th><th>표시 규칙</th></tr>
+            <tr><td>입금가</td><td><b>고객 화면 미노출</b> (정산·어드민 전용)</td></tr>
+            <tr><td>판매가</td><td>고객에게 표시하는 청구 금액</td></tr>
+            <tr><td>바코드</td><td>12자리 쿠폰번호를 <b>Code128</b> 바코드로 렌더링. QR 등 다른 심볼로지는 미사용.</td></tr>
+            <tr><td>쿠폰별 상태 라벨</td><td>SOLD → <b>미사용</b> / USED → <b>사용완료</b> / CANCELLED → <b>취소</b> (고객 화면 한국어·영어 표기)</td></tr>
+            <tr><td>사용기간</td><td>쿠폰별 표시</td></tr>
+            <tr><td>취소 버튼</td><td>사용기간 종료일 이전 + 주문상태=결제완료 또는 부분취소인 경우에만 노출. USED 쿠폰은 취소 선택 불가</td></tr>
+          </table>
+          <div class="pd-warn"><b>신규 미결 — 바코드 심볼로지:</b> 실서비스 하이원 POS/KIOSK 스캐너가 Code128을 지원하는지 확인 필요. 프로토타입은 Code128 사용 중. (담당: High1 POS/KIOSK 개발팀)</div>
         </div>
       </div>
     </div>
@@ -729,11 +766,12 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
             <tr><td>M-10</td><td>취소된 쿠폰번호 재사용 상세 규칙</td><td>낮음</td><td>내부 결정</td></tr>
             <tr><td>M-12</td><td>판매 유형(얼리/상시/프로모션) 어드민 관리 방식</td><td>중간</td><td>내부 결정</td></tr>
             <tr><td><b>신규-1</b></td><td>날짜별 입금가 조정 ↔ 실제 High1 납부액 관계 확정</td><td>높음</td><td>High1 해외마케팅 담당자</td></tr>
-            <tr><td><b>신규-3</b></td><td>사용완료(USED) 쿠폰이 포함된 주문의 (전체)취소 처리 규칙</td><td>높음</td><td>내부 결정 (운영정책 확정 필요)</td></tr>
+            <tr><td class="strike"><b>신규-3</b></td><td class="strike">사용완료(USED) 쿠폰이 포함된 주문의 (전체)취소 처리 규칙</td><td colspan="2"><b>✅ v0.14 해소</b> — 수량단위 부분취소 도입(USED 쿠폰 선택 불가, SOLD 쿠폰만 부분취소). §5.3·§5.4·§8.3 참고.</td></tr>
             <tr><td><b>신규-4</b></td><td>티켓 마진 저장 키(<code>h1_ticket_margin_master_v1</code>) 확정</td><td>중간</td><td>내부 결정</td></tr>
             <tr><td><b>신규-5</b></td><td>취소 완료 이메일 발송 여부 및 취소 이메일 템플릿 관리 필요 여부</td><td>중간</td><td>내부 결정 (S18-A 범위 결정에 영향)</td></tr>
+            <tr><td><b>신규-6</b></td><td>바코드 심볼로지 Code128 지원 확인 (프런트 마이페이지 바코드·현장 스캐너). 프로토타입은 Code128 사용 중 (§12.8.2)</td><td>중간</td><td>High1 POS/KIOSK 개발팀</td></tr>
           </table>
-          <div class="pd-rule"><b>해소된 미결:</b> M-11(여권번호)→국적만 수집(v0.2) / 스펙 활성↔비활성→운영 토글(v0.3) / 신규-2(날짜지정형 한도 기본값)→오픈형 우선 운영(v0.4) / <b>M-13(BARCODE 자릿수)→12자리 확정(v0.5)</b> / <b>M-05(VOID/회수)→VOID 미운영 종결(v0.6)</b>.</div>
+          <div class="pd-rule"><b>해소된 미결:</b> M-11(여권번호)→국적만 수집(v0.2) / 스펙 활성↔비활성→운영 토글(v0.3) / 신규-2(날짜지정형 한도 기본값)→오픈형 우선 운영(v0.4) / <b>M-13(BARCODE 자릿수)→12자리 확정(v0.5)</b> / <b>M-05(VOID/회수)→VOID 미운영 종결(v0.6)</b> / <b>신규-3(USED 포함 주문 취소)→수량단위 부분취소 도입(v0.14)</b>.</div>
         </div>
       </div>
     </div>
@@ -764,7 +802,7 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
             <tr><td>VOID</td><td><b>미운영.</b> 운영자 강제 무효화 기능 미도입. 취소 원복은 사용취소(cancel) 또는 주문취소로만 처리. (9절)</td></tr>
             <tr><td>회수</td><td>발행 쿠폰 회수 처리. High1 기준 "사용처리 완료된 쿠폰"으로 추정. 별도 어드민 기능 없음.</td></tr>
             <tr><td>AVAILABLE</td><td><b>발급된 쿠폰 행의 상태가 아님.</b> 스펙/재고 상 "발급 가능"의 개념적 표현. 쿠폰번호는 구매 시점 생성이므로 발급현황에 이 상태 행 없음.</td></tr>
-            <tr><td>SOLD / USED / CANCELED</td><td>판매(발급) 완료·현장 사용 가능 / 현장 사용 완료 / 주문 취소로 무효화.</td></tr>
+            <tr><td>SOLD / USED / CANCELLED</td><td>판매(발급) 완료·현장 사용 가능 / 현장 사용 완료 / 주문 취소로 무효화.</td></tr>
             <tr><td>주문 상태</td><td>주문 단위 처리 상태. <b>결제완료</b>(PG 완료·쿠폰 발급) / <b>취소완료</b>(전체취소·환불 완료) 2종. (5.3절)</td></tr>
             <tr><td>사용 상태</td><td>주문 레벨에서 쿠폰 사용 여부를 집계한 상태. <b>미사용</b>(전부 SOLD) / <b>일부사용</b>(일부 USED) / <b>사용완료</b>(전부 USED) 3종. (5.4절)</td></tr>
             <tr><td>이메일 템플릿</td><td>S18-A에서 발송 유형별 탭으로 관리하는 고객 이메일 안내 문구. 숙소(예약확정·대기·취소완료) + 티켓(구매완료·취소완료) 통합. EN 필수/ZH 선택. 시스템 자동 삽입 항목(예약번호·바코드 등)은 편집 불가.</td></tr>
@@ -780,11 +818,11 @@ High1 POS/KIOSK: GET /use → 우리 서버 SOLD→USED, DBOK → 고객 시설 
   <div class="lang-en">
 
     <div class="doc-head">
-      <div class="doc-title">Ticket Coupon Integration Policy <span class="badge">v0.13</span></div>
+      <div class="doc-title">Ticket Coupon Integration Policy <span class="badge">v0.14</span></div>
       <div class="doc-meta">
         Created: 2026-07-09 · Updated: 2026-07-10 · Status: In progress<br>
         Source docs: High1 Social Integration Interface Spec v1.0 (2018) · High1 Dev Team Q&amp;A Response v0.2 · Coupon registration data (Water World peak season) sample · Lift full-day issuance data<br>
-        History: v0.8 order status (paid/canceled) · S15-B columns expanded → v0.9 sales-period policy added (S14-B) → v0.10 ticket margin fully redefined (category master 1/2 depth + coupon-ID override) → v0.11 open-type cancellation basis (use-period end date) added · Email Template Mgmt (S18-A) added → <b>v0.12 content-ownership redefined, Option A (S17 owns content · S14 content redefined) · adult-only ticket case (§2.3) · front ticket search policy added (default use date = today +7) · image storage policy added</b> → <b>v0.13 level structure redefined (peak/off-season 4 levels, DDB·DDC measured) · per-level use period (§3.3) · S14-A level N/M visibility display · S14-B per-level visibility·sales period (front card removed when all levels OFF)</b>
+        History: v0.8 order status (paid/canceled) · S15-B columns expanded → v0.9 sales-period policy added (S14-B) → v0.10 ticket margin fully redefined (category master 1/2 depth + coupon-ID override) → v0.11 open-type cancellation basis (use-period end date) added · Email Template Mgmt (S18-A) added → <b>v0.12 content-ownership redefined, Option A (S17 owns content · S14 content redefined) · adult-only ticket case (§2.3) · front ticket search policy added (default use date = today +7) · image storage policy added</b> → <b>v0.13 level structure redefined (peak/off-season 4 levels, DDB·DDC measured) · per-level use period (§3.3) · S14-A level N/M visibility display · S14-B per-level visibility·sales period (front card removed when all levels OFF)</b> → <b>v0.14 reflects prototype (v0.8) — §5.3 order status "Partial cancel" added (product + quantity unit) · §8.3 fully revised (quantity-unit partial cancel allowed; full-cancel-only dropped) · Open issue New-3 resolved · admin cancellation authority stated (§12.4-B) · §12.8 my-page ticket display policy added (list item · barcode Code128) · coupon status unified to CANCELLED (double L)</b>
       </div>
     </div>
 
@@ -848,7 +886,7 @@ e.g. AML 1 000001 57  →  AML100000157</div>
         <div class="pd-item">
           <div class="pd-item-title">Level Structure / Uniqueness</div>
           <div class="pd-desc">LV.1=adult / LV.2=child / LV.3–8 reserved. No separate adult/child verification on-site — only the level's product list is shown (Q23). <b>Coupon level = product-classifier role only.</b><br>
-          Unique within the same coupon ID + level. <b>CANCELED numbers may be reused; USED numbers cannot</b> (Q14).</div>
+          Unique within the same coupon ID + level. <b>CANCELLED numbers may be reused; USED numbers cannot</b> (Q14).</div>
           <div class="pd-rule">Level composition varies by category (ski/water park). To be confirmed after receiving the spec file.</div>
           <div class="pd-desc"><b>(v0.13) Level structure redefined — including peak/off season.</b> Level = product classifier, and its composition varies by product. Besides the 2-level adult/child, a <b>4-level structure</b> that also distinguishes peak/off season within a season exists.</div>
           <table class="pd-table">
@@ -932,7 +970,7 @@ e.g. AML 1 000001 57  →  AML100000157</div>
             <tr><td>DBER01</td><td>BARCODE LENGTH ERR</td><td>Length error (not 12 digits)</td><td>Format error</td></tr>
             <tr><td>DBER02</td><td>NO SEARCH BARCODE</td><td>Coupon not found</td><td>Number not in DB</td></tr>
             <tr><td>DBER03</td><td>USED BARCODE</td><td>Already used</td><td>USED status</td></tr>
-            <tr><td>DBER04</td><td>CANCELED BARCODE</td><td>Canceled</td><td>CANCELED status</td></tr>
+            <tr><td>DBER04</td><td>CANCELLED BARCODE</td><td>Canceled</td><td>CANCELLED status</td></tr>
             <tr><td class="strike">DBER31/32</td><td class="strike">BEFORE STARTDATE / AFTER ENDDATE</td><td class="strike">Before/after validity</td><td><b>Never raised (date check removed)</b></td></tr>
           </table>
         </div>
@@ -954,11 +992,11 @@ e.g. AML 1 000001 57  →  AML100000157</div>
       <div class="pd-section-title"><span class="badge">5</span>Coupon Status Management</div>
       <div class="pd-body">
         <div class="pd-item">
-          <div class="pd-item-title">Status Flow / Definitions (SOLD / USED / CANCELED, 3 only)</div>
+          <div class="pd-item-title">Status Flow / Definitions (SOLD / USED / CANCELLED, 3 only)</div>
           <div class="pd-rose"><b>The coupon number is generated at purchase (payment completion) (§2.2).</b> Issued coupon rows are created as <b>SOLD</b> from the start, and <b>the issuance view (S16) has no pre-sale (AVAILABLE) coupon rows.</b> AVAILABLE is only a conceptual "issuable" spec/inventory notion, not a status of an issued coupon row.</div>
           <div class="pd-pre">[Coupon no. generated at purchase (payment completion)]
    ▼
- SOLD ──── order cancel (auto/manual) ──→ CANCELED    ← initial status at issuance
+ SOLD ──── order cancel (auto/manual) ──→ CANCELLED    ← initial status at issuance
    │ High1 /use
    ▼
  USED ──── High1 /cancel (use-cancel · on-site recovery) ──→ SOLD (restored)</div>
@@ -967,7 +1005,7 @@ e.g. AML 1 000001 57  →  AML100000157</div>
             <tr><td>(AVAILABLE)</td><td><b>Not a status of an issued coupon row.</b> A conceptual "issuable" spec/inventory notion. Since coupons are created at purchase, no such row exists in the issuance view.</td></tr>
             <tr><td>SOLD</td><td>Sold (issued), usable on-site. Initial status of an issued coupon.</td></tr>
             <tr><td>USED</td><td>Used on-site.</td></tr>
-            <tr><td>CANCELED</td><td>Invalidated by order cancellation.</td></tr>
+            <tr><td>CANCELLED</td><td>Invalidated by order cancellation.</td></tr>
           </table>
         </div>
         <div class="pd-item">
@@ -976,9 +1014,10 @@ e.g. AML 1 000001 57  →  AML100000157</div>
           <table class="pd-table">
             <tr><th>Order Status</th><th>Meaning</th><th>Transition</th></tr>
             <tr><td><b>Paid</b></td><td>PG payment succeeded, coupons issued. Initial/normal state.</td><td>Auto-set on PG payment completion</td></tr>
-            <tr><td><b>Canceled</b></td><td>Full order cancellation done, refunded. All issued coupons SOLD → CANCELED.</td><td>On auto-cancel (customer) or manual cancel (admin) completion</td></tr>
+            <tr><td><b>Partial cancel</b></td><td>Some products (pass types) + quantities in the order canceled. Selected coupons SOLD → CANCELLED, un-canceled coupons stay SOLD. Refund = sum of the selected coupons' selling prices (full).</td><td>When a customer or admin completes a partial-quantity cancellation</td></tr>
+            <tr><td><b>Canceled</b></td><td>Full order cancellation done, refunded. All issued coupons SOLD → CANCELLED.</td><td>On auto-cancel (customer) or manual cancel (admin) completion</td></tr>
           </table>
-          <div class="pd-rule"><b>Order status ≠ use status.</b> How much a paid order's coupons have been used is tracked separately by use status (below). The two are not conflated.</div>
+          <div class="pd-rule"><b>Order status ≠ use status.</b> How much a paid order's coupons have been used is tracked separately by use status (below). The two are not conflated. <b>Use status after a partial cancel</b> stays as unused/partly used/fully used according to the SOLD/USED ratio of the remaining coupons.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">Use Status (order-level aggregation · unused / partly used / fully used)</div>
@@ -990,7 +1029,7 @@ e.g. AML 1 000001 57  →  AML100000157</div>
             <tr><td><b>Fully used</b></td><td>All issued coupons are USED</td><td>Paid orders only</td></tr>
             <tr><td>—</td><td>(Canceled orders show no use status)</td><td>N/A when order status = Canceled</td></tr>
           </table>
-          <div class="pd-rule"><b>Open (New-3):</b> the full-cancel rule for partly-used (contains USED) orders requires an operational-policy decision. (See §13)</div>
+          <div class="pd-rose"><b>✅ v0.14 — Open issue New-3 resolved:</b> Orders containing USED coupons are handled by quantity-unit partial cancel selecting only SOLD coupons (USED cannot be selected). See §8.3·§5.3.</div>
         </div>
       </div>
     </div>
@@ -1000,7 +1039,7 @@ e.g. AML 1 000001 57  →  AML100000157</div>
       <div class="pd-section-title"><span class="badge">6</span>Customer Data Management</div>
       <div class="pd-body">
         <div class="pd-item">
-          <div class="pd-desc">Per-coupon customer info: barcode (coupon) no. · usable dates (start/end, display) · status (SOLD/USED/CANCELED) · buyer name · phone · email · <b>nationality</b> · purchase date · coupon name · pass type (lift/rental/WaterWorld, etc.).</div>
+          <div class="pd-desc">Per-coupon customer info: barcode (coupon) no. · usable dates (start/end, display) · status (SOLD/USED/CANCELLED) · buyer name · phone · email · <b>nationality</b> · purchase date · coupon name · pass type (lift/rental/WaterWorld, etc.).</div>
           <div class="pd-warn"><b>Passport number excluded (v0.2):</b> sensitive PII (passport) not collected. Only <b>nationality</b> is collected to identify foreigners (PII minimization).</div>
         </div>
       </div>
@@ -1025,8 +1064,9 @@ e.g. AML 1 000001 57  →  AML100000157</div>
           <div class="pd-item-title">Flow by Handler</div>
           <table class="pd-table">
             <tr><th>Case</th><th>Method</th><th>Notify High1</th></tr>
-            <tr><td>Single cancel (auto)</td><td>Customer request → auto refund per policy (SOLD→CANCELED). <b>Full cancel only.</b></td><td>No</td></tr>
-            <tr><td>Single cancel (manual)</td><td>Admin handles directly in S15. <b>Full cancel only.</b></td><td>No</td></tr>
+            <tr><td>Single cancel — full (auto)</td><td>Customer request → auto refund per policy (all SOLD → CANCELLED).</td><td>No</td></tr>
+            <tr><td>Single cancel — partial (manual)</td><td>Admin selects product + quantity to cancel in S15-B. Only SOLD coupons selectable. Refund = sum of the selected coupons' selling prices (full).</td><td>No</td></tr>
+            <tr><td>Single cancel — full (manual)</td><td>Admin performs a full cancel in S15-B. All SOLD → CANCELLED, refunded.</td><td>No</td></tr>
             <tr><td>Package cancel — room</td><td>OTA cancels via PMS API 7. Penalty rate (%) × OTA full selling price.</td><td>Auto (API 7)</td></tr>
             <tr><td>Package cancel — coupon</td><td><b>OTA must notify High1 via API</b> (Q7). Notice API not built (M-03).</td><td><b>OTA→High1 notice (not built)</b></td></tr>
             <tr><td>On-site mistake (use-cancel)</td><td>High1 /cancel → restore USED→SOLD</td><td>High1-led</td></tr>
@@ -1055,12 +1095,21 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
           <div class="pd-rule"><b>Open-type cancellation basis = use-period end date (use_end_date).</b> Sourced from the `Use end date` field of the S13 coupon spec. For open-type products the S14-B cancellation policy (use-date tiers) is <b>kept as a setting for a future switch to date-specific, but while operating open-type the special rule above prevails.</b></div>
         </div>
         <div class="pd-item">
-          <div class="pd-item-title">Full Cancel Only (partial cancel/refund removed)</div>
-          <div class="pd-warn"><b>v0.6 change — partial cancel/refund removed.</b> Both front and admin support <b>full cancel only.</b> The former v0.5 "admin manual partial refund" policy is deleted.</div>
-          <div class="pd-desc"><b>Front:</b> no partial cancel/refund. Order-level full cancel only.<br>
-          <b>Admin (S15):</b> no partial refund even for managers. Order-level full cancel only.<br>
-          On cancel, the penalty rate (above) applies to the full order selling price.</div>
-          <div class="pd-rule"><b>Open (New-3):</b> the full-cancel rule for orders containing USED coupons requires an operational-policy decision. (See §13)</div>
+          <div class="pd-item-title">Quantity-unit Partial Cancel (fully revised v0.14)</div>
+          <div class="pd-rose"><b>✅ v0.14 revision — partial cancel allowed.</b> Reflects the prototype (v0.8) policy. The former "full cancel only (v0.6)" policy is dropped and <b>product (pass type) + quantity partial cancel</b> is introduced. Open issue New-3 resolved.</div>
+          <div class="pd-desc"><b>Partial-cancel base rules</b><br>
+          · <b>Cancel unit:</b> product (pass type) + quantity. Not per individual coupon number — select a pass type·quantity to cancel in bulk.<br>
+          · <b>Cancel target:</b> only SOLD (unused) coupons are selectable. <b>USED (used) coupons cannot be selected.</b><br>
+          · <b>Refund amount:</b> full refund of the selected coupons' selling-price sum. No penalty (full-refund principle).<br>
+          · <b>Order-status transition:</b> partial cancel → <b>Partial cancel</b> / full cancel → <b>Canceled</b>.<br>
+          · <b>Orders containing USED:</b> even if USED coupons exist, a partial cancel can proceed by selecting only SOLD coupons. A USED coupon becomes cancelable only after on-site <code>/cancel</code> (use-cancel) restores it to SOLD.</div>
+          <table class="pd-table">
+            <tr><th>Actor</th><th>Path</th><th>Capability</th></tr>
+            <tr><td><b>Customer</b></td><td>Front my-page → order detail</td><td>Open-type: full cancel of SOLD coupons before the use-period end date. Date-specific: full cancel within the cancellation window. <b>(Partial cancel not offered on the front yet — admin handles)</b></td></tr>
+            <tr><td><b>Admin (CS)</b></td><td>Admin S15-B</td><td>Product + quantity partial cancel or full cancel. Only SOLD coupons selectable.</td></tr>
+          </table>
+          <div class="pd-rule"><b>Open-type partial-cancel basis:</b> only coupons that are SOLD and before the use-period end date (use_end_date) can be partially canceled. After the end date, or USED coupons, are non-refundable (same as the §8.2 open-type special rule).</div>
+          <div class="pd-rule"><b>Date-specific partial-cancel basis:</b> partial cancel is allowed only for SOLD coupons within the use-date cancellation tiers (§8.2). Penalty = each coupon's selling price × the tier's penalty rate.</div>
         </div>
       </div>
     </div>
@@ -1075,9 +1124,9 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
           <table class="pd-table">
             <tr><th>Action</th><th>API/Actor</th><th>Transition</th><th>Note</th></tr>
             <tr><td>Use-cancel (on-site recovery)</td><td>High1 <code>/cancel</code> (cancel API)</td><td>USED → SOLD</td><td>Restore to usable state</td></tr>
-            <tr><td>Order cancel</td><td>Admin/Front (full cancel)</td><td>SOLD → CANCELED</td><td>Order-level; refund per policy</td></tr>
+            <tr><td>Order cancel</td><td>Admin/Front (full cancel)</td><td>SOLD → CANCELLED</td><td>Order-level; refund per policy</td></tr>
           </table>
-          <div class="pd-desc">Mis-issuance, fraud, and operational-error cases are handled by <b>order cancel (SOLD→CANCELED)</b>, not a separate VOID feature. CANCELED numbers may be reused (§2.4); USED numbers cannot.</div>
+          <div class="pd-desc">Mis-issuance, fraud, and operational-error cases are handled by <b>order cancel (SOLD→CANCELLED)</b>, not a separate VOID feature. CANCELLED numbers may be reused (§2.4); USED numbers cannot.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">Status / Recall</div>
@@ -1085,7 +1134,7 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">Admin Handling (S16)</div>
-          <div class="pd-warn"><b>v0.6 — S16 VOID removed (not operated).</b> The former individual VOID (modal) / bulk VOID (checkbox) features are not provided. S16 is for issuance-status view and status check (SOLD/USED/CANCELED) only.</div>
+          <div class="pd-warn"><b>v0.6 — S16 VOID removed (not operated).</b> The former individual VOID (modal) / bulk VOID (checkbox) features are not provided. S16 is for issuance-status view and status check (SOLD/USED/CANCELLED) only.</div>
         </div>
       </div>
     </div>
@@ -1226,7 +1275,7 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
           <div class="pd-warn"><b>Prerequisite — S17 category registration:</b> the `Category`/`Product type` values in the CSV must be <b>pre-registered in S17</b>. On mismatch, that row fails upload (reason: "Category mismatch"/"Product-type mismatch"). Failed rows show line no. &amp; reason in the Tab B inline detail.</div>
           <div class="pd-desc"><b>Re-upload:</b> if the same coupon-ID+level exists, "N rows already exist. Overwrite?" confirmation is required.<br>
           <b>Visibility ON/OFF (operational toggle):</b> separate from data. OFF → forced hide cascade of linked S14 products (🔒). ON → back to per-product visibility.</div>
-          <div class="pd-rose"><b>Spec-deletion condition (v0.7):</b> from "no deletion (toggle OFF instead)" → <b>conditional deletion allowed.</b> Deletable only when linked S14 products = <b>0</b> AND issued coupons (SOLD/USED/CANCELED) = <b>0</b>. Otherwise the button is disabled (tooltip). Even when eligible, an admin confirmation modal is required.</div>
+          <div class="pd-rose"><b>Spec-deletion condition (v0.7):</b> from "no deletion (toggle OFF instead)" → <b>conditional deletion allowed.</b> Deletable only when linked S14 products = <b>0</b> AND issued coupons (SOLD/USED/CANCELLED) = <b>0</b>. Otherwise the button is disabled (tooltip). Even when eligible, an admin confirmation modal is required.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">S14 — Ticket Product Mgmt (S14-A/B/C)</div>
@@ -1277,25 +1326,25 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">S15 / S15-B — Ticket Order Mgmt</div>
-          <div class="pd-desc"><b>S15 list:</b> order no. · customer/phone · product · qty (per level) · payment · method · order status (Paid/Canceled) · order time · <b>use status (unused/partly used/fully used)</b>. Filters: order no./customer/phone, product, order status, use status, order-date range. Cancel/refund = <b>full cancel only</b> (auto·manual; no partial). [Detail] → S15-B.</div>
-          <div class="pd-rose"><b>Use-status column instead of "use date" (v0.6).</b> Under open-type operation, one order issues multiple coupons → all unused=unused / some USED=partly used / all USED=fully used. Order-status values are Paid/Canceled (v0.8, §5.3).</div>
-          <div class="pd-desc"><b>S15-B Order Detail (v0.6 new, <code>#/ticket-orders/:id</code>):</b> ① order info (no.·status·time·payment·method) ② customer info (name·phone·email·nationality) ③ issued coupon list (7 columns below) ④ cancel/refund (order-level full cancel, penalty-applied refund shown, no partial) ⑤ history (issue·use·use-cancel·order-cancel, chronological).</div>
+          <div class="pd-desc"><b>S15 list:</b> order no. · customer/phone · product · qty (per level) · payment · method · order status (Paid/Partial cancel/Canceled) · order time · <b>use status (unused/partly used/fully used)</b>. Filters: order no./customer/phone, product, order status, use status, order-date range. Cancel/refund = <b>full cancel or quantity-unit partial cancel (admin S15-B)</b>. [Detail] → S15-B.</div>
+          <div class="pd-rose"><b>Use-status column instead of "use date" (v0.6).</b> Under open-type operation, one order issues multiple coupons → all unused=unused / some USED=partly used / all USED=fully used. Order-status values are Paid/Partial cancel/Canceled (v0.14, §5.3).</div>
+          <div class="pd-desc"><b>S15-B Order Detail (v0.6 new, <code>#/ticket-orders/:id</code>):</b> ① order info (no.·status·time·payment·method) ② customer info (name·phone·email·nationality) ③ issued coupon list (7 columns below) ④ <b>cancel/refund (admin — product + quantity partial cancel or full cancel, only SOLD selectable, penalty-applied refund shown)</b> ⑤ history (issue·use·use-cancel·partial-cancel·order-cancel, chronological).</div>
           <table class="pd-table">
             <tr><th>Issued coupon list column</th><th>Description</th></tr>
             <tr><td>Coupon no.</td><td>12-digit unique number</td></tr>
             <tr><td>Coupon name/level</td><td>Per-level display name (e.g. WaterWorld Day Pass_peak(adult/early) / LV.1)</td></tr>
-            <tr><td>Coupon status</td><td>SOLD / USED / CANCELED</td></tr>
+            <tr><td>Coupon status</td><td>SOLD / USED / CANCELLED</td></tr>
             <tr><td>Deposit</td><td>Cost paid to High1 (<b>hidden from customer</b>, settlement basis)</td></tr>
             <tr><td>Selling price</td><td>Amount charged = deposit + margin</td></tr>
             <tr><td>Use period</td><td>On-site usable period</td></tr>
-            <tr><td>Use time</td><td>High1 /use call time. Shown only for USED; blank for SOLD/CANCELED.</td></tr>
+            <tr><td>Use time</td><td>High1 /use call time. Shown only for USED; blank for SOLD/CANCELLED.</td></tr>
           </table>
           <div class="pd-rose"><b>Deposit·selling-price·use-time columns added (v0.8).</b> So settlement can see, on one order-detail screen, which coupon was paid how much and when it was used. Expanded from the former 3 columns (name/level·status·use period) to <b>7 columns</b>.</div>
-          <div class="pd-rule"><b>Open (New-3):</b> full-cancel rule for orders containing USED coupons requires an operational-policy decision.</div>
+          <div class="pd-rose"><b>✅ v0.14 — Open issue New-3 resolved:</b> quantity-unit partial cancel finalizes the handling of orders containing USED coupons. Partial cancel (SOLD only, full refund of selected selling price, order status → Partial cancel) or full cancel. History includes partial cancel. See §8.3·§5.4.</div>
         </div>
         <div class="pd-item">
           <div class="pd-item-title">S16 — Coupon Issuance Status</div>
-          <div class="pd-warn"><b>v0.6 change — AVAILABLE·VOID removed. Only 3 statuses (SOLD/USED/CANCELED).</b> VOID feature deleted (§9).</div>
+          <div class="pd-warn"><b>v0.6 change — AVAILABLE·VOID removed. Only 3 statuses (SOLD/USED/CANCELLED).</b> VOID feature deleted (§9).</div>
           <div class="pd-desc"><b>Stats:</b> total issued / fully used (USED) / unused (SOLD). <b>List:</b> coupon no. · linked order no. · product/level · coupon status · buyer name · use period · purchase time. <b>Excel export:</b> full list by current filter.<br>
           No pre-sale (AVAILABLE) coupon rows exist (§5), since coupons are created at purchase and start as SOLD.</div>
         </div>
@@ -1337,6 +1386,32 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
             <tr><td>Front booking/order detail</td><td>Lodging booking confirmed · Ticket purchase done (2 tabs only)</td><td>Shows the same guidance text (no separate setup)</td></tr>
           </table>
           <div class="pd-rule"><b>Open (New-5):</b> whether to send the ticket-cancellation-done email needs to be decided. (See §13)</div>
+        </div>
+        <div class="pd-item">
+          <div class="pd-item-title">12.8 Front My-page — Ticket Order Display Policy (v0.14 new)</div>
+          <div class="pd-rose"><b>✅ v0.14 new.</b> States the ticket-order display policy on the "My bookings" tab of the front my-page. Basis: prototype front v0.8 §15 spec.</div>
+          <div class="pd-desc"><b>12.8.1 List Item Definition (My bookings → Ticket tab)</b></div>
+          <table class="pd-table">
+            <tr><th>Item</th><th>Display rule</th></tr>
+            <tr><td>Representative product name</td><td>Show the first pass-type name. If 2+ types, append <b>"+N more"</b></td></tr>
+            <tr><td>Ticket count</td><td>Total issued coupons in the order (including CANCELLED). e.g. <b>"Ski Lift Pass +1 more · 4 tickets"</b></td></tr>
+            <tr><td>Thumbnail</td><td>The representative product's category thumbnail. Falls back to a default image if none</td></tr>
+            <tr><td>Validity period</td><td><b>Not shown</b> in the list (see detail)</td></tr>
+            <tr><td>Amount</td><td><b>Not shown</b> in the list (see detail)</td></tr>
+            <tr><td>Order status</td><td>Paid / Partial cancel / Canceled</td></tr>
+            <tr><td>Tab rule</td><td>A separate "Ticket" tab, split from lodging bookings. Sorted newest-first (order time descending) within the tab</td></tr>
+          </table>
+          <div class="pd-desc"><b>12.8.2 Order Detail Display Policy</b></div>
+          <table class="pd-table">
+            <tr><th>Item</th><th>Display rule</th></tr>
+            <tr><td>Deposit price</td><td><b>Hidden from the customer</b> (settlement·admin only)</td></tr>
+            <tr><td>Selling price</td><td>The charged amount shown to the customer</td></tr>
+            <tr><td>Barcode</td><td>The 12-digit coupon number rendered as a <b>Code128</b> barcode. QR and other symbologies not used.</td></tr>
+            <tr><td>Per-coupon status label</td><td>SOLD → <b>Unused</b> / USED → <b>Used</b> / CANCELLED → <b>Canceled</b> (Korean·English on the customer screen)</td></tr>
+            <tr><td>Use period</td><td>Shown per coupon</td></tr>
+            <tr><td>Cancel button</td><td>Shown only before the use-period end date AND when order status = Paid or Partial cancel. USED coupons cannot be selected for cancellation</td></tr>
+          </table>
+          <div class="pd-warn"><b>New open issue — barcode symbology:</b> confirm whether the production High1 POS/KIOSK scanner supports Code128. The prototype uses Code128. (Owner: High1 POS/KIOSK dev team)</div>
         </div>
       </div>
     </div>
@@ -1411,11 +1486,12 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
             <tr><td>M-10</td><td>Canceled coupon-no. reuse rule</td><td>Low</td><td>Internal</td></tr>
             <tr><td>M-12</td><td>Sales-type (early/regular/promo) admin mgmt</td><td>Mid</td><td>Internal</td></tr>
             <tr><td><b>New-1</b></td><td>Per-date deposit ↔ actual High1 payment relation</td><td>High</td><td>High1 Global Marketing</td></tr>
-            <tr><td><b>New-3</b></td><td>Full-cancel rule for orders containing USED coupons</td><td>High</td><td>Internal (operational policy)</td></tr>
+            <tr><td class="strike"><b>New-3</b></td><td class="strike">Full-cancel rule for orders containing USED coupons</td><td colspan="2"><b>✅ Resolved v0.14</b> — quantity-unit partial cancel introduced (USED coupons not selectable, only SOLD partially cancelable). See §5.3·§5.4·§8.3.</td></tr>
             <tr><td><b>New-4</b></td><td>Ticket margin storage key (<code>h1_ticket_margin_master_v1</code>)</td><td>Mid</td><td>Internal</td></tr>
             <tr><td><b>New-5</b></td><td>Whether to send the cancellation-done email &amp; need to manage a cancel email template</td><td>Mid</td><td>Internal (affects S18-A scope)</td></tr>
+            <tr><td><b>New-6</b></td><td>Confirm barcode symbology Code128 support (front my-page barcode·on-site scanner). Prototype uses Code128 (§12.8.2)</td><td>Mid</td><td>High1 POS/KIOSK dev team</td></tr>
           </table>
-          <div class="pd-rule"><b>Resolved:</b> M-11 (passport)→nationality only (v0.2) / spec active↔inactive→operational toggle (v0.3) / New-2 (date-specific limit default)→open-type primary (v0.4) / <b>M-13 (BARCODE digits)→12 digits confirmed (v0.5)</b> / <b>M-05 (VOID/recall)→VOID discontinued, closed (v0.6)</b>.</div>
+          <div class="pd-rule"><b>Resolved:</b> M-11 (passport)→nationality only (v0.2) / spec active↔inactive→operational toggle (v0.3) / New-2 (date-specific limit default)→open-type primary (v0.4) / <b>M-13 (BARCODE digits)→12 digits confirmed (v0.5)</b> / <b>M-05 (VOID/recall)→VOID discontinued, closed (v0.6)</b> / <b>New-3 (USED-containing order cancel)→quantity-unit partial cancel (v0.14)</b>.</div>
         </div>
       </div>
     </div>
@@ -1446,7 +1522,7 @@ Tier 3: before 24:00 same day → penalty 100% (non-refundable)</div>
             <tr><td>VOID</td><td><b>Not operated.</b> Operator forced-invalidation not introduced. Reversal handled only by use-cancel or order cancel. (§9)</td></tr>
             <tr><td>Recall</td><td>Reclaiming an issued coupon. Presumed to be High1's "already use-processed coupons." No separate admin feature.</td></tr>
             <tr><td>AVAILABLE</td><td><b>Not a status of an issued coupon row.</b> A conceptual "issuable" spec/inventory notion. No such row in the issuance view (created at purchase).</td></tr>
-            <tr><td>SOLD / USED / CANCELED</td><td>Sold (issued), usable on-site / used on-site / invalidated by order cancellation.</td></tr>
+            <tr><td>SOLD / USED / CANCELLED</td><td>Sold (issued), usable on-site / used on-site / invalidated by order cancellation.</td></tr>
             <tr><td>Order Status</td><td>Per-order processing state. <b>Paid</b> (PG done·coupons issued) / <b>Canceled</b> (full cancel·refunded), 2 only. (§5.3)</td></tr>
             <tr><td>Use Status</td><td>Order-level aggregation of coupon use. <b>Unused</b> (all SOLD) / <b>Partly used</b> (some USED) / <b>Fully used</b> (all USED), 3 only. (§5.4)</td></tr>
             <tr><td>Email Template</td><td>Customer email guidance text managed by send-type tabs in S18-A. Lodging (booking confirmed·pending·cancellation) + Ticket (purchase·cancellation) unified. EN required/ZH optional. System auto-inserted items (booking no.·barcode, etc.) are not editable.</td></tr>

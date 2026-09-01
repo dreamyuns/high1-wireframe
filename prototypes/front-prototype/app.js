@@ -2885,9 +2885,11 @@ function renderMyPage(app, parts) {
     const thumb = it.img
       ? `<div class="my-card-thumb"><img src="${escapeHtml(it.img)}" alt="" />${dday ? `<span class="my-dday">${dday}</span>` : ""}</div>`
       : `<div class="my-card-thumb my-no-img">No Image${dday ? `<span class="my-dday">${dday}</span>` : ""}</div>`;
+    const noLabel = it.kind === "acc" ? L("예약번호", "Booking no.") : L("주문번호", "Order no.");
     return `
     <a class="my-card" href="#/mypage/${it.kind}/${encodeURIComponent(it.id)}">
-      <div class="my-card-head"><span class="my-kind ${it.kind}">${it.kind === "acc" ? L("숙소", "Stay") : L("티켓", "Ticket")}</span>${badge(it)}<span class="my-card-bno">${escapeHtml(it.id)}</span></div>
+      <div class="my-card-head"><span class="my-kind ${it.kind}">${it.kind === "acc" ? L("숙소", "Stay") : L("티켓", "Ticket")}</span>${badge(it)}<span class="my-card-more">${L("상세", "Details")} ›</span></div>
+      <div class="my-card-order">${noLabel} <b>${escapeHtml(it.id)}</b> · ${escapeHtml(fmtDateTime(it.created))}</div>
       <div class="my-card-body">
         ${thumb}
         <div class="my-card-info">
@@ -2895,9 +2897,6 @@ function renderMyPage(app, parts) {
           ${it.sub ? `<div class="my-card-sub">${escapeHtml(it.sub)}</div>` : ""}
           <div class="my-card-meta">${paxLine}</div>
           ${it.kind === "acc" ? `<div class="my-card-meta">📅 ${escapeHtml(it.dateLabel)}</div>` : ""}
-          ${it.kind === "acc"
-            ? `<div class="my-card-foot"><span class="my-card-bdate">${L("예약일", "Booked")} ${escapeHtml(fmtDateTime(it.created))}</span><strong>${formatWon(it.amount)}</strong></div>`
-            : `<div class="my-card-foot"><span class="my-card-bdate">${L("주문일", "Ordered")} ${escapeHtml(fmtDateTime(it.created))}</span></div>`}
         </div>
       </div>
     </a>`;
@@ -3073,7 +3072,7 @@ function renderMyTicketDetail(app, orderNo) {
         const info = `<div class="tkd-cp-nm">${escapeHtml(ticketLevelLabel(c.level, c.level_name, L))} · ${escapeHtml(c.coupon_name || "")}</div>
           <div class="tkd-cp-sub"><span class="tkd-cp-no">${escapeHtml(c.coupon_no)}</span> · <span class="tkd-cp-vl">🗓 ${escapeHtml(c.use_start_date || "")}~${escapeHtml(c.use_end_date || "")}</span>${c.status === "USED" && c.used_at ? ` · ${L("사용", "Used")} ${escapeHtml(fmtDateTime(c.used_at))}` : ""}</div>`;
         const action = isUnused
-          ? `<button type="button" class="tkd-bc-btn" data-bc="${escapeHtml(c.coupon_no)}">${L("바코드 보기", "Barcode")}</button>`
+          ? `<button type="button" class="tkd-bc-btn" data-bc="${escapeHtml(c.coupon_no)}" data-pid="${escapeHtml(c.product_id)}">${L("바코드 보기", "Barcode")}</button>`
           : `<span class="tkd-cp-stlabel st-${c.status}">${cpLabel(c.status)}</span>`;
         return `<div class="tkd-cp"><div class="tkd-cp-info">${info}</div>${action}</div>`;
       }).join("");
@@ -3105,33 +3104,53 @@ function renderMyTicketDetail(app, orderNo) {
     <a class="my-back" href="#/mypage">← ${L("목록으로", "Back to list")}</a>
     <div class="my-det-head"><h2>${L("티켓 주문", "Ticket order")}</h2>${statusBadge}</div>
     <div class="my-det-meta">${metaLine}</div>
-    <h3 class="my-sec-title">${L("구매자 정보", "Buyer info")}</h3>
-    <table class="bk-sum-tbl bk-done-tbl">
-      <tr><th>${L("성명", "Name")}</th><td>${escapeHtml(buyer.name || "-")}</td></tr>
-      <tr><th>${L("국가", "Country")}</th><td>${escapeHtml(buyerCountry)}</td></tr>
-      <tr><th>${L("이메일", "E-mail")}</th><td>${escapeHtml(buyer.email || "")}</td></tr>
-      <tr><th>${L("휴대폰", "Mobile")}</th><td>${escapeHtml(buyerPhone)}</td></tr>
-    </table>
-    <h3 class="my-sec-title">${L("발급 쿠폰", "Coupons")} (${ocs.length})</h3>
-    <div class="tkd-tabs">${tabsHtml}</div>
-    <div class="my-cp-groups">${groupsHtml}</div>
-    ${isUnused && list.length ? `<p class="my-cp-guide">${L("‘바코드 보기’를 눌러 현장 POS/KIOSK에서 스캔하세요. 쿠폰 1장 = 1인 1영업장.", "Tap ‘Barcode’ to scan at the on-site POS/KIOSK. One coupon = one person, one venue.")}</p>` : ""}
-    <h3 class="my-sec-title">${L("결제 내역", "Payment")}</h3>
-    <div class="tkpay-card">
-      ${payRows}
-      <div class="tkpay-sep"></div>
-      <div class="tkpay-row tkpay-total"><div class="tkpay-l"><span class="tkpay-nm">${L("총 결제금액", "Total paid")}</span></div><div class="tkpay-amt">${formatWon(grossTotal)}</div></div>
-      ${refunded ? `<div class="tkpay-row tkpay-refund"><div class="tkpay-l"><span class="tkpay-nm">${L("환불액", "Refunded")} (${refundLabel})</span></div><div class="tkpay-amt">−${formatWon(refunded)}</div></div>
-      <div class="tkpay-row tkpay-net"><div class="tkpay-l"><span class="tkpay-nm">${L("실 결제금액", "Net paid")}</span></div><div class="tkpay-amt">${formatWon(grossTotal - refunded)}</div></div>` : ""}
-      <div class="tkpay-method">${L("결제수단", "Payment method")} · ${L("신용카드 (목업)", "Credit card (mock)")}</div>
-    </div>
-    ${supportBlockHtml(L)}
-    <h3 class="my-sec-title">${L("취소 규정", "Cancellation policy")}</h3>
-    <div class="my-cancel-policy free">${L("오픈형 — 사용기간 종료 전 미사용 쿠폰은 상품(권종)·수량 단위로 부분취소 가능(전액 환불). 사용완료·기간 경과분은 환불불가.", "Open ticket — unused coupons can be partially cancelled by product and quantity before the valid period ends (full refund). Used/expired are non-refundable.")}</div>
-    ${canCancelNow ? `<button id="my_cancel" class="btn-outline my-cancel-btn">${L("부분취소 / 취소", "Cancel tickets")}</button>` : ""}
+
+    <section class="tk-sec">
+      <h3 class="tk-sec-h">${L("구매자 정보", "Buyer info")}</h3>
+      <table class="bk-sum-tbl bk-done-tbl">
+        <tr><th>${L("성명", "Name")}</th><td>${escapeHtml(buyer.name || "-")}</td></tr>
+        <tr><th>${L("국가", "Country")}</th><td>${escapeHtml(buyerCountry)}</td></tr>
+        <tr><th>${L("이메일", "E-mail")}</th><td>${escapeHtml(buyer.email || "")}</td></tr>
+        <tr><th>${L("휴대폰", "Mobile")}</th><td>${escapeHtml(buyerPhone)}</td></tr>
+      </table>
+    </section>
+
+    <section class="tk-sec">
+      <h3 class="tk-sec-h">${L("발급 쿠폰", "Coupons")} <span class="tk-sec-cnt">(${ocs.length})</span></h3>
+      <div class="tkd-tabs">${tabsHtml}</div>
+      <div class="my-cp-groups">${groupsHtml}</div>
+      ${isUnused && list.length ? `<p class="my-cp-guide">${L("‘바코드 보기’를 눌러 현장 POS/KIOSK에서 스캔하세요. 쿠폰 1장 = 1인 1영업장.", "Tap ‘Barcode’ to scan at the on-site POS/KIOSK. One coupon = one person, one venue.")}</p>` : ""}
+    </section>
+
+    <section class="tk-sec">
+      <h3 class="tk-sec-h">${L("결제 내역", "Payment")}</h3>
+      <div class="tkpay-card tkpay-flush">
+        ${payRows}
+        <div class="tkpay-sep"></div>
+        <div class="tkpay-row tkpay-total"><div class="tkpay-l"><span class="tkpay-nm">${L("총 결제금액", "Total paid")}</span></div><div class="tkpay-amt">${formatWon(grossTotal)}</div></div>
+        ${refunded ? `<div class="tkpay-row tkpay-refund"><div class="tkpay-l"><span class="tkpay-nm">${L("환불액", "Refunded")} (${refundLabel})</span></div><div class="tkpay-amt">−${formatWon(refunded)}</div></div>
+        <div class="tkpay-row tkpay-net"><div class="tkpay-l"><span class="tkpay-nm">${L("실 결제금액", "Net paid")}</span></div><div class="tkpay-amt">${formatWon(grossTotal - refunded)}</div></div>` : ""}
+        <div class="tkpay-method">${L("결제수단", "Payment method")} · ${L("신용카드 (목업)", "Credit card (mock)")}</div>
+      </div>
+    </section>
+
+    <section class="tk-sec">
+      <h3 class="tk-sec-h">${L("고객센터", "Customer Support")}</h3>
+      <div class="my-support-grid">
+        <div><span>${L("전화", "Phone")}</span><strong>${SUPPORT_INFO.phone}</strong></div>
+        <div><span>${L("이메일", "E-mail")}</span><strong>${SUPPORT_INFO.email}</strong></div>
+        <div><span>${L("운영시간", "Hours")}</span><strong>${L(SUPPORT_INFO.hours_ko, SUPPORT_INFO.hours_en)}</strong></div>
+      </div>
+    </section>
+
+    <section class="tk-sec">
+      <h3 class="tk-sec-h">${L("취소 규정", "Cancellation policy")}</h3>
+      <div class="my-cancel-policy free">${L("오픈형 — 사용기간 종료 전 미사용 쿠폰은 상품(권종)·수량 단위로 부분취소 가능(전액 환불). 사용완료·기간 경과분은 환불불가.", "Open ticket — unused coupons can be partially cancelled by product and quantity before the valid period ends (full refund). Used/expired are non-refundable.")}</div>
+      ${canCancelNow ? `<button id="my_cancel" class="btn-outline my-cancel-btn">${L("부분취소 / 취소", "Cancel tickets")}</button>` : ""}
+    </section>
   </div>`;
   app.querySelectorAll(".tkd-tab").forEach((b) => b.addEventListener("click", () => { uiState.myTicketTab = b.dataset.tkt; render(); }));
-  app.querySelectorAll(".tkd-bc-btn").forEach((b) => b.addEventListener("click", () => openTicketBarcodePopup(o.order_no, b.dataset.bc, L)));
+  app.querySelectorAll(".tkd-bc-btn").forEach((b) => b.addEventListener("click", () => openTicketBarcodePopup(o.order_no, b.dataset.bc, L, b.dataset.pid)));
   if (canCancelNow) document.getElementById("my_cancel").addEventListener("click", () => openTicketPartialCancel(o.order_no, L));
 }
 
@@ -3147,22 +3166,23 @@ function tkToast(msg) {
 }
 
 /** 바코드 팝업 — 미사용 쿠폰 전체 좌우 스와이프 캐러셀 + 현장 사용처리(데모) */
-function openTicketBarcodePopup(orderNo, focusNo, L) {
+function openTicketBarcodePopup(orderNo, focusNo, L, productId) {
   if (!orderNo) return;
   const wrap = document.createElement("div");
   wrap.className = "my-modal-back";
   document.body.appendChild(wrap);
   const close = () => wrap.remove();
   wrap.addEventListener("click", (e) => { if (e.target === wrap) close(); });
-  const unusedList = () => loadTicketCoupons().filter((c) => c.order_no === orderNo && c.status === "SOLD");
+  // productId 지정 시 해당 상품(권종) 쿠폰만 스코프 — 장소별(스키리프트/장비렌탈 등) 오사용 방지
+  const unusedList = () => loadTicketCoupons().filter((c) => c.order_no === orderNo && c.status === "SOLD" && (!productId || c.product_id === productId));
 
   function paint(focusNo) {
     const list = unusedList();
     if (!list.length) { close(); return; }
     const slides = list.map((c) => `
       <div class="tkbc-slide" data-cn="${escapeHtml(c.coupon_no)}">
-        <div class="tkbc-cat">${escapeHtml(c.product_name || "")}</div>
-        <div class="tkbc-nm">${escapeHtml(ticketLevelLabel(c.level, c.level_name, L))} · ${escapeHtml(c.coupon_name || "")}</div>
+        <div class="tkbc-prod">${escapeHtml(c.product_name || "")}</div>
+        <div class="tkbc-lvrow"><span class="tkbc-lvpill ${c.level === 2 ? "child" : "adult"}">${escapeHtml(ticketLevelLabel(c.level, c.level_name, L))}</span><span class="tkbc-cpn">${escapeHtml(c.coupon_name || "")}</span></div>
         <svg class="tkbc-svg js-bc" data-code="${escapeHtml(c.coupon_no)}"></svg>
         <div class="tkbc-no">${escapeHtml(c.coupon_no)}</div>
         <div class="tkbc-meta">🗓 ${L("사용기간", "Valid")} ${escapeHtml(c.use_start_date || "")} ~ ${escapeHtml(c.use_end_date || "")}</div>
